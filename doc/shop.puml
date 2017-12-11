@@ -51,7 +51,7 @@ class MyOilCoupon {
    - String accountId; 用户Id
    - String goodId; 商品Id
 }
-class MyOilCouponDetal {
+class MyOilCouponDetail {
    - String id;
    - String MyOilCouponId;
    - String pan; 加油券编号
