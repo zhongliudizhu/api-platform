@@ -1,0 +1,103 @@
+server:
+  port: ${{SERVER_PORT}:20001}
+
+management:
+  port: ${{MANAGEMENT_PORT}:20002}
+
+endpoints:
+  health:
+    sensitive: false
+  shutdown:
+    sensitive: true
+    enabled: true
+
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.ipAddress}:${server.port}
+    hostname: ${spring.cloud.client.ipAddress}
+
+  client:
+    serviceUrl:
+      defaultZone:  http://winstar:123456@192.168.118.101:19000/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+
+spring:
+  datasource:
+    url: jdbc:mysql://192.168.118.8:23306/winstar_platform?characterEncoding=utf-8
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      max-lifetime: 1900000
+      maximum-pool-size: 10
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  profiles: default
+
+info:
+  sendUrl: http://192.168.118.28:8080/api/v1/push/text
+  cardUrl: http://124.89.119.82:18070/webservice/services/SvcService
+  getAccountIdByPhoneUrl: http://WINSTAR-USER-API/api/user/account/loginBy
+  #如果没有用户会自动注册
+  getAccountIdByPhoneH5: http://WINSTAR-USER-API/api/user/account/loginH5
+  getAccountIdByPhoneVerify: 24b6e946d4594661a58bd235fe639544
+  isShowQRCode: false
+  searchLimit: 5
+  getMsgContentUrl: http://WINSTAR-COMMUNITY-API/api/v1/community/noauth/message/query?key=recieveOilCoupon
+  sendMsgUrl: http://sms.sxjiashi.com:8080/api/v2/smsSend/sendNotice
+
+---
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      max-lifetime: 1900000
+      maximum-pool-size: 500
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+  profiles: prod
+
+server:
+  port: ${{SERVER_PORT}:8080}
+
+management:
+  port: ${{MANAGEMENT_PORT}:8081}
+
+endpoints:
+  health:
+    sensitive: false
+  shutdown:
+    sensitive: true
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${{EUREKA_SERVER_LIST}:http://winstar:123456@10.0.20.85:9090/eureka/,http://winstar:123456@10.0.20.86:9090/eureka/}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    instance-id: ${spring.cloud.client.ipAddress}:${server.port}
+    hostname: ${spring.cloud.client.ipAddress}
+
+
+info:
+  sendUrl: http://10.0.20.144:8080/api/v1/push/text
+  cardUrl: http://124.89.119.82:8070/webserviceCoupons/services/SvcService
+  getAccountIdByPhoneUrl: http://WINSTAR-USER-API/api/user/account/loginBy
+  getAccountIdByPhoneVerify: 24b6e946d4594661a58bd235fe639544
+  #如果没有用户会自动注册
+  getAccountIdByPhoneH5: http://WINSTAR-USER-API/api/user/account/loginH5
+  isShowQRCode: true
+  searchLimit: 5
+  getMsgContentUrl: http://WINSTAR-COMMUNITY-API/api/v1/community/noauth/message/query?key=recieveOilCoupon
+  sendMsgUrl: http://sms.sxjiashi.com:8080/api/v2/smsSend/sendNotice
