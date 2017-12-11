@@ -24,7 +24,7 @@ eureka:
 
 spring:
   datasource:
-    url: jdbc:mysql://192.168.118.8:23306/winstar_platform?characterEncoding=utf-8
+    url: jdbc:mysql://192.168.118.8:23306/winstar-cbc-platform?characterEncoding=utf-8
     username: root
     password: 123456
     driver-class-name: com.mysql.jdbc.Driver
