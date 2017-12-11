@@ -47,7 +47,6 @@ class MyOilCoupon {
    - String id;
    - Date createTime;创建日期
    - String orderId; 订单编号
-   - String phone; 用户手机
    - String accountId; 用户Id
    - String goodId; 商品Id
 }
