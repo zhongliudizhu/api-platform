@@ -1,0 +1,57 @@
+@startuml
+
+class OilCoupon{
+   - String id: String ; 主键
+   - String orgCode; 卡券所属公司
+   - String pan; 加油券编号
+   - Double panAmt; 电子券金额
+   - String openDate; 生效日期
+   - String endDate; 失效日期
+   - String panName; 加油券名称
+   - String oilState; 加油券状态 0：未售、1：已售
+   - String useState; 使用状态 0：未使用、1：已使用
+   - String useDate; 使用时间
+   - String createTime; 创建日期
+   - String panDescription; 加油券描述
+   - String accountId; 用户Id
+   - String orderId; 订单编号
+   - String period; 分期
+   - String distributionTime; 分配时间
+   - Double costPrice;成本价
+}
+
+class OilCouponSearchLog {
+   - String id;
+   - String accountId; 账号ID
+   - String orderId; 订单ID
+   - Date createTime;查看时间
+   - String pan;油卡编号
+   - String ip;ip地址
+}
+class Goods {
+   - String id;
+   - String name; 商品名称
+   - String image; 商品图片
+   - Double price; 商品价格
+   - String descriptions; 商品描述
+   - Integer status; 商品状态 0 已下架 1 已上架
+   - Integer roof; 所属平台  0：微信平台、 1：app
+   - String createTime; 创建时间
+
+}
+
+class Activity {
+   - String id;
+   - String name; 活动名称
+   - Date createTime; 创建时间
+   - Date beginTime; 活动开始时间
+   - Date endTime; 活动结束时间
+   - Integer status; 启用状态 0 已启用 1 未启用
+   - String rules; 活动规则 {json}
+   - String goods; 商品 [1,2,3] JSONArray
+}
+
+Activity  --|>Goods
+OilCoupon --|>OilCouponSearchLog
+
+@enduml
