@@ -5,17 +5,10 @@ class OilCoupon{
    - String orgCode; 卡券所属公司
    - String pan; 加油券编号
    - Double panAmt; 电子券金额
-   - String openDate; 生效日期
-   - String endDate; 失效日期
    - String panName; 加油券名称
    - String oilState; 加油券状态 0：未售、1：已售
-   - String useState; 使用状态 0：未使用、1：已使用
-   - String useDate; 使用时间
    - String createTime; 创建日期
    - String panDescription; 加油券描述
-   - String accountId; 用户Id
-   - String orderId; 订单编号
-   - String period; 分期
    - String distributionTime; 分配时间
    - Double costPrice;成本价
 }
@@ -37,7 +30,7 @@ class Goods {
    - Integer status; 商品状态 0 已下架 1 已上架
    - Integer roof; 所属平台  0：微信平台、 1：app
    - String createTime; 创建时间
-
+   - String coupons; 商品详情[面值：数量] JSON
 }
 
 class Activity {
@@ -50,6 +43,27 @@ class Activity {
    - String rules; 活动规则 {json}
    - String goods; 商品 [1,2,3] JSONArray
 }
+class MyOilCoupon {
+   - String id;
+   - Date createTime;创建日期
+   - String orderId; 订单编号
+   - String phone; 用户手机
+   - String accountId; 用户Id
+   - String goodId; 商品Id
+}
+class MyOilCouponDetal {
+   - String id;
+   - String MyOilCouponId;
+   - String pan; 加油券编号
+   - Double panAmt; 电子券金额
+   - Date createTime;创建日期/分配时间
+   - String useState; 使用状态 0：未使用、1：已使用
+   - Date useDate; 使用时间
+   - Date openDate; 生效日期
+   - Date endDate; 失效日期
+   - String tId; 使用的加油站Id
+}
+
 
 Activity  --|>Goods
 OilCoupon --|>OilCouponSearchLog
