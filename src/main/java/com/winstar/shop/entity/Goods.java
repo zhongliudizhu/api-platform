@@ -62,8 +62,8 @@ public class Goods {
      */
     private String coupons;
     /**
-     * 赠送商品 [1，2]
+     * 赠送商品规则 [1，2]
      */
-    private String sendCouponTemplates;
+    private String rules;
 
 }
