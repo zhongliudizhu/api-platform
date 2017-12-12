@@ -1,6 +1,6 @@
 spring:
   application:
-    name: winstar-item-api
+    name: winstar-cbc-api
   cloud:
       config:
         uri: http://winstar:db1ab002-1fba-476d-a421-22113355@47.92.66.177:19100/
