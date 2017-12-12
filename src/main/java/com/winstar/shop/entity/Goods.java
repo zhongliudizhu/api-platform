@@ -1,5 +1,4 @@
-package com.winstar.coupon;
-
+package com.winstar.shop.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,18 +12,18 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
- * 名称： OilCoupon
+ * 名称： Goods
  * 作者： sky
- * 日期： 2017private12private11 17:35
- * 描述： 油券
+ * 日期： 2017private12private12 9:22
+ * 描述： 商品实体
  **/
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "oil_coupon")
-public class OilCoupon {
+@Table(name = "goods")
+public class Goods {
 
     /**
      * 唯一标识
@@ -34,43 +33,32 @@ public class OilCoupon {
     @GeneratedValue(generator = "idGenerator")
     private String id;
     /**
-     * 卡券所属公司
+     * 商品名称
      */
-    private String orgCode;
+    private String name;
     /**
-     * 加油券编号
+     * 商品图片
      */
-    private String pan;
+    private String image;
     /**
-     * 电子券金额
+     * 商品价格
      */
-    private Double panAmt;
-
+    private Double price;
     /**
-     * 加油券名称
+     * 商品描述
      */
-    private String panName;
+    private String descriptions;
     /**
-     * 加油券状态 0：未售、1：已售
+     * 商品状态 0 已下架 1 已上架
      */
-    private String oilState;
-
+    private Integer status;
     /**
-     * 创建日期
+     * 创建时间
      */
     private String createTime;
     /**
-     * 加油券描述
+     * 商品详情[面值：数量] JSON
      */
-    private String panDescription;
-
-    /**
-     * 分配时间
-     */
-    private String distributionTime;
-    /**
-     * 成本价
-     */
-    private Double costPrice;
+    private String coupons;
 
 }
