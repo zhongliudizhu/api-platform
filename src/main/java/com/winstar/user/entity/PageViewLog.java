@@ -3,7 +3,6 @@ package com.winstar.user.entity;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.util.Date;
 
 /**
  * 用户访问日志
@@ -32,13 +31,16 @@ public class PageViewLog {
     /**
      * 用户ID
      */
-    private String userId;
+    private String accountId;
     /**
-     * IP
+     * url
      */
-    private String iPAddress;
+    private String url;
+    /**
+     * 日志记录时间
+     */
+    @Column(columnDefinition = "timestamp default current_timestamp")
     private String createTime;
-    private String updateTime;
 
     public String getId() {
         return id;
@@ -64,13 +66,14 @@ public class PageViewLog {
         this.goodsId = goodsId;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getAccountId() {
+        return accountId;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
     }
+
 
     public String getCreateTime() {
         return createTime;
@@ -80,19 +83,11 @@ public class PageViewLog {
         this.createTime = createTime;
     }
 
-    public String getiPAddress() {
-        return iPAddress;
+    public String getUrl() {
+        return url;
     }
 
-    public void setiPAddress(String iPAddress) {
-        this.iPAddress = iPAddress;
-    }
-
-    public String getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(String updateTime) {
-        this.updateTime = updateTime;
+    public void setUrl(String url) {
+        this.url = url;
     }
 }
