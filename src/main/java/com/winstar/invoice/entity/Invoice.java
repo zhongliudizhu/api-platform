@@ -1,6 +1,10 @@
 package com.winstar.invoice.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -8,10 +12,14 @@ import java.util.Date;
 
 /**
  * @author shoo on 2017/10/23 14:01.
- * @Describe： 发票
+ *  发票
  */
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "winstar_invoice")
+@Table(name = "cbc_winstar_invoice")
 public class Invoice {
     /*
     *主键
@@ -115,163 +123,4 @@ public class Invoice {
     @Column(length = 10)
     private String isDel;
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public Integer getType() {
-        return type;
-    }
-
-    public void setType(Integer type) {
-        this.type = type;
-    }
-
-    public String getPersonName() {
-        return personName;
-    }
-
-    public void setPersonName(String personName) {
-        this.personName = personName;
-    }
-
-    public String getIdentNumber() {
-        return identNumber;
-    }
-
-    public void setIdentNumber(String identNumber) {
-        this.identNumber = identNumber;
-    }
-
-    public String getPhoneNo() {
-        return phoneNo;
-    }
-
-    public void setPhoneNo(String phoneNo) {
-        this.phoneNo = phoneNo;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getCompanyName() {
-        return companyName;
-    }
-
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
-    }
-
-    public String getRegistrationNo() {
-        return registrationNo;
-    }
-
-    public void setRegistrationNo(String registrationNo) {
-        this.registrationNo = registrationNo;
-    }
-
-    public String getCompanyAddress() {
-        return companyAddress;
-    }
-
-    public void setCompanyAddress(String companyAddress) {
-        this.companyAddress = companyAddress;
-    }
-
-    public String getTelephone() {
-        return telephone;
-    }
-
-    public void setTelephone(String telephone) {
-        this.telephone = telephone;
-    }
-
-    public String getDepositBank() {
-        return depositBank;
-    }
-
-    public void setDepositBank(String depositBank) {
-        this.depositBank = depositBank;
-    }
-
-    public String getBankAccount() {
-        return bankAccount;
-    }
-
-    public void setBankAccount(String bankAccount) {
-        this.bankAccount = bankAccount;
-    }
-
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public Date getInvoiceTime() {
-        return invoiceTime;
-    }
-
-    public void setInvoiceTime(Date invoiceTime) {
-        this.invoiceTime = invoiceTime;
-    }
-
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public String getOrderSerialNo() {
-        return orderSerialNo;
-    }
-
-    public void setOrderSerialNo(String orderSerialNo) {
-        this.orderSerialNo = orderSerialNo;
-    }
-
-    public Double getPayPrice() {
-        return payPrice;
-    }
-
-    public void setPayPrice(Double payPrice) {
-        this.payPrice = payPrice;
-    }
-
-    public Double getOilTotalValue() {
-        return oilTotalValue;
-    }
-
-    public void setOilTotalValue(Double oilTotalValue) {
-        this.oilTotalValue = oilTotalValue;
-    }
-
-    public String getIsDel() {
-        return isDel;
-    }
-
-    public void setIsDel(String isDel) {
-        this.isDel = isDel;
-    }
 }

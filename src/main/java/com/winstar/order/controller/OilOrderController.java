@@ -22,7 +22,7 @@ import java.util.Map;
 
 /**
  * @author shoo on 2017/7/7 13:52.
- * --Describe： 油券订单 --
+ *  油券订单
  */
 @RestController
 @RequestMapping("/api/v1/orders/oilorder")

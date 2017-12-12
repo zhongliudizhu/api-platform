@@ -1,5 +1,9 @@
 package com.winstar.order.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -9,8 +13,12 @@ import java.util.Date;
  * @author shoo on 2017/7/6 16:13.
  *  -- 订单 --
  */
+@NoArgsConstructor
+@Setter
+@Getter
+@AllArgsConstructor
 @Entity
-@Table(name = "oil_order")
+@Table(name = "cbc_oil_order")
 public class OilOrder {
     /*
     *主键
@@ -138,9 +146,6 @@ public class OilOrder {
     * */
     private Integer payType;
 
-    public OilOrder() {
-    }
-
     /* 订单来源 账户id 订单序列号 手机号 状态 支付状态 下单时间 退款 商品id 活动类型 秒杀id 活动id*/
     public OilOrder(Integer orderFrom, String accountId, String serialNo, String phoneNo, Integer status, Integer payStatus, Date createTime, Integer refund, String itemId, String isPromotion, String activityId) {
         this.accountId = accountId;
@@ -158,252 +163,4 @@ public class OilOrder {
         this.isAvailable = "0";
     }
 
-    public Double getSalePrice() {
-        return salePrice;
-    }
-
-    public void setSalePrice(Double salePrice) {
-        this.salePrice = salePrice;
-    }
-
-    public String getCouponId() {
-        return couponId;
-    }
-
-    public void setCouponId(String couponId) {
-        this.couponId = couponId;
-    }
-
-    public String getUpdateOrderUrl() {
-        return updateOrderUrl;
-    }
-
-    public void setUpdateOrderUrl(String updateOrderUrl) {
-        this.updateOrderUrl = updateOrderUrl;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
-
-    public String getSerialNo() {
-        return serialNo;
-    }
-
-    public void setSerialNo(String serialNo) {
-        this.serialNo = serialNo;
-    }
-
-    public Double getPayPrice() {
-        return payPrice;
-    }
-
-    public void setPayPrice(Double payPrice) {
-        this.payPrice = payPrice;
-    }
-
-    public Double getItemTotalValue() {
-        return itemTotalValue;
-    }
-
-    public void setItemTotalValue(Double itemTotalValue) {
-        this.itemTotalValue = itemTotalValue;
-    }
-
-    public String getPhoneNo() {
-        return phoneNo;
-    }
-
-    public void setPhoneNo(String phoneNo) {
-        this.phoneNo = phoneNo;
-    }
-
-    public String getBankSerialNo() {
-        return bankSerialNo;
-    }
-
-    public void setBankSerialNo(String bankSerialNo) {
-        this.bankSerialNo = bankSerialNo;
-    }
-
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
-
-    public Integer getPayStatus() {
-        return payStatus;
-    }
-
-    public void setPayStatus(Integer payStatus) {
-        this.payStatus = payStatus;
-    }
-
-    public Integer getSendStatus() {
-        return sendStatus;
-    }
-
-    public void setSendStatus(Integer sendStatus) {
-        this.sendStatus = sendStatus;
-    }
-
-    public String getMark() {
-        return mark;
-    }
-
-    public void setMark(String mark) {
-        this.mark = mark;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public Date getPayTime() {
-        return payTime;
-    }
-
-    public void setPayTime(Date payTime) {
-        this.payTime = payTime;
-    }
-
-    public Date getFinishTime() {
-        return finishTime;
-    }
-
-    public void setFinishTime(Date finishTime) {
-        this.finishTime = finishTime;
-    }
-
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public Integer getRefund() {
-        return refund;
-    }
-
-    public void setRefund(Integer refund) {
-        this.refund = refund;
-    }
-
-    public String getItemId() {
-        return itemId;
-    }
-
-    public void setItemId(String itemId) {
-        this.itemId = itemId;
-    }
-
-    public String getIsPromotion() {
-        return isPromotion;
-    }
-
-    public void setIsPromotion(String isPromotion) {
-        this.isPromotion = isPromotion;
-    }
-
-    public String getOilDetail() {
-        return oilDetail;
-    }
-
-    public void setOilDetail(String oilDetail) {
-        this.oilDetail = oilDetail;
-    }
-
-    public Integer getOrderFrom() {
-        return orderFrom;
-    }
-
-    public void setOrderFrom(Integer orderFrom) {
-        this.orderFrom = orderFrom;
-    }
-
-    public Double getDiscountAmount() {
-        return discountAmount;
-    }
-
-    public void setDiscountAmount(Double discountAmount) {
-        this.discountAmount = discountAmount;
-    }
-
-    public String getActivityId() {
-        return activityId;
-    }
-
-    public void setActivityId(String activityId) {
-        this.activityId = activityId;
-    }
-
-    public String getIsAvailable() {
-        return isAvailable;
-    }
-
-    public void setIsAvailable(String isAvailable) {
-        this.isAvailable = isAvailable;
-    }
-
-    public Integer getPayType() {
-        return payType;
-    }
-
-    public void setPayType(Integer payType) {
-        this.payType = payType;
-    }
-
-    @Override
-    public String toString() {
-        return "OilOrder{" +
-                "id='" + id + '\'' +
-                ", accountId='" + accountId + '\'' +
-                ", orderFrom=" + orderFrom +
-                ", serialNo='" + serialNo + '\'' +
-                ", payPrice=" + payPrice +
-                ", salePrice=" + salePrice +
-                ", itemTotalValue=" + itemTotalValue +
-                ", discountAmount=" + discountAmount +
-                ", couponId='" + couponId + '\'' +
-                ", itemId='" + itemId + '\'' +
-                ", activityId='" + activityId + '\'' +
-                ", oilDetail='" + oilDetail + '\'' +
-                ", phoneNo='" + phoneNo + '\'' +
-                ", bankSerialNo='" + bankSerialNo + '\'' +
-                ", status=" + status +
-                ", payStatus=" + payStatus +
-                ", sendStatus=" + sendStatus +
-                ", mark='" + mark + '\'' +
-                ", createTime=" + createTime +
-                ", payTime=" + payTime +
-                ", finishTime=" + finishTime +
-                ", updateTime=" + updateTime +
-                ", refund=" + refund +
-                ", updateOrderUrl='" + updateOrderUrl + '\'' +
-                ", isPromotion='" + isPromotion + '\'' +
-                ", isAvailable='" + isAvailable + '\'' +
-                ", payType=" + payType +
-                '}';
-    }
 }

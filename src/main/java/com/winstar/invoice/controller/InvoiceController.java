@@ -23,7 +23,7 @@ import java.util.Date;
 
 /**
  * @author shoo on 2017/10/23 15:16.
- * @Describe： 发票
+ *  发票
  */
 @RestController
 @RequestMapping("/api/v1/orders/invoice")
