@@ -7,42 +7,38 @@ import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.Date;
 
 /**
- * 用户访问日志
- **/
+ * token
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "CBC_USER_PAGE_VIEW_LOG")
-public class PageViewLog {
-
+@Table(name = "CBC_USER_PAGE_ACCESS_TOKEN")
+public class AccessToken {
     @Id
     @GenericGenerator(name = "idGenerator", strategy = "uuid")
     @GeneratedValue(generator = "idGenerator")
     @Column(length = 32)
     private String id;
+
     /**
-     * 活动ID
-     */
-    private String activityId;
-    /**
-     * 商品ID
-     */
-    private String goodsId;
-    /**
-     * 用户ID
+     * 账号ID
      */
     private String accountId;
     /**
-     * url
+     * 账号tokenID
      */
-    private String url;
+    private String tokenId;
     /**
-     * 日志记录时间
+     * 创建时间
      */
-    @Column(length = 50)
-    private String createTime;
+    private Date createTime;
+    /**
+     * 最后修改时间
+     */
+    private Date updateTime;
 }

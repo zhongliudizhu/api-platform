@@ -1,5 +1,6 @@
 package com.winstar.user.entity;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,41 +9,53 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 
-/**
- * 用户访问日志
- **/
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "CBC_USER_PAGE_VIEW_LOG")
-public class PageViewLog {
-
+@Table(name = "CBC_USER_ACCOUNT")
+public class Account {
     @Id
     @GenericGenerator(name = "idGenerator", strategy = "uuid")
     @GeneratedValue(generator = "idGenerator")
     @Column(length = 32)
     private String id;
     /**
-     * 活动ID
+     * 用户来源 1 微信
      */
-    private String activityId;
+    private String regFrom;
     /**
-     * 商品ID
+     * openid
      */
-    private String goodsId;
+    private String openid;
     /**
-     * 用户ID
+     * 昵称
      */
-    private String accountId;
+    private String nickName;
     /**
-     * url
+     * 头像地址
      */
-    private String url;
+    private String headImgUrl;
     /**
-     * 日志记录时间
+     * 电话号码
      */
-    @Column(length = 50)
+    private String mobile;
+    /**
+     * 身份证
+     */
+    private String idCard;
+    /**
+     * 真实姓名
+     */
+    private String realName;
+    /**
+     * 创建时间
+     */
     private String createTime;
+    /**
+     * 最后修改时间
+     */
+    private String updateTime;
+
 }
