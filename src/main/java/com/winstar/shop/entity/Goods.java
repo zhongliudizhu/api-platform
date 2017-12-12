@@ -46,6 +46,10 @@ public class Goods {
      */
     private Double price;
     /**
+     * 商品售价
+     */
+    private Double saledPrice;
+    /**
      * 商品描述
      */
     private String descriptions;
@@ -62,13 +66,12 @@ public class Goods {
      */
     private String couponDetail;
     /**
-     * 赠送商品 或 折扣
+     * 赠送商品
      */
-    private String rebateOrCouponTempletId;
-
+    private String couponTempletId;
     /**
-     * 类型 1 折中折 2 赠券
+     * 折扣
      */
-    private Integer type;
+    private Double disCount;
 
 }
