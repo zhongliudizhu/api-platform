@@ -51,7 +51,7 @@ public class Activity {
      */
    private Date endTime;
     /**
-     * 启用状态 0 已启用 1 未启用
+     * 启用状态 0 未启用 1 已启用
      */
    private Integer status;
     /**

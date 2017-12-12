@@ -10,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Date;
 
 /**
  * 名称： Goods
@@ -55,10 +56,14 @@ public class Goods {
     /**
      * 创建时间
      */
-    private String createTime;
+    private Date createTime;
     /**
-     * 商品详情[面值：数量] JSON
+     * 商品详情[面值：数量]
      */
     private String coupons;
+    /**
+     * 商品规则
+     */
+    private String rules;
 
 }
