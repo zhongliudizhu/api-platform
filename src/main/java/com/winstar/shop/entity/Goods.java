@@ -60,7 +60,7 @@ public class Goods {
     /**
      * 商品详情[面值：数量]
      */
-    private String coupons;
+    private String couponDetail;
     /**
      * 赠送商品 或 折扣
      */
