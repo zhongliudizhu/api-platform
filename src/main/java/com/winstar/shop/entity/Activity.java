@@ -23,7 +23,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "activity")
+@Table(name = "cbc_activity")
 public class Activity {
 
     /**
@@ -62,5 +62,6 @@ public class Activity {
      * 商品 [1,2,3] JSONArray
      */
    private String goods;
+
 
 }

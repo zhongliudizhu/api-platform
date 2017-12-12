@@ -6,12 +6,15 @@ import com.winstar.coupon.repository.CouponTemplateRepository;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
 
+import com.winstar.shop.entity.Goods;
+import com.winstar.shop.repository.GoodsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 
 import java.text.ParseException;
@@ -36,18 +39,29 @@ public class CouponServiceImpl implements CouponService {
 
     @Autowired
     MyCouponRepository myCouponRepository;
+
+    @Autowired
+    GoodsRepository goodsRepository;
     /**
      *  发券
      * @param accountId 用户id
-
-     * @param couponTemplateId   优惠券模板ID
+     * @param goodsId   商品ID
      */
 
     @Override
     @Transactional
-    public MyCoupon sendCoupon(String accountId ,String couponTemplateId) {
+    public MyCoupon sendCoupon(String accountId ,String goodsId) {
         logger.info("----开始发放优惠券----accountId: "+accountId);
-        CouponTemplate couponTemplate=couponTemplateRepository.findOne(couponTemplateId);
+        Goods goods=goodsRepository.findOne(goodsId);
+        if(goods==null){
+            logger.info("----查询商品不存在----goodsId: "+goodsId);
+            return  null;
+        }
+        if(StringUtils.isEmpty(goods.getCouponTempletId())){
+            logger.info("----打折商品 不赠券----goodsId: "+goodsId);
+            return  null;
+        }
+        CouponTemplate couponTemplate=couponTemplateRepository.findOne(goods.getCouponTempletId());
         MyCoupon coupon = new MyCoupon();
         coupon.setCreatedAt(new Date());
         coupon.setAccountId(accountId);

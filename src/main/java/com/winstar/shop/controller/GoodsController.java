@@ -60,28 +60,17 @@ public class GoodsController {
         if(StringUtils.isEmpty(activity.getGoods())){
             throw new NotFoundException("this activity has no goods");
         }
-
         JSONArray array=JSONArray.parseArray(activity.getGoods());
-        JSONArray jsonArray=new JSONArray();
-        for(int i=0;i<array.size();i++){
-            jsonArray.add( array.get(i).toString());
-        }
-//        List<Goods> list=goodsRepository.findByIdIn(jsonArray);
-//        System.out.println(list.size());
-
         Sort sorts = new Sort(Sort.Direction.DESC, "createTime");
         Pageable pageable = new PageRequest(pageNumber - 1, pageSize, sorts);
         Page<Goods> page = goodsRepository.findAll(new Specification<Goods>() {
             public Predicate toPredicate(Root<Goods> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
                 List<Predicate> list = new ArrayList<Predicate>();
-                CriteriaBuilder.In<String> in = cb.in(root.get("id"));
-                for(int i=0;i<array.size();i++){
-                    in.value(array.getString(i));
-                }
-                cb.and(in);
+                Predicate in = root.get("id").in(array);
                 list.add(cb.equal(root.<Integer>get("status"), 1));
+                list.add(in);
                 Predicate[] p = new Predicate[list.size()];
-                return cb.and(list.toArray(p));
+              return cb.and(list.toArray(p));
             }
         }, pageable);
         if(page.getContent().size()==0){
