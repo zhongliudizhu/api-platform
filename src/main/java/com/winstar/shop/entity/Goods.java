@@ -15,7 +15,7 @@ import java.util.Date;
 /**
  * 名称： Goods
  * 作者： sky
- * 日期： 2017private12private12 9:22
+ * 日期： 2017-12-12 9:22
  * 描述： 商品实体
  **/
 @Getter
@@ -23,7 +23,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "goods")
+@Table(name = "cbc_goods")
 public class Goods {
 
     /**
@@ -62,8 +62,13 @@ public class Goods {
      */
     private String coupons;
     /**
-     * 赠送商品规则 [1，2]
+     * 赠送商品 或 折扣
      */
-    private String rules;
+    private String rebateOrGoodsID;
+
+    /**
+     * 类型 1 折中折 2 赠券
+     */
+    private Integer type;
 
 }

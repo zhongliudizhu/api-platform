@@ -15,7 +15,7 @@ import java.util.Date;
 /**
  * 名称： Activity
  * 作者： sky
- * 日期： 2017private12private12 9:30
+ * 日期： 2017-12-12 9:30
  * 描述： 活动实体
  **/
 @Getter
@@ -23,7 +23,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "activity")
+@Table(name = "cbc_activity")
 public class Activity {
 
     /**
@@ -54,10 +54,6 @@ public class Activity {
      * 启用状态 0 未启用 1 已启用
      */
    private Integer status;
-    /**
-     * 活动规则
-     */
-   private String rules;
     /**
      * 商品 [1,2,3] JSONArray
      */

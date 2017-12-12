@@ -1,6 +1,10 @@
 package com.winstar.coupon.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -12,8 +16,12 @@ import java.util.Date;
  * 创建时间: 2017-09-08 下午1:58
  * 功能描述: 优惠券
  */
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "marketing_coupon")
+@Table(name = "cbc_coupon")
 @JsonIgnoreProperties(value={"showStatus","couponTemplateId","useRule"})
 public class Coupon {
     @Id
@@ -81,131 +89,5 @@ public class Coupon {
      */
     private String description;
 
-    public String getId() {
-        return id;
-    }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public Double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(Double amount) {
-        this.amount = amount;
-    }
-
-    public Double getDiscountRate() {
-        return discountRate;
-    }
-
-    public void setDiscountRate(Double discountRate) {
-        this.discountRate = discountRate;
-    }
-
-    public Double getLimitDiscountAmount() {
-        return limitDiscountAmount;
-    }
-
-    public void setLimitDiscountAmount(Double limitDiscountAmount) {
-        this.limitDiscountAmount = limitDiscountAmount;
-    }
-
-    public Date getValidBeginAt() {
-        return validBeginAt;
-    }
-
-    public void setValidBeginAt(Date validBeginAt) {
-        this.validBeginAt = validBeginAt;
-    }
-
-    public Date getValidEndAt() {
-        return validEndAt;
-    }
-
-    public void setValidEndAt(Date validEndAt) {
-        this.validEndAt = validEndAt;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Integer getShowStatus() {
-        return showStatus;
-    }
-
-    public void setShowStatus(Integer showStatus) {
-        this.showStatus = showStatus;
-    }
-
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
-
-    public String getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
-
-    public String getCouponTemplateId() {
-        return couponTemplateId;
-    }
-
-    public void setCouponTemplateId(String couponTemplateId) {
-        this.couponTemplateId = couponTemplateId;
-    }
-
-    public String getUseRule() {
-        return useRule;
-    }
-
-    public void setUseRule(String useRule) {
-        this.useRule = useRule;
-    }
-
-    public Date getUseDate() {
-        return useDate;
-    }
-
-    public void setUseDate(Date useDate) {
-        this.useDate = useDate;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
 }

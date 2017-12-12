@@ -28,7 +28,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "my_coupon")
+@Table(name = "cbc_my_coupon")
 public class MyCoupon {
     /**
      * 唯一标识
