@@ -29,16 +29,18 @@ class Goods {
    - String descriptions; 商品描述
    - Integer status; 商品状态 0 已下架 1 已上架
    - String createTime; 创建时间
-   - String coupons; 商品详情[面值：数量] JSON
+   - String couponDetail; 商品详情[面值：数量] JSON
+   - String couponTempletId; 赠送商品
+   - Double disCount; 折扣
 }
 class Activity {
    - String id;
    - String name; 活动名称
    - Date createTime; 创建时间
    - Date beginTime; 活动开始时间
-   - Date endTime; 活动结束时间
+   - Date endTime; In
    - Integer status; 启用状态 0 已启用 1 未启用
-   - String rules; 活动规则 {json}
+   - String type; 活动规则  活动类型 1 折中折 2 赠券
    - String goods; 商品 [1,2,3] JSONArray
 }
 class MyOilCoupon {

@@ -57,7 +57,7 @@ public class Activity {
     /**
      * 活动类型 1 折中折 2 赠券
      */
-    private String type;
+    private Integer type;
     /**
      * 商品 [1,2,3] JSONArray
      */
