@@ -12,5 +12,4 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
  **/
 public interface ActivityRepository extends JpaSpecificationExecutor<Activity>,JpaRepository<Activity,String> {
 
-
 }
