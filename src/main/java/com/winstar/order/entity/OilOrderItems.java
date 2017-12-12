@@ -1,5 +1,9 @@
 package com.winstar.order.entity;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -8,8 +12,12 @@ import javax.persistence.*;
  * @author shoo on 2017/7/6 16:50.
  *         -- 订单项 --
  */
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
 @Entity
-@Table(name = "oil_orderitems")
+@Table(name = "cbc_oil_orderitems")
 public class OilOrderItems {
     @Id
     @GenericGenerator(name = "idGenerator", strategy = "uuid")
@@ -62,109 +70,5 @@ public class OilOrderItems {
     @Column(length = 5000)
     private String goodsMsg;
 
-    public String getId() {
-        return id;
-    }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getProperty() {
-        return property;
-    }
-
-    public void setProperty(String property) {
-        this.property = property;
-    }
-
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
-
-    public Double getUnitPrice() {
-        return unitPrice;
-    }
-
-    public void setUnitPrice(Double unitPrice) {
-        this.unitPrice = unitPrice;
-    }
-
-    public Integer getAmount() {
-        return amount;
-    }
-
-    public void setAmount(Integer amount) {
-        this.amount = amount;
-    }
-
-    public Double getFavourable() {
-        return favourable;
-    }
-
-    public void setFavourable(Double favourable) {
-        this.favourable = favourable;
-    }
-
-    public String getSellerId() {
-        return sellerId;
-    }
-
-    public void setSellerId(String sellerId) {
-        this.sellerId = sellerId;
-    }
-
-    public String getOrderSerialNo() {
-        return orderSerialNo;
-    }
-
-    public void setOrderSerialNo(String orderSerialNo) {
-        this.orderSerialNo = orderSerialNo;
-    }
-
-    public Integer getItemType() {
-        return itemType;
-    }
-
-    public void setItemType(Integer itemType) {
-        this.itemType = itemType;
-    }
-
-    public String getGoodsMsg() {
-        return goodsMsg;
-    }
-
-    public void setGoodsMsg(String goodsMsg) {
-        this.goodsMsg = goodsMsg;
-    }
-
-
-    @Override
-    public String toString() {
-        return "OilOrderItems{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", property='" + property + '\'' +
-                ", status=" + status +
-                ", unitPrice=" + unitPrice +
-                ", amount=" + amount +
-                ", favourable=" + favourable +
-                ", sellerId='" + sellerId + '\'' +
-                ", orderSerialNo='" + orderSerialNo + '\'' +
-                ", itemType=" + itemType +
-                ", goodsMsg='" + goodsMsg + '\'' +
-                '}';
-    }
 }
