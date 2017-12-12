@@ -31,7 +31,6 @@ class Goods {
    - String createTime; 创建时间
    - String coupons; 商品详情[面值：数量] JSON
 }
-
 class Activity {
    - String id;
    - String name; 活动名称
