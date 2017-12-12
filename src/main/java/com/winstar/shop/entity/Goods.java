@@ -64,7 +64,7 @@ public class Goods {
     /**
      * 赠送商品 或 折扣
      */
-    private String rebateOrCouponTempletID;
+    private String rebateOrCouponTempletId;
 
     /**
      * 类型 1 折中折 2 赠券
