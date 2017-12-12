@@ -1,6 +1,6 @@
-package com.winstar.coupon.repository;
+package com.winstar.oil.repository;
 
-import com.winstar.coupon.entity.OilCoupon;
+import com.winstar.oil.entity.OilCoupon;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 

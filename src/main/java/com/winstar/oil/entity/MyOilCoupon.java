@@ -1,4 +1,4 @@
-package com.winstar.coupon.entity;
+package com.winstar.oil.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,19 +13,18 @@ import javax.persistence.Table;
 import java.util.Date;
 
 /**
- * 名称： OilCouponSearchLog
+ * 名称： MyOilCoupon
  * 作者： sky
- * 日期： 2017private12private12 9:19
- * 描述： 油券查看记录
+ * 日期： 2017private12private12 9:25
+ * 描述： 我的油券
  **/
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "oil_coupon_search_log")
-public class OilCouponSearchLog {
-
+@Table(name = "my_oil_coupon")
+public class MyOilCoupon {
     /**
      * 唯一标识
      */
@@ -33,25 +32,22 @@ public class OilCouponSearchLog {
     @GenericGenerator(name = "idGenerator", strategy = "uuid")
     @GeneratedValue(generator = "idGenerator")
     private String id;
+
     /**
-     * 账号ID
-     */
-    private String accountId;
-    /**
-     * 订单ID
-     */
-    private String orderId;
-    /**
-     * 查看时间
+     * 创建日期
      */
     private Date createTime;
     /**
-     * 油卡编号
+     * 订单编号
      */
-    private String pan;
+    private String orderId;
     /**
-     * ip地址
+     * 用户Id
      */
-    private String ip;
+    private String accountId;
+    /**
+     * 商品Id
+     */
+    private String goodId;
 
 }

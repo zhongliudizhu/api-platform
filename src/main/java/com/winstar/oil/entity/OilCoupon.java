@@ -1,4 +1,4 @@
-package com.winstar.coupon.entity;
+package com.winstar.oil.entity;
 
 
 import lombok.AllArgsConstructor;
