@@ -5,14 +5,11 @@ import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderItemsRepository;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.OilOrderUtil;
-import com.winstar.order.vo.ResponseVo;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +18,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
-
-import static java.util.stream.Collectors.toList;
+import java.util.Map;
 
 /**
  * @author shoo on 2017/7/7 13:52.
@@ -35,37 +30,8 @@ public class OilOrderController {
     public static final Logger logger = LoggerFactory.getLogger(OilOrderController.class);
     @Autowired
     private OilOrderRepository orderRepository;
-    @Autowired
-    private OilOrderItemsRepository oilOrderItemsRepository;
-    @Value("${api.oilOrder.getGoods.url}")
-    private String getGoodsUrl;
-    @Value("${api.oilOrder.getAccount.url}")
-    private String getAccountUrl;
-    @Value("${api.order.updateOilOrder.url}")
-    private  String backUrl;
-    @Value("${money.environment}")
-    private Integer moneyEnvironment;
-    @Value("${api.oilOrder.getRule.url}")
-    private String getRuleUrl;
-    @Value("${api.secKill.getReceiveParam}")
-    private String getReceiveParamUrl;
-    @Value("${api.order.getCertificate.url}")
-    private String getCertificateNumUrl;
-    @Value("${api.order.giveCoupon.url}")
-    private String giveCouponUrl;
-    @Value("${api.getCouponDetail.url}")
-    private String getCouponDetailUrl;
-    @Value("${api.consumeCoupon.url}")
-    private String consumeCouponUrl;
-    @Value("${api.getSendAddress.url}")
-    private String sendAddressUrl;
-    @Value("${oilorder.blacklist}")
-    private String blacklist;
-    @Value("${oilorder.blacklist.describe}")
-    private String blacklistDescribe;
 
-    @Autowired
-    private ApplicationEventPublisher publish;
+
 
     /**
      * 添加油券订单
