@@ -10,11 +10,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Date;
 
 /**
  * 名称： Goods
  * 作者： sky
- * 日期： 2017private12private12 9:22
+ * 日期： 2017-12-12 9:22
  * 描述： 商品实体
  **/
 @Getter
@@ -22,7 +23,7 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "goods")
+@Table(name = "cbc_goods")
 public class Goods {
 
     /**
@@ -45,6 +46,10 @@ public class Goods {
      */
     private Double price;
     /**
+     * 商品售价
+     */
+    private Double saledPrice;
+    /**
      * 商品描述
      */
     private String descriptions;
@@ -55,10 +60,18 @@ public class Goods {
     /**
      * 创建时间
      */
-    private String createTime;
+    private Date createTime;
     /**
-     * 商品详情[面值：数量] JSON
+     * 商品详情[面值：数量]
      */
-    private String coupons;
+    private String couponDetail;
+    /**
+     * 赠送商品
+     */
+    private String couponTempletId;
+    /**
+     * 折扣
+     */
+    private Double disCount;
 
 }

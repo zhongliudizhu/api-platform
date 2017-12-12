@@ -23,7 +23,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "activity")
+@Table(name = "cbc_activity")
 public class Activity {
 
     /**
@@ -43,24 +43,25 @@ public class Activity {
      */
    private Date createTime;
     /**
-     * 活动开始时间
-     */
-   private Date beginTime;
+    * 活动开始时间
+    */
+    private Date beginTime;
     /**
      * 活动结束时间
      */
-   private Date endTime;
+    private Date endTime;
     /**
-     * 启用状态 0 已启用 1 未启用
+     * 启用状态 0 未启用 1 已启用
      */
-   private Integer status;
+    private Integer status;
     /**
-     * 活动规则
+     * 活动类型 1 折中折 2 赠券
      */
-   private String rules;
+    private String type;
     /**
      * 商品 [1,2,3] JSONArray
      */
    private String goods;
+
 
 }
