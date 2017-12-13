@@ -4,6 +4,8 @@ import com.winstar.coupon.entity.MyCoupon;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.List;
+
 /**
  * 名称： MyCouponRepository
  * 作者： sky
@@ -12,5 +14,5 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
  **/
 public interface MyCouponRepository extends JpaRepository<MyCoupon,String> ,JpaSpecificationExecutor<MyCoupon>{
 
-
+    List<MyCoupon> findByAccountId(String accountId);
 }

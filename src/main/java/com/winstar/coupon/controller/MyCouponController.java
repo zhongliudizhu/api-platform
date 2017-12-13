@@ -2,6 +2,7 @@ package com.winstar.coupon.controller;
 
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
+import com.winstar.coupon.service.CouponService;
 import com.winstar.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,9 @@ public class MyCouponController {
     @Autowired
     MyCouponRepository myCouponRepository;
 
+    @Autowired
+    CouponService couponService;
+
 
     @RequestMapping(value = "/query", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -45,6 +49,7 @@ public class MyCouponController {
             @RequestParam(defaultValue = "5") Integer pageSize
     )throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
 
+        couponService.checkExpired(accountId);
         if(StringUtils.isEmpty(accountId)){
             throw new MissingParameterException("accountId");
         }
@@ -68,6 +73,20 @@ public class MyCouponController {
         }
 
         return page.getContent();
+    }
+
+    /**
+     * 发券
+     * @param accountId
+     * @param activityId
+     * @param goodsId
+     * @return MyCoupon
+     */
+    @RequestMapping(value = "/sendCoupon", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public MyCoupon sendCoupon(String accountId,String activityId,String goodsId){
+        MyCoupon myCoupon=couponService.sendCoupon(accountId,activityId,goodsId);
+        return myCoupon;
     }
 
 }
