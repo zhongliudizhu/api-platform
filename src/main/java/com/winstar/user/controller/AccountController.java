@@ -16,7 +16,7 @@ import java.util.Date;
  * @author laohu
  **/
 @RestController
-@RequestMapping("/api/v1/cbc/accountInfo")
+@RequestMapping("/api/v1/cbc/account")
 public class AccountController {
 
     /**
