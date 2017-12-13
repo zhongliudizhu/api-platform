@@ -34,7 +34,7 @@ public class AccountService {
      * @throws NotRuleException NotRuleException
      */
     public String getAccountId(HttpServletRequest request) throws NotRuleException {
-        Object obj = request.getHeader("accountId");
+        Object obj = request.getAttribute("accountId");
         if (null == obj) throw new NotRuleException("accountId");
         return obj.toString();
     }
