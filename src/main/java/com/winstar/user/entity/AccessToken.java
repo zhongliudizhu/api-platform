@@ -17,7 +17,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "CBC_USER_PAGE_ACCESS_TOKEN")
+@Table(name = "CBC_USER_ACCESS_TOKEN")
 public class AccessToken {
     @Id
     @GenericGenerator(name = "idGenerator", strategy = "uuid")
