@@ -57,9 +57,10 @@ public interface CouponService {
     MyCoupon cancelMyCoupon(String id);
 
     /**
-     * 查询我可用的优惠券
+     * 查询当前金额可用的优惠券
      *
      * @param accountId 用户ID
+     * @param money 金额
      * @return MyCoupon
      */
     List<MyCoupon> findMyUsableCoupon(String accountId, Double money);
