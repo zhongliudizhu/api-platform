@@ -57,7 +57,7 @@ public interface CouponService {
      * @param accountId
      * @return
      */
-    List<MyCoupon> findMyUsableCoupon(String accountId);
+    List<MyCoupon> findMyUsableCoupon(String accountId,Double money);
 
     /**
      * 查询优惠券详情
