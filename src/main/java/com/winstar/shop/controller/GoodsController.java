@@ -55,7 +55,7 @@ public class GoodsController {
             HttpServletRequest request,
             String  activityId,
             @RequestParam(defaultValue = "1") Integer pageNumber,
-            @RequestParam(defaultValue = "5") Integer pageSize
+            @RequestParam(defaultValue = "10") Integer pageSize
     )throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
 
         if(StringUtils.isEmpty(activityId)){
