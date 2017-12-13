@@ -15,7 +15,7 @@ import java.util.Date;
 /**
  * 名称： OilCouponSearchLog
  * 作者： sky
- * 日期： 2017private12private12 9:19
+ * 日期： 2017-12-12 9:19
  * 描述： 油券查看记录
  **/
 @Getter
@@ -23,7 +23,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "oil_coupon_search_log")
+@Table(name = "cbc_oil_coupon_search_log")
 public class OilCouponSearchLog {
 
     /**

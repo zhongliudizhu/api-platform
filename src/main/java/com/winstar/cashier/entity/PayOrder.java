@@ -1,21 +1,25 @@
 package com.winstar.cashier.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.Date;
 
 /**
  * 支付订单
- *
- * @author wanghaibo
+ * @author zl
  */
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "CASHIER_PAY_ORDER")
-public class PayOrder implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+@Table(name = "CBC_PAY_ORDER")
+public class PayOrder{
 
     @Id
     @GenericGenerator(name = "idGenerator", strategy = "uuid")
@@ -146,192 +150,4 @@ public class PayOrder implements Serializable {
     @Column(length = 3)
     private String subPayWay;
 
-    public String getConsumerType() {
-        return consumerType;
-    }
-
-    public void setConsumerType(String consumerType) {
-        this.consumerType = consumerType;
-    }
-
-    public String getOrderNumber() {
-        return orderNumber;
-    }
-
-    public void setOrderNumber(String orderNumber) {
-        this.orderNumber = orderNumber;
-    }
-
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getOrderAmount() {
-        return orderAmount;
-    }
-
-    public void setOrderAmount(String orderAmount) {
-        this.orderAmount = orderAmount;
-    }
-
-    public String getPayAmount() {
-        return payAmount;
-    }
-
-    public void setPayAmount(String payAmount) {
-        this.payAmount = payAmount;
-    }
-
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Date getUpdaedAt() {
-        return updaedAt;
-    }
-
-    public void setUpdaedAt(Date updaedAt) {
-        this.updaedAt = updaedAt;
-    }
-
-    public Date getOrderTime() {
-        return orderTime;
-    }
-
-    public void setOrderTime(Date orderTime) {
-        this.orderTime = orderTime;
-    }
-
-    public String getPayType() {
-        return payType;
-    }
-
-    public void setPayType(String payType) {
-        this.payType = payType;
-    }
-
-    public String getCustomerIp() {
-        return customerIp;
-    }
-
-    public void setCustomerIp(String customerIp) {
-        this.customerIp = customerIp;
-    }
-
-    public String getDefaultBankNumber() {
-        return defaultBankNumber;
-    }
-
-    public void setDefaultBankNumber(String defaultBankNumber) {
-        this.defaultBankNumber = defaultBankNumber;
-    }
-
-    public String getQid() {
-        return qid;
-    }
-
-    public void setQid(String qid) {
-        this.qid = qid;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public String getOrderCurrency() {
-        return orderCurrency;
-    }
-
-    public void setOrderCurrency(String orderCurrency) {
-        this.orderCurrency = orderCurrency;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
-    }
-
-    public String getCallUrl() {
-        return callUrl;
-    }
-
-    public void setCallUrl(String callUrl) {
-        this.callUrl = callUrl;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public String getPayOrderNumber() {
-        return payOrderNumber;
-    }
-
-    public void setPayOrderNumber(String payOrderNumber) {
-        this.payOrderNumber = payOrderNumber;
-    }
-
-    public Integer getOrderState() {
-        return orderState;
-    }
-
-    public void setOrderState(Integer orderState) {
-        this.orderState = orderState;
-    }
-
-    public Integer getPayWay() {
-        return payWay;
-    }
-
-    public void setPayWay(Integer payWay) {
-        this.payWay = payWay;
-    }
-
-    public String getCheckState() {
-        return checkState;
-    }
-
-    public void setCheckState(String checkState) {
-        this.checkState = checkState;
-    }
-
-    public String getOrderOwner() {
-        return orderOwner;
-    }
-
-    public void setOrderOwner(String orderOwner) {
-        this.orderOwner = orderOwner;
-    }
-
-    public String getSubPayWay() {
-        return subPayWay;
-    }
-
-    public void setSubPayWay(String subPayWay) {
-        this.subPayWay = subPayWay;
-    }
 }
