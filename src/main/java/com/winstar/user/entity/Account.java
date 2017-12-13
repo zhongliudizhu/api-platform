@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -52,10 +53,10 @@ public class Account {
     /**
      * 创建时间
      */
-    private String createTime;
+    private Date createTime;
     /**
      * 最后修改时间
      */
-    private String updateTime;
+    private Date updateTime;
 
 }
