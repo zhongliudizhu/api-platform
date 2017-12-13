@@ -70,9 +70,7 @@ public class GoodsController {
             @RequestParam(defaultValue = "10") Integer pageSize
     ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
 
-        if (StringUtils.isEmpty(activityId)) {
-            throw new MissingParameterException("activityId");
-        }
+        if (StringUtils.isEmpty(activityId)) throw new MissingParameterException("activityId");
         String accountId = accountService.getAccountId(request);
         PageViewLog log = new PageViewLog();
         log.setCreateTime(new Date());
@@ -81,12 +79,8 @@ public class GoodsController {
         log.setUrl(request.getRequestURI());
         ServiceManager.pageViewLogService.savePageViewLog(log);
         Activity activity = activityRepository.findOne(activityId);
-        if (activity.getStatus() == 0) {
-            throw new NotFoundException("this activity is closed");
-        }
-        if (StringUtils.isEmpty(activity.getGoods())) {
-            throw new NotFoundException("this activity has no goods");
-        }
+        if (activity.getStatus() == 0)  throw new NotFoundException("this activity is closed");
+        if (StringUtils.isEmpty(activity.getGoods()))  throw new NotFoundException("this activity has no goods");
         JSONArray array = JSONArray.parseArray(activity.getGoods());
         Sort sorts = new Sort(Sort.Direction.DESC, "createTime");
         Pageable pageable = new PageRequest(pageNumber - 1, pageSize, sorts);
@@ -100,9 +94,7 @@ public class GoodsController {
                 return cb.and(list.toArray(p));
             }
         }, pageable);
-        if (page.getContent().size() == 0) {
-            throw new NotFoundException("goods");
-        }
+        if (page.getContent().size() == 0)  throw new NotFoundException("goods");
         return page.getContent();
     }
 

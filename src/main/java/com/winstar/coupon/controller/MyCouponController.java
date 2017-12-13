@@ -68,9 +68,7 @@ public class MyCouponController {
 
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
-        if (StringUtils.isEmpty(accountId)) {
-            throw new NotRuleException("accountId");
-        }
+        if (StringUtils.isEmpty(accountId))  throw new NotRuleException("accountId");
         Sort sorts = new Sort(Sort.Direction.DESC, "createdAt");
         Pageable pageable = new PageRequest(pageNumber - 1, pageSize, sorts);
         Page<MyCoupon> page = myCouponRepository.findAll(new Specification<MyCoupon>() {
@@ -86,9 +84,7 @@ public class MyCouponController {
                 return cb.and(list.toArray(p));
             }
         }, pageable);
-        if (page.getContent().size() == 0) {
-            throw new NotFoundException("mycoupon");
-        }
+        if (page.getContent().size() == 0) throw new NotFoundException("mycoupon");
 
         return page.getContent();
     }
@@ -96,8 +92,8 @@ public class MyCouponController {
     /**
      * 发券
      *
-     * @param activityId
-     * @param goodsId
+     * @param activityId 活动ID
+     * @param goodsId 商品ID
      * @return MyCoupon
      */
     @RequestMapping(value = "/sendCoupon", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -129,17 +125,12 @@ public class MyCouponController {
     public List<MyCoupon> findMyUsableCoupon(
             HttpServletRequest request,
             Double money
-
     ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
-        if (StringUtils.isEmpty(money)) {
-            throw new MissingParameterException("money");
-        }
+        if (StringUtils.isEmpty(money))  throw new MissingParameterException("money");
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
         List<MyCoupon> list = couponService.findMyUsableCoupon(accountId, money);
-        if (list.size() == 0) {
-            throw new NotFoundException("mycoupon");
-        }
+        if (list.size() == 0) throw new NotFoundException("mycoupon");
         return list;
     }
 
