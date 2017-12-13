@@ -44,6 +44,14 @@ public interface CouponService {
      */
     MyCoupon useCoupon(String id);
 
+
+    /**
+     * 撤销已用的优惠券
+     * @param id 优惠券Id
+     * @return
+     */
+    MyCoupon cancelMyCoupon(String id);
+
     /**
      * 查询我可用的优惠券
      * @param accountId
@@ -57,4 +65,5 @@ public interface CouponService {
      * @return
      */
     MyCoupon findMyCouponById(String id);
+
 }

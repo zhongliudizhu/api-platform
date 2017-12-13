@@ -66,7 +66,7 @@ public class Goods {
      */
     private String couponDetail;
     /**
-     * 赠送商品
+     * 赠送优惠券
      */
     private String couponTempletId;
     /**

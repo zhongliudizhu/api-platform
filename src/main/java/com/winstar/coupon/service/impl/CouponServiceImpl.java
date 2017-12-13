@@ -142,4 +142,14 @@ public class CouponServiceImpl implements CouponService {
     public MyCoupon findMyCouponById(String id) {
         return myCouponRepository.findOne(id);
     }
+
+    @Override
+    public MyCoupon cancelMyCoupon(String id) {
+        MyCoupon myCoupon=myCouponRepository.findOne(id);
+        myCoupon.setUseDate(null);
+        myCoupon.setStatus(0);
+        MyCoupon coupon=myCouponRepository.save(myCoupon);
+
+        return null;
+    }
 }
