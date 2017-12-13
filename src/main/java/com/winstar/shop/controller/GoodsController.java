@@ -7,6 +7,9 @@ import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.ActivityRepository;
 import com.winstar.shop.repository.GoodsRepository;
+import com.winstar.user.entity.PageViewLog;
+import com.winstar.user.service.AccountService;
+import com.winstar.user.utils.ServiceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +25,9 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -40,10 +45,14 @@ public class GoodsController {
 
     @Autowired
     ActivityRepository activityRepository;
+    @Autowired
+    AccountService accountService;
+
 
     @RequestMapping(value = "/query", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<Goods> query(
+            HttpServletRequest request,
             String  activityId,
             @RequestParam(defaultValue = "1") Integer pageNumber,
             @RequestParam(defaultValue = "5") Integer pageSize
@@ -52,7 +61,13 @@ public class GoodsController {
         if(StringUtils.isEmpty(activityId)){
             throw new MissingParameterException("activityId");
         }
-
+        String  accountId=accountService.getAccountId(request);
+        PageViewLog log=new PageViewLog();
+            log.setCreateTime(new Date());
+            log.setAccountId(accountId);
+            log.setActivityId(activityId);
+            log.setUrl(request.getRequestURI());
+        ServiceManager.pageViewLogService.savePageViewLog(log);
         Activity activity=activityRepository.findOne(activityId);
         if(activity.getStatus()==0){
             throw new NotFoundException("this activity is closed");

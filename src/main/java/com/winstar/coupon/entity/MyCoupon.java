@@ -94,9 +94,9 @@ public class MyCoupon {
 
 
     /**
-     * 使用规则表达式
+     * 使用规则表达式 满多少元可用
      */
-    private String useRule;
+    private Double useRule;
 
     private String name;
 

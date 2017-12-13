@@ -23,7 +23,7 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "oil_coupon")
+@Table(name = "cbc_oil_coupon")
 public class OilCoupon {
 
     /**

@@ -6,11 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import java.util.Date;
+import javax.persistence.*;
 
 /**
  * 名称： MyOilCoupon
@@ -23,31 +19,79 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "my_oil_coupon")
+@Table(name = "cbc_my_oil_coupon")
 public class MyOilCoupon {
-    /**
-     * 唯一标识
-     */
     @Id
     @GenericGenerator(name = "idGenerator", strategy = "uuid")
     @GeneratedValue(generator = "idGenerator")
+    @Column(length = 32)
     private String id;
 
     /**
-     * 创建日期
+     * 加油券编号
      */
-    private Date createTime;
+    private String pan;
+
     /**
-     * 订单编号
+     * 电子券金额
      */
-    private String orderId;
+    private Double panAmt;
+
+    /**
+     * 生效日期
+     */
+    private String openDate;
+
+    /**
+     * 失效日期
+     */
+    private String endDate;
+
     /**
      * 用户Id
      */
     private String accountId;
+
+    /**
+     * 订单编号
+     */
+    private String orderId;
+
     /**
      * 商品Id
      */
-    private String goodId;
+    private String shopId;
+
+    /**
+     * 分期套餐原价
+     */
+    private Double shopPrice;
+
+    /**
+     * 创建日期
+     */
+    private String createTime;
+
+    /**
+     * 使用状态 0：未使用、1：已使用
+     */
+    private String useState;
+
+    /**
+     * 使用时间
+     */
+    private String useDate;
+
+    /**
+     * 使用的加油站Id
+     */
+    @Column(length = 30)
+    private String tId;
+
+    /**
+     * 赠送状态 0：正常 1：已赠送待领取
+     */
+    @Column(length = 1)
+    private String sendState;
 
 }

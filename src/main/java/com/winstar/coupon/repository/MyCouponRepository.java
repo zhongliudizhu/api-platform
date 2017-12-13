@@ -15,4 +15,6 @@ import java.util.List;
 public interface MyCouponRepository extends JpaRepository<MyCoupon,String> ,JpaSpecificationExecutor<MyCoupon>{
 
     List<MyCoupon> findByAccountId(String accountId);
+
+    List<MyCoupon> findByAccountIdAndStatusAndUseRuleGreaterThanEqual(String accountId,Integer status,Double rules);
 }

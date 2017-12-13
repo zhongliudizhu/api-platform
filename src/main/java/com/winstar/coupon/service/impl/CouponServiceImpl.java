@@ -111,6 +111,7 @@ public class CouponServiceImpl implements CouponService {
         for(MyCoupon coupon:list){
             if(coupon.getValidEndAt()!=null && coupon.getValidEndAt().getTime()<now.getTime()){
                 coupon.setStatus(2);
+                logger.info("----处理过期券----MyCouponId: "+coupon.getId()+" 已过期");
                 myCouponRepository.save(coupon);
             }
         }
@@ -120,5 +121,35 @@ public class CouponServiceImpl implements CouponService {
     @Override
     public List<MyCoupon> findMyCoupon(String accountId) {
         return myCouponRepository.findByAccountId(accountId);
+    }
+
+    @Override
+    public MyCoupon useCoupon(String id) {
+        MyCoupon myCoupon=myCouponRepository.findOne(id);
+        myCoupon.setUseDate(new Date());
+        myCoupon.setStatus(1);
+        MyCoupon coupon=myCouponRepository.save(myCoupon);
+        return coupon;
+    }
+
+    @Override
+    public List<MyCoupon> findMyUsableCoupon(String accountId,Double money) {
+
+        return myCouponRepository.findByAccountIdAndStatusAndUseRuleGreaterThanEqual(accountId,0,money);
+    }
+
+    @Override
+    public MyCoupon findMyCouponById(String id) {
+        return myCouponRepository.findOne(id);
+    }
+
+    @Override
+    public MyCoupon cancelMyCoupon(String id) {
+        MyCoupon myCoupon=myCouponRepository.findOne(id);
+        myCoupon.setUseDate(null);
+        myCoupon.setStatus(0);
+        MyCoupon coupon=myCouponRepository.save(myCoupon);
+
+        return null;
     }
 }

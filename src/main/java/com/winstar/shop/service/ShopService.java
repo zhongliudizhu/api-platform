@@ -15,23 +15,23 @@ public interface ShopService {
 
     /**
      * 查询活动
-     * @param id
+     * @param id 活动Id
      * @return
      */
     Activity findByActivityId(String id);
 
     /**
      * 查询商品
-     * @param id
+     * @param id 商品ID
      * @return
      */
     Goods findByGoodsId(String id);
 
     /**
-     * 查询活动详情
-     * @param id
+     * 查询活动详情 包含商品
+     * @param id 活动Id
      * @return
      */
-    Activity findByDetailId(String id);
+    Activity findActivityDetailById(String id);
 
 }

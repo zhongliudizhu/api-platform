@@ -4,6 +4,7 @@ import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.exception.*;
+import com.winstar.user.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +20,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,19 +41,36 @@ public class MyCouponController {
     @Autowired
     CouponService couponService;
 
+    @Autowired
+    AccountService accountService;
 
+
+    /**
+     *  商品列表
+     * @param request
+     * @param status 状态 0 未使用 1 已使用 2 已失效
+     * @param pageNumber 默认 1
+     * @param pageSize  默认 5
+     * @return
+     * @throws MissingParameterException
+     * @throws InvalidParameterException
+     * @throws NotRuleException
+     * @throws NotFoundException
+     * @throws ServiceUnavailableException
+     */
     @RequestMapping(value = "/query", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<MyCoupon> query(
-            String  accountId,
+            HttpServletRequest request,
             @RequestParam(defaultValue = "0") Integer status,
             @RequestParam(defaultValue = "1") Integer pageNumber,
             @RequestParam(defaultValue = "5") Integer pageSize
     )throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
 
+        String  accountId=accountService.getAccountId(request);
         couponService.checkExpired(accountId);
         if(StringUtils.isEmpty(accountId)){
-            throw new MissingParameterException("accountId");
+            throw new NotRuleException("accountId");
         }
         Sort sorts = new Sort(Sort.Direction.DESC, "createdAt");
         Pageable pageable = new PageRequest(pageNumber - 1, pageSize, sorts);
@@ -77,16 +96,46 @@ public class MyCouponController {
 
     /**
      * 发券
-     * @param accountId
      * @param activityId
      * @param goodsId
      * @return MyCoupon
      */
     @RequestMapping(value = "/sendCoupon", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public MyCoupon sendCoupon(String accountId,String activityId,String goodsId){
+    public MyCoupon sendCoupon(HttpServletRequest request,String activityId,String goodsId)throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
+        String  accountId=accountService.getAccountId(request);
         MyCoupon myCoupon=couponService.sendCoupon(accountId,activityId,goodsId);
         return myCoupon;
+    }
+
+    /**
+     * 查询我可用的优惠券
+     * @param request
+     * @param money 金额
+     * @return
+     * @throws MissingParameterException
+     * @throws InvalidParameterException
+     * @throws NotRuleException
+     * @throws NotFoundException
+     * @throws ServiceUnavailableException
+     */
+    @RequestMapping(value = "/findMyUsableCoupon", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public List<MyCoupon> findMyUsableCoupon(
+            HttpServletRequest request,
+            Double money
+
+    )throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
+        if(StringUtils.isEmpty(money)){
+            throw new MissingParameterException("money");
+        }
+        String  accountId=accountService.getAccountId(request);
+        couponService.checkExpired(accountId);
+        List<MyCoupon> list=couponService.findMyUsableCoupon(accountId,money);
+        if(list.size()==0){
+            throw new NotFoundException("mycoupon");
+        }
+        return list;
     }
 
 }

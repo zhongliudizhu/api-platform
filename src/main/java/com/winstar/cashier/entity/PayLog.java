@@ -1,14 +1,23 @@
 package com.winstar.cashier.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.util.Date;
 
 /**
  * 支付日志记录
- * @author wanghaibo
+ * @author zl
  */
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name="CASHIER_PAY_LOG")
+@Table(name="CBC_PAY_LOG")
 public class PayLog {
 
     @Id
@@ -81,126 +90,4 @@ public class PayLog {
     @Column(name = "payAmount",length = 12)
     private String payAmount;
 
-    public PayLog(){}
-
-    public PayLog(String orderNumber,String orderAmount,String customerIp,String applyUrl,String reqInfo,String code,String message){
-        this.orderNumber = orderNumber;
-        this.orderAmount = orderAmount;
-        this.createdAt = new Date();
-        this.customerIp = customerIp;
-        this.applyUrl = applyUrl;
-        this.reqInfo = reqInfo;
-        this.code = code;
-        this.message = message;
-    }
-
-    public PayLog(String orderNumber,String orderAmount,String customerIp,String applyUrl,String reqInfo,String code,String message,String payAmount,String qid,String respInfo){
-        this.orderNumber = orderNumber;
-        this.orderAmount = orderAmount;
-        this.createdAt = new Date();
-        this.customerIp = customerIp;
-        this.applyUrl = applyUrl;
-        this.reqInfo = reqInfo;
-        this.code = code;
-        this.message = message;
-        this.payAmount = payAmount;
-        this.qid = qid;
-        this.respInfo = respInfo;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getOrderNumber() {
-        return orderNumber;
-    }
-
-    public void setOrderNumber(String orderNumber) {
-        this.orderNumber = orderNumber;
-    }
-
-    public String getOrderAmount() {
-        return orderAmount;
-    }
-
-    public void setOrderAmount(String orderAmount) {
-        this.orderAmount = orderAmount;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getCustomerIp() {
-        return customerIp;
-    }
-
-    public void setCustomerIp(String customerIp) {
-        this.customerIp = customerIp;
-    }
-
-    public String getApplyUrl() {
-        return applyUrl;
-    }
-
-    public void setApplyUrl(String applyUrl) {
-        this.applyUrl = applyUrl;
-    }
-
-    public String getReqInfo() {
-        return reqInfo;
-    }
-
-    public void setReqInfo(String reqInfo) {
-        this.reqInfo = reqInfo;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getQid() {
-        return qid;
-    }
-
-    public void setQid(String qid) {
-        this.qid = qid;
-    }
-
-    public String getPayAmount() {
-        return payAmount;
-    }
-
-    public void setPayAmount(String payAmount) {
-        this.payAmount = payAmount;
-    }
-
-    public String getRespInfo() {
-        return respInfo;
-    }
-
-    public void setRespInfo(String respInfo) {
-        this.respInfo = respInfo;
-    }
 }

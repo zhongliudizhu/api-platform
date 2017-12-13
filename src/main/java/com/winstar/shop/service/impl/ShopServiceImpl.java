@@ -6,6 +6,8 @@ import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.ActivityRepository;
 import com.winstar.shop.repository.GoodsRepository;
 import com.winstar.shop.service.ShopService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,7 @@ import java.util.List;
  **/
 @Service
 public class ShopServiceImpl implements ShopService {
+    private Logger logger= LoggerFactory.getLogger(ShopServiceImpl.class);
 
     @Autowired
     ActivityRepository activityRepository;
@@ -28,7 +31,7 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     public Activity findByActivityId(String id) {
-
+        logger.info("查询活动详情 ："+id);
         return activityRepository.findOne(id);
     }
 
@@ -38,13 +41,14 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    public Activity findByDetailId(String id) {
+    public Activity findActivityDetailById(String id) {
         Activity activity=activityRepository.findOne(id);
         if(activity.getGoods()!=null){
             JSONArray array=JSONArray.parseArray(activity.getGoods());
             List<Goods> goodsList=goodsRepository.findByIdIn(array);
             activity.setGoodsList(goodsList);
         }
+        logger.info("查询活动详情 [商品]："+id);
         return activity;
     }
 }
