@@ -1,9 +1,12 @@
 package com.winstar.user.service;
 
 import com.winstar.exception.NotFoundException;
+import com.winstar.exception.NotRuleException;
 import com.winstar.user.entity.Account;
 import com.winstar.user.utils.ServiceManager;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Service
 public class AccountService {
@@ -16,10 +19,23 @@ public class AccountService {
      * @return Account
      * @throws NotFoundException NotFoundException
      */
-    Account findById(String accountId) throws NotFoundException {
+    public Account findById(String accountId) throws NotFoundException {
         Account account = ServiceManager.accountRepository.findOne(accountId);
         if (null == account)
             throw new NotFoundException("account");
         return account;
+    }
+
+    /**
+     * 从head中获取accountId
+     *
+     * @param request request
+     * @return String eg: "accountId"
+     * @throws NotRuleException NotRuleException
+     */
+    public String getAccountId(HttpServletRequest request) throws NotRuleException {
+        Object obj = request.getHeader("accountId");
+        if (null == obj) throw new NotRuleException("accountId");
+        return obj.toString();
     }
 }

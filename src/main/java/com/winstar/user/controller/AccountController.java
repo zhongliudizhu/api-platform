@@ -26,7 +26,7 @@ public class AccountController {
      * @return AccessToken AccessToken
      * @throws NotRuleException NotRuleException
      */
-    @GetMapping("/getToken")
+    @PostMapping("/getToken")
     public AccessToken getToken(@RequestBody AccountParam accountParam) throws NotRuleException {
         checkGetTokenRule(accountParam);
         Account account = ServiceManager.accountRepository.findByOpenid(accountParam.getOpenid());
@@ -100,6 +100,7 @@ public class AccountController {
         AccessToken accessToken;
         accessToken = new AccessToken();
         accessToken.setCreateTime(new Date());
+        accessToken.setTokenId(UUIDUtils.getUUID());
         accessToken.setAccountId(account.getId());
         accessToken.setUpdateTime(new Date());
         return ServiceManager.accessTokenRepository.save(accessToken);
