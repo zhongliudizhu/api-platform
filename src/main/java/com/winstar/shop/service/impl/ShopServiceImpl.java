@@ -38,7 +38,7 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    public Activity findByyDetailId(String id) {
+    public Activity findByDetailId(String id) {
         Activity activity=activityRepository.findOne(id);
         if(activity.getGoods()!=null){
             JSONArray array=JSONArray.parseArray(activity.getGoods());

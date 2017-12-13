@@ -32,6 +32,6 @@ public interface ShopService {
      * @param id
      * @return
      */
-    Activity findByyDetailId(String id);
+    Activity findByDetailId(String id);
 
 }
