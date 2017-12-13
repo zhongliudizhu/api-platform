@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+
 
 /**
  * 页面访问日志
@@ -24,8 +26,10 @@ public class PageViewLogController {
      * @return PageViewLog
      * @throws NotRuleException NotRuleException
      */
-    @PostMapping("/add")
-    public PageViewLog add(@RequestBody PageViewLog pageViewLog) throws NotRuleException {
+    @PostMapping(value = "/add", produces = "application/json")
+    public PageViewLog add(@RequestBody PageViewLog pageViewLog, HttpServletRequest request) throws NotRuleException {
+        String accountId = ServiceManager.accountService.getAccountId(request);
+        pageViewLog.setAccountId(accountId);
         return ServiceManager.pageViewLogService.savePageViewLog(pageViewLog);
     }
 }
