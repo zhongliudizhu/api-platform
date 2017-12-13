@@ -108,4 +108,26 @@ public class MyCouponController {
         return myCoupon;
     }
 
+    /**
+     * 查询我可用的优惠券
+     * @param request
+     * @return
+     * @throws MissingParameterException
+     * @throws InvalidParameterException
+     * @throws NotRuleException
+     * @throws NotFoundException
+     * @throws ServiceUnavailableException
+     */
+    @RequestMapping(value = "/findMyUsableCoupon", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public List<MyCoupon> findMyUsableCoupon(HttpServletRequest request)throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
+        String  accountId=accountService.getAccountId(request);
+        couponService.checkExpired(accountId);
+        List<MyCoupon> list=couponService.findMyUsableCoupon(accountId);
+        if(list.size()==0){
+            throw new NotFoundException("mycoupon");
+        }
+        return list;
+    }
+
 }

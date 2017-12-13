@@ -4,6 +4,7 @@ import com.winstar.coupon.entity.MyCoupon;
 import org.springframework.stereotype.Service;
 ;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -35,4 +36,25 @@ public interface CouponService {
      * @return
      */
     List<MyCoupon> findMyCoupon(String accountId);
+
+    /**
+     * 使用优惠券
+     * @param id
+     * @return
+     */
+    MyCoupon useCoupon(String id);
+
+    /**
+     * 查询我可用的优惠券
+     * @param accountId
+     * @return
+     */
+    List<MyCoupon> findMyUsableCoupon(String accountId);
+
+    /**
+     * 查询优惠券详情
+     * @param id
+     * @return
+     */
+    MyCoupon findMyCouponById(String id);
 }
