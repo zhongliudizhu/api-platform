@@ -1,0 +1,121 @@
+package com.winstar.user.controller;
+
+import com.winstar.exception.NotRuleException;
+import com.winstar.user.entity.AccessToken;
+import com.winstar.user.entity.Account;
+import com.winstar.user.param.AccountParam;
+import com.winstar.user.utils.ServiceManager;
+import com.winstar.user.utils.UUIDUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
+
+
+/**
+ * @author laohu
+ **/
+@RestController
+@RequestMapping("/api/v1/cbc/accountInfo")
+public class AccountController {
+
+    /**
+     * 获取token
+     *
+     * @param accountParam accountParam
+     * @return AccessToken AccessToken
+     * @throws NotRuleException NotRuleException
+     */
+    @GetMapping("/getToken")
+    public AccessToken getToken(@RequestBody AccountParam accountParam) throws NotRuleException {
+        checkGetTokenRule(accountParam);
+        Account account = ServiceManager.accountRepository.findByOpenid(accountParam.getOpenid());
+        if (null == account) {
+            Account accountSaved = createAccount(accountParam);
+            return createAccessToken(accountSaved);
+        }
+        AccessToken accessToken = ServiceManager.accessTokenRepository.findByAccountId(account.getId());
+        if (null != accessToken) {
+            return updateAccessToken(accessToken);
+        } else {
+            return createAccessToken(account);
+        }
+    }
+
+    /**
+     * 验证token
+     *
+     * @param tokenId tokenId
+     * @return AccessToken AccessToken
+     * @throws NotRuleException NotRuleException
+     */
+    @PostMapping("/authToken")
+    public AccessToken authToken(String tokenId) throws NotRuleException {
+        if (StringUtils.isEmpty(tokenId))
+            throw new NotRuleException("tokenId");
+
+        AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(tokenId);
+        if (null == accessToken) {
+            throw new NotRuleException("accessToken");
+        }
+        return accessToken;
+    }
+
+    /**
+     * 创建用户信息
+     *
+     * @param accountParam accountParam
+     * @return Account Account
+     */
+    private Account createAccount(@RequestBody AccountParam accountParam) {
+        Account account;
+        account = new Account();
+        account.setCreateTime(new Date());
+        account.setUpdateTime(new Date());
+        account.setHeadImgUrl(accountParam.getHeadImgUrl());
+        account.setOpenid(accountParam.getOpenid());
+        account.setNickName(accountParam.getNickName());
+        return ServiceManager.accountRepository.save(account);
+    }
+
+    /**
+     * 更新token信息
+     *
+     * @param accessToken accessToken
+     * @return AccessToken AccessToken
+     */
+    private AccessToken updateAccessToken(AccessToken accessToken) {
+        accessToken.setTokenId(UUIDUtils.getUUID());
+        accessToken.setUpdateTime(new Date());
+        return ServiceManager.accessTokenRepository.save(accessToken);
+    }
+
+    /**
+     * 获取token信息
+     *
+     * @param account account
+     * @return AccessToken AccessToken
+     */
+    private AccessToken createAccessToken(Account account) {
+        AccessToken accessToken;
+        accessToken = new AccessToken();
+        accessToken.setCreateTime(new Date());
+        accessToken.setAccountId(account.getId());
+        accessToken.setUpdateTime(new Date());
+        return ServiceManager.accessTokenRepository.save(accessToken);
+    }
+
+    private void checkGetTokenRule(@RequestBody AccountParam accountParam) throws NotRuleException {
+        if (null == accountParam)
+            throw new NotRuleException("accountParam");
+        else if (StringUtils.isEmpty(accountParam.getOpenid())) {
+            throw new NotRuleException("openid");
+        }
+        if (StringUtils.isEmpty(accountParam.getNickName())) {
+            throw new NotRuleException("nickName");
+        }
+        if (StringUtils.isEmpty(accountParam.getHeadImgUrl())) {
+            throw new NotRuleException("headImgUrl");
+        }
+    }
+}

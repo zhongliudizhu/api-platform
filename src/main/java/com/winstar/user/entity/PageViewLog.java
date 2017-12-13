@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.Date;
 
 /**
  * 用户访问日志
@@ -40,9 +41,10 @@ public class PageViewLog {
      * url
      */
     private String url;
+
     /**
      * 日志记录时间
      */
     @Column(length = 50)
-    private String createTime;
+    private Date createTime;
 }

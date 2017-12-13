@@ -1,6 +1,7 @@
 package com.winstar.user.service;
 
 
+import com.netflix.discovery.util.StringUtil;
 import com.winstar.exception.NotRuleException;
 import com.winstar.user.entity.PageViewLog;
 import com.winstar.user.repository.PageViewLogRepository;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -31,12 +33,18 @@ public class PageViewLogService {
      * @param pageViewLog
      * @return
      */
-
     public PageViewLog savePageViewLog(PageViewLog pageViewLog) throws NotRuleException {
         if (null == pageViewLog) {
             throw new NotRuleException("pageViewLog");
+        } else if (StringUtils.isEmpty(pageViewLog.getUrl())) {
+            throw new NotRuleException("url");
+        } else if (StringUtils.isEmpty(pageViewLog.getAccountId())) {
+            throw new NotRuleException("accountId");
+        } else if (StringUtils.isEmpty(pageViewLog.getActivityId())) {
+            throw new NotRuleException("activityId");
         }
-        pageViewLog.setCreateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+
+        pageViewLog.setCreateTime(new Date());
         PageViewLog pageViewLogSaved = pageViewLogRepository.save(pageViewLog);
         return pageViewLogSaved;
     }
