@@ -4,6 +4,7 @@ import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.exception.*;
+import com.winstar.user.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +20,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,19 +41,36 @@ public class MyCouponController {
     @Autowired
     CouponService couponService;
 
+    @Autowired
+    AccountService accountService;
 
+
+    /**
+     *  商品列表
+     * @param request
+     * @param status
+     * @param pageNumber
+     * @param pageSize
+     * @return
+     * @throws MissingParameterException
+     * @throws InvalidParameterException
+     * @throws NotRuleException
+     * @throws NotFoundException
+     * @throws ServiceUnavailableException
+     */
     @RequestMapping(value = "/query", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<MyCoupon> query(
-            String  accountId,
+            HttpServletRequest request,
             @RequestParam(defaultValue = "0") Integer status,
             @RequestParam(defaultValue = "1") Integer pageNumber,
             @RequestParam(defaultValue = "5") Integer pageSize
     )throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
 
+        String  accountId=accountService.getAccountId(request);
         couponService.checkExpired(accountId);
         if(StringUtils.isEmpty(accountId)){
-            throw new MissingParameterException("accountId");
+            throw new NotRuleException("accountId");
         }
         Sort sorts = new Sort(Sort.Direction.DESC, "createdAt");
         Pageable pageable = new PageRequest(pageNumber - 1, pageSize, sorts);
@@ -77,14 +96,14 @@ public class MyCouponController {
 
     /**
      * 发券
-     * @param accountId
      * @param activityId
      * @param goodsId
      * @return MyCoupon
      */
     @RequestMapping(value = "/sendCoupon", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public MyCoupon sendCoupon(String accountId,String activityId,String goodsId){
+    public MyCoupon sendCoupon(HttpServletRequest request,String activityId,String goodsId)throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
+        String  accountId=accountService.getAccountId(request);
         MyCoupon myCoupon=couponService.sendCoupon(accountId,activityId,goodsId);
         return myCoupon;
     }
