@@ -48,9 +48,9 @@ public class MyCouponController {
     /**
      *  商品列表
      * @param request
-     * @param status
-     * @param pageNumber
-     * @param pageSize
+     * @param status 状态 0 未使用 1 已使用 2 已失效
+     * @param pageNumber 默认 1
+     * @param pageSize  默认 5
      * @return
      * @throws MissingParameterException
      * @throws InvalidParameterException

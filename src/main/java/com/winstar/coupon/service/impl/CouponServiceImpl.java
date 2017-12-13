@@ -111,6 +111,7 @@ public class CouponServiceImpl implements CouponService {
         for(MyCoupon coupon:list){
             if(coupon.getValidEndAt()!=null && coupon.getValidEndAt().getTime()<now.getTime()){
                 coupon.setStatus(2);
+                logger.info("----处理过期券----MyCouponId: "+coupon.getId()+" 已过期");
                 myCouponRepository.save(coupon);
             }
         }
