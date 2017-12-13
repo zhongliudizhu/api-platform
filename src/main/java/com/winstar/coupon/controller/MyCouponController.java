@@ -46,11 +46,11 @@ public class MyCouponController {
     /**
      * 商品列表
      *
-     * @param request
+     * @param request    HttpServletRequest
      * @param status     状态 0 未使用 1 已使用 2 已失效
      * @param pageNumber 默认 1
      * @param pageSize   默认 5
-     * @return
+     * @return List<MyCoupon>
      * @throws MissingParameterException
      * @throws InvalidParameterException
      * @throws NotRuleException
@@ -117,7 +117,7 @@ public class MyCouponController {
      *
      * @param request
      * @param money   金额
-     * @return
+     * @return List<MyCoupon>
      * @throws MissingParameterException
      * @throws InvalidParameterException
      * @throws NotRuleException

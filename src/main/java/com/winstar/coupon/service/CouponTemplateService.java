@@ -14,8 +14,9 @@ public interface CouponTemplateService {
 
     /**
      * 查询优惠券模板详情
+     *
      * @param id 优惠券模板ID
-     * @return
+     * @return CouponTemplate
      */
     CouponTemplate findById(String id);
 }

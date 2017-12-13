@@ -47,6 +47,20 @@ public class GoodsController {
     @Autowired
     AccountService accountService;
 
+    /**
+     * 根据活动Id查询商品
+     *
+     * @param request    HttpServletRequest
+     * @param activityId 活动ID
+     * @param pageNumber 起始页 默认1
+     * @param pageSize   页面数 默认10
+     * @return
+     * @throws MissingParameterException
+     * @throws InvalidParameterException
+     * @throws NotRuleException
+     * @throws NotFoundException
+     * @throws ServiceUnavailableException
+     */
     @RequestMapping(value = "/query", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<Goods> query(
@@ -61,10 +75,10 @@ public class GoodsController {
         }
         String accountId = accountService.getAccountId(request);
         PageViewLog log = new PageViewLog();
-            log.setCreateTime(new Date());
-            log.setAccountId(accountId);
-            log.setActivityId(activityId);
-            log.setUrl(request.getRequestURI());
+        log.setCreateTime(new Date());
+        log.setAccountId(accountId);
+        log.setActivityId(activityId);
+        log.setUrl(request.getRequestURI());
         ServiceManager.pageViewLogService.savePageViewLog(log);
         Activity activity = activityRepository.findOne(activityId);
         if (activity.getStatus() == 0) {

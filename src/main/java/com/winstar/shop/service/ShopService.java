@@ -17,7 +17,7 @@ public interface ShopService {
      * 查询活动
      *
      * @param id 活动Id
-     * @return
+     * @return Activity
      */
     Activity findByActivityId(String id);
 
@@ -25,7 +25,7 @@ public interface ShopService {
      * 查询商品
      *
      * @param id 商品ID
-     * @return
+     * @return Goods
      */
     Goods findByGoodsId(String id);
 
@@ -33,7 +33,7 @@ public interface ShopService {
      * 查询活动详情 包含商品
      *
      * @param id 活动Id
-     * @return
+     * @return Activity
      */
     Activity findActivityDetailById(String id);
 

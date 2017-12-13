@@ -22,20 +22,21 @@ public interface CouponService {
      * @param accountId  用户ID
      * @param activityId 活动ID
      * @param goodsId    商品Id
-     * @return
+     * @return MyCoupon
      */
     MyCoupon sendCoupon(String accountId, String activityId, String goodsId);
 
     /**
      * 检查过期
+     * @param accountId 用户Id
      */
     void checkExpired(String accountId);
 
     /**
      * 查询我的优惠券
      *
-     * @param accountId
-     * @return
+     * @param accountId 用户ID
+     * @return  MyCoupon
      */
     List<MyCoupon> findMyCoupon(String accountId);
 
@@ -43,7 +44,7 @@ public interface CouponService {
      * 使用优惠券
      *
      * @param id
-     * @return
+     * @return MyCoupon
      */
     MyCoupon useCoupon(String id);
 
@@ -58,16 +59,16 @@ public interface CouponService {
     /**
      * 查询我可用的优惠券
      *
-     * @param accountId
-     * @return
+     * @param accountId 用户ID
+     * @return MyCoupon
      */
     List<MyCoupon> findMyUsableCoupon(String accountId, Double money);
 
     /**
      * 查询优惠券详情
      *
-     * @param id
-     * @return
+     * @param id 优惠券ID
+     * @return MyCoupon
      */
     MyCoupon findMyCouponById(String id);
 
