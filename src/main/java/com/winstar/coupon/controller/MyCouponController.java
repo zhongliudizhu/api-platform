@@ -4,6 +4,8 @@ import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.exception.*;
+import com.winstar.shop.entity.Goods;
+import com.winstar.shop.repository.GoodsRepository;
 import com.winstar.user.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -42,6 +44,9 @@ public class MyCouponController {
 
     @Autowired
     AccountService accountService;
+
+    @Autowired
+    GoodsRepository goodsRepository;
 
     /**
      * 商品列表
@@ -124,9 +129,14 @@ public class MyCouponController {
     @ResponseStatus(HttpStatus.OK)
     public List<MyCoupon> findMyUsableCoupon(
             HttpServletRequest request,
-            Double money
+            String goodsId
     ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
-        if (StringUtils.isEmpty(money))  throw new MissingParameterException("money");
+        if (StringUtils.isEmpty(goodsId))  throw new MissingParameterException("goodsId");
+        Goods goods=goodsRepository.findOne(goodsId);
+        Double money=goods.getSaledPrice();
+//        if(!StringUtils.isEmpty(goods.getDisCount())){
+//            money=money*goods.getDisCount();
+//        }
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
         List<MyCoupon> list = couponService.findMyUsableCoupon(accountId, money);
