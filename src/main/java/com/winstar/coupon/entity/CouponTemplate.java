@@ -79,7 +79,7 @@ public class CouponTemplate {
     private String remark;
 
     /**
-     *
+     * 满多少全用 100
      */
-    private String rules;
+    private Double rules;
 }
