@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -45,12 +46,13 @@ public class CouponServiceImpl implements CouponService {
     /**
      *  发券
      * @param accountId 用户id
+     * @param activityId 活动Id
      * @param goodsId   商品ID
      */
 
     @Override
     @Transactional
-    public MyCoupon sendCoupon(String accountId ,String goodsId) {
+    public MyCoupon sendCoupon(String accountId ,String activityId,String goodsId) {
         logger.info("----开始发放优惠券----accountId: "+accountId);
         Goods goods=goodsRepository.findOne(goodsId);
         if(goods==null){
@@ -63,6 +65,7 @@ public class CouponServiceImpl implements CouponService {
         }
         CouponTemplate couponTemplate=couponTemplateRepository.findOne(goods.getCouponTempletId());
         MyCoupon coupon = new MyCoupon();
+        coupon.setActivityId(activityId);
         coupon.setCreatedAt(new Date());
         coupon.setAccountId(accountId);
         coupon.setCouponTemplateId(couponTemplate.getId());
@@ -95,5 +98,27 @@ public class CouponServiceImpl implements CouponService {
         MyCoupon myCoupon= myCouponRepository.save(coupon);
         logger.info("----发放优惠券----结束: "+myCoupon.toString());
         return myCoupon;
+    }
+
+    /**
+     * 查检过期券
+     */
+    @Override
+    public void checkExpired(String accountId) {
+        logger.info("----处理过期券----accountId: "+accountId);
+        Date now=new Date();
+        List<MyCoupon> list=myCouponRepository.findByAccountId(accountId);
+        for(MyCoupon coupon:list){
+            if(coupon.getValidEndAt()!=null && coupon.getValidEndAt().getTime()<now.getTime()){
+                coupon.setStatus(2);
+                myCouponRepository.save(coupon);
+            }
+        }
+        logger.info("----处理过期券-结束---accountId: "+accountId);
+    }
+
+    @Override
+    public List<MyCoupon> findMyCoupon(String accountId) {
+        return myCouponRepository.findByAccountId(accountId);
     }
 }

@@ -6,11 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 名称： Activity
@@ -41,10 +39,10 @@ public class Activity {
     /**
      * 创建时间
      */
-   private Date createTime;
+    private Date createTime;
     /**
-    * 活动开始时间
-    */
+     * 活动开始时间
+     */
     private Date beginTime;
     /**
      * 活动结束时间
@@ -61,7 +59,10 @@ public class Activity {
     /**
      * 商品 [1,2,3] JSONArray
      */
-   private String goods;
+    private String goods;
+
+    @Transient
+    private List<Goods> goodsList;
 
 
 }

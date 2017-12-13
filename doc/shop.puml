@@ -25,7 +25,8 @@ class Goods {
    - String id;
    - String name; 商品名称
    - String image; 商品图片
-   - Double price; 商品价格
+   - Double price; 商品原格
+   - Double saledPrice; 折后价格
    - String descriptions; 商品描述
    - Integer status; 商品状态 0 已下架 1 已上架
    - String createTime; 创建时间
@@ -40,7 +41,7 @@ class Activity {
    - Date beginTime; 活动开始时间
    - Date endTime; In
    - Integer status; 启用状态 0 已启用 1 未启用
-   - String type; 活动规则  活动类型 1 折中折 2 赠券
+   - Integer type; 活动规则  活动类型 1 折中折 2 赠券
    - String goods; 商品 [1,2,3] JSONArray
 }
 class MyOilCoupon {
