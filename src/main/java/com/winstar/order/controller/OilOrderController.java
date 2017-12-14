@@ -3,8 +3,10 @@ package com.winstar.order.controller;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.exception.*;
+import com.winstar.oil.service.OilCouponUpdateService;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
+import com.winstar.order.utils.Constant;
 import com.winstar.order.utils.OilOrderUtil;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
@@ -24,6 +26,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -58,7 +61,7 @@ public class OilOrderController {
             , @RequestParam(required = false, defaultValue = "") String couponId
             , HttpServletRequest request) throws NotFoundException, NotRuleException {
         String accountId = (String) request.getHeader("accountId");
-        String serialNo = OilOrderUtil.getSerialNumber();
+        String serialNumber = OilOrderUtil.getSerialNumber();
 
         //1.根据accountId 查询account
         Account account = accountService.findById(accountId);
@@ -75,13 +78,11 @@ public class OilOrderController {
         }
 
         //5.初始化订单及订单项
-        OilOrder oilOrder = new OilOrder();
+        OilOrder oilOrder = new OilOrder(accountId,serialNumber, Constant.ORDER_STATUS_CREATE,Constant.PAY_STATUS_NOT_PAID,new Date(),Constant.REFUND_STATUS_ORIGINAL,itemId,activityId);
         oilOrder = OilOrderUtil.initOrder(oilOrder,goods,activity.getType());
-
-
+        oilOrder = orderRepository.save(oilOrder);
         //6.生成订单
-
-        return new ResponseEntity<>(null, HttpStatus.OK);
+        return new ResponseEntity<>(oilOrder, HttpStatus.OK);
     }
 
     /**
