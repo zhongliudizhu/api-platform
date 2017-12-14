@@ -68,9 +68,9 @@ public interface CouponService {
      * 查询优惠券是否可用
      * @param goodsId 商品ID
      * @param couponId 优惠券ID
-     * @return true 可用，false不可用
+     * @return MyCoupon
      */
-    boolean findMyCouponById(String goodsId,String couponId);
+    MyCoupon findMyCouponById(String goodsId,String couponId);
 
 
 

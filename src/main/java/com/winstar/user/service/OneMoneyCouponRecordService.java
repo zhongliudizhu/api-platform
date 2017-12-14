@@ -30,13 +30,14 @@ public class OneMoneyCouponRecordService {
         return true;
     }
 
-//    /**
-//     *
-//     * @param accountId
-//     * @return
-//     */
-//    public OneMoneyCouponRecord changeStatus(String accountId){
-//
-//    }
+    /**
+     * 用户购买1元油券
+     * @param accountId
+     * @return
+     */
+    public OneMoneyCouponRecord changeStatus(String accountId){
+
+        return null;
+    }
 
 }

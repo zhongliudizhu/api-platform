@@ -144,16 +144,16 @@ public class CouponServiceImpl implements CouponService {
     }
 
     @Override
-    public boolean findMyCouponById(String goodsId,String couponId) {
+    public MyCoupon findMyCouponById(String goodsId,String couponId) {
         MyCoupon coupon=myCouponRepository.findOne(couponId);
         Date now=new Date();
-        if(coupon.getValidEndAt()!=null && coupon.getValidEndAt().getTime()<now.getTime()) return false;
+        if(coupon.getValidEndAt()!=null && coupon.getValidEndAt().getTime()<now.getTime()) return null;
 
         Goods goods=goodsRepository.findOne(goodsId);
         CouponTemplate template=couponTemplateRepository.findOne(coupon.getCouponTemplateId());
-        if(template.getRules()<goods.getSaledPrice()) return false;
+        if(template.getRules()<goods.getSaledPrice()) return null;
 
-        return  true;
+        return  coupon;
     }
 
     @Override
