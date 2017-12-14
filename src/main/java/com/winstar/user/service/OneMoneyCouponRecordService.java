@@ -36,8 +36,27 @@ public class OneMoneyCouponRecordService {
      * @return
      */
     public OneMoneyCouponRecord changeStatus(String accountId){
-
+        List<OneMoneyCouponRecord> list=oneMoneyCouponRecordRepository.findByAccountId(accountId);
+        for(OneMoneyCouponRecord record:list){
+            record.setStatus(1);
+            oneMoneyCouponRecordRepository.save(record);
+        }
         return null;
+    }
+
+    /**
+     * 处理违法后生成可购买1元油券的权限
+     * @param accountId 用户Id
+     * @param orderId  违法id
+     * @return
+     */
+    public OneMoneyCouponRecord insertRecord(String accountId,String orderId){
+        OneMoneyCouponRecord record=new OneMoneyCouponRecord();
+        record.setStatus(0);
+        record.setAccountId(accountId);
+        record.setOrderId(orderId);
+        OneMoneyCouponRecord oneMoneyCouponRecord= oneMoneyCouponRecordRepository.save(record);
+        return oneMoneyCouponRecord;
     }
 
 }
