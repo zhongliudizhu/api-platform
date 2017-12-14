@@ -151,17 +151,14 @@ public class OilOrder {
     private Integer payType;
 
     /* 订单来源 账户id 订单序列号 手机号 状态 支付状态 下单时间 退款 商品id 活动类型 秒杀id 活动id*/
-    public OilOrder(Integer orderFrom, String accountId, String serialNo, String phoneNo, Integer status, Integer payStatus, Date createTime, Integer refund, String itemId, String isPromotion, String activityId) {
+    public OilOrder(String accountId, String serialNo, Integer status, Integer payStatus, Date createTime, Integer refund, String itemId, String activityId) {
         this.accountId = accountId;
         this.serialNo = serialNo;
-        this.phoneNo = phoneNo;
         this.status = status;
         this.payStatus = payStatus;
         this.createTime = createTime;
         this.refund = refund;
         this.itemId = itemId;
-        this.isPromotion = isPromotion;
-        this.orderFrom = orderFrom;
         this.activityId = activityId;
         this.discountAmount = 0.0;
         this.isAvailable = "0";

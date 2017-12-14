@@ -2,23 +2,14 @@ package com.winstar.order.utils;
 
 
 import com.winstar.order.entity.OilOrder;
-import com.winstar.order.entity.OilOrderItems;
-import com.winstar.order.vo.GiftsVo;
-import com.winstar.order.vo.GoodsVo;
-import com.winstar.order.vo.PayInfoVo;
+import com.winstar.order.vo.OilDetailVo;
 import com.winstar.shop.entity.Goods;
-import net.sf.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
-
-import static java.util.stream.Collectors.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
 
 /**
  * @author shoo on 2017/7/7 14:44.
@@ -65,46 +56,6 @@ public class OilOrderUtil {
     }
 
 
-    /**
-     * 修改订单付款信息
-     * @param order 订单
-     * @param payInfoVo 付款信息
-     * @return result
-     */
-    public static OilOrder updateOrderPayInfo(OilOrder order, PayInfoVo payInfoVo){
-        order.setBankSerialNo(payInfoVo.getBankSerialNumber());
-        order.setPayStatus(payInfoVo.getPayState());
-        order.setPayTime(payInfoVo.getBankTime());
-        order.setSendStatus(3);//付款成功的默认发货成功，如果失败张林会通知
-        order.setUpdateTime(new Date());
-        return order;
-    }
-
-    /**
-     * 查询商品信息
-     * @param goodId 商品id
-     * @param getGoodsUrl url
-     * @return result
-     */
-
-
-    /**
-     * 查询秒杀规则
-     * @param activityId 秒杀商品id
-     * @param getReceiveParamUrl url
-     * @return 规则字符串
-     */
-
-
-    /**
-     * 查询优惠券详情
-     * @param couponId 优惠券id
-     * @param getCouponDetailUrl url
-     * @param salePrice 订单价格
-     * @param type 类型  1：加油券   2：审车
-     * @return 优惠券详情
-     *
-     */
 
 
     /**
@@ -114,26 +65,6 @@ public class OilOrderUtil {
      * @return 优惠券
      */
 
-
-
-    /**
-     * 用户是否买过油券
-     * @param accountId 账户id
-     * @return 没买过返回 true
-     */
-
-
-
-
-
-
-
-    /**
-     * 查询秒杀规则
-     * @param secKillId 秒杀商品id
-     * @param getRulesUrl url
-     * @return 规则字符串
-     */
 
 
 
@@ -146,14 +77,6 @@ public class OilOrderUtil {
      */
 
 
-    /**
-     * 解析秒杀规则
-     * @param ruleStr 规则字符串
-     * @return result
-     */
-    public static String analysisRule(String secKillId, String accountId, String ruleStr){
-        return "error";
-    }
 
     /**
      * 根据商品填充订单
@@ -162,74 +85,36 @@ public class OilOrderUtil {
      */
     public static OilOrder initOrder(OilOrder order, Goods goods, Integer activityType){
 
-        order.setPayPrice(goods.getSaledPrice()-order.getDiscountAmount());//实际付款 = 商品价格 -  优惠价格
-        if(order.getPayPrice() < 0){
-            order.setPayPrice(0.1);
+        if(activityType==1){
+            order.setPayPrice(goods.getSaledPrice()*goods.getDisCount());
+            if(order.getPayPrice() < 0){
+                order.setPayPrice(0.1);
+            }
+        }else if(activityType==2){
+            order.setPayPrice(goods.getSaledPrice());
+            order.setCouponTempletId(goods.getCouponTempletId());
         }
         order.setSalePrice(goods.getSaledPrice());
-        order.setItemTotalValue(goods.getSaledPrice());//油劵总面值
-        //order.setOilDetail(getOilDetail(goods));
+        order.setItemTotalValue(goods.getPrice());//油劵总面值
+        order.setOilDetail(getOilDetail(goods));
         return order;
     }
 
     /**
      * 根据商品信息拼接油券详情  如：100*1+50*2+200*5
-     * @param goodsVo 商品信息
      * @return 油券详情字符串
      */
-    private static String getOilDetail(GoodsVo goodsVo){
+    private static String getOilDetail(Goods goods){
         StringBuilder sb = new StringBuilder("");
-        //找出油券
-        List<GiftsVo> oils = goodsVo.getGifts().stream().filter(g -> "0".equals(g.getIsGifts())).collect(toList());
-        //油券按价格分组，取数量
-        Map<Integer,Integer> priceList = oils.stream().collect(groupingBy(GiftsVo::getShopPrice,summingInt(GiftsVo::getShopNumber)));
-        for (Integer price:priceList.keySet()
+        List<OilDetailVo> oils = StringFormatUtils.jsonStr2List(goods.getCouponDetail(),OilDetailVo.class);
+        for (OilDetailVo vo:oils
              ) {
-            sb.append(price).append("元x").append(priceList.get(price)).append("张+");
+            sb.append(vo.getPrice()).append("元x").append(vo.getNum()).append("张+");
         }
         sb.deleteCharAt(sb.length()-1);
         return sb.toString();
     }
 
-    /**
-     * 根据商品填充订单项
-     * @param orderItems 订单项
-     * @param goodsVo 商品信息
-     * @param orderSerialNo 订单序列号
-     * @return result
-     */
-    public static List<OilOrderItems> initOilOrderItems(List<OilOrderItems> orderItems, GoodsVo goodsVo, String orderSerialNo){
-        //商品
-        List<GiftsVo> goodses = goodsVo.getGifts().stream().filter( g -> "0".equals(g.getIsGifts())).collect(toList());
-        //赠品
-        List<GiftsVo> gifts = goodsVo.getGifts().stream().filter( g -> "1".equals(g.getIsGifts())).collect(toList());
-        for (GiftsVo goods:goodses
-             ) {
-            OilOrderItems oilTemp = new OilOrderItems();
-            oilTemp.setName(goods.getShopName());
-            oilTemp.setUnitPrice((double)goods.getShopPrice());
-            oilTemp.setAmount(goods.getShopNumber());
-            oilTemp.setItemType(Integer.valueOf(goods.getIsGifts()));
-            oilTemp.setOrderSerialNo(orderSerialNo);
-            oilTemp.setStatus(1);
-            oilTemp.setGoodsMsg(goods.toString());
-            orderItems.add(oilTemp);
-        }
-        for (GiftsVo gift:gifts
-             ) {
-            OilOrderItems oilTemp = new OilOrderItems();
-            oilTemp.setName(gift.getShopName());
-            oilTemp.setUnitPrice((double)gift.getShopPrice());
-            oilTemp.setAmount(gift.getShopNumber());
-            oilTemp.setItemType(Integer.valueOf(gift.getIsGifts()));
-            oilTemp.setOrderSerialNo(orderSerialNo);
-            oilTemp.setGoodsMsg(gift.toString());
-            orderItems.add(oilTemp);
-        }
-
-
-        return orderItems;
-    }
 
     /**
      * accountId 查询Account
