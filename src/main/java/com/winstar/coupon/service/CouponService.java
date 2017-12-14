@@ -1,7 +1,23 @@
 package com.winstar.coupon.service;
 
+import com.winstar.coupon.entity.CouponTemplate;
 import com.winstar.coupon.entity.MyCoupon;
+import com.winstar.coupon.repository.CouponTemplateRepository;
+import com.winstar.coupon.repository.MyCouponRepository;
+import com.winstar.shop.entity.Goods;
+import com.winstar.shop.repository.GoodsRepository;
+import com.winstar.user.service.AccountService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 ;
@@ -12,9 +28,21 @@ import java.util.List;
  * 日期： 2017-12-12 10:44
  * 描述： 优惠券service
  **/
+@Service
+public class CouponService {
+    private static Logger logger = LoggerFactory.getLogger(CouponService.class);
 
-public interface CouponService {
+    @Autowired
+    CouponTemplateRepository couponTemplateRepository;
 
+    @Autowired
+    MyCouponRepository myCouponRepository;
+
+    @Autowired
+    GoodsRepository goodsRepository;
+
+    @Autowired
+    AccountService accountService;
     /**
      * 发送优惠券
      *
@@ -23,13 +51,72 @@ public interface CouponService {
      * @param goodsId    商品Id
      * @return MyCoupon
      */
-    MyCoupon sendCoupon(String accountId, String activityId, String goodsId);
+    @Transactional
+    public MyCoupon sendCoupon(String accountId, String activityId, String goodsId){
+        logger.info("----开始发放优惠券----accountId: "+accountId);
+        Goods goods=goodsRepository.findOne(goodsId);
+        if(goods==null){
+            logger.info("----查询商品不存在----goodsId: "+goodsId);
+            return  null;
+        }
+        if(StringUtils.isEmpty(goods.getCouponTempletId())){
+            logger.info("----打折商品 不赠券----goodsId: "+goodsId);
+            return  null;
+        }
+        CouponTemplate couponTemplate=couponTemplateRepository.findOne(goods.getCouponTempletId());
+        MyCoupon coupon = new MyCoupon();
+        coupon.setActivityId(activityId);
+        coupon.setCreatedAt(new Date());
+        coupon.setAccountId(accountId);
+        coupon.setCouponTemplateId(couponTemplate.getId());
+        coupon.setAmount(couponTemplate.getAmount());
+        coupon.setDiscountRate(couponTemplate.getDiscountRate());
+        coupon.setLimitDiscountAmount(couponTemplate.getLimitDiscountAmount());
+        if(!ObjectUtils.isEmpty(couponTemplate.getValidBeginAt()) && !ObjectUtils.isEmpty(couponTemplate.getValidEndAt())){
+            coupon.setValidBeginAt(couponTemplate.getValidBeginAt());
+            coupon.setValidEndAt(couponTemplate.getValidEndAt());
+        }else if(!ObjectUtils.isEmpty(couponTemplate.getValidBeginAt()) && ObjectUtils.isEmpty(couponTemplate.getValidEndAt())){
+            coupon.setValidBeginAt(couponTemplate.getValidBeginAt());
+            if(couponTemplate.getDays() == 0){
+                try {
+                    coupon.setValidEndAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(new SimpleDateFormat("yyyy-MM-dd").format(couponTemplate.getValidBeginAt()) + " 23:59:59"));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }else{
+                coupon.setValidEndAt(org.apache.commons.lang.time.DateUtils.addDays(couponTemplate.getValidBeginAt(),couponTemplate.getDays()));
+            }
+        }else if(ObjectUtils.isEmpty(couponTemplate.getValidBeginAt()) && ObjectUtils.isEmpty(couponTemplate.getValidEndAt())){
+            coupon.setValidBeginAt(new Date());
+            coupon.setValidEndAt(org.apache.commons.lang.time.DateUtils.addDays(coupon.getValidBeginAt(),couponTemplate.getDays()));
+        }
+        coupon.setShowStatus(couponTemplate.getShowStatus());
+        coupon.setStatus(0);
+        coupon.setUseRule(ObjectUtils.isEmpty(couponTemplate) ? null : couponTemplate.getRules());
+        coupon.setName(couponTemplate.getName());
+        coupon.setDescription(couponTemplate.getDescription());
+        MyCoupon myCoupon= myCouponRepository.save(coupon);
+        logger.info("----发放优惠券----结束: "+myCoupon.toString());
+        return myCoupon;
+    }
 
     /**
      * 检查过期
      * @param accountId 用户Id
      */
-    void checkExpired(String accountId);
+    public void checkExpired(String accountId){
+        logger.info("----处理过期券----accountId: "+accountId);
+        Date now=new Date();
+        List<MyCoupon> list=myCouponRepository.findByAccountId(accountId);
+        for(MyCoupon coupon:list){
+            if(coupon.getValidEndAt()!=null && coupon.getValidEndAt().getTime()<now.getTime()){
+                coupon.setStatus(2);
+                logger.info("----处理过期券----MyCouponId: "+coupon.getId()+" 已过期");
+                myCouponRepository.save(coupon);
+            }
+        }
+        logger.info("----处理过期券-结束---accountId: "+accountId);
+    }
 
     /**
      * 查询我的优惠券
@@ -37,7 +124,9 @@ public interface CouponService {
      * @param accountId 用户ID
      * @return  MyCoupon
      */
-    List<MyCoupon> findMyCoupon(String accountId);
+    public List<MyCoupon> findMyCoupon(String accountId){
+        return myCouponRepository.findByAccountId(accountId);
+    }
 
     /**
      * 使用优惠券
@@ -45,7 +134,13 @@ public interface CouponService {
      * @param id
      * @return MyCoupon
      */
-    MyCoupon useCoupon(String id);
+    public MyCoupon useCoupon(String id){
+        MyCoupon myCoupon=myCouponRepository.findOne(id);
+        myCoupon.setUseDate(new Date());
+        myCoupon.setStatus(1);
+        MyCoupon coupon=myCouponRepository.save(myCoupon);
+        return coupon;
+    }
 
     /**
      * 撤销已用的优惠券
@@ -53,7 +148,13 @@ public interface CouponService {
      * @param id 优惠券Id
      * @return
      */
-    MyCoupon cancelMyCoupon(String id);
+    public MyCoupon cancelMyCoupon(String id){
+        MyCoupon myCoupon=myCouponRepository.findOne(id);
+        myCoupon.setUseDate(null);
+        myCoupon.setStatus(0);
+        MyCoupon coupon=myCouponRepository.save(myCoupon);
+        return coupon;
+    }
 
     /**
      * 查询当前金额可用的优惠券
@@ -62,15 +163,29 @@ public interface CouponService {
      * @param money 金额
      * @return MyCoupon
      */
-    List<MyCoupon> findMyUsableCoupon(String accountId, Double money);
+    public List<MyCoupon> findMyUsableCoupon(String accountId, Double money){
+        return myCouponRepository.findByAccountIdAndStatusAndUseRuleGreaterThanEqual(accountId,0,money);
+    }
 
     /**
      * 查询优惠券是否可用
+     * 1、判断优惠券是否过期 2、检查优惠券使用范围是否满足当前商品
      * @param goodsId 商品ID
      * @param couponId 优惠券ID
-     * @return MyCoupon
+     * @return 可用返回 MyCoupon  否返回null
      */
-    MyCoupon findMyCouponById(String goodsId,String couponId);
+    public MyCoupon checkIfMyCouponAvailable (String goodsId,String couponId){
+        MyCoupon coupon=myCouponRepository.findOne(couponId);
+        if(coupon.getStatus()==2) return null;
+        Date now=new Date();
+        if(coupon.getValidEndAt()!=null && coupon.getValidEndAt().getTime()<now.getTime()) return null;
+
+        Goods goods=goodsRepository.findOne(goodsId);
+        CouponTemplate template=couponTemplateRepository.findOne(coupon.getCouponTemplateId());
+        if(template.getRules()<goods.getSaledPrice()) return null;
+
+        return  coupon;
+    }
 
 
 

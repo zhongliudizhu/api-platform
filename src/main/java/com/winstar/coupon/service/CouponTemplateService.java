@@ -1,6 +1,8 @@
 package com.winstar.coupon.service;
 
 import com.winstar.coupon.entity.CouponTemplate;
+import com.winstar.coupon.repository.CouponTemplateRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -10,13 +12,17 @@ import org.springframework.stereotype.Service;
  * 描述：
  **/
 @Service
-public interface CouponTemplateService {
+public class CouponTemplateService {
 
+    @Autowired
+    CouponTemplateRepository couponTemplateRepository;
     /**
      * 查询优惠券模板详情
      *
      * @param id 优惠券模板ID
      * @return CouponTemplate
      */
-    CouponTemplate findById(String id);
+    CouponTemplate findById(String id){
+        return couponTemplateRepository.findOne(id);
+    }
 }
