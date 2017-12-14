@@ -1,5 +1,6 @@
 package com.winstar.order.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,6 +37,7 @@ public class OilOrder {
     /*
      * 订单来源 1 微信 2 安卓  3 IOS 0 littleCode
      * */
+    @Column(length = 2)
     private Integer orderFrom;
     /*
     * 订单序列号
@@ -68,7 +70,6 @@ public class OilOrder {
     * */
     @Column(length = 50)
     private String itemId;
-
     /*
     * 活动id
     * */
@@ -109,27 +110,27 @@ public class OilOrder {
     /*
     *下单时间
     * */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date createTime;
     /*
     *付款时间
     * */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date payTime;
     /*
     *订单完成时间
     * */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date finishTime;
     /*
     * 最后修改时间
     * */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date updateTime;
     /*
     * 退款  0 初始化  1  退款成功  2 退款失败 3 退款中 4 部分退款
     * */
     private Integer refund;
-    /*
-    * 修改订单地址
-    * */
-    private String updateOrderUrl;
     /*
     *  0 正常  1  促销  2 秒杀 3 活动
     * */
@@ -143,6 +144,7 @@ public class OilOrder {
     /**
      * 赠送优惠券
      */
+    @Column(length = 50)
     private String couponTempletId;
 
     /*
@@ -150,7 +152,7 @@ public class OilOrder {
     * */
     private Integer payType;
 
-    /* 订单来源 账户id 订单序列号 手机号 状态 支付状态 下单时间 退款 商品id 活动类型 秒杀id 活动id*/
+    /* 账户id 订单序列号  状态 支付状态 下单时间 退款 商品id 活动id*/
     public OilOrder(String accountId, String serialNo, Integer status, Integer payStatus, Date createTime, Integer refund, String itemId, String activityId) {
         this.accountId = accountId;
         this.serialNo = serialNo;

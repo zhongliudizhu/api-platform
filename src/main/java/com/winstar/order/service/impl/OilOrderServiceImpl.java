@@ -20,6 +20,7 @@ public class OilOrderServiceImpl implements OilOrderService {
     private OilOrderRepository oilOrderRepository;
     @Override
     public String updateOrderCashier(PayInfoVo payInfo) {
+        Date time = new Date();
         Integer payStatus = payInfo.getPayState();
         if (payStatus != 0 && payStatus != 1 ) {
             return "1";
@@ -36,7 +37,8 @@ public class OilOrderServiceImpl implements OilOrderService {
 
         oilOrder.setSendStatus(3);
         oilOrder.setStatus(3);
-        oilOrder.setUpdateTime(new Date());
+        oilOrder.setUpdateTime(time);
+        oilOrder.setFinishTime(time);
 
         oilOrderRepository.save(oilOrder);
         return "ok";

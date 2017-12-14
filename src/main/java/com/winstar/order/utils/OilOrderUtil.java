@@ -86,12 +86,13 @@ public class OilOrderUtil {
     public static OilOrder initOrder(OilOrder order, Goods goods, Integer activityType){
 
         if(activityType==1){
-            order.setPayPrice(goods.getSaledPrice()*goods.getDisCount());
-            if(order.getPayPrice() < 0){
-                order.setPayPrice(0.1);
+            if(goods.getId().equals("8")){
+                order.setPayPrice(goods.getSaledPrice());
+            }else{
+                order.setPayPrice(goods.getSaledPrice()*goods.getDisCount());
             }
         }else if(activityType==2){
-            order.setPayPrice(goods.getSaledPrice());
+            order.setPayPrice(goods.getSaledPrice()-order.getDiscountAmount());
             order.setCouponTempletId(goods.getCouponTempletId());
         }
         order.setSalePrice(goods.getSaledPrice());
@@ -101,7 +102,7 @@ public class OilOrderUtil {
     }
 
     /**
-     * 根据商品信息拼接油券详情  如：100*1+50*2+200*5
+     * 根据商品信息拼接油券详情  如：100元x1张+50元x2张+200元x5张
      * @return 油券详情字符串
      */
     private static String getOilDetail(Goods goods){

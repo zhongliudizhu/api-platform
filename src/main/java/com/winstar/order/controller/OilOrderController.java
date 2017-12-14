@@ -2,8 +2,10 @@ package com.winstar.order.controller;
 
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.service.CouponService;
-import com.winstar.exception.*;
-import com.winstar.oil.service.OilCouponUpdateService;
+import com.winstar.exception.MissingParameterException;
+import com.winstar.exception.NotFoundException;
+import com.winstar.exception.NotRuleException;
+import com.winstar.exception.ServiceUnavailableException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.Constant;
@@ -11,10 +13,8 @@ import com.winstar.order.utils.OilOrderUtil;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
-import com.winstar.shop.service.impl.ShopServiceImpl;
 import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
-import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
-import java.util.Map;
 
 /**
  * @author shoo on 2017/7/7 13:52.
@@ -60,7 +59,7 @@ public class OilOrderController {
             , @RequestParam String activityId
             , @RequestParam(required = false, defaultValue = "") String couponId
             , HttpServletRequest request) throws NotFoundException, NotRuleException {
-        String accountId = (String) request.getHeader("accountId");
+        String accountId = accountService.getAccountId(request);
         String serialNumber = OilOrderUtil.getSerialNumber();
 
         //1.根据accountId 查询account
@@ -72,13 +71,23 @@ public class OilOrderController {
         //3.根据活动id查询活动
         Activity activity = shopService.findByActivityId(activityId);
 
-        //4.如果优惠券，查询优惠券
-        if(!StringUtils.isEmpty(couponId)){
-            MyCoupon myCoupon = couponService.findMyCouponById(couponId);
+        if(activity.getType()==1&&!StringUtils.isEmpty(couponId)){
+            throw new NotRuleException("canNotUseCoupon.order");
         }
 
         //5.初始化订单及订单项
         OilOrder oilOrder = new OilOrder(accountId,serialNumber, Constant.ORDER_STATUS_CREATE,Constant.PAY_STATUS_NOT_PAID,new Date(),Constant.REFUND_STATUS_ORIGINAL,itemId,activityId);
+        //4.如果优惠券，查询优惠券
+        if(!StringUtils.isEmpty(couponId)){
+            MyCoupon myCoupon = couponService.findMyCouponById(couponId,itemId);
+            oilOrder.setCouponId(couponId);
+            if(ObjectUtils.isEmpty(myCoupon.getAmount())){
+                oilOrder.setDiscountAmount(goods.getSaledPrice()*(1-myCoupon.getDiscountRate()));
+            }else if (ObjectUtils.isEmpty(myCoupon.getDiscountRate())){
+                oilOrder.setDiscountAmount(myCoupon.getAmount());
+            }
+
+        }
         oilOrder = OilOrderUtil.initOrder(oilOrder,goods,activity.getType());
         oilOrder = orderRepository.save(oilOrder);
         //6.生成订单
@@ -105,7 +114,14 @@ public class OilOrderController {
     @RequestMapping(value = "/{serialNumber}/serialNumber", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     @ResponseBody
     public ResponseEntity getOrders(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
-         return null;
+        if(StringUtils.isEmpty(serialNumber)){
+            throw new MissingParameterException("serialNumber.order");
+        }
+        OilOrder order = orderRepository.findBySerialNo(serialNumber);
+        if(ObjectUtils.isEmpty(order)){
+            throw  new NotFoundException("oilOrder.order");
+        }
+        return new ResponseEntity(order,HttpStatus.OK);
     }
 
     /**
@@ -119,32 +135,9 @@ public class OilOrderController {
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
-    /**
-     * 收款后修改订单
-     *
-     * @param map 所需参数
-     * @return result
-     */
-    @RequestMapping(value = "", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public Map<String, String> updateOrders(@RequestBody Map<String, String> map) throws InnerServerException, MissingParameterException, InvalidParameterException, NotFoundException {
-        String serialNumber = MapUtils.getString(map, "orderNumber");
-        String ispay = MapUtils.getString(map, "state");//  0 未支付   1 支付成功   2 失败
-        String payprice = MapUtils.getString(map, "payAmount");
-        String bankSerialNumber = MapUtils.getString(map, "qid");
-        String orderTime = MapUtils.getString(map, "orderTime");
-        String payType = MapUtils.getString(map, "payType");
-        return null;
-    }
 
-    /**
-     * 付完款就发货，默认发货成功。发货失败的调用此接口修改发货状态为失败
-     */
-    @RequestMapping(value = "/sendStatus", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public Map<String, String> updateSendStatus(@RequestBody Map<String, String> map) throws InnerServerException, MissingParameterException, InvalidParameterException, NotFoundException {
-        return null;
-    }
+
+
 
     /**
      * 关闭油券订单:只有未付款的订单才能关闭
