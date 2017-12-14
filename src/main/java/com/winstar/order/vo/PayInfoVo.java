@@ -1,13 +1,25 @@
 package com.winstar.order.vo;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.Date;
 
 /**
  * @author shoo on 2017/7/12.
  * 付款信息
  */
+@Setter
+@Getter
 public class PayInfoVo {
-    private String id;
+    /*
+    * 订单序列号
+    * */
+    private String orderSerialNumber;
+    /*
+    * 付款金额
+    * */
+    private Double payPrice;
     /*
     * 付款类型
     * */
@@ -23,46 +35,7 @@ public class PayInfoVo {
     /*
    * 付款时间
    * */
-    private Date bankTime;
+    private Date payTime;
 
 
-    public Integer getPayType() {
-        return payType;
-    }
-
-    public void setPayType(Integer payType) {
-        this.payType = payType;
-    }
-
-    public String getBankSerialNumber() {
-        return bankSerialNumber;
-    }
-
-    public void setBankSerialNumber(String bankSerialNumber) {
-        this.bankSerialNumber = bankSerialNumber;
-    }
-
-    public Integer getPayState() {
-        return payState;
-    }
-
-    public void setPayState(Integer payState) {
-        this.payState = payState;
-    }
-
-    public Date getBankTime() {
-        return bankTime;
-    }
-
-    public void setBankTime(Date bankTime) {
-        this.bankTime = bankTime;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 }
