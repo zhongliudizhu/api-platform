@@ -5,7 +5,10 @@ import com.winstar.user.entity.AccessToken;
 import com.winstar.user.entity.Account;
 import com.winstar.user.param.AccountParam;
 import com.winstar.user.utils.ServiceManager;
+import com.winstar.user.utils.SimpleResult;
 import com.winstar.user.utils.UUIDUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +29,7 @@ public class AccountController {
      * @return AccessToken AccessToken
      * @throws NotRuleException NotRuleException
      */
-    @PostMapping("/getToken")
+    @PostMapping(value = "/getToken", produces = "application/json")
     public AccessToken getToken(@RequestBody AccountParam accountParam) throws NotRuleException {
         checkGetTokenRule(accountParam);
         Account account = ServiceManager.accountRepository.findByOpenid(accountParam.getOpenid());
@@ -49,17 +52,18 @@ public class AccountController {
      * @return AccessToken AccessToken
      * @throws NotRuleException NotRuleException
      */
-    @PostMapping("/authToken")
-    public AccessToken authToken(String tokenId) throws NotRuleException {
+    @PostMapping(value = "/authToken", produces = "application/json")
+    public ResponseEntity authToken(String tokenId) throws NotRuleException {
         if (StringUtils.isEmpty(tokenId))
             throw new NotRuleException("tokenId");
 
         AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(tokenId);
         if (null == accessToken) {
-            throw new NotRuleException("accessToken");
+            return new ResponseEntity<>(new SimpleResult("未授权"), HttpStatus.UNAUTHORIZED);
         }
-        return accessToken;
+        return new ResponseEntity<>(accessToken, HttpStatus.OK);
     }
+
 
     /**
      * 创建用户信息

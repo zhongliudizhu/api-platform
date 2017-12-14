@@ -12,5 +12,4 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
  **/
 public interface OilCouponSearchLogRepository extends JpaRepository<OilCouponSearchLog,String>,JpaSpecificationExecutor<OilCouponSearchLog> {
 
-
 }

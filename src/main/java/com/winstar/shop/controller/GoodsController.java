@@ -1,12 +1,14 @@
 package com.winstar.shop.controller;
 
 import com.alibaba.fastjson.JSONArray;
-import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.exception.*;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.ActivityRepository;
 import com.winstar.shop.repository.GoodsRepository;
+import com.winstar.user.entity.PageViewLog;
+import com.winstar.user.service.AccountService;
+import com.winstar.user.utils.ServiceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +24,9 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -40,27 +44,44 @@ public class GoodsController {
 
     @Autowired
     ActivityRepository activityRepository;
+    @Autowired
+    AccountService accountService;
 
+    /**
+     * 根据活动Id查询商品
+     *
+     * @param request    HttpServletRequest
+     * @param activityId 活动ID
+     * @param pageNumber 起始页 默认1
+     * @param pageSize   页面数 默认10
+     * @return
+     * @throws MissingParameterException
+     * @throws InvalidParameterException
+     * @throws NotRuleException
+     * @throws NotFoundException
+     * @throws ServiceUnavailableException
+     */
     @RequestMapping(value = "/query", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<Goods> query(
-            String  activityId,
+            HttpServletRequest request,
+            String activityId,
             @RequestParam(defaultValue = "1") Integer pageNumber,
-            @RequestParam(defaultValue = "5") Integer pageSize
-    )throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
+            @RequestParam(defaultValue = "10") Integer pageSize
+    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
 
-        if(StringUtils.isEmpty(activityId)){
-            throw new MissingParameterException("activityId");
-        }
-
-        Activity activity=activityRepository.findOne(activityId);
-        if(activity.getStatus()==0){
-            throw new NotFoundException("this activity is closed");
-        }
-        if(StringUtils.isEmpty(activity.getGoods())){
-            throw new NotFoundException("this activity has no goods");
-        }
-        JSONArray array=JSONArray.parseArray(activity.getGoods());
+        if (StringUtils.isEmpty(activityId)) throw new MissingParameterException("activityId");
+        String accountId = accountService.getAccountId(request);
+        PageViewLog log = new PageViewLog();
+        log.setCreateTime(new Date());
+        log.setAccountId(accountId);
+        log.setActivityId(activityId);
+        log.setUrl(request.getRequestURI());
+        ServiceManager.pageViewLogService.savePageViewLog(log);
+        Activity activity = activityRepository.findOne(activityId);
+        if (activity.getStatus() == 0)  throw new NotFoundException("this activity is closed");
+        if (StringUtils.isEmpty(activity.getGoods()))  throw new NotFoundException("this activity has no goods");
+        JSONArray array = JSONArray.parseArray(activity.getGoods());
         Sort sorts = new Sort(Sort.Direction.DESC, "createTime");
         Pageable pageable = new PageRequest(pageNumber - 1, pageSize, sorts);
         Page<Goods> page = goodsRepository.findAll(new Specification<Goods>() {
@@ -70,12 +91,10 @@ public class GoodsController {
                 list.add(cb.equal(root.<Integer>get("status"), 1));
                 list.add(in);
                 Predicate[] p = new Predicate[list.size()];
-              return cb.and(list.toArray(p));
+                return cb.and(list.toArray(p));
             }
         }, pageable);
-        if(page.getContent().size()==0){
-            throw new NotFoundException("goods");
-        }
+        if (page.getContent().size() == 0)  throw new NotFoundException("goods");
         return page.getContent();
     }
 

@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * 名称： Activity
  * 作者： sky
- * 日期： 2017private12private12 9:30
+ * 日期： 2017-12-12 9:30
  * 描述： 活动实体
  **/
 @Getter
