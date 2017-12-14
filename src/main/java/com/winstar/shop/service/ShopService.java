@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
  * 日期： 2017-12-13 9:46
  * 描述：
  **/
-@Service
 public interface ShopService {
 
     /**

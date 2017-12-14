@@ -6,6 +6,7 @@ import com.winstar.order.entity.OilOrderItems;
 import com.winstar.order.vo.GiftsVo;
 import com.winstar.order.vo.GoodsVo;
 import com.winstar.order.vo.PayInfoVo;
+import com.winstar.shop.entity.Goods;
 import net.sf.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,22 +158,17 @@ public class OilOrderUtil {
     /**
      * 根据商品填充订单
      * @param order 订单
-     * @param goodsVo 商品信息
      * @return result
      */
-    public static OilOrder initOrder(OilOrder order, GoodsVo goodsVo,Integer moneyEnvironment){
-        if(moneyEnvironment==1){
-            order.setPayPrice(0.01-order.getDiscountAmount());//测试方便，改为0.01元
+    public static OilOrder initOrder(OilOrder order, Goods goods, Integer activityType){
 
-        }else{
-            order.setPayPrice(goodsVo.getSalePrice()-order.getDiscountAmount());//实际付款 = 商品价格 -  优惠价格
-        }
+        order.setPayPrice(goods.getSaledPrice()-order.getDiscountAmount());//实际付款 = 商品价格 -  优惠价格
         if(order.getPayPrice() < 0){
             order.setPayPrice(0.1);
         }
-        order.setSalePrice(goodsVo.getSalePrice());
-        order.setItemTotalValue(goodsVo.getShopPrice());//油劵总面值
-        order.setOilDetail(getOilDetail(goodsVo));
+        order.setSalePrice(goods.getSaledPrice());
+        order.setItemTotalValue(goods.getSaledPrice());//油劵总面值
+        //order.setOilDetail(getOilDetail(goods));
         return order;
     }
 
