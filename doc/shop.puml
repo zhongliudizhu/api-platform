@@ -63,6 +63,12 @@ class MyOilCouponDetail {
    - Date endDate; 失效日期
    - String tId; 使用的加油站Id
 }
+class OneMoneyCouponRecord{
+   - String id;
+   - String accountId;
+   - Integer status; 0 未购买过 1 已购买过
+   - String orderId; 违法订单号
+}
 
 
 Activity  --|>Goods

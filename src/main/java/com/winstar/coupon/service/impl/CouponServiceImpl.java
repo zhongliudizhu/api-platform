@@ -5,9 +5,9 @@ import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.CouponTemplateRepository;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
-
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.GoodsRepository;
+import com.winstar.user.service.AccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -43,6 +42,12 @@ public class CouponServiceImpl implements CouponService {
 
     @Autowired
     GoodsRepository goodsRepository;
+
+    @Autowired
+    AccountService accountService;
+
+    @Autowired
+    CouponService couponService;
     /**
      *  发券
      * @param accountId 用户id
@@ -139,8 +144,16 @@ public class CouponServiceImpl implements CouponService {
     }
 
     @Override
-    public MyCoupon findMyCouponById(String id) {
-        return myCouponRepository.findOne(id);
+    public boolean findMyCouponById(String goodsId,String couponId) {
+        MyCoupon coupon=myCouponRepository.findOne(couponId);
+        Date now=new Date();
+        if(coupon.getValidEndAt()!=null && coupon.getValidEndAt().getTime()<now.getTime()) return false;
+
+        Goods goods=goodsRepository.findOne(goodsId);
+        CouponTemplate template=couponTemplateRepository.findOne(coupon.getCouponTemplateId());
+        if(template.getRules()<goods.getSaledPrice()) return false;
+
+        return  true;
     }
 
     @Override
