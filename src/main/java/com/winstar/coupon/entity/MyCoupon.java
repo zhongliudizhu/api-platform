@@ -1,19 +1,14 @@
 package com.winstar.coupon.entity;
 
-
-import com.winstar.coupon.repository.CouponTemplateRepository;
-import com.winstar.coupon.repository.MyCouponRepository;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.util.ObjectUtils;
-
-
-import javax.persistence.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
 
 /**
@@ -82,7 +77,6 @@ public class MyCoupon {
      */
     private String accountId;
 
-
     /**
      * 优惠券模板id
      */
@@ -91,7 +85,6 @@ public class MyCoupon {
      * 活动id
      */
     private String activityId;
-
 
     /**
      * 使用规则表达式 满多少元可用
@@ -102,11 +95,9 @@ public class MyCoupon {
 
     private String description;
 
-
     private Double discountRate;
 
     private Double limitDiscountAmount;
-
 
     @Override
     public String toString() {

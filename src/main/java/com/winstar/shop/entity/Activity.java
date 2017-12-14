@@ -61,6 +61,11 @@ public class Activity {
      */
     private String goods;
 
+    /**
+     * 参加活动次数  0 为不限制
+     */
+    private Integer payedNumber;
+
     @Transient
     private List<Goods> goodsList;
 
