@@ -19,7 +19,7 @@ import java.util.List;
  * 日期： 2017-12-13 9:50
  * 描述：
  **/
-@Service
+@Service(value = "shopService")
 public class ShopServiceImpl implements ShopService {
     private Logger logger= LoggerFactory.getLogger(ShopServiceImpl.class);
 

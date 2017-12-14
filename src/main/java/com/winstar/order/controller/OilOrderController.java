@@ -1,15 +1,21 @@
 package com.winstar.order.controller;
 
+import com.winstar.coupon.entity.MyCoupon;
+import com.winstar.coupon.service.CouponService;
 import com.winstar.exception.*;
 import com.winstar.order.entity.OilOrder;
-import com.winstar.order.repository.OilOrderItemsRepository;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.OilOrderUtil;
+import com.winstar.shop.entity.Activity;
+import com.winstar.shop.entity.Goods;
+import com.winstar.shop.service.ShopService;
+import com.winstar.shop.service.impl.ShopServiceImpl;
+import com.winstar.user.entity.Account;
+import com.winstar.user.service.AccountService;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,29 +31,55 @@ import java.util.Map;
  *  油券订单
  */
 @RestController
-@RequestMapping("/api/v1/orders/oilorder")
+@RequestMapping("/api/v1/cbc/orders")
 public class OilOrderController {
     public static final Logger logger = LoggerFactory.getLogger(OilOrderController.class);
     @Autowired
     private OilOrderRepository orderRepository;
+    @Autowired
+    private ShopService shopService;
+    @Autowired
+    private CouponService couponService;
+    @Autowired
+    private AccountService accountService;
 
 
 
     /**
      * 添加油券订单
      * @param itemId 商品id
-     * @param secKillId 秒杀id
      * @param activityId 活动id
      * @param couponId 优惠券id
      */
     @RequestMapping(method = RequestMethod.POST, produces = "application/json;charset=utf-8")
     @ResponseBody
     public ResponseEntity addOrder(@RequestParam String itemId
-            , @RequestParam(required = false, defaultValue = "") String secKillId
-            , @RequestParam(required = false, defaultValue = "") String activityId
+            , @RequestParam String activityId
             , @RequestParam(required = false, defaultValue = "") String couponId
             , HttpServletRequest request) throws NotFoundException, NotRuleException {
+        String accountId = (String) request.getHeader("accountId");
         String serialNo = OilOrderUtil.getSerialNumber();
+
+        //1.根据accountId 查询account
+        Account account = accountService.findById(accountId);
+
+        //2.根据商品id 查询商品
+        Goods goods = shopService.findByGoodsId(itemId);
+
+        //3.根据活动id查询活动
+        Activity activity = shopService.findByActivityId(activityId);
+
+        //4.如果优惠券，查询优惠券
+        if(!StringUtils.isEmpty(couponId)){
+            MyCoupon myCoupon = couponService.findMyCouponById(couponId);
+        }
+
+        //5.初始化订单及订单项
+        OilOrder oilOrder = new OilOrder();
+        oilOrder = OilOrderUtil.initOrder(oilOrder,goods,activity.getType());
+
+
+        //6.生成订单
 
         return new ResponseEntity<>(null, HttpStatus.OK);
     }

@@ -140,6 +140,10 @@ public class OilOrder {
     * */
     @Column(length = 50)
     private String isAvailable;
+    /**
+     * 赠送优惠券
+     */
+    private String couponTempletId;
 
     /*
     * 支付方式 0：建行 1：银联 2：微信 3：支付宝

@@ -13,7 +13,7 @@ import java.util.List;
  * 日期： 2017-12-12 10:44
  * 描述： 优惠券service
  **/
-@Service
+
 public interface CouponService {
 
     /**
