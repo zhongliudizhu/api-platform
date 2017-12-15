@@ -20,7 +20,7 @@ import java.util.Date;
  */
 @Service
 public class OilOrderServiceImpl implements OilOrderService {
-    private static Logger logger = LoggerFactory.getLogger(CouponService.class);
+    private static Logger logger = LoggerFactory.getLogger(OilOrderServiceImpl.class);
     @Autowired
     private OilOrderRepository oilOrderRepository;
     @Autowired
