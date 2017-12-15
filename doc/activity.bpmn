@@ -1,40 +1,40 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:tns="http://www.activiti.org/testm1513223682776" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" expressionLanguage="http://www.w3.org/1999/XPath" id="m1513223682776" name="" targetNamespace="http://www.activiti.org/testm1513223682776" typeLanguage="http://www.w3.org/2001/XMLSchema">
   <process id="myProcess_1" isClosed="false" isExecutable="true" processType="None">
-    <callActivity activiti:exclusive="true" id="_13" name="商品列表"/>
-    <startEvent id="_5" name="用户"/>
-    <callActivity activiti:exclusive="true" id="_6" name="活动"/>
-    <sequenceFlow id="_7" name="选择活动" sourceRef="_5" targetRef="_6"/>
+    <callActivity activiti:exclusive="true" id="_13" name="Goods"/>
+    <startEvent id="_5" name="User"/>
+    <callActivity activiti:exclusive="true" id="_6" name="Activity"/>
+    <sequenceFlow id="_7" sourceRef="_5" targetRef="_6"/>
     <sequenceFlow id="_8" sourceRef="_6" targetRef="_13"/>
-    <callActivity activiti:exclusive="true" id="_9" name="折中折商�?"/>
-    <businessRuleTask activiti:exclusive="true" id="_17" name="建行支付"/>
-    <businessRuleTask activiti:exclusive="true" id="_18" name="微信支付"/>
-    <callActivity activiti:exclusive="true" id="_22" name="赠�?�优惠券"/>
-    <sequenceFlow id="_23" name="支付成功" sourceRef="_18" targetRef="_22"/>
-    <callActivity activiti:exclusive="true" id="_29" name="赠券商品"/>
-    <callActivity activiti:exclusive="true" id="_33" name="选择可用优惠�?"/>
+    <callActivity activiti:exclusive="true" id="_9" name="Goods(Activity-1)"/>
+    <businessRuleTask activiti:exclusive="true" id="_17" name="CBC-Pay"/>
+    <businessRuleTask activiti:exclusive="true" id="_18" name="Wechat-Pay"/>
+    <callActivity activiti:exclusive="true" id="_22" name="Send-Coupon"/>
+    <sequenceFlow id="_23" sourceRef="_18" targetRef="_22"/>
+    <callActivity activiti:exclusive="true" id="_29" name="Goods(Activity-2)"/>
+    <callActivity activiti:exclusive="true" id="_33" name="Use-MyCoupon"/>
     <sequenceFlow id="_34" sourceRef="_29" targetRef="_33"/>
-    <callActivity activiti:exclusive="true" id="_40" name="1元加油券"/>
+    <callActivity activiti:exclusive="true" id="_40" name="1$Goods"/>
     <sequenceFlow id="_3" sourceRef="_33" targetRef="_18"/>
     <sequenceFlow id="_14" sourceRef="_9" targetRef="_17"/>
-    <inclusiveGateway gatewayDirection="Unspecified" id="_19" name="有购买权�?"/>
-    <exclusiveGateway gatewayDirection="Unspecified" id="_20" name="没有权限"/>
+    <inclusiveGateway gatewayDirection="Unspecified" id="_19" name="Has-Power"/>
+    <exclusiveGateway gatewayDirection="Unspecified" id="_20" name="No-Power"/>
     <sequenceFlow id="_28" sourceRef="_13" targetRef="_40"/>
     <sequenceFlow id="_30" sourceRef="_13" targetRef="_9"/>
-    <sequenceFlow id="_31" name="选择商品" sourceRef="_13" targetRef="_29"/>
+    <sequenceFlow id="_31" sourceRef="_13" targetRef="_29"/>
     <sequenceFlow id="_32" sourceRef="_19" targetRef="_17"/>
-    <callActivity activiti:exclusive="true" id="_35" name="处理理违�?"/>
+    <callActivity activiti:exclusive="true" id="_35" name="Handle Illegal"/>
     <sequenceFlow id="_36" sourceRef="_20" targetRef="_35"/>
-    <sequenceFlow id="_37" name="首次用交行卡支付" sourceRef="_35" targetRef="_6"/>
+    <sequenceFlow id="_37" name="First  Used Cbc Pay" sourceRef="_35" targetRef="_6"/>
     <sequenceFlow id="_38" sourceRef="_5" targetRef="_35"/>
-    <subProcess activiti:exclusive="true" id="_44" name="查询购买权限" triggeredByEvent="false"/>
+    <subProcess activiti:exclusive="true" id="_44" name="Query-Buy-Power" triggeredByEvent="false"/>
     <sequenceFlow id="_46" sourceRef="_40" targetRef="_44"/>
     <sequenceFlow id="_47" sourceRef="_44" targetRef="_19"/>
     <sequenceFlow id="_48" sourceRef="_44" targetRef="_20"/>
-    <businessRuleTask activiti:exclusive="true" id="_49" name="我的订单"/>
+    <businessRuleTask activiti:exclusive="true" id="_49" name="Order"/>
     <sequenceFlow id="_50" sourceRef="_18" targetRef="_49"/>
     <sequenceFlow id="_51" sourceRef="_17" targetRef="_49"/>
-    <callActivity activiti:exclusive="true" id="_52" name="记录已购"/>
+    <callActivity activiti:exclusive="true" id="_52" name="Save-Record"/>
     <sequenceFlow id="_53" sourceRef="_17" targetRef="_52"/>
   </process>
   <bpmndi:BPMNDiagram documentation="background=#3C3F41;count=1;horizontalcount=1;orientation=0;width=842.4;height=1195.2;imageableWidth=832.4;imageableHeight=1185.2;imageableX=5.0;imageableY=5.0" id="Diagram-_1" name="New Diagram">
@@ -58,9 +58,9 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_9" id="Shape-_9" isExpanded="false">
-        <dc:Bounds height="55.0" width="85.0" x="825.0" y="170.0"/>
+        <dc:Bounds height="55.0" width="105.0" x="805.0" y="170.0"/>
         <bpmndi:BPMNLabel>
-          <dc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
+          <dc:Bounds height="55.0" width="105.0" x="0.0" y="0.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_17" id="Shape-_17">
@@ -70,7 +70,7 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_18" id="Shape-_18">
-        <dc:Bounds height="55.0" width="85.0" x="950.0" y="435.0"/>
+        <dc:Bounds height="55.0" width="85.0" x="945.0" y="435.0"/>
         <bpmndi:BPMNLabel>
           <dc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
         </bpmndi:BPMNLabel>
@@ -82,15 +82,15 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_29" id="Shape-_29" isExpanded="false">
-        <dc:Bounds height="55.0" width="85.0" x="945.0" y="170.0"/>
+        <dc:Bounds height="55.0" width="115.0" x="945.0" y="170.0"/>
         <bpmndi:BPMNLabel>
-          <dc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
+          <dc:Bounds height="55.0" width="115.0" x="0.0" y="0.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_33" id="Shape-_33" isExpanded="false">
-        <dc:Bounds height="55.0" width="85.0" x="945.0" y="305.0"/>
+        <dc:Bounds height="55.0" width="100.0" x="945.0" y="305.0"/>
         <bpmndi:BPMNLabel>
-          <dc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
+          <dc:Bounds height="55.0" width="100.0" x="0.0" y="0.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_40" id="Shape-_40" isExpanded="false">
@@ -100,7 +100,7 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_19" id="Shape-_19">
-        <dc:Bounds height="32.0" width="32.0" x="715.0" y="455.0"/>
+        <dc:Bounds height="32.0" width="32.0" x="700.0" y="465.0"/>
         <bpmndi:BPMNLabel>
           <dc:Bounds height="32.0" width="32.0" x="0.0" y="0.0"/>
         </bpmndi:BPMNLabel>
@@ -117,10 +117,10 @@
           <dc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="_44" id="Shape-_44" isExpanded="false">
-        <dc:Bounds height="55.0" width="85.0" x="685.0" y="310.0"/>
+      <bpmndi:BPMNShape bpmnElement="_44" id="Shape-_44" isExpanded="true">
+        <dc:Bounds height="55.0" width="105.0" x="685.0" y="310.0"/>
         <bpmndi:BPMNLabel>
-          <dc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
+          <dc:Bounds height="55.0" width="105.0" x="0.0" y="0.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_49" id="Shape-_49">
@@ -136,8 +136,8 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="_34" id="BPMNEdge__34" sourceElement="_29" targetElement="_33">
-        <di:waypoint x="987.5" y="225.0"/>
-        <di:waypoint x="987.5" y="305.0"/>
+        <di:waypoint x="995.0" y="225.0"/>
+        <di:waypoint x="995.0" y="305.0"/>
         <bpmndi:BPMNLabel>
           <dc:Bounds height="0.0" width="0.0" x="0.0" y="63.0"/>
         </bpmndi:BPMNLabel>
@@ -174,14 +174,14 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_46" id="BPMNEdge__46" sourceElement="_40" targetElement="_44">
-        <di:waypoint x="730.0" y="225.0"/>
-        <di:waypoint x="730.0" y="310.0"/>
+        <di:waypoint x="732.5" y="225.0"/>
+        <di:waypoint x="732.5" y="310.0"/>
         <bpmndi:BPMNLabel>
           <dc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_23" id="BPMNEdge__23" sourceElement="_18" targetElement="_22">
-        <di:waypoint x="1035.0" y="470.0"/>
+        <di:waypoint x="1030.0" y="470.0"/>
         <di:waypoint x="1090.0" y="470.0"/>
         <di:waypoint x="1155.0" y="470.0"/>
         <bpmndi:BPMNLabel>
@@ -197,8 +197,8 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_47" id="BPMNEdge__47" sourceElement="_44" targetElement="_19">
-        <di:waypoint x="731.0" y="365.0"/>
-        <di:waypoint x="731.0" y="455.0"/>
+        <di:waypoint x="716.0" y="365.0"/>
+        <di:waypoint x="716.0" y="465.0"/>
         <bpmndi:BPMNLabel>
           <dc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
         </bpmndi:BPMNLabel>
@@ -212,8 +212,8 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_3" id="BPMNEdge__3" sourceElement="_33" targetElement="_18">
-        <di:waypoint x="990.0" y="360.0"/>
-        <di:waypoint x="990.0" y="435.0"/>
+        <di:waypoint x="987.5" y="360.0"/>
+        <di:waypoint x="987.5" y="435.0"/>
         <bpmndi:BPMNLabel>
           <dc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
         </bpmndi:BPMNLabel>
@@ -272,7 +272,7 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_32" id="BPMNEdge__32" sourceElement="_19" targetElement="_17">
-        <di:waypoint x="743.0" y="475.0"/>
+        <di:waypoint x="726.0" y="475.0"/>
         <di:waypoint x="790.0" y="475.0"/>
         <di:waypoint x="825.0" y="475.0"/>
         <bpmndi:BPMNLabel>

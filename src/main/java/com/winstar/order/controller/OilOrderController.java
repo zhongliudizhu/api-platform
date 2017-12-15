@@ -27,6 +27,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author shoo on 2017/7/7 13:52.
@@ -88,6 +91,9 @@ public class OilOrderController {
             }
 
         }
+        if(!StringUtils.isEmpty(oilOrder.getCouponId())){
+            couponService.useCoupon(couponId);
+        }
         oilOrder = OilOrderUtil.initOrder(oilOrder,goods,activity.getType());
         oilOrder = orderRepository.save(oilOrder);
         //6.生成订单
@@ -126,13 +132,30 @@ public class OilOrderController {
 
     /**
      * 根据条件查询用户订单集合
+     *  0 全部  -1 已取消  1 待支付  3 已完成
      */
     @RequestMapping(value = "/{status}/status", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     @ResponseBody
     public ResponseEntity getOrdersByAccountId(@PathVariable String status, HttpServletRequest request)
             throws NotFoundException, ServiceUnavailableException, NotRuleException, MissingParameterException {
+        String accountId = accountService.getAccountId(request);
+        if(StringUtils.isEmpty(accountId)){
+            throw new NotFoundException("accountId.oilOrder");
+        }
+        if(StringUtils.isEmpty(status)){
+            throw new MissingParameterException("status.oilOrder");
+        }
+        Integer orderStatus = Integer.parseInt(status);
+        List<OilOrder> oilOrders = orderRepository.findByAccountId(accountId);
+        if(-1 == orderStatus){
+            oilOrders = oilOrders.stream().filter(o -> o.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)).collect(toList());
+        }else if( 0 == orderStatus){
 
-        return new ResponseEntity<>(null, HttpStatus.OK);
+        }else{
+            oilOrders = oilOrders.stream().filter( o -> o.getStatus()==orderStatus).filter(o -> o.getIsAvailable().equals("0")).collect(toList());
+        }
+
+        return new ResponseEntity<>(oilOrders, HttpStatus.OK);
     }
 
 
@@ -150,13 +173,13 @@ public class OilOrderController {
     @ResponseBody
     public ResponseEntity shutdownOrder(@PathVariable String serialNumber, HttpServletRequest request ) throws MissingParameterException, NotRuleException, NotFoundException {
 
-        String accountId = (String) request.getHeader("accountId");
-        if(StringUtils.isEmpty(accountId)){
-            throw new NotFoundException("accountId.oilOrder");
-        }
-        if (StringUtils.isEmpty(serialNumber)) {
-            throw new MissingParameterException("serialNumber.oilOrder");
-        }
+         String accountId = accountService.getAccountId(request);
+         if(StringUtils.isEmpty(accountId)){
+             throw new NotFoundException("accountId.oilOrder");
+         }
+         if (StringUtils.isEmpty(serialNumber)) {
+             throw new MissingParameterException("serialNumber.oilOrder");
+         }
 
          OilOrder oilOrder = orderRepository.findBySerialNo(serialNumber);
          if(ObjectUtils.isEmpty(oilOrder)){
@@ -168,8 +191,13 @@ public class OilOrderController {
          if(!oilOrder.getAccountId().equals(accountId)){
              throw new NotRuleException("notYourOrder.oilOrder");
          }
+         oilOrder.setIsAvailable(Constant.IS_NORMAL_CANCELED);
+         oilOrder = orderRepository.save(oilOrder);
+         //返还优惠券
+         if(!StringUtils.isEmpty(oilOrder.getCouponId())){
+             couponService.cancelMyCoupon(oilOrder.getCouponId());
+         }
          return new ResponseEntity<>(oilOrder, HttpStatus.OK);
-
     }
 
 

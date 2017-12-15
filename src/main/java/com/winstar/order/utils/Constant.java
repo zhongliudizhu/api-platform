@@ -72,11 +72,11 @@ public class Constant {
     /*
     * 订单是否正常：正常
     * */
-    public static final int IS_NORMAL_NORMAL = 1;
+    public static final String IS_NORMAL_NORMAL = "0";
     /*
     * 订单是否正常：已取消
     * */
-    public static final int IS_NORMAL_CANCELED = 2;
+    public static final String IS_NORMAL_CANCELED = "1";
     /*
     * 账户来源：微信
     * */
