@@ -8,6 +8,7 @@ import com.winstar.shop.repository.ActivityRepository;
 import com.winstar.shop.repository.GoodsRepository;
 import com.winstar.user.entity.PageViewLog;
 import com.winstar.user.service.AccountService;
+import com.winstar.user.service.OneMoneyCouponRecordService;
 import com.winstar.user.utils.ServiceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -47,6 +48,8 @@ public class GoodsController {
     @Autowired
     AccountService accountService;
 
+    @Autowired
+    OneMoneyCouponRecordService oneMoneyCouponRecordService;
     /**
      * 根据活动Id查询商品
      *
@@ -81,7 +84,17 @@ public class GoodsController {
         Activity activity = activityRepository.findOne(activityId);
         if (activity.getStatus() == 0)  throw new NotFoundException("this activity is closed");
         if (StringUtils.isEmpty(activity.getGoods()))  throw new NotFoundException("this activity has no goods");
+
         JSONArray array = JSONArray.parseArray(activity.getGoods());
+
+        Boolean b=oneMoneyCouponRecordService.checkBuyAuth(accountId);
+        if(!b){
+            for(int i=0;i<array.size();i++){
+                if(array.getString(i).toString().equals("8")){
+                    array.remove(i);
+                }
+            }
+        }
         Sort sorts = new Sort(Sort.Direction.DESC, "createTime");
         Pageable pageable = new PageRequest(pageNumber - 1, pageSize, sorts);
         Page<Goods> page = goodsRepository.findAll(new Specification<Goods>() {
@@ -90,6 +103,7 @@ public class GoodsController {
                 Predicate in = root.get("id").in(array);
                 list.add(cb.equal(root.<Integer>get("status"), 1));
                 list.add(in);
+
                 Predicate[] p = new Predicate[list.size()];
                 return cb.and(list.toArray(p));
             }
