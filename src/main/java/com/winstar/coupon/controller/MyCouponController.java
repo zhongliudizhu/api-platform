@@ -114,10 +114,10 @@ public class MyCouponController {
     }
 
     /**
-     * 查询我可用的优惠券
+     * 查询当前商品我可用的优惠券
      *
      * @param request
-     * @param money   金额
+     * @param goodsId   商品id
      * @return List<MyCoupon>
      * @throws MissingParameterException
      * @throws InvalidParameterException
