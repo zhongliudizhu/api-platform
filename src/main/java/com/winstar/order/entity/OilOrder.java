@@ -43,7 +43,7 @@ public class OilOrder {
     * 订单序列号
     * */
     @Column(length = 50)
-    private String serialNo;
+    private String serialNumber;
     /*
     * 付款总金额
     * */
@@ -153,9 +153,9 @@ public class OilOrder {
     private Integer payType;
 
     /* 账户id 订单序列号  状态 支付状态 下单时间 退款 商品id 活动id*/
-    public OilOrder(String accountId, String serialNo, Integer status, Integer payStatus, Date createTime, Integer refund, String itemId, String activityId) {
+    public OilOrder(String accountId, String serialNumber, Integer status, Integer payStatus, Date createTime, Integer refund, String itemId, String activityId) {
         this.accountId = accountId;
-        this.serialNo = serialNo;
+        this.serialNumber = serialNumber;
         this.status = status;
         this.payStatus = payStatus;
         this.createTime = createTime;

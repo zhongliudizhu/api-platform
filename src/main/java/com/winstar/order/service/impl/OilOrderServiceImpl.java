@@ -25,7 +25,7 @@ public class OilOrderServiceImpl implements OilOrderService {
         if (payStatus != 0 && payStatus != 1 ) {
             return "1";
         }
-        OilOrder oilOrder = oilOrderRepository.findBySerialNo(payInfo.getOrderSerialNumber());
+        OilOrder oilOrder = oilOrderRepository.findBySerialNumber(payInfo.getOrderSerialNumber());
         if(ObjectUtils.isEmpty(oilOrder)){
             return "2";
         }

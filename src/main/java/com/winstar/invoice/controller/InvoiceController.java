@@ -55,7 +55,7 @@ public class InvoiceController {
             throw new MissingParameterException(paramStr+".invoice");
         }
 
-        OilOrder oilOrder = oilOrderRepository.findBySerialNo(orderSerialNo);
+        OilOrder oilOrder = oilOrderRepository.findBySerialNumber(orderSerialNo);
         if(ObjectUtils.isEmpty(oilOrder)){
             throw new NotFoundException("oilOrder.invoice");
         }

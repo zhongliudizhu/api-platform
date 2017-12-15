@@ -17,7 +17,7 @@ public interface OilOrderRepository extends JpaRepository<OilOrder,String> {
      * @param serialNo 订单序列号
      * @return result
      */
-    OilOrder findBySerialNo(String serialNo);
+    OilOrder findBySerialNumber(String serialNo);
 
     /*
     * 查询用户油券订单

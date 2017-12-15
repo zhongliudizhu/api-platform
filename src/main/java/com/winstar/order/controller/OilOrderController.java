@@ -48,8 +48,6 @@ public class OilOrderController {
     @Autowired
     private AccountService accountService;
 
-
-
     /**
      * 添加油券订单
      * @param itemId 商品id
@@ -107,15 +105,21 @@ public class OilOrderController {
     @RequestMapping(value = "/judge/{serialNumber}/", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     @ResponseBody
     public ResponseEntity judgeOrder(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
-
+        if(StringUtils.isEmpty(serialNumber)){
+            throw new MissingParameterException("serialNumber.order");
+        }
+        OilOrder order = orderRepository.findBySerialNumber(serialNumber);
+        if(ObjectUtils.isEmpty(order)){
+            throw new NotFoundException("oilOrder.order");
+        }
+        if(order.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)){
+            throw  new NotRuleException("closed.order");
+        }
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
-    /* 查询单个订单-根据序列号
-     *
-     * @param serialNumber 订单序列号
-     * @return 订单
-     * @throws MissingParameterException
+    /* *
+     * 查询单个订单-根据序列号
      */
     @RequestMapping(value = "/{serialNumber}/serialNumber", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     @ResponseBody
@@ -123,7 +127,7 @@ public class OilOrderController {
         if(StringUtils.isEmpty(serialNumber)){
             throw new MissingParameterException("serialNumber.order");
         }
-        OilOrder order = orderRepository.findBySerialNo(serialNumber);
+        OilOrder order = orderRepository.findBySerialNumber(serialNumber);
         if(ObjectUtils.isEmpty(order)){
             throw  new NotFoundException("oilOrder.order");
         }
@@ -154,25 +158,20 @@ public class OilOrderController {
         }else{
             oilOrders = oilOrders.stream().filter( o -> o.getStatus()==orderStatus).filter(o -> o.getIsAvailable().equals("0")).collect(toList());
         }
-
+        if(oilOrders.size()<=0){
+            throw new NotFoundException("orders.order");
+        }
         return new ResponseEntity<>(oilOrders, HttpStatus.OK);
     }
-
-
-
-
 
     /**
      * 关闭油券订单:只有未付款的订单才能关闭
      * @param serialNumber 订单序列号
      * @return 订单
-     * @throws MissingParameterException miss
-     * @throws NotRuleException not rule
      */
     @RequestMapping(value = "/shutdown/{serialNumber}/", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity shutdownOrder(@PathVariable String serialNumber, HttpServletRequest request ) throws MissingParameterException, NotRuleException, NotFoundException {
-
          String accountId = accountService.getAccountId(request);
          if(StringUtils.isEmpty(accountId)){
              throw new NotFoundException("accountId.oilOrder");
@@ -181,12 +180,15 @@ public class OilOrderController {
              throw new MissingParameterException("serialNumber.oilOrder");
          }
 
-         OilOrder oilOrder = orderRepository.findBySerialNo(serialNumber);
+         OilOrder oilOrder = orderRepository.findBySerialNumber(serialNumber);
          if(ObjectUtils.isEmpty(oilOrder)){
              throw new NotFoundException("oilOrder.oilOrder");
          }
          if(oilOrder.getStatus()!=1){
              throw new NotRuleException("cannotShutdown.oilOrder");
+         }
+         if(oilOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)){
+             throw new NotRuleException("alreadyClosed.oilOrder");
          }
          if(!oilOrder.getAccountId().equals(accountId)){
              throw new NotRuleException("notYourOrder.oilOrder");
@@ -197,7 +199,7 @@ public class OilOrderController {
          if(!StringUtils.isEmpty(oilOrder.getCouponId())){
              couponService.cancelMyCoupon(oilOrder.getCouponId());
          }
-         return new ResponseEntity<>(oilOrder, HttpStatus.OK);
+         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
 

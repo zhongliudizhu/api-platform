@@ -25,7 +25,7 @@ public class InvoiceUtil {
     public static Invoice initInvoice(Invoice invoice, OilOrder oilOrder){
         invoice.setOilTotalValue(oilOrder.getItemTotalValue());
         invoice.setPayPrice(oilOrder.getPayPrice());
-        invoice.setOrderSerialNo(oilOrder.getSerialNo());
+        invoice.setOrderSerialNo(oilOrder.getSerialNumber());
         invoice.setCreateTime(new Date());
         invoice.setStatus(0);//待开票
         invoice.setIsDel("0");
