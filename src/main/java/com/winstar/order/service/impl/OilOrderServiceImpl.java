@@ -1,9 +1,13 @@
 package com.winstar.order.service.impl;
 
+import com.winstar.coupon.entity.MyCoupon;
+import com.winstar.coupon.service.CouponService;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.service.OilOrderService;
 import com.winstar.order.vo.PayInfoVo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -16,8 +20,11 @@ import java.util.Date;
  */
 @Service
 public class OilOrderServiceImpl implements OilOrderService {
+    private static Logger logger = LoggerFactory.getLogger(CouponService.class);
     @Autowired
     private OilOrderRepository oilOrderRepository;
+    @Autowired
+    private CouponService couponService;
     @Override
     public String updateOrderCashier(PayInfoVo payInfo) {
         Date time = new Date();
@@ -39,8 +46,11 @@ public class OilOrderServiceImpl implements OilOrderService {
         oilOrder.setStatus(3);
         oilOrder.setUpdateTime(time);
         oilOrder.setFinishTime(time);
-
         oilOrderRepository.save(oilOrder);
+        MyCoupon coupon = couponService.sendCoupon(oilOrder.getAccountId(),oilOrder.getActivityId(),oilOrder.getItemId());
+        if(!ObjectUtils.isEmpty(coupon)){
+            logger.info("活动2，发优惠券，couponId："+coupon.getId());
+        }
         return "ok";
     }
 }
