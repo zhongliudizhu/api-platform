@@ -19,7 +19,7 @@ import java.util.List;
 @Service
 public class OneMoneyCouponRecordService {
 
-    static final Integer STATUS_USED = 1;
+    static final Integer STATUS_UNUSED = 0;
 
     @Autowired
     OneMoneyCouponRecordRepository oneMoneyCouponRecordRepository;
@@ -31,9 +31,9 @@ public class OneMoneyCouponRecordService {
      * @return true 有 false 无
      */
     public boolean checkBuyAuth(String accountId) {
-        int count = oneMoneyCouponRecordRepository.countByAccountIdAndStatus(accountId, STATUS_USED);
-        if (count > 0) return false;
-        return true;
+        int count = oneMoneyCouponRecordRepository.countByAccountIdAndStatus(accountId, STATUS_UNUSED);
+        if (count > 0) return true;
+        return false;
     }
 
     /**
