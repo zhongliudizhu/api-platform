@@ -79,7 +79,7 @@ public class OilOrderController {
         OilOrder oilOrder = new OilOrder(accountId,serialNumber, Constant.ORDER_STATUS_CREATE,Constant.PAY_STATUS_NOT_PAID,new Date(),Constant.REFUND_STATUS_ORIGINAL,itemId,activityId);
         //4.如果优惠券，查询优惠券
         if(!StringUtils.isEmpty(couponId)){
-            MyCoupon myCoupon = couponService.findMyCouponById(couponId,itemId);
+            MyCoupon myCoupon = couponService.checkIfMyCouponAvailable(couponId,itemId);
             oilOrder.setCouponId(couponId);
             if(ObjectUtils.isEmpty(myCoupon.getAmount())){
                 oilOrder.setDiscountAmount(goods.getSaledPrice()*(1-myCoupon.getDiscountRate()));
