@@ -17,7 +17,7 @@ import java.util.List;
  **/
 public interface OneMoneyCouponRecordRepository extends JpaRepository<OneMoneyCouponRecord, String> {
     @Modifying
-    @Query(value = "update OneMoneyCouponRecord  set status=2, updateTime = sysdate() where accountId=?1")
+    @Query(value = "update OneMoneyCouponRecord  set status=1, updateTime = sysdate() where accountId=?1")
     void updateStatus(String accountId);
     Integer countByAccountId(String accountId);
 

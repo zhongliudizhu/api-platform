@@ -1,28 +1,14 @@
 package com.winstar.user.controller;
 
 import com.winstar.exception.NotRuleException;
-import com.winstar.user.entity.AccessToken;
-import com.winstar.user.entity.Account;
 import com.winstar.user.entity.OneMoneyCouponRecord;
-import com.winstar.user.param.AccountParam;
-import com.winstar.user.repository.OneMoneyCouponRecordRepository;
-import com.winstar.user.service.OneMoneyCouponRecordService;
 import com.winstar.user.utils.ServiceManager;
-import com.winstar.user.utils.SimpleResult;
-import com.winstar.user.utils.UUIDUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.persistence.Transient;
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.ws.Service;
-import java.util.Date;
 
 
 /**
@@ -32,7 +18,6 @@ import java.util.Date;
 @RequestMapping("/api/v1/cbc/OneMoneyCouponRecord")
 public class OneMoneyCouponRecordController {
 
-    static final Integer STATUS_UNUSED = 0;
 
     /**
      * 添加购买资格
