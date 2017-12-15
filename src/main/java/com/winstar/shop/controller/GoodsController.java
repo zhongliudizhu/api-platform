@@ -40,6 +40,8 @@ import java.util.List;
 @RequestMapping("/api/v1/cbc/goods")
 public class GoodsController {
 
+    static final String GoodId = "8"; //0.01元抢购券
+
     @Autowired
     GoodsRepository goodsRepository;
 
@@ -90,7 +92,7 @@ public class GoodsController {
         Boolean b=oneMoneyCouponRecordService.checkBuyAuth(accountId);
         if(!b){
             for(int i=0;i<array.size();i++){
-                if(array.getString(i).toString().equals("8")){
+                if(array.getString(i).toString().equals(GoodId)){
                     array.remove(i);
                 }
             }
