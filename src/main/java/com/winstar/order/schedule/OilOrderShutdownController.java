@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * @author shoo on 2017/10/12 16:45.
+ * @author shoo on 2017/12/15 16:45.
  * @Describe： 定时关闭未付款的订单，使用优惠券的返还优惠券(每整点关闭半小时之前的)
  */
 @Component
@@ -38,7 +38,6 @@ public class OilOrderShutdownController {
 
     @Scheduled(cron = "0 0/30 * * * ?")
     public void shutdownOilOrder() throws NotRuleException {
-        Date now = DateUtil.getNowDate();
         Date end = DateUtil.addMinute(DateUtil.getNowDate(),-30);
         Date begin = DateUtil.addYear(end,-1);
         //查出未付款未关闭的订单
@@ -46,6 +45,7 @@ public class OilOrderShutdownController {
         for (OilOrder oilOrder:orders
              ) {
             oilOrder.setIsAvailable("1");
+            oilOrder.setUpdateTime(new Date());
             if(!StringUtils.isEmpty(oilOrder.getCouponId())){
                 //1.返还优惠券
                 couponService.cancelMyCoupon(oilOrder.getCouponId());

@@ -15,6 +15,7 @@ import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
 import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
+import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,9 @@ public class OilOrderController {
         //3.根据活动id查询活动
         Activity activity = shopService.findByActivityId(activityId);
 
+        if(ObjectUtils.isEmpty(activity)){
+            throw new NotFoundException("activity.order");
+        }
         if(activity.getType()==1&&!StringUtils.isEmpty(couponId)){
             throw new NotRuleException("canNotUseCoupon.order");
         }
