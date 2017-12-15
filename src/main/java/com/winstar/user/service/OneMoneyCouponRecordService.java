@@ -4,7 +4,10 @@ import com.winstar.user.entity.OneMoneyCouponRecord;
 import com.winstar.user.repository.OneMoneyCouponRecordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -16,6 +19,8 @@ import java.util.List;
 @Service
 public class OneMoneyCouponRecordService {
 
+    static final Integer STATUS_USED = 1;
+
     @Autowired
     OneMoneyCouponRecordRepository oneMoneyCouponRecordRepository;
 
@@ -26,8 +31,8 @@ public class OneMoneyCouponRecordService {
      * @return true 有 false 无
      */
     public boolean checkBuyAuth(String accountId) {
-        List<OneMoneyCouponRecord> list = oneMoneyCouponRecordRepository.findByAccountId(accountId);
-        if (list.size() > 0) return false;
+        int count = oneMoneyCouponRecordRepository.countByAccountIdAndStatus(accountId, STATUS_USED);
+        if (count > 0) return false;
         return true;
     }
 
@@ -37,13 +42,9 @@ public class OneMoneyCouponRecordService {
      * @param accountId
      * @return
      */
-    public OneMoneyCouponRecord changeStatus(String accountId) {
-        List<OneMoneyCouponRecord> list = oneMoneyCouponRecordRepository.findByAccountId(accountId);
-        for (OneMoneyCouponRecord record : list) {
-            record.setStatus(1);
-            oneMoneyCouponRecordRepository.save(record);
-        }
-        return null;
+    @Transactional
+    public void changeStatus(String accountId) {
+        oneMoneyCouponRecordRepository.updateStatus(accountId);
     }
 
     /**
@@ -58,6 +59,8 @@ public class OneMoneyCouponRecordService {
         record.setStatus(0);
         record.setAccountId(accountId);
         record.setOrderId(orderId);
+        record.setCreateTime(new Date());
+        record.setUpdateTime(new Date());
         OneMoneyCouponRecord oneMoneyCouponRecord = oneMoneyCouponRecordRepository.save(record);
         return oneMoneyCouponRecord;
     }
