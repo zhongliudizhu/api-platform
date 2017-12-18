@@ -2,6 +2,7 @@ package com.winstar.shop.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.winstar.exception.*;
+import com.winstar.order.utils.DateUtil;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.ActivityRepository;
@@ -27,7 +28,6 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -121,10 +121,7 @@ public class GoodsController {
      * @return
      */
     public static boolean checkTime(){
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        int hour= calendar.get(Calendar.HOUR);
+        int hour = DateUtil.getHour(new Date());
         if(7<=hour && hour<=23){
             return  true;
         }
