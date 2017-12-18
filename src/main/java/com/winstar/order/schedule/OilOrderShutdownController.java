@@ -24,7 +24,7 @@ import java.util.List;
 
 /**
  * @author shoo on 2017/12/15 16:45.
- * @Describe： 定时关闭未付款的订单，使用优惠券的返还优惠券(每整点关闭半小时之前的)
+ *  定时关闭未付款的订单，使用优惠券的返还优惠券(每整点或半点关闭半小时之前的)
  */
 @Component
 @EnableScheduling

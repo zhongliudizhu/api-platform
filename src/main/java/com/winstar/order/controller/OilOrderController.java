@@ -1,5 +1,6 @@
 package com.winstar.order.controller;
 
+import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.exception.MissingParameterException;
@@ -9,6 +10,7 @@ import com.winstar.exception.ServiceUnavailableException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.Constant;
+import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.OilOrderUtil;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
@@ -78,6 +80,14 @@ public class OilOrderController {
         }
         if(activity.getType()==1&&!StringUtils.isEmpty(couponId)){
             throw new NotRuleException("canNotUseCoupon.order");
+        }
+        if(activity.getType()==1&&!StringUtils.isEmpty(couponId)){
+            throw new NotRuleException("canNotUseCoupon.order");
+        }
+        if(itemId.equals(Constant.ONE_BUY_ITEMID)){
+            if(!OilOrderUtil.isEnable(accountId)){
+                throw new NotRuleException("canNotBuy.order");
+            }
         }
 
         //5.初始化订单及订单项

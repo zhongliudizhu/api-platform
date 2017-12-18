@@ -91,6 +91,9 @@ public class Constant {
     * */
     public static final int REFUND_STATUS_SUCCESS = 1;
 
+    public static final String ONE_BUY_ITEMID = "8";
+
+    public static final int ONE_DAY_MAX = 500;
 
 
 }

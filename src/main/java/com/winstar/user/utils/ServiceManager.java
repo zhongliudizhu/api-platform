@@ -1,5 +1,6 @@
 package com.winstar.user.utils;
 
+import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.user.repository.AccessTokenRepository;
 import com.winstar.user.repository.AccountRepository;
 import com.winstar.user.repository.OneMoneyCouponRecordRepository;
@@ -9,6 +10,7 @@ import com.winstar.user.service.OneMoneyCouponRecordService;
 import com.winstar.user.service.PageViewLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 @Component
 public class ServiceManager {
@@ -22,6 +24,7 @@ public class ServiceManager {
     public static OneMoneyCouponRecordService oneMoneyCouponRecordService;
 
     public static OneMoneyCouponRecordRepository oneMoneyCouponRecordRepository;
+    public static OilOrderRepository oilOrderRepository;
 
     @Autowired
     public void setAccessTokenRepository(AccessTokenRepository accessTokenRepository) {
@@ -56,5 +59,9 @@ public class ServiceManager {
     @Autowired
     public void setOneMoneyCouponRecordRepository(OneMoneyCouponRecordRepository oneMoneyCouponRecordRepository) {
         ServiceManager.oneMoneyCouponRecordRepository = oneMoneyCouponRecordRepository;
+    }
+    @Autowired
+    public void setOilOrderRepository(OilOrderRepository oilOrderRepository){
+        ServiceManager.oilOrderRepository = oilOrderRepository;
     }
 }

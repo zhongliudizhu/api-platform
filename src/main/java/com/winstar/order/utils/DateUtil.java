@@ -20,13 +20,29 @@ public class DateUtil {
     }
 
     /**
-     * 获取当天00：30：00
+     * 获取当月开始时间
      * @return Date
      */
-    public static Date getDayBegin2() {
+    public static Date getMonthBegin() {
+        Calendar currentDate = new GregorianCalendar();
+        int year = currentDate.get(Calendar.YEAR);
+        int month = currentDate.get(Calendar.MONTH);
+        int day = currentDate.getActualMinimum(Calendar.DAY_OF_MONTH);
+        currentDate.set(year,month,day);
+        currentDate.set(Calendar.HOUR_OF_DAY, 0);
+        currentDate.set(Calendar.MINUTE, 0);
+        currentDate.set(Calendar.SECOND, 0);
+        return (Date)currentDate.getTime().clone();
+    }
+
+    /**
+     * 获取当天几点（传入的时）
+     * @return Date
+     */
+    public static Date getDayHour(int hour) {
         Calendar currentDate = new GregorianCalendar();
 
-        currentDate.set(Calendar.HOUR_OF_DAY, 6);
+        currentDate.set(Calendar.HOUR_OF_DAY, hour);
         currentDate.set(Calendar.MINUTE, 0);
         currentDate.set(Calendar.SECOND, 0);
         return (Date)currentDate.getTime().clone();
@@ -39,6 +55,22 @@ public class DateUtil {
     public static Date getDayEnd() {
         Calendar currentDate = new GregorianCalendar();
 
+        currentDate.set(Calendar.HOUR_OF_DAY, 23);
+        currentDate.set(Calendar.MINUTE, 59);
+        currentDate.set(Calendar.SECOND, 59);
+        return (Date)currentDate.getTime().clone();
+    }
+
+    /**
+     * 获取当月结束时间
+     * @return date
+     */
+    public static Date getMonthEnd() {
+        Calendar currentDate = new GregorianCalendar();
+        int year = currentDate.get(Calendar.YEAR);
+        int month = currentDate.get(Calendar.MONTH);
+        int day = currentDate.getActualMinimum(Calendar.DAY_OF_MONTH);
+        currentDate.set(year,month,day);
         currentDate.set(Calendar.HOUR_OF_DAY, 23);
         currentDate.set(Calendar.MINUTE, 59);
         currentDate.set(Calendar.SECOND, 59);

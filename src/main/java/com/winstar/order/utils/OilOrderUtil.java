@@ -4,6 +4,7 @@ package com.winstar.order.utils;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.vo.OilDetailVo;
 import com.winstar.shop.entity.Goods;
+import com.winstar.user.utils.ServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,31 +52,9 @@ public class OilOrderUtil {
         int r1=getRandomNum(5);
         int r2 = getRandomNum(5);
         String serialNumber = DateUtil.DateToString(new Date(), "yyyyMMddHHmmss");
-        serialNumber = serialNumber + "yj"+ String.valueOf(r1) + String.valueOf(r2);
+        serialNumber = serialNumber + "wxyj"+ String.valueOf(r1) + String.valueOf(r2);
         return serialNumber;
     }
-
-
-
-
-    /**
-     * 更新优惠券（即使用）
-     * @param couponId 优惠券id
-     * @param consumeCouponUrl url
-     * @return 优惠券
-     */
-
-
-
-
-
-    /**
-     * 发放优惠券
-     * @param map 所需参数
-     * @param giveCouponUrl url
-     * @return
-     */
-
 
 
     /**
@@ -86,7 +65,7 @@ public class OilOrderUtil {
     public static OilOrder initOrder(OilOrder order, Goods goods, Integer activityType){
 
         if(activityType==1){
-            if(goods.getId().equals("8")){
+            if(goods.getId().equals(Constant.ONE_BUY_ITEMID)){
                 order.setPayPrice(goods.getSaledPrice());
             }else{
                 order.setPayPrice(goods.getSaledPrice()*goods.getDisCount());
@@ -116,19 +95,42 @@ public class OilOrderUtil {
         return sb.toString();
     }
 
+    /*
+    * 用户是否能购买一分油券
+    * */
+    public static boolean isEnable(String accountId){
+        if(!judgeTime(new Date())){
+            return false;
+        }
+        if(todaySold().size()>=Constant.ONE_DAY_MAX){
+            return false;
+        }
+        return thisMonth(accountId).size()<=0;
+    }
 
-    /**
-     * accountId 查询Account
-     * @param accountId accountId
-     * @return  Account  账户信息
-     */
+    /*
+    * 用户本月20元油券订单
+    * */
+    private static List<OilOrder> thisMonth(String accountId){
+        return ServiceManager.oilOrderRepository.findByAccountIdAndAndItemId(accountId,Constant.ONE_BUY_ITEMID,DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
+    }
 
+    /*
+    * 20元油券今天已售数量
+    * */
+    private static List<OilOrder> todaySold(){
+       return ServiceManager.oilOrderRepository.findByIsAvailableAndItemIdAndCreateTime(Constant.IS_NORMAL_NORMAL,Constant.ONE_BUY_ITEMID,DateUtil.getDayBegin(),DateUtil.getDayEnd());
+    }
 
-    /**
-     * 查询账户当天促销订单数量
-     * @param accountId 账户id
-     * @return 订单数量
-     */
+    /*
+    * 判断时间是否在 7:00——24:00
+    * */
+    private static boolean judgeTime(Date time){
+        if(time.after(DateUtil.getDayHour(7)) && time.before( DateUtil.getDayEnd() )){
+            return true;
+        }
+        return false;
+    }
 
 
 }
