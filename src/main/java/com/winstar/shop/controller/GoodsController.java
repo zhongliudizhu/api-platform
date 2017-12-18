@@ -2,6 +2,7 @@ package com.winstar.shop.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.winstar.exception.*;
+import com.winstar.order.utils.DateUtil;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.ActivityRepository;
@@ -90,7 +91,8 @@ public class GoodsController {
         JSONArray array = JSONArray.parseArray(activity.getGoods());
 
         Boolean b=oneMoneyCouponRecordService.checkBuyAuth(accountId);
-        if(!b){
+
+        if(!b || !checkTime()){
             for(int i=0;i<array.size();i++){
                 if(array.getString(i).toString().equals(GoodId)){
                     array.remove(i);
@@ -112,6 +114,18 @@ public class GoodsController {
         }, pageable);
         if (page.getContent().size() == 0)  throw new NotFoundException("goods");
         return page.getContent();
+    }
+
+    /**
+     * 每日7:00-24:00可抢购
+     * @return
+     */
+    public static boolean checkTime(){
+        int hour = DateUtil.getHour(new Date());
+        if(7<=hour && hour<=23){
+            return  true;
+        }
+        return  false;
     }
 
 }
