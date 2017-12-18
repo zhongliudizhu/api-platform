@@ -42,6 +42,9 @@ import java.util.List;
 public class GoodsController {
 
     static final String GoodId = "8"; //0.01元抢购券
+    static final Integer Status = 1;
+    static final Integer HOUR_BEGIN = 7;
+    static final Integer HOUR_END = 23;
 
     @Autowired
     GoodsRepository goodsRepository;
@@ -105,7 +108,7 @@ public class GoodsController {
             public Predicate toPredicate(Root<Goods> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
                 List<Predicate> list = new ArrayList<Predicate>();
                 Predicate in = root.get("id").in(array);
-                list.add(cb.equal(root.<Integer>get("status"), 1));
+                list.add(cb.equal(root.<Integer>get("status"), Status));
                 list.add(in);
 
                 Predicate[] p = new Predicate[list.size()];
@@ -122,7 +125,7 @@ public class GoodsController {
      */
     public static boolean checkTime(){
         int hour = DateUtil.getHour(new Date());
-        if(7<=hour && hour<=23){
+        if(HOUR_BEGIN<=hour && hour<=HOUR_END){
             return  true;
         }
         return  false;
