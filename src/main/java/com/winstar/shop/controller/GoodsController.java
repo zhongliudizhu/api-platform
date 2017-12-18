@@ -45,7 +45,7 @@ public class GoodsController {
     static final Integer Status = 1;
     static final Integer HOUR_BEGIN = 7;
     static final Integer HOUR_END = 23;
-
+    static final String SORT = "createTime";
     @Autowired
     GoodsRepository goodsRepository;
 
@@ -102,7 +102,7 @@ public class GoodsController {
                 }
             }
         }
-        Sort sorts = new Sort(Sort.Direction.DESC, "createTime");
+        Sort sorts = new Sort(Sort.Direction.DESC, SORT);
         Pageable pageable = new PageRequest(pageNumber - 1, pageSize, sorts);
         Page<Goods> page = goodsRepository.findAll(new Specification<Goods>() {
             public Predicate toPredicate(Root<Goods> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
