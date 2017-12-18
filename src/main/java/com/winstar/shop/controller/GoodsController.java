@@ -27,6 +27,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -90,7 +91,8 @@ public class GoodsController {
         JSONArray array = JSONArray.parseArray(activity.getGoods());
 
         Boolean b=oneMoneyCouponRecordService.checkBuyAuth(accountId);
-        if(!b){
+
+        if(!b || !checkTime()){
             for(int i=0;i<array.size();i++){
                 if(array.getString(i).toString().equals(GoodId)){
                     array.remove(i);
@@ -112,6 +114,21 @@ public class GoodsController {
         }, pageable);
         if (page.getContent().size() == 0)  throw new NotFoundException("goods");
         return page.getContent();
+    }
+
+    /**
+     * 每日7:00-24:00可抢购
+     * @return
+     */
+    public static boolean checkTime(){
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        int hour= calendar.get(Calendar.HOUR);
+        if(7<=hour && hour<=23){
+            return  true;
+        }
+        return  false;
     }
 
 }
