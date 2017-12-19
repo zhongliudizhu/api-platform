@@ -90,4 +90,29 @@ public class PayLog {
     @Column(name = "payAmount",length = 12)
     private String payAmount;
 
+    public PayLog(String orderNumber,String orderAmount,String customerIp,String applyUrl,String reqInfo,String code,String message,String payAmount,String qid,String respInfo){
+        this.orderNumber = orderNumber;
+        this.orderAmount = orderAmount;
+        this.createdAt = new Date();
+        this.customerIp = customerIp;
+        this.applyUrl = applyUrl;
+        this.reqInfo = reqInfo;
+        this.code = code;
+        this.message = message;
+        this.payAmount = payAmount;
+        this.qid = qid;
+        this.respInfo = respInfo;
+    }
+
+    public PayLog(String orderNumber,String orderAmount,String customerIp,String applyUrl,String reqInfo,String code,String message){
+        this.orderNumber = orderNumber;
+        this.orderAmount = orderAmount;
+        this.createdAt = new Date();
+        this.customerIp = customerIp;
+        this.applyUrl = applyUrl;
+        this.reqInfo = reqInfo;
+        this.code = code;
+        this.message = message;
+    }
+
 }
