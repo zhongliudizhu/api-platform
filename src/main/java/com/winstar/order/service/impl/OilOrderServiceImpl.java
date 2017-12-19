@@ -53,4 +53,9 @@ public class OilOrderServiceImpl implements OilOrderService {
         }
         return "ok";
     }
+
+    @Override
+    public OilOrder getOneOrder(String serialNumber) {
+        return oilOrderRepository.findBySerialNumber(serialNumber);
+    }
 }
