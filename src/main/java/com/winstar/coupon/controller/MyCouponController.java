@@ -49,7 +49,7 @@ public class MyCouponController {
     GoodsRepository goodsRepository;
 
     /**
-     * 商品列表
+     * 我的优惠券列表
      *
      * @param request    HttpServletRequest
      * @param status     状态 0 未使用 1 已使用 2 已失效
