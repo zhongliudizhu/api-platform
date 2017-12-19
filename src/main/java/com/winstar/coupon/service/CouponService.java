@@ -1,10 +1,13 @@
 package com.winstar.coupon.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.winstar.coupon.entity.CouponTemplate;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.CouponTemplateRepository;
 import com.winstar.coupon.repository.MyCouponRepository;
+import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
+import com.winstar.shop.repository.ActivityRepository;
 import com.winstar.shop.repository.GoodsRepository;
 import com.winstar.user.service.AccountService;
 import org.slf4j.Logger;
@@ -43,6 +46,9 @@ public class CouponService {
 
     @Autowired
     AccountService accountService;
+
+    @Autowired
+    ActivityRepository activityRepository;
     /**
      * 发送优惠券
      *
@@ -187,6 +193,46 @@ public class CouponService {
         return  coupon;
     }
 
+    /**
+     * 验证活动是否能用优惠券
+     * @param activityId
+     * @param goodId
+     * @return true 可用， false 不可用
+     */
+    public boolean checkActivityAndGoods(String activityId,String goodId,String myCouponId){
+        Activity activity=activityRepository.findOne(activityId);
+        if(activity.getType()==1){
+          logger.info("活动一不能使用优惠券！");
+            return  false;
+        }
+        JSONArray array=JSONArray.parseArray(activity.getGoods());
+        int k=0;
+        for(int i=0;i<array.size();i++){
+            if(array.getString(i).equals(goodId)){
+               k+=1;
+            }
+        }
+        if(k==0){
+            logger.info("此活动："+activityId+" 不包含商品："+goodId);
+            return  false;
+        }
+        Goods goods=goodsRepository.findOne(goodId);
+
+        MyCoupon myCoupon=myCouponRepository.findOne(myCouponId);
+
+        if(myCoupon.getValidEndAt().getTime()<new Date().getTime()){
+            logger.info("此优惠券已过期！"+myCouponId);
+            return  false;
+        }
+
+        if(myCoupon.getUseRule()<goods.getSaledPrice()){
+            logger.info("此优惠券使用金额当前商品不满足 ："+goodId);
+            return false;
+        }
+
+
+        return  true;
+    }
 
 
 }
