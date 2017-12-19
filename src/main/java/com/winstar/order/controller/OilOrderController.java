@@ -68,20 +68,20 @@ public class OilOrderController {
 
         //1.根据accountId 查询account
         Account account = accountService.findById(accountId);
-
         //2.根据商品id 查询商品
         Goods goods = shopService.findByGoodsId(itemId);
-
+        if(ObjectUtils.isEmpty(goods)){
+            throw new NotFoundException("goods.order");
+        }
         //3.根据活动id查询活动
         Activity activity = shopService.findByActivityId(activityId);
-
         if(ObjectUtils.isEmpty(activity)){
             throw new NotFoundException("activity.order");
         }
         if(activity.getType()==1&&!StringUtils.isEmpty(couponId)){
             throw new NotRuleException("canNotUseCoupon.order");
         }
-        if(activity.getType()==1&&!StringUtils.isEmpty(couponId)){
+        if(StringUtils.isEmpty(goods.getCouponTempletId())&&!StringUtils.isEmpty(couponId)){
             throw new NotRuleException("canNotUseCoupon.order");
         }
         if(itemId.equals(Constant.ONE_BUY_ITEMID)){
