@@ -112,7 +112,8 @@ public class OilOrderUtil {
     * 用户本月20元油券订单
     * */
     private static List<OilOrder> thisMonth(String accountId){
-        return ServiceManager.oilOrderRepository.findByAccountIdAndAndItemId(accountId,Constant.ONE_BUY_ITEMID,DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
+        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndAndItemId(accountId,Constant.ONE_BUY_ITEMID,DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
+        return oilOrders;
     }
 
     /*

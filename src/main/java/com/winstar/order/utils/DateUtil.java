@@ -69,7 +69,7 @@ public class DateUtil {
         Calendar currentDate = new GregorianCalendar();
         int year = currentDate.get(Calendar.YEAR);
         int month = currentDate.get(Calendar.MONTH);
-        int day = currentDate.getActualMinimum(Calendar.DAY_OF_MONTH);
+        int day = currentDate.getActualMaximum(Calendar.DAY_OF_MONTH);
         currentDate.set(year,month,day);
         currentDate.set(Calendar.HOUR_OF_DAY, 23);
         currentDate.set(Calendar.MINUTE, 59);
