@@ -1,5 +1,6 @@
 package com.winstar.user.controller;
 
+import com.netflix.discovery.util.StringUtil;
 import com.winstar.exception.NotRuleException;
 import com.winstar.user.entity.OneMoneyCouponRecord;
 import com.winstar.user.utils.ServiceManager;
@@ -23,16 +24,20 @@ public class OneMoneyCouponRecordController {
      * 添加购买资格
      *
      * @param orderId
+     * @param openid  优驾行openid
      * @param request
      * @return
      * @throws NotRuleException
      */
     @PostMapping(value = "/save", produces = "application/json")
-    public OneMoneyCouponRecord getToken(String orderId, HttpServletRequest request) throws NotRuleException {
+    public OneMoneyCouponRecord saveOneMoneyCouponRecord(String orderId, String openid, HttpServletRequest request) throws NotRuleException {
         if (StringUtils.isEmpty(orderId)) {
             throw new NotRuleException("orderId");
-        }
-        Integer count = ServiceManager.oneMoneyCouponRecordRepository.countByAccountId(ServiceManager.accountService.getAccountId(request));
+        } else if (StringUtils.isEmpty(openid))
+            throw new NotRuleException("openid");
+
+        String accountId = ServiceManager.accountService.findAccountIdByOpenid(openid);
+        Integer count = ServiceManager.oneMoneyCouponRecordRepository.countByAccountId(accountId);
         if (count > 0)
             throw new NotRuleException("justOnce.oneMoneyCoupon");
 

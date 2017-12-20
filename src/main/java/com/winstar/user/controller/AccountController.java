@@ -34,7 +34,7 @@ public class AccountController {
         checkGetTokenRule(accountParam);
         Account account = ServiceManager.accountRepository.findByOpenid(accountParam.getOpenid());
         if (null == account) {
-            Account accountSaved = createAccount(accountParam);
+            Account accountSaved = ServiceManager.accountService.createAccount(accountParam);
             return createAccessToken(accountSaved);
         }
         AccessToken accessToken = ServiceManager.accessTokenRepository.findByAccountId(account.getId());
@@ -65,22 +65,7 @@ public class AccountController {
     }
 
 
-    /**
-     * 创建用户信息
-     *
-     * @param accountParam accountParam
-     * @return Account Account
-     */
-    private Account createAccount(@RequestBody AccountParam accountParam) {
-        Account account;
-        account = new Account();
-        account.setCreateTime(new Date());
-        account.setUpdateTime(new Date());
-        account.setHeadImgUrl(accountParam.getHeadImgUrl());
-        account.setOpenid(accountParam.getOpenid());
-        account.setNickName(accountParam.getNickName());
-        return ServiceManager.accountRepository.save(account);
-    }
+
 
     /**
      * 更新token信息
