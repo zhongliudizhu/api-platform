@@ -1,4 +1,4 @@
-package com.winstar.cashier.utils;
+package com.winstar.cashier.construction.utils;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;

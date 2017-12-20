@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.winstar.cashier.utils;
+package com.winstar.cashier.construction.utils;
 
 import java.math.BigDecimal;
 

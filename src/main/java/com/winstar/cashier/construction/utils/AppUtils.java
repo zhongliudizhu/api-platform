@@ -1,4 +1,4 @@
-package com.winstar.cashier.utils;
+package com.winstar.cashier.construction.utils;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.winstar.cashier.utils;
+package com.winstar.cashier.construction.utils;
 
 import org.apache.commons.lang3.StringUtils;
 

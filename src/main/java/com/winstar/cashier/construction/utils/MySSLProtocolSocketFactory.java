@@ -1,4 +1,4 @@
-package com.winstar.cashier.utils;
+package com.winstar.cashier.construction.utils;
 
 import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.commons.httpclient.params.HttpConnectionParams;

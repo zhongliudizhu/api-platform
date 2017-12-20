@@ -1,4 +1,4 @@
-package com.winstar.cashier.utils;
+package com.winstar.cashier.construction.utils;
 
 /**
  * Created by zl on 2016/12/14

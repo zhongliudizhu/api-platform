@@ -6,7 +6,7 @@
  * @date 2013-6-22 下午4:58:52
  * @version V1.0
 */
-package com.winstar.cashier.utils;
+package com.winstar.cashier.construction.utils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
