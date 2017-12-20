@@ -85,8 +85,13 @@ public class WsdWechatConfig {
     private String certPassword_wechat = "1249655701";
 
     /**
-     * 微信回调地址
+     * 微信回调地址(测试)
      */
-    private String backUrl = "http://219.145.62.235:38920/wxPay/notify";
+    private String backUrl_test = "http://develop.sxeccellentdriving.com/api/v1/cbc/wxPay/notify";
+
+    /**
+     * 微信回调地址(正式)
+     */
+    private String backUrl_prod = "https://mobile.sxwinstar.net/api/v1/cbc/wxPay/notify";
 
 }

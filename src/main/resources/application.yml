@@ -45,7 +45,7 @@ info:
   #如果没有用户会自动注册
   getAccountIdByPhoneH5: http://WINSTAR-USER-API/api/user/account/loginH5
   getAccountIdByPhoneVerify: 24b6e946d4594661a58bd235fe639544
-  isShowQRCode: false
+  profilesActive: false
   searchLimit: 5
   getMsgContentUrl: http://WINSTAR-COMMUNITY-API/api/v1/community/noauth/message/query?key=recieveOilCoupon
   sendMsgUrl: http://sms.sxjiashi.com:8080/api/v2/smsSend/sendNotice
@@ -97,7 +97,7 @@ info:
   getAccountIdByPhoneVerify: 24b6e946d4594661a58bd235fe639544
   #如果没有用户会自动注册
   getAccountIdByPhoneH5: http://WINSTAR-USER-API/api/user/account/loginH5
-  isShowQRCode: true
+  profilesActive: true
   searchLimit: 5
   getMsgContentUrl: http://WINSTAR-COMMUNITY-API/api/v1/community/noauth/message/query?key=recieveOilCoupon
   sendMsgUrl: http://sms.sxjiashi.com:8080/api/v2/smsSend/sendNotice
