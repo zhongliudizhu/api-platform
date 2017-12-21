@@ -182,7 +182,7 @@ public class CouponService {
      */
     public MyCoupon checkIfMyCouponAvailable (String goodsId,String couponId){
         MyCoupon coupon=myCouponRepository.findOne(couponId);
-        if(coupon.getStatus()==2) return null;
+        if(coupon==null || coupon.getStatus()==2) return null;
         Date now=new Date();
         if(coupon.getValidEndAt()!=null && coupon.getValidEndAt().getTime()<now.getTime()) return null;
 
