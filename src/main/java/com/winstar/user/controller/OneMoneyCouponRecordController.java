@@ -3,6 +3,7 @@ package com.winstar.user.controller;
 import com.winstar.exception.NotRuleException;
 import com.winstar.user.entity.OneMoneyCouponRecord;
 import com.winstar.user.utils.ServiceManager;
+import com.winstar.user.utils.SimpleResult;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,7 +52,7 @@ public class OneMoneyCouponRecordController {
      * @throws NotRuleException
      */
     @PostMapping(value = "/checkBuyAuth", produces = "application/json")
-    public boolean checkBuyAuth(HttpServletRequest request) throws NotRuleException {
-        return ServiceManager.oneMoneyCouponRecordService.checkBuyAuth(ServiceManager.accountService.getAccountId(request));
+    public SimpleResult checkBuyAuth(HttpServletRequest request) throws NotRuleException {
+        return new SimpleResult(String.valueOf(ServiceManager.oneMoneyCouponRecordService.checkBuyAuth(ServiceManager.accountService.getAccountId(request))));
     }
 }
