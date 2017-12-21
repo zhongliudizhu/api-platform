@@ -41,7 +41,7 @@ public class OneMoneyCouponRecordController {
         if (count > 0)
             throw new NotRuleException("justOnce.oneMoneyCoupon");
 
-        return ServiceManager.oneMoneyCouponRecordService.insertRecord(ServiceManager.accountService.getAccountId(request), orderId);
+        return ServiceManager.oneMoneyCouponRecordService.insertRecord(accountId, orderId);
     }
 
     /**
