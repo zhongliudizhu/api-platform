@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.winstar.cashier.construction.utils.AppUtils;
 import com.winstar.cashier.construction.utils.DateUtil;
+import com.winstar.cashier.construction.utils.PayConfPC;
 import com.winstar.cashier.construction.utils.PayUtils;
 import com.winstar.cashier.entity.PayLog;
 import com.winstar.cashier.entity.PayOrder;
@@ -14,8 +15,10 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
@@ -24,9 +27,17 @@ import java.util.Map;
 /**
  * Created by zl on 2017/3/21
  */
+@Component
+@ConfigurationProperties(prefix="info")
 public class PayMoney {
 
     private static final Logger logger = LoggerFactory.getLogger(PayMoney.class);
+
+    private static Boolean profilesActive;
+
+    public static void setProfilesActive(Boolean profilesActive) {
+        PayMoney.profilesActive = profilesActive;
+    }
 
     public static ResponseEntity pay(Map<String,Object> payMap, HttpServletRequest request, PayOrderRepository payOrderRepository, PayLogRepository payLogRepository){
         Map<String, String> reqMap = getReqMap(request, MapUtils.getString(payMap,"orderAmount"), MapUtils.getString(payMap,"bankCode"), MapUtils.getString(payMap,"frontEndUrl"));
@@ -59,15 +70,15 @@ public class PayMoney {
      */
     private static Map<String, String> getReqMap(HttpServletRequest request, String orderAmount, String bankCode, String frontEndUrl) {
         Map<String, String> reqMap = Maps.newHashMap();
-        /*reqMap.put("payUrl", bankConfig.getJsptPayUrl());
-        reqMap.put("version", bankConfig.getVersionCode());
-        reqMap.put("charset", bankConfig.getCharset());
-        reqMap.put("signMethod", bankConfig.getSignMethod());
-        reqMap.put("payType", bankConfig.getPayType());
-        reqMap.put("transType", bankConfig.getPayTranstype());
-        reqMap.put("merId", bankConfig.getMerId());
-        reqMap.put("signKey", bankConfig.getSignKey());
-        reqMap.put("backEndUrl", bankConfig.getBackEndUrl());*/
+        reqMap.put("payUrl", profilesActive ? PayConfPC.PROD_JSPT_PAY_URL : PayConfPC.TEST_JSPT_PAY_URL);
+        reqMap.put("version", PayConfPC.VERSION_CODE);
+        reqMap.put("charset", PayConfPC.CHARSET);
+        reqMap.put("signMethod", PayConfPC.SIGNMETHOD);
+        reqMap.put("payType", PayConfPC.PAY_TYPE);
+        reqMap.put("transType", PayConfPC.PAY_TRANSTYPE);
+        reqMap.put("merId", profilesActive ? PayConfPC.PROD_MER_ID : PayConfPC.TEST_MER_ID);
+        reqMap.put("signKey", profilesActive ? PayConfPC.PROD_SIGN_KEY : PayConfPC.TEST_SIGN_KEY);
+        reqMap.put("backEndUrl", profilesActive ? PayConfPC.PROD_BACK_END_URL : PayConfPC.TEST_BACK_END_URL);
         reqMap.put("frontEndUrl", frontEndUrl);
         reqMap.put("orderTime", DateUtil.currentTime());
         reqMap.put("orderNumber", DateUtil.currentTimeToSS() + WsdUtils.getRandomNumber(8));
@@ -77,7 +88,7 @@ public class PayMoney {
         reqMap.put("merReserved1", "支付订单");
         reqMap.put("merReserved2", StringUtils.EMPTY);
         reqMap.put("merReserved3", StringUtils.EMPTY);
-        //reqMap.put("orderCurrency", bankConfig.getOrderCurrency());
+        reqMap.put("orderCurrency", PayConfPC.ORDER_CURRENCY);
         reqMap.put("gateWay", StringUtils.EMPTY);
         reqMap.put("terType",StringUtils.EMPTY);
         reqMap.put("agentAmount",StringUtils.EMPTY);

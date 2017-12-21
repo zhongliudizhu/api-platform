@@ -1,16 +1,26 @@
 package com.winstar.cashier.construction.controller;
 
+import com.google.common.collect.Maps;
+import com.winstar.cashier.comm.EnumType;
+import com.winstar.cashier.construction.utils.AppUtils;
 import com.winstar.cashier.construction.utils.DateUtil;
+import com.winstar.cashier.construction.utils.PayConfPC;
+import com.winstar.cashier.construction.utils.RequestUtils;
 import com.winstar.cashier.entity.PayLog;
 import com.winstar.cashier.entity.PayOrder;
 import com.winstar.cashier.repository.PayLogRepository;
 import com.winstar.cashier.repository.PayOrderRepository;
 import com.winstar.exception.NotFoundException;
+import com.winstar.oil.service.SendOilCouponService;
+import com.winstar.order.entity.OilOrder;
+import com.winstar.order.service.OilOrderService;
+import com.winstar.order.vo.PayInfoVo;
 import com.winstar.utils.WsdUtils;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -27,6 +37,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("api/v1/cbc/payCallback")
+@ConfigurationProperties(prefix="info")
 public class PayCallbackController {
 
     private static final Logger logger = LoggerFactory.getLogger(PayCallbackController.class);
@@ -37,12 +48,35 @@ public class PayCallbackController {
     @Autowired
     PayOrderRepository payOrderRepository;
 
+    @Autowired
+    private OilOrderService orderService;
+
+    @Autowired
+    private SendOilCouponService sendOilCouponService;
+
+    private static Boolean profilesActive;
+
+    public static void setProfilesActive(Boolean profilesActive) {
+        PayCallbackController.profilesActive = profilesActive;
+    }
+
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
     public void payCallback(HttpServletRequest request, HttpServletResponse resp) throws Exception{
         resp.setStatus(HttpServletResponse.SC_OK);// 响应清算平台通知
         logger.info("异步回调开始:");
-        modifyOrder(null,request);
+        //获取通知参数
+        Map<String, String> respMap = RequestUtils.getReqMap(request);
+        logger.info("接收到异步通知报文:" + respMap.toString());
+        //签名验证
+        boolean validate = AppUtils.validate(respMap, profilesActive ? PayConfPC.PROD_SIGN_KEY : PayConfPC.TEST_SIGN_KEY, respMap.get("charset"));
+        if (validate) {
+            logger.info("签名验证成功.");
+            modifyOrder(respMap,request);
+        } else {
+            logger.info("签名验证失败.");
+            savePayLog(respMap,"ERROR","签名验证失败",request);
+        }
         logger.info("接收清算平台通知消息完成.");
     }
 
@@ -77,13 +111,31 @@ public class PayCallbackController {
                 savePayLog(respMap,"ERROR","订单支付失败",request);
             }
             //通知订单那边是否支付成功 ------>>>  回调
-            if(WsdUtils.isNotEmpty(payOrder.getCallUrl())){
-                respMap.put("payType", payOrder.getPayWay() + "");
-                //CallOrder.callOrders(restTemplate,requestErrorLogRepository,respMap,payOrder.getCallUrl(),payOrder.getOrderNumber(),requestLogRepository);
+            modifyOrder(payOrder,respMap);
+            //通知油卡发送
+            if(payOrder.getOrderOwner().equals("1") && "1".equals(MapUtils.getString(respMap, "state"))){
+                Map<String,String> map = Maps.newHashMap();
+                map.put("orderId",payOrder.getOrderNumber());
+                OilOrder oilOrder = orderService.getOneOrder(payOrder.getOrderNumber());
+                map.put("accountId",WsdUtils.isEmpty(oilOrder) ? null : oilOrder.getAccountId());
+                map.put("shopId",WsdUtils.isEmpty(oilOrder) ? null : oilOrder.getItemId());
+                logger.info("开始通知油卡的发送。。。");
+                sendOilCouponService.checkCard(map);
             }
         }else{
             savePayLog(respMap,"ERROR","订单已对账！",request);
         }
+    }
+
+    private void modifyOrder(PayOrder payOrder,Map<String,String> respMap){
+        PayInfoVo payInfoVo = new PayInfoVo();
+        payInfoVo.setOrderSerialNumber(payOrder.getOrderNumber());
+        payInfoVo.setBankSerialNumber(MapUtils.getString(respMap, "transaction_id"));
+        payInfoVo.setPayPrice(MapUtils.getDouble(respMap, "total_fee"));
+        payInfoVo.setPayState(MapUtils.getString(respMap,"result_code").equalsIgnoreCase("SUCCESS") ? EnumType.PAY_STATE_SUCCESS.value() : EnumType.PAY_STATE_FAIL.value());
+        payInfoVo.setPayType(payOrder.getPayWay());
+        payInfoVo.setPayTime(DateUtil.parseTime(MapUtils.getString(respMap, "time_end")));
+        orderService.updateOrderCashier(payInfoVo);
     }
 
 }

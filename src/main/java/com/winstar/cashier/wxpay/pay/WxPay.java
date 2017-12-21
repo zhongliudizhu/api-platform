@@ -17,8 +17,10 @@ import com.winstar.utils.WsdUtils;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
@@ -28,9 +30,17 @@ import java.util.Map;
 /**
  * Created by zl on 2017/3/31
  */
+@Component
+@ConfigurationProperties(prefix="info")
 public class WxPay {
 
     private static final Logger logger = LoggerFactory.getLogger(WxPay.class);
+
+    private static Boolean profilesActive;
+
+    public static void setProfilesActive(Boolean profilesActive) {
+        WxPay.profilesActive = profilesActive;
+    }
 
     private static String trade_type_APP = "APP";
 
@@ -150,7 +160,7 @@ public class WxPay {
         data.setBody(MapUtils.getString(payMap,"payOrderName"));
         data.setOut_trade_no(MapUtils.getString(payMap,"payOrderNumber"));
         data.setTotal_fee(PayUtils.convertAmountY2F(MapUtils.getDouble(payMap,"orderAmount")));
-        data.setNotify_url(config.getBackUrl()); //后台通知参数
+        data.setNotify_url(profilesActive ? config.getBackUrl_prod() : config.getBackUrl_test()); //后台通知参数
         data.setSign(Signature.getSign(data,config.getSignKey()));
         logger.info("请求参数：" + JSON.toJSONString(data));
         return data;

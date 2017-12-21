@@ -3,6 +3,7 @@ package com.winstar.cashier.controller;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.winstar.cashier.comm.EnumType;
+import com.winstar.cashier.construction.sample.PayMoney;
 import com.winstar.cashier.entity.PayLog;
 import com.winstar.cashier.entity.PayOrder;
 import com.winstar.cashier.repository.PayLogRepository;
@@ -85,7 +86,7 @@ public class WsdPayController {
         }else if(bankCode.equals(EnumType.PAY_BANKCODE_WECHAT.valueStr())){
             return WxPay.getPayParams(payMap,request,payOrderService,payLogService);
         }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION.valueStr())){
-            return null;
+            return PayMoney.pay(payMap,request,payOrderService,payLogService);
         }
         return null;
     }
@@ -223,8 +224,8 @@ public class WsdPayController {
         if(subBankCode.equals(EnumType.PAY_WAY_WEIXIN_PUBLIC_NUMBER.valueStr())){
             Account account = accountService.findById(accountId);
             logger.info("微信公众号支付openId:" + (WsdUtils.isEmpty(account) ? null : account.getOpenid()));
-            payMap.put("openId",WsdUtils.isEmpty(account) ? null : account.getOpenid());
-            //payMap.put("openId","olQf5t8qj6zXhs4Idms7RfbNa5ek");
+            //payMap.put("openId",WsdUtils.isEmpty(account) ? null : account.getOpenid());
+            payMap.put("openId","olQf5t8qj6zXhs4Idms7RfbNa5ek");
         }
     }
 
