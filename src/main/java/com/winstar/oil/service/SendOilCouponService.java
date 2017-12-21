@@ -66,14 +66,14 @@ public class SendOilCouponService {
         if(WsdUtils.isEmpty(shopInfo)){
             throw new NotFoundException("shopInfo");
         }
-        Map<String,String> resultMap = send(shopInfo,accountId,orderId,shopId,shopInfo.getPrice());
+        Map<String,String> resultMap = send(shopInfo,accountId,orderId);
         return new ResponseEntity<>(resultMap,HttpStatus.OK);
     }
 
     /**
      * 发卡
      */
-    private Map<String,String> send(Goods goods,String accountId,String orderId,String shopId,Double shopPrice) throws Exception{
+    private Map<String,String> send(Goods goods,String accountId,String orderId) throws Exception{
         Map<String,String> map = Maps.newHashMap();
         if(WsdUtils.isEmpty(goods)){
             logger.info("无此商品！");
@@ -95,11 +95,15 @@ public class SendOilCouponService {
                 myOilCoupon.setAccountId(accountId);
                 myOilCoupon.setOrderId(orderId);
                 myOilCoupon.setPanAmt(priceAndNum.getPrice());
-                myOilCoupon.setShopId(shopId);
-                myOilCoupon.setShopPrice(shopPrice);
+                myOilCoupon.setShopId(goods.getId());
+                myOilCoupon.setShopPrice(goods.getPrice());
                 myOilCoupon.setCreateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
                 myOilCoupon.setUseState("0");
                 myOilCoupon.setSendState("0");
+                if(goods.getId().equals("8")){
+                    myOilCoupon.setOpenDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+                    myOilCoupon.setEndDate(WsdUtils.getLastDayOfMonth());
+                }
                 myOilCoupons.add(myOilCoupon);
             }
         }

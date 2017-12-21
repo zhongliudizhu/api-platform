@@ -57,9 +57,9 @@ public class MyOilCouponController {
     @RequestMapping(value = "/myOilSetMeal",method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<OilSetMealVo> findOilSetMealList(
-            @RequestParam(defaultValue = "0") Integer nextPage,
-            @RequestParam(defaultValue = "1000") Integer pageSize,
-            HttpServletRequest request
+        @RequestParam(defaultValue = "0") Integer nextPage,
+        @RequestParam(defaultValue = "1000") Integer pageSize,
+        HttpServletRequest request
     ) throws Exception {
         String accountId = request.getHeader("accountId");
         if(WsdUtils.isEmpty(accountId)){
@@ -137,8 +137,8 @@ public class MyOilCouponController {
     @RequestMapping(value = "/searchPan/{id}",method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public synchronized Map<String,Object> findList(
-            @PathVariable(name = "id") String id,
-            HttpServletRequest request
+        @PathVariable(name = "id") String id,
+        HttpServletRequest request
     ) throws Exception {
         String accountId = request.getHeader("accountId");
         if(WsdUtils.isEmpty(accountId)){
@@ -152,12 +152,18 @@ public class MyOilCouponController {
         if(!accountId.equals(myOilCoupon.getAccountId())){
             throw new NotRuleException("oilCoupon.not_is_you");
         }
+        if(myOilCoupon.getShopId().equals("8")){
+            logger.info("0.01抢购券，判断有效期");
+            if(!WsdUtils.validatorDate(myOilCoupon.getOpenDate(),myOilCoupon.getEndDate())){
+                logger.info("券码已失效！");
+                throw new NotRuleException("oilCoupon.expired");
+            }
+        }
         if(WsdUtils.isNotEmpty(myOilCoupon.getPan())){
             logger.info("已经分配过券码，直接返回，券码：" + myOilCoupon.getPan());
             Map<String,Object> map = Maps.newHashMap();
             String pan = AESUtil.decrypt(myOilCoupon.getPan(),AESUtil.dekey);
             map.put("result", AESUtil.encrypt(pan,AESUtil.key));
-            map.put("isShowQRCode", true);
             saveSearchLog(accountId,WsdUtils.getIpAddress(request),myOilCoupon.getPan(),myOilCoupon.getOrderId());
             return map;
         }
@@ -171,15 +177,7 @@ public class MyOilCouponController {
         }
         OilCoupon oilCoupon = oilCoupons.getContent().get(new Random().nextInt(oilCoupons.getContent().size()));
         logger.info(oilCoupon.getPan());
-        boolean result = updateService.updateOilCoupon(myOilCoupon,oilCoupon);
-        //更新商品库存
-        if(result){
-            /*ShopInfo shopInfo = shopInfoRepository.findByShopPriceAndShopType(myOilCoupon.getPanAmt(),"0");
-            if(WsdUtils.isNotEmpty(shopInfo)){
-                shopInfo.setShopStock(shopInfo.getShopStock() - 1);
-                shopInfoRepository.save(shopInfo);
-            }*/
-        }
+        updateService.updateOilCoupon(myOilCoupon,oilCoupon);
         Map<String,Object> map = Maps.newHashMap();
         if(WsdUtils.isEmpty(myOilCoupon.getPan())){
             logger.info("更新券码没有成功，发券失败！");
