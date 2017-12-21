@@ -1,6 +1,5 @@
 package com.winstar.user.controller;
 
-import com.netflix.discovery.util.StringUtil;
 import com.winstar.exception.NotRuleException;
 import com.winstar.user.entity.OneMoneyCouponRecord;
 import com.winstar.user.utils.ServiceManager;
