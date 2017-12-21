@@ -66,7 +66,7 @@ public class MyCouponController {
     @ResponseStatus(HttpStatus.OK)
     public List<MyCoupon> query(
             HttpServletRequest request,
-            @RequestParam(defaultValue = "0") Integer status,
+            Integer status,
             @RequestParam(defaultValue = "1") Integer pageNumber,
             @RequestParam(defaultValue = "5") Integer pageSize
     ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
