@@ -68,7 +68,7 @@ public class MyCouponController {
             HttpServletRequest request,
             Integer status,
             @RequestParam(defaultValue = "1") Integer pageNumber,
-            @RequestParam(defaultValue = "5") Integer pageSize
+            @RequestParam(defaultValue = "10000") Integer pageSize
     ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
 
         String accountId = accountService.getAccountId(request);
