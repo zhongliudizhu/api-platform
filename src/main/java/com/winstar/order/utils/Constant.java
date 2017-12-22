@@ -95,5 +95,9 @@ public class Constant {
 
     public static final int ONE_DAY_MAX = 500;
 
+    public static final String CBC_ACTIVITY_FIR="1";
+
+    public static final String CBC_ACTIVITY_SEC="2";
+
 
 }

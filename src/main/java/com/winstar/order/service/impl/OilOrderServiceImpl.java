@@ -1,10 +1,12 @@
 package com.winstar.order.service.impl;
 
+import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.service.OilOrderService;
+import com.winstar.order.utils.Constant;
 import com.winstar.order.vo.PayInfoVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,9 +49,16 @@ public class OilOrderServiceImpl implements OilOrderService {
         oilOrder.setUpdateTime(time);
         oilOrder.setFinishTime(time);
         oilOrderRepository.save(oilOrder);
-        MyCoupon coupon = couponService.sendCoupon(oilOrder.getAccountId(),oilOrder.getActivityId(),oilOrder.getItemId());
-        if(!ObjectUtils.isEmpty(coupon)){
-            logger.info("活动2，发优惠券，couponId："+coupon.getId());
+        //活动2发优惠券
+        try{
+            if(oilOrder.getActivityId().equals(Constant.CBC_ACTIVITY_SEC)){
+                MyCoupon coupon = couponService.sendCoupon(oilOrder.getAccountId(),oilOrder.getActivityId(),oilOrder.getItemId());
+                if(!ObjectUtils.isEmpty(coupon)){
+                    logger.info("活动2，发优惠券，couponId："+coupon.getId());
+                }
+            }
+        }catch (Exception ex){
+            logger.error("发优惠券失败"+ex);
         }
         return "ok";
     }
