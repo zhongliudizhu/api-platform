@@ -57,7 +57,7 @@ public class ShopService {
         Activity activity=activityRepository.findOne(id);
         if(activity.getGoods()!=null){
             JSONArray array=JSONArray.parseArray(activity.getGoods());
-            List<Goods> goodsList=goodsRepository.findByIdIn(array);
+            List<Goods> goodsList=goodsRepository.findByStatusAndIdIn(1,array);
             activity.setGoodsList(goodsList);
         }
         logger.info("查询活动详情 [商品]："+id);

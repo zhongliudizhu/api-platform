@@ -12,22 +12,12 @@ import com.winstar.user.service.AccountService;
 import com.winstar.user.service.OneMoneyCouponRecordService;
 import com.winstar.user.utils.ServiceManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -61,8 +51,6 @@ public class GoodsController {
      *
      * @param request    HttpServletRequest
      * @param activityId 活动ID
-     * @param pageNumber 起始页 默认1
-     * @param pageSize   页面数 默认10
      * @return
      * @throws MissingParameterException
      * @throws InvalidParameterException
@@ -74,9 +62,7 @@ public class GoodsController {
     @ResponseStatus(HttpStatus.OK)
     public List<Goods> query(
             HttpServletRequest request,
-            String activityId,
-            @RequestParam(defaultValue = "1") Integer pageNumber,
-            @RequestParam(defaultValue = "10") Integer pageSize
+            String activityId
     ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
 
         if (StringUtils.isEmpty(activityId)) throw new MissingParameterException("activityId");
@@ -102,21 +88,11 @@ public class GoodsController {
                 }
             }
         }
-        Sort sorts = new Sort(Sort.Direction.DESC, SORT);
-        Pageable pageable = new PageRequest(pageNumber - 1, pageSize, sorts);
-        Page<Goods> page = goodsRepository.findAll(new Specification<Goods>() {
-            public Predicate toPredicate(Root<Goods> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-                List<Predicate> list = new ArrayList<Predicate>();
-                Predicate in = root.get("id").in(array);
-                list.add(cb.equal(root.<Integer>get("status"), Status));
-                list.add(in);
+        List<Goods> list=goodsRepository.findByStatusAndIdIn(Status,array);
 
-                Predicate[] p = new Predicate[list.size()];
-                return cb.and(list.toArray(p));
-            }
-        }, pageable);
-        if (page.getContent().size() == 0)  throw new NotFoundException("goods");
-        return page.getContent();
+        if (list.size() == 0)  throw new NotFoundException("goods");
+        return list;
+
     }
 
     /**
