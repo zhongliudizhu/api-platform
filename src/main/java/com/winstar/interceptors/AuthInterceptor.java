@@ -34,6 +34,9 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         excludeUrls.add("/error");
         excludeUrls.add("/api/v1/cbc/OneMoneyCouponRecord/save");
+        excludeUrls.add("/api/v1/cbc/payCallback");
+        excludeUrls.add("/api/v1/cbc/payCallback");
+        excludeUrls.add("/api/v1/cbc/wxPay/notify");
     }
 
     @Override

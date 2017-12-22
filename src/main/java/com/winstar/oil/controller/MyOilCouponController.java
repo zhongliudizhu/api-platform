@@ -75,7 +75,6 @@ public class MyOilCouponController {
 
     private  List<OilSetMealVo> getOilSetMeals(String accountId,Integer begin,Integer end){
         List<OilSetMealVo> oilSetMeals = new ArrayList<>();
-        List<OilSetMealVo> oilSetMealsUsed = new ArrayList<>();
         List<Object[]> objects = myOilCouponRepository.findOilSetMeal(accountId,begin,end);
         for(Object[] obj : objects){
             OilSetMealVo oilSetMealVo = new OilSetMealVo();
@@ -86,14 +85,8 @@ public class MyOilCouponController {
             oilSetMealVo.setOrderId((String) obj[4]);
             oilSetMealVo.setSendState((String) obj[5]);
             oilSetMealVo.setShopName((String) obj[6]);
-            //判断此套餐是否用完
-            if(Integer.parseInt(obj[1].toString())==0){
-                oilSetMealsUsed.add(oilSetMealVo);
-            }else{
-                oilSetMeals.add(oilSetMealVo);
-            }
+            oilSetMeals.add(oilSetMealVo);
         }
-        oilSetMeals.addAll(oilSetMealsUsed);
         return oilSetMeals;
     }
 
