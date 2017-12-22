@@ -15,5 +15,5 @@ import java.util.List;
  **/
 public interface GoodsRepository extends JpaRepository<Goods,String>,JpaSpecificationExecutor<Goods> {
 
-    List<Goods> findByIdIn(JSONArray array);
+    List<Goods> findByStatusAndIdIn(Integer status,JSONArray array);
 }
