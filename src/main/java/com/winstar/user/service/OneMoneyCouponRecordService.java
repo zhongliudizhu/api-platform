@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -31,7 +32,8 @@ public class OneMoneyCouponRecordService {
      * @return true 有 false 无
      */
     public boolean checkBuyAuth(String accountId) {
-        int count = oneMoneyCouponRecordRepository.countByAccountIdAndStatus(accountId, STATUS_UNUSED);
+        String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        int count = oneMoneyCouponRecordRepository.countByAccountIdAndStatusAndCreateTimeLike(accountId, STATUS_UNUSED, date + "%");
         if (count > 0) return true;
         return false;
     }

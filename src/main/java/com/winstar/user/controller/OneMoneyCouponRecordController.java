@@ -1,6 +1,7 @@
 package com.winstar.user.controller;
 
 import com.winstar.exception.NotRuleException;
+import com.winstar.order.utils.DateUtil;
 import com.winstar.user.entity.OneMoneyCouponRecord;
 import com.winstar.user.utils.ServiceManager;
 import com.winstar.user.utils.SimpleResult;
@@ -11,7 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * @author laohu
@@ -19,7 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/api/v1/cbc/OneMoneyCouponRecord")
 public class OneMoneyCouponRecordController {
-
 
     /**
      * 添加购买资格
@@ -54,6 +55,7 @@ public class OneMoneyCouponRecordController {
      */
     @GetMapping(value = "/checkBuyAuth", produces = "application/json")
     public SimpleResult checkBuyAuth(HttpServletRequest request) throws NotRuleException {
+
         return new SimpleResult(String.valueOf(ServiceManager.oneMoneyCouponRecordService.checkBuyAuth(ServiceManager.accountService.getAccountId(request))));
     }
 }
