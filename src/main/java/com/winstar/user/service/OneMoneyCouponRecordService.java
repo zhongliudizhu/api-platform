@@ -32,7 +32,7 @@ public class OneMoneyCouponRecordService {
      * @return true 有 false 无
      */
     public boolean checkBuyAuth(String accountId) {
-        String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        String date = new SimpleDateFormat("yyyy-MM").format(new Date());
         int count = oneMoneyCouponRecordRepository.countByAccountIdAndStatusAndCreateTimeLike(accountId, STATUS_UNUSED, date + "%");
         if (count > 0) return true;
         return false;
