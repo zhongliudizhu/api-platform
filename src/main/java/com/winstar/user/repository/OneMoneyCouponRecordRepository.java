@@ -21,6 +21,6 @@ public interface OneMoneyCouponRecordRepository extends JpaRepository<OneMoneyCo
     void updateStatus(String accountId);
     Integer countByAccountId(String accountId);
 
-    @Query(value="select count(1) ct from cbc_user_one_money_coupon_record t where t.account_id = ?1 and t.status = ?2 and t.create_time like ?3")
+    @Query(value="select count(1) ct from cbc_user_one_money_coupon_record t where t.account_id = ?1 and t.status = ?2 and t.create_time like ?3",nativeQuery = true)
     Integer countByAccountIdAndStatusAndCreateTimeLike(String accountId, Integer status, String createTime);
 }
