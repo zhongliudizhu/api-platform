@@ -74,4 +74,8 @@ public class Goods {
      */
     private Double disCount;
 
+    /**
+     * 类型 所属活动 1 折中折 2 赠券 3 0.01元活动
+     */
+    private Integer type;
 }
