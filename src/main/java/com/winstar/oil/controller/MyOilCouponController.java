@@ -11,6 +11,8 @@ import com.winstar.oil.repository.MyOilCouponRepository;
 import com.winstar.oil.repository.OilCouponRepository;
 import com.winstar.oil.repository.OilCouponSearchLogRepository;
 import com.winstar.oil.service.OilCouponUpdateService;
+import com.winstar.oil.service.SendOilCouponService;
+import com.winstar.user.service.AccountService;
 import com.winstar.utils.AESUtil;
 import com.winstar.utils.WebUitl;
 import com.winstar.utils.WsdUtils;
@@ -54,6 +56,20 @@ public class MyOilCouponController {
     @Autowired
     OilCouponUpdateService updateService;
 
+    @Autowired
+    SendOilCouponService oilCouponService;
+
+    @Autowired
+    AccountService accountService;
+
+    @RequestMapping(value = "/sendOilCoupon",method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public void sendOilCoupon(
+        @RequestBody Map map
+    ) throws Exception {
+        oilCouponService.checkCard(map);
+    }
+
     @RequestMapping(value = "/myOilSetMeal",method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<OilSetMealVo> findOilSetMealList(
@@ -61,7 +77,7 @@ public class MyOilCouponController {
         @RequestParam(defaultValue = "1000") Integer pageSize,
         HttpServletRequest request
     ) throws Exception {
-        String accountId = request.getHeader("accountId");
+        String accountId = accountService.getAccountId(request);
         if(WsdUtils.isEmpty(accountId)){
             throw new NotFoundException("accountId");
         }
@@ -84,7 +100,6 @@ public class MyOilCouponController {
             oilSetMealVo.setTotalPrice((Double) obj[3]);
             oilSetMealVo.setOrderId((String) obj[4]);
             oilSetMealVo.setSendState((String) obj[5]);
-            oilSetMealVo.setShopName((String) obj[6]);
             oilSetMeals.add(oilSetMealVo);
         }
         return oilSetMeals;
@@ -100,7 +115,7 @@ public class MyOilCouponController {
         if(StringUtils.isEmpty(orderId)){
             throw new NotRuleException("orderId");
         }
-        String accountId = request.getHeader("accountId");
+        String accountId = accountService.getAccountId(request);
         if(WsdUtils.isEmpty(accountId)){
             throw new NotFoundException("accountId");
         }
@@ -133,7 +148,7 @@ public class MyOilCouponController {
         @PathVariable(name = "id") String id,
         HttpServletRequest request
     ) throws Exception {
-        String accountId = request.getHeader("accountId");
+        String accountId = accountService.getAccountId(request);
         if(WsdUtils.isEmpty(accountId)){
             throw new MissingParameterException("accountId");
         }
