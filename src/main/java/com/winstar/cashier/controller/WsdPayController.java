@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.winstar.cashier.comm.EnumType;
 import com.winstar.cashier.construction.sample.PayMoney;
+import com.winstar.cashier.creditpay.pay.CreditPay;
 import com.winstar.cashier.entity.PayLog;
 import com.winstar.cashier.entity.PayOrder;
 import com.winstar.cashier.repository.PayLogRepository;
@@ -87,6 +88,8 @@ public class WsdPayController {
             return WxPay.getPayParams(payMap,request,payOrderService,payLogService);
         }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION.valueStr())){
             return PayMoney.pay(payMap,request,payOrderService,payLogService);
+        }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr())){
+            return CreditPay.pay(payMap,request,payOrderService,payLogService);
         }
         return null;
     }
@@ -121,7 +124,8 @@ public class WsdPayController {
         if(!bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION.valueStr())
                 && !bankCode.equals(EnumType.PAY_BANKCODE_UNIONPAY.valueStr())
                 && !bankCode.equals(EnumType.PAY_BANKCODE_ALIPAY.valueStr())
-                && !bankCode.equals(EnumType.PAY_BANKCODE_WECHAT.valueStr())){
+                && !bankCode.equals(EnumType.PAY_BANKCODE_WECHAT.valueStr())
+                && !bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr())){
             logger.info("bankCode 参数不合法!");
             PayLog log = new PayLog(orderNumber,"",ip,applyUrl,"","ERROR","支付方式不合法!");
             payLogService.save(log);
@@ -196,9 +200,12 @@ public class WsdPayController {
         }else if(bankCode.equals(EnumType.PAY_BANKCODE_ALIPAY.valueStr())){
             payMap.put("payWay", EnumType.PAY_WAY_ALIPAY.valueStr());
             subBankCode = WsdUtils.isEmpty(subBankCode) ? EnumType.PAY_WAY_ALIPAY_APP.valueStr() : subBankCode;
-        }else{
+        }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION.valueStr())){
             payMap.put("payWay", EnumType.PAY_WAY_CONSTRUCTION.value());
             subBankCode = WsdUtils.isEmpty(subBankCode) ? EnumType.PAY_WAY_CONSTRUCTION.valueStr() : subBankCode;
+        }else{
+            payMap.put("payWay", EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr());
+            subBankCode = WsdUtils.isEmpty(subBankCode) ? EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr() : subBankCode;
         }
         return subBankCode;
     }

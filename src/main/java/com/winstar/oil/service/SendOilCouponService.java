@@ -2,6 +2,9 @@ package com.winstar.oil.service;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
+import com.winstar.coupon.entity.CouponTemplate;
+import com.winstar.coupon.service.CouponService;
+import com.winstar.coupon.service.CouponTemplateService;
 import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.oil.entity.MyOilCoupon;
@@ -38,6 +41,12 @@ public class SendOilCouponService {
     @Autowired
     ShopService shopService;
 
+    @Autowired
+    CouponService couponService;
+
+    @Autowired
+    CouponTemplateService couponTemplateService;
+
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity checkCard(@RequestBody Map map) throws Exception{
         logger.info("执行油卡发送操作。。。");
@@ -55,6 +64,13 @@ public class SendOilCouponService {
         if(WsdUtils.isEmpty(accountId)){
             logger.info("accountId为空");
             throw new MissingParameterException("accountId");
+        }
+        if(shopId.equals("8")){
+            couponService.sendCoupon(accountId,"3","8");
+            Map<String,String> resultMap = Maps.newHashMap();
+            logger.info("0.01元抢购发卡成功！");
+            resultMap.put("status","OK");
+            return new ResponseEntity<>(resultMap,HttpStatus.OK);
         }
         //判断是否发过券
         List<MyOilCoupon> myOilCoupons = myOilCouponRepository.findByOrderIdOrderByUseStateAsc(orderId);
@@ -100,10 +116,6 @@ public class SendOilCouponService {
                 myOilCoupon.setCreateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
                 myOilCoupon.setUseState("0");
                 myOilCoupon.setSendState("0");
-                if(goods.getId().equals("8")){
-                    myOilCoupon.setOpenDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
-                    myOilCoupon.setEndDate(WsdUtils.getLastDayOfMonth());
-                }
                 myOilCoupons.add(myOilCoupon);
             }
         }
