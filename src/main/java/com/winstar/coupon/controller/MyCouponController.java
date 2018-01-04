@@ -133,6 +133,7 @@ public class MyCouponController {
     ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
         if (StringUtils.isEmpty(goodsId))  throw new MissingParameterException("goodsId");
         Goods goods=goodsRepository.findOne(goodsId);
+        if(goods==null) throw new NotFoundException("this goods is NotFound");
         Double money=goods.getSaledPrice();
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
