@@ -185,7 +185,7 @@ public class CouponService {
      * 查询优惠券是否可用
      * 1、判断优惠券是否过期 2、检查优惠券使用范围是否满足当前商品
      *
-     * @param goodsId  商品ID
+     * @param saledPrice  商品价格
      * @param couponId 优惠券ID
      * @return 可用返回 MyCoupon  否返回null
      */
