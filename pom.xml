@@ -256,23 +256,44 @@
             </plugin>
         </plugins>
     </build>
+    <!--<repositories>-->
+        <!--<repository>-->
+            <!--<snapshots>-->
+                <!--<enabled>true</enabled>-->
+            <!--</snapshots>-->
+            <!--<id>mvnsearch-repository</id>-->
+            <!--<name>Maven Repository Manager running on mvnsearch</name>-->
+            <!--<url>http://nexus.mvnsearch.org:8080/content/groups/public/</url-->
 
-    <repositories>
-        <repository>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <id>public</id>
-            <name>Public Repositories</name>
-            <url>http://192.168.118.199:8081/nexus/content/groups/public/</url>
-        </repository>
-    </repositories>
+            <!--&gt;-->
+        <!--</repository>-->
+    <!--</repositories>-->
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>public</id>
-            <name>Public Repositories</name>
-            <url>http://192.168.118.199:8081/nexus/content/groups/public/</url>
-        </pluginRepository>
-    </pluginRepositories>
+    <!--<pluginRepositories>-->
+        <!--<pluginRepository>-->
+            <!--<id>mvnsearch-repository</id>-->
+            <!--<name>Maven Repository Manager running on mvnsearch</name>-->
+            <!--<url>http://nexus.mvnsearch.org:8080/content/groups/public/</url-->
+
+            <!--&gt;-->
+        <!--</pluginRepository>-->
+    <!--</pluginRepositories>-->
+    <!--<repositories>-->
+        <!--<repository>-->
+            <!--<snapshots>-->
+                <!--<enabled>true</enabled>-->
+            <!--</snapshots>-->
+            <!--<id>public</id>-->
+            <!--<name>Public Repositories</name>-->
+            <!--<url>http://192.168.118.199:8081/nexus/content/groups/public/</url>-->
+        <!--</repository>-->
+    <!--</repositories>-->
+
+    <!--<pluginRepositories>-->
+        <!--<pluginRepository>-->
+            <!--<id>public</id>-->
+            <!--<name>Public Repositories</name>-->
+            <!--<url>http://192.168.118.199:8081/nexus/content/groups/public/</url>-->
+        <!--</pluginRepository>-->
+    <!--</pluginRepositories>-->
 </project>

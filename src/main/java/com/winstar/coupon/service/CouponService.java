@@ -178,7 +178,7 @@ public class CouponService {
      * @return MyCoupon
      */
     public List<MyCoupon> findMyUsableCoupon(String accountId, Double money) {
-        return myCouponRepository.findByAccountIdAndStatusAndUseRuleGreaterThanEqual(accountId, 0, money);
+        return myCouponRepository.findByAccountIdAndStatusAndUseRuleLessThanEqual(accountId, 0, money);
     }
 
     /**
@@ -189,15 +189,13 @@ public class CouponService {
      * @param couponId 优惠券ID
      * @return 可用返回 MyCoupon  否返回null
      */
-    public MyCoupon checkIfMyCouponAvailable(String goodsId, String couponId) {
+    public MyCoupon checkIfMyCouponAvailable(Double saledPrice, String couponId) {
         MyCoupon coupon = myCouponRepository.findOne(couponId);
         if (coupon == null || coupon.getStatus() == 2) return null;
         Date now = new Date();
         if (coupon.getValidEndAt() != null && coupon.getValidEndAt().getTime() < now.getTime()) return null;
 
-        Goods goods = goodsRepository.findOne(goodsId);
-        CouponTemplate template = couponTemplateRepository.findOne(coupon.getCouponTemplateId());
-        if (template.getRules() < goods.getSaledPrice()) return null;
+        if (coupon.getUseRule() < saledPrice) return null;
 
         return coupon;
     }
