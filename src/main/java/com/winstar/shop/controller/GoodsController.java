@@ -77,6 +77,7 @@ public class GoodsController {
         log.setUrl(request.getRequestURI());
         ServiceManager.pageViewLogService.savePageViewLog(log);
         Activity activity = activityRepository.findOne(activityId);
+        if(activity==null) throw new NotFoundException("this activity is NotFound");
         if (activity.getStatus() == 0)  throw new NotFoundException("this activity is closed");
         if (StringUtils.isEmpty(activity.getGoods()))  throw new NotFoundException("this activity has no goods");
 
