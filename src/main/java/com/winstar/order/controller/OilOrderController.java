@@ -1,6 +1,5 @@
 package com.winstar.order.controller;
 
-import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.exception.MissingParameterException;
@@ -10,14 +9,11 @@ import com.winstar.exception.ServiceUnavailableException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.Constant;
-import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.OilOrderUtil;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
-import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
-import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,9 +61,6 @@ public class OilOrderController {
             , HttpServletRequest request) throws NotFoundException, NotRuleException {
         String accountId = accountService.getAccountId(request);
         String serialNumber = OilOrderUtil.getSerialNumber();
-
-        //1.根据accountId 查询account
-        Account account = accountService.findById(accountId);
         //2.根据商品id 查询商品
         Goods goods = shopService.findByGoodsId(itemId);
         if(ObjectUtils.isEmpty(goods)){
@@ -78,7 +71,7 @@ public class OilOrderController {
         if(ObjectUtils.isEmpty(activity)){
             throw new NotFoundException("activity.order");
         }
-        if(activity.getType()==1&&!StringUtils.isEmpty(couponId)){
+        if(activity.getType()!=2&&!StringUtils.isEmpty(couponId)){
             throw new NotRuleException("canNotUseCoupon.order");
         }
         if(StringUtils.isEmpty(goods.getCouponTempletId())&&!StringUtils.isEmpty(couponId)){
@@ -94,7 +87,8 @@ public class OilOrderController {
         OilOrder oilOrder = new OilOrder(accountId,serialNumber, Constant.ORDER_STATUS_CREATE,Constant.PAY_STATUS_NOT_PAID,new Date(),Constant.REFUND_STATUS_ORIGINAL,itemId,activityId);
         //4.如果优惠券，查询优惠券
         if(!StringUtils.isEmpty(couponId)){
-            MyCoupon myCoupon = couponService.checkIfMyCouponAvailable(itemId, couponId);
+            MyCoupon myCoupon = couponService.checkIfMyCouponAvailable(goods.getSaledPrice(), couponId);
+            if(myCoupon == null) throw new NotFoundException("myCoupon");
             oilOrder.setCouponId(couponId);
             if(ObjectUtils.isEmpty(myCoupon.getAmount())){
                 oilOrder.setDiscountAmount(goods.getSaledPrice()*(1-myCoupon.getDiscountRate()));
