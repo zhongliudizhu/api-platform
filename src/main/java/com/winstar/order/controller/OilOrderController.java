@@ -53,7 +53,7 @@ public class OilOrderController {
      * @param activityId 活动id
      * @param couponId 优惠券id
      */
-    @RequestMapping(method = RequestMethod.POST, produces = "application/json;charset=utf-8")
+    @PostMapping( produces = "application/json;charset=utf-8")
     @ResponseBody
     public ResponseEntity addOrder(@RequestParam String itemId
             , @RequestParam String activityId
@@ -110,7 +110,7 @@ public class OilOrderController {
      * 判断订单是否能继续支付
      * @param serialNumber 订单序列号
      */
-    @RequestMapping(value = "/judge/{serialNumber}/", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+    @GetMapping(value = "/judge/{serialNumber}/", produces = "application/json;charset=utf-8")
     @ResponseBody
     public ResponseEntity judgeOrder(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
         if(StringUtils.isEmpty(serialNumber)){
@@ -129,7 +129,7 @@ public class OilOrderController {
     /* *
      * 查询单个订单-根据序列号
      */
-    @RequestMapping(value = "/{serialNumber}/serialNumber", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+    @GetMapping(value = "/{serialNumber}/serialNumber", produces = "application/json;charset=utf-8")
     @ResponseBody
     public ResponseEntity getOrders(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
         if(StringUtils.isEmpty(serialNumber)){
@@ -146,7 +146,7 @@ public class OilOrderController {
      * 根据条件查询用户订单集合
      *  0 全部  -1 已取消  1 待支付  3 已完成
      */
-    @RequestMapping(value = "/{status}/status", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+    @GetMapping(value = "/{status}/status", produces = "application/json;charset=utf-8")
     @ResponseBody
     public ResponseEntity getOrdersByAccountId(@PathVariable String status, HttpServletRequest request)
             throws NotFoundException, ServiceUnavailableException, NotRuleException, MissingParameterException {
@@ -177,7 +177,7 @@ public class OilOrderController {
      * @param serialNumber 订单序列号
      * @return 订单
      */
-    @RequestMapping(value = "/shutdown/{serialNumber}/", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/shutdown/{serialNumber}/", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity shutdownOrder(@PathVariable String serialNumber, HttpServletRequest request ) throws MissingParameterException, NotRuleException, NotFoundException {
          String accountId = accountService.getAccountId(request);
