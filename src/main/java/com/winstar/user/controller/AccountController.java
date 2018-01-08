@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 
-
 /**
  * @author laohu
  **/
@@ -39,10 +38,10 @@ public class AccountController {
         }
         AccessToken accessToken = ServiceManager.accessTokenRepository.findByAccountId(account.getId());
         if (null != accessToken) {
-            return updateAccessToken(accessToken);
-        } else {
             return createAccessToken(account);
         }
+
+        return accessToken;
     }
 
     /**
@@ -63,9 +62,6 @@ public class AccountController {
         }
         return new ResponseEntity<>(accessToken, HttpStatus.OK);
     }
-
-
-
 
     /**
      * 更新token信息
