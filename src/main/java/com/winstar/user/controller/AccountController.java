@@ -37,7 +37,7 @@ public class AccountController {
             return createAccessToken(accountSaved);
         }
         AccessToken accessToken = ServiceManager.accessTokenRepository.findByAccountId(account.getId());
-        if (null != accessToken) {
+        if (null == accessToken) {
             return createAccessToken(account);
         }
 
