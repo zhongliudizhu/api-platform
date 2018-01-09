@@ -104,18 +104,15 @@ public class VerificationCardController {
         return new ResponseEntity<>(JSON.toJSONString(svcInfo), HttpStatus.OK);
     }
 
-    private MyOilCoupon updateOilCoupon(String pan,String useState,String useDate,String tId) throws Exception{
+    private void updateOilCoupon(String pan,String useState,String useDate,String tId) throws Exception{
         logger.info("加密后的油券号码：" + AESUtil.encrypt(pan, AESUtil.dekey));
         MyOilCoupon myOilCoupon = myOilCouponRepository.findByPan(AESUtil.encrypt(pan, AESUtil.dekey));
-        if(WsdUtils.isEmpty(myOilCoupon)){
-            logger.info("未查询到对应的油券信息");
-            throw new NotFoundException(pan);
+        if(WsdUtils.isNotEmpty(myOilCoupon)){
+            myOilCoupon.setUseState(useState);
+            myOilCoupon.setUseDate(useDate);
+            myOilCoupon.setTId(tId);
+            myOilCouponRepository.save(myOilCoupon);
         }
-        myOilCoupon.setUseState(useState);
-        myOilCoupon.setUseDate(useDate);
-        myOilCoupon.setTId(tId);
-        myOilCoupon = myOilCouponRepository.save(myOilCoupon);
-        return myOilCoupon;
     }
 
 }
