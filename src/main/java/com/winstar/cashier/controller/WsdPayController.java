@@ -231,8 +231,8 @@ public class WsdPayController {
         if(subBankCode.equals(EnumType.PAY_WAY_WEIXIN_PUBLIC_NUMBER.valueStr())){
             Account account = accountService.findById(accountId);
             logger.info("微信公众号支付openId:" + (WsdUtils.isEmpty(account) ? null : account.getOpenid()));
-            //payMap.put("openId",WsdUtils.isEmpty(account) ? null : account.getOpenid());
-            payMap.put("openId","olQf5t8qj6zXhs4Idms7RfbNa5ek");
+            payMap.put("openId",WsdUtils.isEmpty(account) ? null : account.getOpenid());
+            //payMap.put("openId","olQf5t8qj6zXhs4Idms7RfbNa5ek");
         }
     }
 
