@@ -1,7 +1,6 @@
 package com.winstar.oil.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.winstar.exception.NotFoundException;
 import com.winstar.oil.entity.MyOilCoupon;
 import com.winstar.oil.repository.MyOilCouponRepository;
 import com.winstar.oil.repository.OilCouponRepository;
@@ -112,6 +111,7 @@ public class VerificationCardController {
             myOilCoupon.setUseDate(useDate);
             myOilCoupon.setTId(tId);
             myOilCouponRepository.save(myOilCoupon);
+            logger.info("电子券状态修改成功！");
         }
     }
 
