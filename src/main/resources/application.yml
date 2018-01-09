@@ -29,6 +29,7 @@ spring:
 
 info:
   cardUrl: https://coupons.easy-pass.cn/shellCoupons/services/SvcService
+  profilesActive: false
 
 ---
 spring:
@@ -61,3 +62,4 @@ endpoints:
 
 info:
   cardUrl: https://coupons.easy-pass.cn/shellCoupons/services/SvcService
+  profilesActive: true

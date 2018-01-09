@@ -13,10 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ws.object.ObjectFactory;
 import ws.object.SvcInfo;
 import ws.result.Result;
@@ -28,7 +25,7 @@ import java.util.Date;
  * Created by zl on 2017/6/22
  */
 @RestController
-@RequestMapping("api/v1/cbc")
+@RequestMapping("api/v1/cbc/verification")
 public class VerificationCardController {
 
     private static final Logger logger = LoggerFactory.getLogger(VerificationCardController.class);
@@ -41,8 +38,8 @@ public class VerificationCardController {
 
     private final static ObjectFactory objectFactory = new ObjectFactory();
 
-    @RequestMapping(value = "{pan}",method = RequestMethod.GET)
-    public ResponseEntity checkCard(@PathVariable String pan) throws Exception{
+    @RequestMapping(value = "",method = RequestMethod.GET)
+    public ResponseEntity checkCard(@RequestParam String pan) throws Exception{
         logger.info("电子券使用进行核销。。。");
         Result result = new Result();
         SvcInfo req = new SvcInfo();
