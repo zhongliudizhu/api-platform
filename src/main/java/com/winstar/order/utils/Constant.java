@@ -99,5 +99,7 @@ public class Constant {
 
     public static final String CBC_ACTIVITY_SEC="2";
 
+    public static final String CBC_ACTIVITY_THI="3";
+
 
 }

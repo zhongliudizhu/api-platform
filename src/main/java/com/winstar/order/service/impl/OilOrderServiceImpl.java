@@ -72,6 +72,6 @@ public class OilOrderServiceImpl implements OilOrderService {
 
     @Override
     public List<OilOrder> getOrderByAccountAndActivityId(String accountId, String activityId) {
-        return oilOrderRepository.findByAccountIdAndAndActivityId(accountId,activityId, DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
+        return oilOrderRepository.findByAccountIdAndActivityId(accountId,activityId, DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
     }
 }

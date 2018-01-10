@@ -83,6 +83,11 @@ public class OilOrderController {
                 throw new NotRuleException("canNotBuy.order");
             }
         }
+        if(activityId.equals(Constant.CBC_ACTIVITY_FIR)){
+            if(!OilOrderUtil.judgeActivity(accountId,activityId)){
+                throw new NotRuleException("oneMonthOnce.order");
+            }
+        }
 
         //5.初始化订单及订单项
         OilOrder oilOrder = new OilOrder(accountId,serialNumber, Constant.ORDER_STATUS_CREATE,Constant.PAY_STATUS_NOT_PAID,new Date(),Constant.REFUND_STATUS_ORIGINAL,itemId,activityId);

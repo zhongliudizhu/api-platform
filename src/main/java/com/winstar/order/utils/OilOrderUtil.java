@@ -1,6 +1,7 @@
 package com.winstar.order.utils;
 
 
+import com.sun.xml.internal.ws.api.ha.StickyFeature;
 import com.winstar.cashier.construction.utils.Arith;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.vo.OilDetailVo;
@@ -107,6 +108,13 @@ public class OilOrderUtil {
             return false;
         }
         return thisMonth(accountId).size()<=0;
+    }
+    /*
+    * 判断用户是否能参加活动
+    * */
+    public static boolean judgeActivity(String accountId, String activityId){
+        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,DateUtil.getMonthBegin(), DateUtil.getMonthEnd() );
+        return oilOrders.size()<1;
     }
 
     /*
