@@ -21,5 +21,5 @@ public interface OilOrderService {
      /*
      * 查询用户活动订单
      * */
-     public List<OilOrder> getOrderByAccount(String accountId, String activityId);
+     public List<OilOrder> getOrderByAccountAndActivityId(String accountId, String activityId);
 }
