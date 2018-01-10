@@ -2,6 +2,8 @@ package com.winstar.shop.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.winstar.exception.*;
+import com.winstar.order.entity.OilOrder;
+import com.winstar.order.service.OilOrderService;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
@@ -46,6 +48,8 @@ public class GoodsController {
     ActivityRepository activityRepository;
     @Autowired
     AccountService accountService;
+    @Autowired
+    OilOrderService oilOrderService;
 
     @Autowired
     OneMoneyCouponRecordService oneMoneyCouponRecordService;
@@ -68,8 +72,14 @@ public class GoodsController {
             String activityId
     ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
 
+
         if (StringUtils.isEmpty(activityId)) throw new MissingParameterException("activityId");
         String accountId = accountService.getAccountId(request);
+        if(activityId.equals("1")){
+            List<OilOrder> oilOrders=oilOrderService.getOrderByAccountAndActivityId(accountId,activityId);
+            if(oilOrders.size()>0)  throw new NotFoundException("You have purchased the goods for this month");
+        }
+
         PageViewLog log = new PageViewLog();
         log.setCreateTime(new Date());
         log.setAccountId(accountId);
