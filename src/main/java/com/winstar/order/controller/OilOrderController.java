@@ -1,5 +1,6 @@
 package com.winstar.order.controller;
 
+import com.winstar.cashier.construction.utils.Arith;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.exception.MissingParameterException;
@@ -91,7 +92,7 @@ public class OilOrderController {
             if(myCoupon == null) throw new NotFoundException("myCoupon");
             oilOrder.setCouponId(couponId);
             if(ObjectUtils.isEmpty(myCoupon.getAmount())){
-                oilOrder.setDiscountAmount(goods.getSaledPrice()*(1-myCoupon.getDiscountRate()));
+                oilOrder.setDiscountAmount(Arith.mul(goods.getSaledPrice(),Arith.sub(1,myCoupon.getDiscountRate())));
             }else if (ObjectUtils.isEmpty(myCoupon.getDiscountRate())){
                 oilOrder.setDiscountAmount(myCoupon.getAmount());
             }
