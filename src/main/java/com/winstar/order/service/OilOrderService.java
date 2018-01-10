@@ -3,6 +3,8 @@ package com.winstar.order.service;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.vo.PayInfoVo;
 
+import java.util.List;
+
 /**
  * @author shoo on 2017/12/14 9:45.
  * 订单
@@ -16,4 +18,8 @@ public interface OilOrderService {
      * 根据订单序列号查询订单
      * */
      public OilOrder getOneOrder(String serialNumber);
+     /*
+     * 查询用户活动订单
+     * */
+     public List<OilOrder> getOrderByAccountAndActivityId(String accountId, String activityId);
 }
