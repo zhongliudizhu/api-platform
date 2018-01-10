@@ -7,6 +7,7 @@ import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.service.OilOrderService;
 import com.winstar.order.utils.Constant;
+import com.winstar.order.utils.DateUtil;
 import com.winstar.order.vo.PayInfoVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author shoo on 2017/12/14 9:54.
@@ -66,5 +68,10 @@ public class OilOrderServiceImpl implements OilOrderService {
     @Override
     public OilOrder getOneOrder(String serialNumber) {
         return oilOrderRepository.findBySerialNumber(serialNumber);
+    }
+
+    @Override
+    public List<OilOrder> getOrderByAccount(String accountId, String activityId) {
+        return oilOrderRepository.findByAccountIdAndAndActivityId(accountId,activityId, DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
     }
 }
