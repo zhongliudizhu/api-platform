@@ -75,10 +75,10 @@ public class GoodsController {
 
         if (StringUtils.isEmpty(activityId)) throw new MissingParameterException("activityId");
         String accountId = accountService.getAccountId(request);
-        if(activityId.equals("1")){
-            List<OilOrder> oilOrders=oilOrderService.getOrderByAccountAndActivityId(accountId,activityId);
-            if(oilOrders.size()>0)  throw new NotFoundException("You have purchased the goods for this month");
-        }
+//        if(activityId.equals("1")){
+//            List<OilOrder> oilOrders=oilOrderService.getOrderByAccountAndActivityId(accountId,activityId);
+//            if(oilOrders.size()>0)  throw new NotFoundException("You have purchased the goods for this month");
+//        }
 
         PageViewLog log = new PageViewLog();
         log.setCreateTime(new Date());
