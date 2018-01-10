@@ -3,6 +3,7 @@ package com.winstar.order.service.impl;
 import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.service.CouponService;
+import com.winstar.exception.NotFoundException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.service.OilOrderService;
@@ -66,8 +67,12 @@ public class OilOrderServiceImpl implements OilOrderService {
     }
 
     @Override
-    public OilOrder getOneOrder(String serialNumber) {
-        return oilOrderRepository.findBySerialNumber(serialNumber);
+    public OilOrder getOneOrder(String serialNumber) throws NotFoundException {
+        OilOrder oilOrder = oilOrderRepository.findBySerialNumber(serialNumber);
+        if(ObjectUtils.isEmpty(oilOrder)||oilOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)){
+            throw new NotFoundException("oilOrder.order");
+        }
+        return oilOrder;
     }
 
     @Override

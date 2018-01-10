@@ -1,5 +1,6 @@
 package com.winstar.order.service;
 
+import com.winstar.exception.NotFoundException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.vo.PayInfoVo;
 
@@ -17,7 +18,7 @@ public interface OilOrderService {
      /*
      * 根据订单序列号查询订单
      * */
-     public OilOrder getOneOrder(String serialNumber);
+     public OilOrder getOneOrder(String serialNumber) throws NotFoundException;
      /*
      * 查询用户活动订单
      * */
