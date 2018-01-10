@@ -1,6 +1,7 @@
 package com.winstar.order.utils;
 
 
+import com.winstar.cashier.construction.utils.Arith;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.vo.OilDetailVo;
 import com.winstar.shop.entity.Goods;
@@ -68,10 +69,10 @@ public class OilOrderUtil {
             if(goods.getId().equals(Constant.ONE_BUY_ITEMID)){
                 order.setPayPrice(goods.getSaledPrice());
             }else{
-                order.setPayPrice(goods.getSaledPrice()*goods.getDisCount());
+                order.setPayPrice(Arith.mul(goods.getSaledPrice(),goods.getDisCount()));
             }
         }else if(activityType==2){
-            order.setPayPrice(goods.getSaledPrice()-order.getDiscountAmount());
+            order.setPayPrice(Arith.sub(goods.getSaledPrice(),order.getDiscountAmount()));
             order.setCouponTempletId(goods.getCouponTempletId());
         }
         order.setSalePrice(goods.getSaledPrice());
