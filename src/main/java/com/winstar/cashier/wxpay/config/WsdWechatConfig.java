@@ -92,6 +92,6 @@ public class WsdWechatConfig {
     /**
      * 微信回调地址(正式)
      */
-    private String backUrl_prod = "https://mobile.sxwinstar.net/api/v1/cbc/wxPay/notify";
+    private String backUrl_prod = "https://mobile.sxwinstar.net/ccb-api/api/v1/cbc/wxPay/notify";
 
 }

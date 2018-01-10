@@ -37,7 +37,7 @@ public class PayConfPC {
     /**
      * 正式环境
      */
-    public final static String PROD_BACK_END_URL = "https://mobile.sxwinstar.net/api/v1/cbc/payCallback";
+    public final static String PROD_BACK_END_URL = "https://mobile.sxwinstar.net/ccb-api/api/v1/cbc/payCallback";
     public final static String PROD_BILL_DOWNLOAD_URL = "https://www.ezf123.com/jspt/download/fileDownloadReq.action";
     public final static String PROD_EZFMER_PAY_URL = "https://www.ezf123.com/jspt/payment/back-mobilepay.action";
     public final static String PROD_JSPT_PAY_URL = "https://www.ezf123.com/jspt/payment/frontTransReq.action";
