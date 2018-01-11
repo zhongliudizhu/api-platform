@@ -52,7 +52,7 @@ public class OilOrderServiceImpl implements OilOrderService {
         oilOrder.setUpdateTime(time);
         oilOrder.setFinishTime(time);
         oilOrderRepository.save(oilOrder);
-        //活动2发优惠券
+        /*//活动2发优惠券
         try{
             if(oilOrder.getActivityId().equals(Constant.CBC_ACTIVITY_SEC)){
                 MyCoupon coupon = couponService.sendCoupon(oilOrder.getAccountId(),oilOrder.getActivityId(),oilOrder.getItemId());
@@ -62,7 +62,7 @@ public class OilOrderServiceImpl implements OilOrderService {
             }
         }catch (Exception ex){
             logger.error("发优惠券失败"+ex);
-        }
+        }*/
         return "ok";
     }
 
