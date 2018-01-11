@@ -1,7 +1,6 @@
 package com.winstar.order.utils;
 
 
-import com.sun.xml.internal.ws.api.ha.StickyFeature;
 import com.winstar.cashier.construction.utils.Arith;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.vo.OilDetailVo;
