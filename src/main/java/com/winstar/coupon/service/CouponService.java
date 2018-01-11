@@ -178,7 +178,15 @@ public class CouponService {
      * @return MyCoupon
      */
     public List<MyCoupon> findMyUsableCoupon(String accountId, Double money) {
-        return myCouponRepository.findByAccountIdAndStatusAndUseRuleLessThanEqual(accountId, 0, money);
+        List<MyCoupon> list=myCouponRepository.findByAccountIdAndStatusAndUseRuleLessThanEqual(accountId, 0, money);
+        for(MyCoupon coupon:list){
+            Date now = new Date();
+           if(coupon.getValidEndAt().getTime()<now.getTime()){
+               logger.info("优惠券："+coupon.getId()+" 过期");
+               list.remove(coupon);
+           }
+        }
+        return list;
     }
 
     /**
