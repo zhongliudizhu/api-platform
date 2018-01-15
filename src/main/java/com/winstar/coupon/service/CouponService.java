@@ -199,12 +199,19 @@ public class CouponService {
      */
     public MyCoupon checkIfMyCouponAvailable(Double saledPrice, String couponId) {
         MyCoupon coupon = myCouponRepository.findOne(couponId);
-        if (coupon == null || coupon.getStatus() == 2) return null;
+        if (coupon == null || coupon.getStatus() == 2) {
+            logger.info(couponId + "的优惠券不存在或已失效");
+            return null;
+        }
         Date now = new Date();
-        if (coupon.getValidEndAt() != null && coupon.getValidEndAt().getTime() < now.getTime()) return null;
-
-        if (coupon.getUseRule() < saledPrice) return null;
-
+        if (coupon.getValidEndAt() != null && coupon.getValidEndAt().getTime() < now.getTime()) {
+            logger.info(couponId + "的优惠券已失效");
+            return null;
+        }
+        if (coupon.getUseRule() >= saledPrice) {
+            logger.info(couponId + "的优惠券不能使用，该优惠券满" + coupon.getUseRule() + "元可使用，商品价格：" + saledPrice);
+            return null;
+        }
         return coupon;
     }
 
