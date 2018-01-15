@@ -65,14 +65,17 @@ public class OilOrderController {
         //2.根据商品id 查询商品
         Goods goods = shopService.findByGoodsId(itemId);
         if(ObjectUtils.isEmpty(goods)){
+            logger.error("查询商品失败，itemId：" + itemId);
             throw new NotFoundException("goods.order");
         }
         //3.根据活动id查询活动
         Activity activity = shopService.findByActivityId(activityId);
         if(ObjectUtils.isEmpty(activity)){
+            logger.error("查询活动失败，activityId：" + activityId);
             throw new NotFoundException("activity.order");
         }
         if(activity.getType()!=2&&!StringUtils.isEmpty(couponId)){
+            logger.error("只有活动2能使用优惠券！" );
             throw new NotRuleException("canNotUseCoupon.order");
         }
         if(StringUtils.isEmpty(goods.getCouponTempletId())&&!StringUtils.isEmpty(couponId)){
@@ -85,6 +88,7 @@ public class OilOrderController {
         }
         if(activityId.equals(Constant.CBC_ACTIVITY_FIR)){
             if(!OilOrderUtil.judgeActivity(accountId,activityId)){
+                logger.error("活动一商品，每用户一个月只能买一次" );
                 throw new NotRuleException("oneMonthOnce.order");
             }
         }
@@ -94,7 +98,11 @@ public class OilOrderController {
         //4.如果优惠券，查询优惠券
         if(!StringUtils.isEmpty(couponId)){
             MyCoupon myCoupon = couponService.checkIfMyCouponAvailable(goods.getSaledPrice(), couponId);
-            if(myCoupon == null) throw new NotFoundException("myCoupon");
+            if(myCoupon == null) {
+                logger.error("根据couponId查询优惠券失败，couponId：" + couponId);
+                throw new NotFoundException("myCoupon");
+
+            }
             oilOrder.setCouponId(couponId);
             if(ObjectUtils.isEmpty(myCoupon.getAmount())){
                 oilOrder.setDiscountAmount(Arith.mul(goods.getSaledPrice(),Arith.sub(1,myCoupon.getDiscountRate())));
