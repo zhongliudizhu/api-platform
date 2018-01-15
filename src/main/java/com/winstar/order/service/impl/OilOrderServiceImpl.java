@@ -1,6 +1,7 @@
 package com.winstar.order.service.impl;
 
 import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
+import com.winstar.cashier.construction.utils.Arith;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.exception.NotFoundException;
@@ -42,7 +43,7 @@ public class OilOrderServiceImpl implements OilOrderService {
             return "2";
         }
         oilOrder.setBankSerialNo(payInfo.getBankSerialNumber());
-        oilOrder.setPayPrice(payInfo.getPayPrice());
+        oilOrder.setPayPrice(Arith.div(payInfo.getPayPrice(),100));//分转换元
         oilOrder.setPayTime(payInfo.getPayTime());
         oilOrder.setPayType(payInfo.getPayType());
         oilOrder.setPayStatus(payInfo.getPayState());
