@@ -82,17 +82,18 @@ public class CouponService {
         coupon.setAmount(couponTemplate.getAmount());
         coupon.setDiscountRate(couponTemplate.getDiscountRate());
         coupon.setLimitDiscountAmount(couponTemplate.getLimitDiscountAmount());
-        if (!ObjectUtils.isEmpty(couponTemplate.getValidBeginAt()) && !ObjectUtils.isEmpty(couponTemplate
-                .getValidEndAt())) {
-            coupon.setValidBeginAt(couponTemplate.getValidBeginAt());
-            coupon.setValidEndAt(couponTemplate.getValidEndAt());
-        } else if (!ObjectUtils.isEmpty(couponTemplate.getValidBeginAt()) && ObjectUtils.isEmpty(couponTemplate
-                .getValidEndAt())) {
-            coupon.setValidBeginAt(couponTemplate.getValidBeginAt());
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
-            DateFormat format = new SimpleDateFormat("yyyy-MM-dd ");
-            coupon.setValidEndAt(DateUtil.StringToDate(format.format(calendar.getTime()) +"23:59:59"));
+        coupon.setValidBeginAt(new Date());
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd ");
+        coupon.setValidEndAt(DateUtil.StringToDate(format.format(calendar.getTime()) +"23:59:59"));
+//        if (!ObjectUtils.isEmpty(couponTemplate.getValidBeginAt()) && !ObjectUtils.isEmpty(couponTemplate
+//                .getValidEndAt())) {
+//            coupon.setValidBeginAt(couponTemplate.getValidBeginAt());
+//            coupon.setValidEndAt(couponTemplate.getValidEndAt());
+//        } else if (!ObjectUtils.isEmpty(couponTemplate.getValidBeginAt()) && ObjectUtils.isEmpty(couponTemplate
+//                .getValidEndAt())) {
+//            coupon.setValidBeginAt(couponTemplate.getValidBeginAt());
 //            if (couponTemplate.getDays() == 0) {
 //                try {
 //                    coupon.setValidEndAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(new SimpleDateFormat
@@ -104,12 +105,12 @@ public class CouponService {
 //                coupon.setValidEndAt(org.apache.commons.lang.time.DateUtils.addDays(couponTemplate.getValidBeginAt(),
 //                        couponTemplate.getDays()));
 //            }
-        } else if (ObjectUtils.isEmpty(couponTemplate.getValidBeginAt()) && ObjectUtils.isEmpty(couponTemplate
-                .getValidEndAt())) {
-            coupon.setValidBeginAt(new Date());
-            coupon.setValidEndAt(org.apache.commons.lang.time.DateUtils.addDays(coupon.getValidBeginAt(),
-                    couponTemplate.getDays()));
-        }
+//        } else if (ObjectUtils.isEmpty(couponTemplate.getValidBeginAt()) && ObjectUtils.isEmpty(couponTemplate
+//                .getValidEndAt())) {
+//            coupon.setValidBeginAt(new Date());
+//            coupon.setValidEndAt(org.apache.commons.lang.time.DateUtils.addDays(coupon.getValidBeginAt(),
+//                    couponTemplate.getDays()));
+//        }
         coupon.setShowStatus(couponTemplate.getShowStatus());
         coupon.setStatus(0);
         coupon.setUseRule(ObjectUtils.isEmpty(couponTemplate) ? null : couponTemplate.getRules());
