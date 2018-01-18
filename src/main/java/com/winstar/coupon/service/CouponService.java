@@ -89,21 +89,21 @@ public class CouponService {
         } else if (!ObjectUtils.isEmpty(couponTemplate.getValidBeginAt()) && ObjectUtils.isEmpty(couponTemplate
                 .getValidEndAt())) {
             coupon.setValidBeginAt(couponTemplate.getValidBeginAt());
-            if (couponTemplate.getDays() == 0) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd ");
+            coupon.setValidEndAt(DateUtil.StringToDate(format.format(calendar.getTime()) +"23:59:59"));
+//            if (couponTemplate.getDays() == 0) {
 //                try {
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
-                    DateFormat format = new SimpleDateFormat("yyyy-MM-dd ");
-                    coupon.setValidEndAt(DateUtil.StringToDate(format.format(calendar.getTime()) +"23:59:59"));
 //                    coupon.setValidEndAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(new SimpleDateFormat
 //                            ("yyyy-MM-dd").format(couponTemplate.getValidBeginAt()) + " 23:59:59"));
 //                } catch (ParseException e) {
 //                    e.printStackTrace();
 //                }
-            } else {
-                coupon.setValidEndAt(org.apache.commons.lang.time.DateUtils.addDays(couponTemplate.getValidBeginAt(),
-                        couponTemplate.getDays()));
-            }
+//            } else {
+//                coupon.setValidEndAt(org.apache.commons.lang.time.DateUtils.addDays(couponTemplate.getValidBeginAt(),
+//                        couponTemplate.getDays()));
+//            }
         } else if (ObjectUtils.isEmpty(couponTemplate.getValidBeginAt()) && ObjectUtils.isEmpty(couponTemplate
                 .getValidEndAt())) {
             coupon.setValidBeginAt(new Date());
