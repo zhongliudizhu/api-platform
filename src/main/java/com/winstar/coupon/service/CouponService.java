@@ -5,6 +5,7 @@ import com.winstar.coupon.entity.CouponTemplate;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.CouponTemplateRepository;
 import com.winstar.coupon.repository.MyCouponRepository;
+import com.winstar.order.utils.DateUtil;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.ActivityRepository;
@@ -18,8 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -87,12 +90,16 @@ public class CouponService {
                 .getValidEndAt())) {
             coupon.setValidBeginAt(couponTemplate.getValidBeginAt());
             if (couponTemplate.getDays() == 0) {
-                try {
-                    coupon.setValidEndAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(new SimpleDateFormat
-                            ("yyyy-MM-dd").format(couponTemplate.getValidBeginAt()) + " 23:59:59"));
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+//                try {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
+                    DateFormat format = new SimpleDateFormat("yyyy-MM-dd ");
+                    coupon.setValidEndAt(DateUtil.StringToDate(format.format(calendar.getTime()) +"23:59:59"));
+//                    coupon.setValidEndAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(new SimpleDateFormat
+//                            ("yyyy-MM-dd").format(couponTemplate.getValidBeginAt()) + " 23:59:59"));
+//                } catch (ParseException e) {
+//                    e.printStackTrace();
+//                }
             } else {
                 coupon.setValidEndAt(org.apache.commons.lang.time.DateUtils.addDays(couponTemplate.getValidBeginAt(),
                         couponTemplate.getDays()));
