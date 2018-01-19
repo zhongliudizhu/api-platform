@@ -74,6 +74,12 @@ public class OilOrderUtil {
         }else if(activityType==2){
             order.setPayPrice(Arith.sub(goods.getSaledPrice(),order.getDiscountAmount()));
             order.setCouponTempletId(goods.getCouponTempletId());
+        }else if(activityType==3){
+            if(goods.getId().equals(Constant.ONE_BUY_ITEMID)){
+                order.setPayPrice(goods.getSaledPrice());
+            }else{
+                order.setPayPrice(Arith.mul(goods.getSaledPrice(),goods.getDisCount()));
+            }
         }
         order.setSalePrice(goods.getSaledPrice());
         order.setItemTotalValue(goods.getPrice());//油劵总面值
