@@ -84,10 +84,13 @@ public class OilOrderController {
         if(itemId.equals(Constant.ONE_BUY_ITEMID)){
             String isEnable = OilOrderUtil.isEnable(accountId);
             if(isEnable.equals("500")){
+                logger.info("one:todayMoreThan500");
                 throw new NotRuleException("todayMoreThan500.order");
             }else if(isEnable.equals("1")){
+                logger.info("one:oneMonthOnce");
                 throw new NotRuleException("oneMonthOnce.order");
             }else if(isEnable.equals("2")){
+                logger.info("one:haveNotPay");
                 throw new NotRuleException("haveNotPay.order");
             }
         }
