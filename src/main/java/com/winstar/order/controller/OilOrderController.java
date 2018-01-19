@@ -87,9 +87,13 @@ public class OilOrderController {
             }
         }
         if(activityId.equals(Constant.CBC_ACTIVITY_FIR)){
-            if(!OilOrderUtil.judgeActivity(accountId,activityId)){
+            String canBuy = OilOrderUtil.judgeActivity(accountId,activityId);
+            if(canBuy.equals("1")){
                 logger.error("活动一商品，每用户一个月只能买一次" );
                 throw new NotRuleException("oneMonthOnce.order");
+            }else if(canBuy.equals("2")){
+                logger.error("活动一商品，有未关闭订单" );
+                throw new NotRuleException("haveNotPay.order");
             }
         }
 
