@@ -109,11 +109,22 @@ public class OilOrderUtil {
         return thisMonth(accountId).size()<=0;
     }
     /*
-    * 判断用户是否能参加活动
+    * 判断用户是否能参加活动  0 可以购买   1 已购买  2 有未关闭订单
     * */
-    public static boolean judgeActivity(String accountId, String activityId){
+    public static String judgeActivity(String accountId, String activityId){
         List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,DateUtil.getMonthBegin(), DateUtil.getMonthEnd() );
-        return oilOrders.size()<1;
+        if(oilOrders.size()<1){
+            return "0";
+
+        }else{
+            for (OilOrder oilOrder:oilOrders
+                 ) {
+                if(oilOrder.getPayStatus()==1){
+                    return "1";
+                }
+            }
+            return "2";
+        }
     }
 
     /*
