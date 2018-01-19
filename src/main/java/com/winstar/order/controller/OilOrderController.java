@@ -82,8 +82,13 @@ public class OilOrderController {
             throw new NotRuleException("canNotUseCoupon.order");
         }
         if(itemId.equals(Constant.ONE_BUY_ITEMID)){
-            if(!OilOrderUtil.isEnable(accountId)){
-                throw new NotRuleException("canNotBuy.order");
+            String isEnable = OilOrderUtil.isEnable(accountId);
+            if(isEnable.equals("500")){
+                throw new NotRuleException("todayMoreThan500.order");
+            }else if(isEnable.equals("1")){
+                throw new NotRuleException("oneMonthOnce.order");
+            }else if(isEnable.equals("2")){
+                throw new NotRuleException("haveNotPay.order");
             }
         }
         if(activityId.equals(Constant.CBC_ACTIVITY_FIR)){
