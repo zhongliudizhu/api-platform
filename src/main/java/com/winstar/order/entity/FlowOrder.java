@@ -12,15 +12,15 @@ import java.util.Date;
 
 /**
  * @author shoo on 2017/7/6 16:13.
- *  -- 油券订单 --
+ *  -- 流量订单 --
  */
 @NoArgsConstructor
 @Setter
 @Getter
 @AllArgsConstructor
 @Entity
-@Table(name = "cbc_oil_order")
-public class OilOrder {
+@Table(name = "cbc_flow_order")
+public class FlowOrder {
     /*
     *主键
     * */
@@ -76,7 +76,7 @@ public class OilOrder {
     @Column(length = 50)
     private String activityId;
     /*
-    * 油券明细
+    * 商品信息
     * */
     @Column(length = 100)
     private String oilDetail;
@@ -91,7 +91,7 @@ public class OilOrder {
     @Column(length = 50)
     private String bankSerialNo;
     /*
-    *状态 1 订单生成(未支付) 2 待发货(支付成功) 3 已发货 4 已确认收货
+    *状态 1 订单生成(未支付) 2 支付成功 3 已完成
     * */
     private Integer status;
     /*
@@ -153,7 +153,7 @@ public class OilOrder {
     private Integer payType;
 
     /* 账户id 订单序列号  状态 支付状态 下单时间 退款 商品id 活动id*/
-    public OilOrder(String accountId, String serialNumber, Integer status, Integer payStatus, Date createTime, Integer refund, String itemId, String activityId) {
+    public FlowOrder(String accountId, String serialNumber, Integer status, Integer payStatus, Date createTime, Integer refund, String itemId, String activityId) {
         this.accountId = accountId;
         this.serialNumber = serialNumber;
         this.status = status;

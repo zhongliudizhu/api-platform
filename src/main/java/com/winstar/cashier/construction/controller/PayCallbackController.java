@@ -127,7 +127,7 @@ public class PayCallbackController {
         }
     }
 
-    private void modifyOrder(PayOrder payOrder,Map<String,String> respMap){
+    private void modifyOrder(PayOrder payOrder,Map<String,String> respMap) throws NotFoundException {
         PayInfoVo payInfoVo = new PayInfoVo();
         payInfoVo.setOrderSerialNumber(payOrder.getOrderNumber());
         payInfoVo.setBankSerialNumber(MapUtils.getString(respMap, "transaction_id"));
