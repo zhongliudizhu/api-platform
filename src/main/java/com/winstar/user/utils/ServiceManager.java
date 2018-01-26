@@ -8,6 +8,7 @@ import com.winstar.user.repository.PageViewLogRepository;
 import com.winstar.user.service.AccountService;
 import com.winstar.user.service.OneMoneyCouponRecordService;
 import com.winstar.user.service.PageViewLogService;
+import com.winstar.user.service.SmsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,13 @@ public class ServiceManager {
 
     public static OneMoneyCouponRecordRepository oneMoneyCouponRecordRepository;
     public static OilOrderRepository oilOrderRepository;
+
+    public static SmsService smsService;
+
+    @Autowired
+    public void setSmsService(SmsService smsService) {
+        ServiceManager.smsService = smsService;
+    }
 
     @Autowired
     public void setAccessTokenRepository(AccessTokenRepository accessTokenRepository) {
@@ -60,8 +68,9 @@ public class ServiceManager {
     public void setOneMoneyCouponRecordRepository(OneMoneyCouponRecordRepository oneMoneyCouponRecordRepository) {
         ServiceManager.oneMoneyCouponRecordRepository = oneMoneyCouponRecordRepository;
     }
+
     @Autowired
-    public void setOilOrderRepository(OilOrderRepository oilOrderRepository){
+    public void setOilOrderRepository(OilOrderRepository oilOrderRepository) {
         ServiceManager.oilOrderRepository = oilOrderRepository;
     }
 }
