@@ -103,7 +103,7 @@ public class AuthController {
 
         Account account = ServiceManager.accountRepository.findOne(accountId);
         if (null != account && !StringUtils.isEmpty(account.getAuthInfoCard()) && !StringUtils.isEmpty(account.getAuthMobile())) {
-            throw new NotRuleException("repeatedAuth");
+           return account;
         }
 
         //设置短息
