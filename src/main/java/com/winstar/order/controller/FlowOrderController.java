@@ -94,7 +94,7 @@ public class FlowOrderController {
             }
         }
         FlowOrder flowOrder = new FlowOrder(accountId, serialNumber, Constant.ORDER_STATUS_CREATE, Constant.PAY_STATUS_NOT_PAID,new Date(),Constant.REFUND_STATUS_ORIGINAL,itemId,activityId);
-
+        flowOrder.setPhoneNo(phoneNumber);
         //4.如果优惠券，查询优惠券
         if(!StringUtils.isEmpty(couponId)){
             MyCoupon myCoupon = couponService.checkIfMyCouponAvailable(goods.getSaledPrice(), couponId);
