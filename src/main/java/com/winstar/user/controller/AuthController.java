@@ -44,7 +44,7 @@ public class AuthController {
      * @return
      */
     @GetMapping("/checkIsAuth")
-    public SimpleResult checkAuth(HttpServletRequest request)throws NotRuleException {
+    public SimpleResult checkAuth(HttpServletRequest request) throws NotRuleException {
         String accountId = ServiceManager.accountService.getAccountId(request);
         Account account = ServiceManager.accountRepository.findOne(accountId);
         if (null == account || StringUtils.isEmpty(account.getAuthInfoCard())) {
@@ -103,7 +103,11 @@ public class AuthController {
 
         Account account = ServiceManager.accountRepository.findOne(accountId);
         if (null != account && !StringUtils.isEmpty(account.getAuthInfoCard()) && !StringUtils.isEmpty(account.getAuthMobile())) {
-           return account;
+            return account;
+        }
+
+        if (ServiceManager.accountRepository.countByAuthInfoCard(msgContent.getKh()) > 0) {
+            throw new NotRuleException("infoCardIsBind");
         }
 
         //设置短息
