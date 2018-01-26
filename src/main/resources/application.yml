@@ -37,6 +37,7 @@ bank:
     checkVerifyCodeUrl: ${{CHECK_VERIFY_CODE}:http://113.140.28.230:5080/AuthPlatform/rest/auth/auth}
     user: ${{BBC_SMS_USER}:test}
     pwd:  ${{BBC_SMS_PWD}:test}
+  flowUrl: http://192.168.118.7:2300/api/v1/flow/order
 
 ---
 spring:
@@ -78,3 +79,5 @@ bank:
     checkVerifyCodeUrl: ${{CHECK_VERIFY_CODE}:http://113.140.28.230:5080/AuthPlatform/rest/auth/auth}
     user: ${{BBC_SMS_USER}:test}
     pwd:  ${{BBC_SMS_PWD}:test}
+
+  flowUrl: http://api.sxwinstar.net/flow/api/v1/flow/order

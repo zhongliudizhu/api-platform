@@ -1,5 +1,6 @@
 package com.winstar.user.utils;
 
+import com.winstar.order.repository.FlowOrderRepository;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.user.repository.AccessTokenRepository;
 import com.winstar.user.repository.AccountRepository;
@@ -26,6 +27,7 @@ public class ServiceManager {
 
     public static OneMoneyCouponRecordRepository oneMoneyCouponRecordRepository;
     public static OilOrderRepository oilOrderRepository;
+    public static FlowOrderRepository flowOrderRepository;
 
     public static SmsService smsService;
 
@@ -72,5 +74,9 @@ public class ServiceManager {
     @Autowired
     public void setOilOrderRepository(OilOrderRepository oilOrderRepository) {
         ServiceManager.oilOrderRepository = oilOrderRepository;
+    }
+    @Autowired
+    public void setFlowOrderRepository(FlowOrderRepository flowOrderRepository){
+        ServiceManager.flowOrderRepository = flowOrderRepository;
     }
 }

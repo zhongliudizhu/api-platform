@@ -11,6 +11,7 @@ import com.winstar.cashier.wxpay.common.Signature;
 import com.winstar.cashier.wxpay.common.XMLParser;
 import com.winstar.cashier.wxpay.config.WsdWechatConfig;
 import com.winstar.cashier.wxpay.pay.WxPay;
+import com.winstar.exception.NotFoundException;
 import com.winstar.oil.service.SendOilCouponService;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.service.OilOrderService;
@@ -172,7 +173,7 @@ public class NotifyController {
         return "0000";
     }
 
-    private void modifyOrder(PayOrder payOrder,Map<String,Object> respMap){
+    private void modifyOrder(PayOrder payOrder,Map<String,Object> respMap) throws NotFoundException {
         PayInfoVo payInfoVo = new PayInfoVo();
         payInfoVo.setOrderSerialNumber(payOrder.getOrderNumber());
         payInfoVo.setBankSerialNumber(MapUtils.getString(respMap, "transaction_id"));

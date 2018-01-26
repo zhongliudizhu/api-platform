@@ -14,7 +14,7 @@ public interface OilOrderService {
      /*
      * 付款成功更新订单（张林调用）
      * */
-     public String updateOrderCashier(PayInfoVo payInfo);
+     public String updateOrderCashier(PayInfoVo payInfo) throws NotFoundException;
      /*
      * 根据订单序列号查询订单
      * */

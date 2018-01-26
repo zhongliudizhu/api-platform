@@ -74,6 +74,12 @@ public class OilOrderUtil {
         }else if(activityType==2){
             order.setPayPrice(Arith.sub(goods.getSaledPrice(),order.getDiscountAmount()));
             order.setCouponTempletId(goods.getCouponTempletId());
+        }else if(activityType==3){
+            if(goods.getId().equals(Constant.ONE_BUY_ITEMID)){
+                order.setPayPrice(goods.getSaledPrice());
+            }else{
+                order.setPayPrice(Arith.mul(goods.getSaledPrice(),goods.getDisCount()));
+            }
         }
         order.setSalePrice(goods.getSaledPrice());
         order.setItemTotalValue(goods.getPrice());//油劵总面值
@@ -99,29 +105,54 @@ public class OilOrderUtil {
     /*
     * 用户是否能购买一分油券
     * */
-    public static boolean isEnable(String accountId){
-        if(!judgeTime(new Date())){
-            return false;
-        }
+    public static String isEnable(String accountId){
+
         if(todaySold().size()>=Constant.ONE_DAY_MAX){
-            return false;
+            return "500";
         }
-        return thisMonth(accountId).size()<=0;
+        if(thisMonth(accountId).equals("1")){
+            return "1";
+        }
+        if(thisMonth(accountId).equals("2")){
+            return "2";
+        }
+        return "ok";
     }
     /*
-    * 判断用户是否能参加活动
+    * 判断用户是否能参加活动  0 可以购买   1 已购买  2 有未关闭订单
     * */
-    public static boolean judgeActivity(String accountId, String activityId){
+    public static String judgeActivity(String accountId, String activityId){
         List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,DateUtil.getMonthBegin(), DateUtil.getMonthEnd() );
-        return oilOrders.size()<1;
+        if(oilOrders.size()<1){
+            return "0";
+
+        }else{
+            for (OilOrder oilOrder:oilOrders
+                 ) {
+                if(oilOrder.getPayStatus()==1){
+                    return "1";
+                }
+            }
+            return "2";
+        }
     }
 
     /*
     * 用户本月20元油券订单
     * */
-    private static List<OilOrder> thisMonth(String accountId){
+    private static String thisMonth(String accountId){
         List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndAndItemId(accountId,Constant.ONE_BUY_ITEMID,DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
-        return oilOrders;
+        if(oilOrders.size()<=0){
+            return "0";
+        }else {
+            for (OilOrder oilOrder:oilOrders
+                    ) {
+                if(oilOrder.getPayStatus()==1){
+                    return "1";
+                }
+            }
+            return "2";
+        }
     }
 
     /*

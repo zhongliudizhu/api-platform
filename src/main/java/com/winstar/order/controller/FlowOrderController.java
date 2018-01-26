@@ -7,10 +7,11 @@ import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.exception.ServiceUnavailableException;
-import com.winstar.order.entity.OilOrder;
-import com.winstar.order.repository.OilOrderRepository;
+import com.winstar.order.entity.FlowOrder;
+import com.winstar.order.repository.FlowOrderRepository;
 import com.winstar.order.utils.Constant;
-import com.winstar.order.utils.OilOrderUtil;
+import com.winstar.order.utils.FlowOrderUtil;
+import com.winstar.order.vo.FlowResult;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
@@ -32,15 +33,16 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 /**
- * @author shoo on 2017/7/7 13:52.
- *  油券订单
+ * @author shoo on 2018/1/24 9:44.
+ *         -- 流量充值
  */
 @RestController
-@RequestMapping("/api/v1/cbc/orders")
-public class OilOrderController {
-    public static final Logger logger = LoggerFactory.getLogger(OilOrderController.class);
+@RequestMapping(value = "/api/v1/cbc/flow/order")
+public class FlowOrderController {
+
+    public static final Logger logger = LoggerFactory.getLogger(FlowOrderController.class);
     @Autowired
-    private OilOrderRepository orderRepository;
+    private FlowOrderRepository flowOrderRepository;
     @Autowired
     private ShopService shopService;
     @Autowired
@@ -49,87 +51,72 @@ public class OilOrderController {
     private AccountService accountService;
 
     /**
-     * 添加油券订单
+     *
      * @param itemId 商品id
      * @param activityId 活动id
-     * @param couponId 优惠券id
+     * @param couponId 优惠券id（可选）
+     * @param phoneNumber 手机号
      */
-    @PostMapping( produces = "application/json;charset=utf-8")
+    @PostMapping(produces = "application/json;charset=utf-8")
     @ResponseBody
-    public ResponseEntity addOrder(@RequestParam String itemId
+    public ResponseEntity addFlowOrder(@RequestParam String itemId
             , @RequestParam String activityId
             , @RequestParam(required = false, defaultValue = "") String couponId
-            , HttpServletRequest request) throws NotFoundException, NotRuleException {
+            , @RequestParam String phoneNumber
+            , HttpServletRequest request) throws NotRuleException, NotFoundException {
+
         String accountId = accountService.getAccountId(request);
-        String serialNumber = OilOrderUtil.getSerialNumber();
+        String serialNumber = FlowOrderUtil.getSerialNumber();
         //2.根据商品id 查询商品
         Goods goods = shopService.findByGoodsId(itemId);
         if(ObjectUtils.isEmpty(goods)){
             logger.error("查询商品失败，itemId：" + itemId);
-            throw new NotFoundException("goods.order");
+            throw new NotFoundException("goods.flowOrder");
         }
         //3.根据活动id查询活动
         Activity activity = shopService.findByActivityId(activityId);
         if(ObjectUtils.isEmpty(activity)){
             logger.error("查询活动失败，activityId：" + activityId);
-            throw new NotFoundException("activity.order");
+            throw new NotFoundException("activity.flowOrder");
         }
-        if(activity.getType()!=2&&!StringUtils.isEmpty(couponId)){
-            logger.error("只有活动2能使用优惠券！" );
-            throw new NotRuleException("canNotUseCoupon.order");
+        if(goods.getType()!=2&&!StringUtils.isEmpty(couponId)){
+            logger.error("该商品不能使用优惠券！" );
+            throw new NotRuleException("canNotUseCoupon.flowOrder");
         }
-        if(StringUtils.isEmpty(goods.getCouponTempletId())&&!StringUtils.isEmpty(couponId)){
-            throw new NotRuleException("canNotUseCoupon.order");
-        }
-        if(itemId.equals(Constant.ONE_BUY_ITEMID)){
-            String isEnable = OilOrderUtil.isEnable(accountId);
-            if(isEnable.equals("500")){
-                logger.info("one:todayMoreThan500");
-                throw new NotRuleException("todayMoreThan500.order");
-            }else if(isEnable.equals("1")){
-                logger.info("one:oneMonthOnce");
-                throw new NotRuleException("oneMonthOnce.order");
-            }else if(isEnable.equals("2")){
-                logger.info("one:haveNotPay");
-                throw new NotRuleException("haveNotPay.order");
-            }
-        }
-        if(activityId.equals(Constant.CBC_ACTIVITY_FIR)){
-            String canBuy = OilOrderUtil.judgeActivity(accountId,activityId);
+        if(goods.getType()==1){
+            String canBuy = FlowOrderUtil.judgeItemId(accountId,goods.getId());
             if(canBuy.equals("1")){
-                logger.error("活动一商品，每用户一个月只能买一次" );
-                throw new NotRuleException("oneMonthOnce.order");
+                logger.info("该类商品一月只能购买一次");
+                throw new NotRuleException("oneMonthOnce.flowOrder");
             }else if(canBuy.equals("2")){
-                logger.error("活动一商品，有未关闭订单" );
-                throw new NotRuleException("haveNotPay.order");
+                logger.info("你账户下有未付款且未关闭订单");
+                throw new NotRuleException("haveNotPay.flowOrder");
             }
         }
+        FlowOrder flowOrder = new FlowOrder(accountId, serialNumber, Constant.ORDER_STATUS_CREATE, Constant.PAY_STATUS_NOT_PAID,new Date(),Constant.REFUND_STATUS_ORIGINAL,itemId,activityId);
 
-        //5.初始化订单及订单项
-        OilOrder oilOrder = new OilOrder(accountId,serialNumber, Constant.ORDER_STATUS_CREATE,Constant.PAY_STATUS_NOT_PAID,new Date(),Constant.REFUND_STATUS_ORIGINAL,itemId,activityId);
         //4.如果优惠券，查询优惠券
         if(!StringUtils.isEmpty(couponId)){
             MyCoupon myCoupon = couponService.checkIfMyCouponAvailable(goods.getSaledPrice(), couponId);
             if(myCoupon == null) {
                 logger.error("根据couponId查询优惠券失败，couponId：" + couponId);
-                throw new NotFoundException("myCoupon");
+                throw new NotFoundException("myCoupon.flowOrder");
 
             }
-            oilOrder.setCouponId(couponId);
+            flowOrder.setCouponId(couponId);
             if(ObjectUtils.isEmpty(myCoupon.getAmount())){
-                oilOrder.setDiscountAmount(Arith.mul(goods.getSaledPrice(),Arith.sub(1,myCoupon.getDiscountRate())));
+                flowOrder.setDiscountAmount(Arith.mul(goods.getSaledPrice(),Arith.sub(1,myCoupon.getDiscountRate())));
             }else if (ObjectUtils.isEmpty(myCoupon.getDiscountRate())){
-                oilOrder.setDiscountAmount(myCoupon.getAmount());
+                flowOrder.setDiscountAmount(myCoupon.getAmount());
             }
-
         }
-        if(!StringUtils.isEmpty(oilOrder.getCouponId())){
+        if(!StringUtils.isEmpty(flowOrder.getCouponId())){
             couponService.useCoupon(couponId);
         }
-        oilOrder = OilOrderUtil.initOrder(oilOrder,goods,activity.getType());
-        oilOrder = orderRepository.save(oilOrder);
-        //6.生成订单
-        return new ResponseEntity<>(oilOrder, HttpStatus.OK);
+        flowOrder = FlowOrderUtil.initFlowOrder(flowOrder,goods);
+        flowOrder = flowOrderRepository.save(flowOrder);
+
+        return new ResponseEntity<>(flowOrder, HttpStatus.OK);
     }
 
     /**
@@ -140,30 +127,30 @@ public class OilOrderController {
     @ResponseBody
     public ResponseEntity judgeOrder(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
         if(StringUtils.isEmpty(serialNumber)){
-            throw new MissingParameterException("serialNumber.order");
+            throw new MissingParameterException("serialNumber.flowOrder");
         }
-        OilOrder order = orderRepository.findBySerialNumber(serialNumber);
+        FlowOrder order = flowOrderRepository.findBySerialNumber(serialNumber);
         if(ObjectUtils.isEmpty(order)){
-            throw new NotFoundException("oilOrder.order");
+            throw new NotFoundException("oilOrder.flowOrder");
         }
         if(order.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)){
-            throw  new NotRuleException("closed.order");
+            throw  new NotRuleException("closed.flowOrder");
         }
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
     /* *
-     * 查询单个订单-根据序列号
-     */
+    * 查询单个订单-根据序列号
+    */
     @GetMapping(value = "/{serialNumber}/serialNumber", produces = "application/json;charset=utf-8")
     @ResponseBody
     public ResponseEntity getOrders(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
         if(StringUtils.isEmpty(serialNumber)){
-            throw new MissingParameterException("serialNumber.order");
+            throw new MissingParameterException("serialNumber.flowOrder");
         }
-        OilOrder order = orderRepository.findBySerialNumber(serialNumber);
+        FlowOrder order = flowOrderRepository.findBySerialNumber(serialNumber);
         if(ObjectUtils.isEmpty(order)){
-            throw  new NotFoundException("oilOrder.order");
+            throw  new NotFoundException("oilOrder.flowOrder");
         }
         return new ResponseEntity(order,HttpStatus.OK);
     }
@@ -178,13 +165,13 @@ public class OilOrderController {
             throws NotFoundException, ServiceUnavailableException, NotRuleException, MissingParameterException {
         String accountId = accountService.getAccountId(request);
         if(StringUtils.isEmpty(accountId)){
-            throw new NotFoundException("accountId.oilOrder");
+            throw new NotFoundException("accountId.flowOrder");
         }
         if(StringUtils.isEmpty(status)){
-            throw new MissingParameterException("status.oilOrder");
+            throw new MissingParameterException("status.flowOrder");
         }
         Integer orderStatus = Integer.parseInt(status);
-        List<OilOrder> oilOrders = orderRepository.findByAccountId(accountId);
+        List<FlowOrder> oilOrders = flowOrderRepository.findByAccountId(accountId);
         if(-1 == orderStatus){
             oilOrders = oilOrders.stream().filter(o -> o.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)).collect(toList());
         }else if( 0 == orderStatus){
@@ -193,7 +180,7 @@ public class OilOrderController {
             oilOrders = oilOrders.stream().filter( o -> o.getStatus()==orderStatus).filter(o -> o.getIsAvailable().equals("0")).collect(toList());
         }
         if(oilOrders.size()<=0){
-            throw new NotFoundException("orders.order");
+            throw new NotFoundException("orders.flowOrder");
         }
         return new ResponseEntity<>(oilOrders, HttpStatus.OK);
     }
@@ -206,34 +193,40 @@ public class OilOrderController {
     @PutMapping(value = "/shutdown/{serialNumber}/", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity shutdownOrder(@PathVariable String serialNumber, HttpServletRequest request ) throws MissingParameterException, NotRuleException, NotFoundException {
-         String accountId = accountService.getAccountId(request);
-         if(StringUtils.isEmpty(accountId)){
-             throw new NotFoundException("accountId.oilOrder");
-         }
-         if (StringUtils.isEmpty(serialNumber)) {
-             throw new MissingParameterException("serialNumber.oilOrder");
-         }
+        String accountId = accountService.getAccountId(request);
+        if(StringUtils.isEmpty(accountId)){
+            throw new NotFoundException("accountId.flowOrder");
+        }
+        if (StringUtils.isEmpty(serialNumber)) {
+            throw new MissingParameterException("serialNumber.flowOrder");
+        }
 
-         OilOrder oilOrder = orderRepository.findBySerialNumber(serialNumber);
-         if(ObjectUtils.isEmpty(oilOrder)){
-             throw new NotFoundException("oilOrder.oilOrder");
-         }
-         if(oilOrder.getStatus()!=1){
-             throw new NotRuleException("cannotShutdown.oilOrder");
-         }
-         if(oilOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)){
-             throw new NotRuleException("alreadyClosed.oilOrder");
-         }
-         if(!oilOrder.getAccountId().equals(accountId)){
-             throw new NotRuleException("notYourOrder.oilOrder");
-         }
-         oilOrder.setIsAvailable(Constant.IS_NORMAL_CANCELED);
-         oilOrder = orderRepository.save(oilOrder);
-         //返还优惠券
-         if(!StringUtils.isEmpty(oilOrder.getCouponId())){
-             couponService.cancelMyCoupon(oilOrder.getCouponId());
-         }
-         return new ResponseEntity<>(null, HttpStatus.OK);
+        FlowOrder order = flowOrderRepository.findBySerialNumber(serialNumber);
+        if(ObjectUtils.isEmpty(order)){
+            throw new NotFoundException("oilOrder.flowOrder");
+        }
+        if(order.getStatus()!=1){
+            throw new NotRuleException("cannotShutdown.flowOrder");
+        }
+        if(order.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)){
+            throw new NotRuleException("alreadyClosed.flowOrder");
+        }
+        order.setIsAvailable(Constant.IS_NORMAL_CANCELED);
+        order = flowOrderRepository.save(order);
+        //返还优惠券
+        if(!StringUtils.isEmpty(order.getCouponId())){
+            couponService.cancelMyCoupon(order.getCouponId());
+        }
+        return new ResponseEntity<>(null, HttpStatus.OK);
+    }
+
+
+    @GetMapping(produces = "application/json;charset=utf-8",value = "/test")
+    @ResponseBody
+    public ResponseEntity test(){
+
+        FlowResult flow = FlowOrderUtil.chargeFlow("13572466259","M","10","P","30","http://192.168.118.7:2300/api/v1/flow/order");
+        return new ResponseEntity<>(flow,HttpStatus.OK);
     }
 
 

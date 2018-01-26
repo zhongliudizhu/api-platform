@@ -1,19 +1,23 @@
 package com.winstar.order.service.impl;
 
-import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
 import com.winstar.cashier.construction.utils.Arith;
-import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.exception.NotFoundException;
+import com.winstar.order.entity.FlowOrder;
 import com.winstar.order.entity.OilOrder;
+import com.winstar.order.repository.FlowOrderRepository;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.service.OilOrderService;
 import com.winstar.order.utils.Constant;
 import com.winstar.order.utils.DateUtil;
+import com.winstar.order.utils.FlowOrderUtil;
+import com.winstar.order.vo.FlowResult;
 import com.winstar.order.vo.PayInfoVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -30,29 +34,59 @@ public class OilOrderServiceImpl implements OilOrderService {
     @Autowired
     private OilOrderRepository oilOrderRepository;
     @Autowired
+    private FlowOrderRepository flowOrderRepository;
+    @Autowired
     private CouponService couponService;
+    @Value("${info.flowUrl}")
+    private String flowUrl;
     @Override
-    public String updateOrderCashier(PayInfoVo payInfo) {
+    public String updateOrderCashier(PayInfoVo payInfo) throws NotFoundException {
         Date time = new Date();
         Integer payStatus = payInfo.getPayState();
         if (payStatus != 0 && payStatus != 1 ) {
             return "1";
         }
-        OilOrder oilOrder = oilOrderRepository.findBySerialNumber(payInfo.getOrderSerialNumber());
-        if(ObjectUtils.isEmpty(oilOrder)){
-            return "2";
-        }
-        oilOrder.setBankSerialNo(payInfo.getBankSerialNumber());
-        oilOrder.setPayPrice(Arith.div(payInfo.getPayPrice(),100));//分转换元
-        oilOrder.setPayTime(payInfo.getPayTime());
-        oilOrder.setPayType(payInfo.getPayType());
-        oilOrder.setPayStatus(payInfo.getPayState());
+        String serialNumber = payInfo.getOrderSerialNumber();
+        if(serialNumber.contains("wxyj")){
+            OilOrder oilOrder = oilOrderRepository.findBySerialNumber(serialNumber);
+            if(ObjectUtils.isEmpty(oilOrder)||oilOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)){
+                return "2";
+            }
+            oilOrder.setBankSerialNo(payInfo.getBankSerialNumber());
+            oilOrder.setPayPrice(Arith.div(payInfo.getPayPrice(),100));//分转换元
+            oilOrder.setPayTime(payInfo.getPayTime());
+            oilOrder.setPayType(payInfo.getPayType());
+            oilOrder.setPayStatus(payInfo.getPayState());
 
-        oilOrder.setSendStatus(3);
-        oilOrder.setStatus(3);
-        oilOrder.setUpdateTime(time);
-        oilOrder.setFinishTime(time);
-        oilOrderRepository.save(oilOrder);
+            oilOrder.setSendStatus(3);
+            oilOrder.setStatus(3);
+            oilOrder.setUpdateTime(time);
+            oilOrder.setFinishTime(time);
+            oilOrderRepository.save(oilOrder);
+
+        }else {
+            FlowOrder flowOrder = flowOrderRepository.findBySerialNumber(serialNumber);
+            if(ObjectUtils.isEmpty(flowOrder)||flowOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)){
+                return "2";
+            }
+            flowOrder.setBankSerialNo(payInfo.getBankSerialNumber());
+            flowOrder.setPayPrice(Arith.div(payInfo.getPayPrice(),100));//分转换元
+            flowOrder.setPayTime(payInfo.getPayTime());
+            flowOrder.setPayType(payInfo.getPayType());
+            flowOrder.setPayStatus(payInfo.getPayState());//支付成功
+            FlowResult flowResult = FlowOrderUtil.chargeFlow(flowOrder.getPhoneNo(),"M","1024","N","30",flowUrl);
+
+            if(ObjectUtils.isEmpty(flowResult)||flowResult.getOrderStatus().equals("SubmitFail")){
+                flowOrder.setSendStatus(4);//发货失败
+                flowOrder.setStatus(3);//已完成
+            }else{
+                flowOrder.setSendStatus(3);//发货成功
+                flowOrder.setStatus(3);//已完成
+            }
+            flowOrder.setUpdateTime(time);
+            flowOrder.setFinishTime(time);
+            flowOrderRepository.save(flowOrder);
+        }
         /*//活动2发优惠券
         try{
             if(oilOrder.getActivityId().equals(Constant.CBC_ACTIVITY_SEC)){
@@ -69,10 +103,20 @@ public class OilOrderServiceImpl implements OilOrderService {
 
     @Override
     public OilOrder getOneOrder(String serialNumber) throws NotFoundException {
-        OilOrder oilOrder = oilOrderRepository.findBySerialNumber(serialNumber);
-        if(ObjectUtils.isEmpty(oilOrder)||oilOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)){
-            throw new NotFoundException("oilOrder.order");
+        OilOrder oilOrder = new OilOrder();
+        if(serialNumber.contains("wxyj")){
+            oilOrder = oilOrderRepository.findBySerialNumber(serialNumber);
+            if(ObjectUtils.isEmpty(oilOrder)||oilOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)){
+                throw new NotFoundException("oilOrder.order");
+            }
+        }else {
+            FlowOrder flowOrder = flowOrderRepository.findBySerialNumber(serialNumber);
+            if(ObjectUtils.isEmpty(flowOrder)||flowOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)){
+                throw new NotFoundException("flowOrder.order");
+            }
+            BeanUtils.copyProperties(flowOrder,oilOrder);
         }
+
         return oilOrder;
     }
 
