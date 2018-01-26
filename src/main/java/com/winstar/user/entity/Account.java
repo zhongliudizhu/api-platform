@@ -1,6 +1,5 @@
 package com.winstar.user.entity;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -58,5 +57,20 @@ public class Account {
      * 最后修改时间
      */
     private Date updateTime;
-
+    /**
+     * 建行信息卡
+     */
+    @Column(length = 50)
+    private String authInfoCard;
+    /**
+     * 信息卡绑定手机后四位
+     */
+    @Column(length = 50)
+    private String authMobile;
+    @Column(length = 50)
+    private String authDriverLicense;
+    /**
+     * 信息卡绑定时间
+     */
+    private Date authTime;
 }
