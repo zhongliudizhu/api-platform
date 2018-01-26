@@ -14,6 +14,7 @@ import com.winstar.order.utils.OilOrderUtil;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
+import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +62,7 @@ public class OilOrderController {
             , @RequestParam(required = false, defaultValue = "") String couponId
             , HttpServletRequest request) throws NotFoundException, NotRuleException {
         String accountId = accountService.getAccountId(request);
+        Account account = accountService.findById(accountId);
         String serialNumber = OilOrderUtil.getSerialNumber();
         //2.根据商品id 查询商品
         Goods goods = shopService.findByGoodsId(itemId);
@@ -80,6 +82,12 @@ public class OilOrderController {
         }
         if(StringUtils.isEmpty(goods.getCouponTempletId())&&!StringUtils.isEmpty(couponId)){
             throw new NotRuleException("canNotUseCoupon.order");
+        }
+        //activity 1 and 3 auth infoCard
+        if(activityId.equals("1") || activityId.equals("3")){
+            if(StringUtils.isEmpty(account.getAuthInfoCard())){
+                throw new NotRuleException("notBindInfoCard.order");
+            }
         }
         if(itemId.equals(Constant.ONE_BUY_ITEMID)){
             String isEnable = OilOrderUtil.isEnable(accountId);
