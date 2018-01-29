@@ -102,7 +102,7 @@ public class GoodsController {
                 }
             }
         }
-        List<Goods> list=goodsRepository.findByStatusAndIdIn(Status,array);
+        List<Goods> list=goodsRepository.findByStatusAndIdInOrderByPriceAsc(Status,array);
 
         if (list.size() == 0)  throw new NotFoundException("goods");
         return list;
