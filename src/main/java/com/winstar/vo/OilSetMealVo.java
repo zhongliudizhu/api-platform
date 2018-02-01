@@ -14,6 +14,7 @@ public class OilSetMealVo {
     private Double surplusPrice;//余额
     private int totalNumber;//总张数
     private Double totalPrice;//总价
+    private String createTime;
 
     public String getOrderId() {
         return orderId;
