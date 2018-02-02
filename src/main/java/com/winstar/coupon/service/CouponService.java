@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -120,6 +121,51 @@ public class CouponService {
         logger.info("----发放优惠券----结束: " + myCoupon.toString());
         return myCoupon;
     }
+
+    /**
+     * 前端发送优惠券
+     *
+     * @param accountId  用户ID
+     * @param amount 金额
+     * @param validEndAt    到期时间  不传则默认当月最后一天
+     * @param useRule    使用规则 满多少使用 0.0
+     * @return MyCoupon
+     */
+    @Transactional
+    public MyCoupon sendCoupon_freedom(String accountId, String activityId,
+                                @RequestParam(defaultValue = "5") Double amount,
+                                 Date validEndAt,
+                                @RequestParam(defaultValue = "0.0") Double useRule
+                                ) {
+
+        MyCoupon coupon = new MyCoupon();
+        coupon.setActivityId(activityId);
+        coupon.setCreatedAt(new Date());
+        coupon.setAccountId(accountId);
+//        coupon.setCouponTemplateId(couponTemplate.getId());
+        coupon.setAmount(amount);
+//        coupon.setDiscountRate(couponTemplate.getDiscountRate());
+//        coupon.setLimitDiscountAmount(couponTemplate.getLimitDiscountAmount());
+        coupon.setValidBeginAt(new Date());
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd ");
+        Date date=DateUtil.StringToDate(format.format(calendar.getTime()) +"23:59:59");
+        if(validEndAt==null){
+            coupon.setValidEndAt(validEndAt);
+        }else{
+            coupon.setValidEndAt(date);
+        }
+        coupon.setShowStatus(0);
+        coupon.setStatus(0);
+        coupon.setUseRule(useRule);
+        coupon.setName("前端调用发券");
+        coupon.setDescription("前端调用发券");
+        MyCoupon myCoupon = myCouponRepository.save(coupon);
+        logger.info("----前端调用发优惠券----结束: " + myCoupon.toString());
+        return myCoupon;
+    }
+
 
     /**
      * 检查过期
