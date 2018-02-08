@@ -11,5 +11,5 @@ import java.util.List;
  */
 public interface CouponLogRepository extends JpaRepository<CouponLog, String> {
 
-    List<CouponLog> findByOpenId(String openId);
+    List<CouponLog> findByAccountId(String accountId);
 }

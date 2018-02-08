@@ -11,7 +11,7 @@ import java.util.List;
  *         --
  */
 public interface InsuranceRepository extends JpaRepository<Insurance, String>{
-    List<Insurance> findByOpenId(String openId);
+    List<Insurance> findByAccountId(String accountId);
 
     List<Insurance> findByCreateTimeBetween( Date begin, Date end );
 }

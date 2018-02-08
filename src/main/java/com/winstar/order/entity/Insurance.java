@@ -30,19 +30,19 @@ public class Insurance {
     @Column(length = 50)
     private String id;
     @Column(length = 10)
-    private String personName;
+    private String personName;//投保人姓名
     @Column(length = 20)
-    private String phoneNumber;
+    private String phoneNumber;//投保人手机号
     @Column(length = 30)
-    private String identNumber;
+    private String identNumber;//投保人省份证号
     @Column(length = 50)
-    private String email;
+    private String email;//投保人邮箱
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    private Date createTime;
+    private Date createTime;//
     @Column(length = 50)
-    private String openId;
+    private String openId;//
     @Column(length = 50)
-    private String accountId;
+    private String accountId;//
     @Column(length = 2)
     private String isSend;// 0 未发货  1 已发货
 

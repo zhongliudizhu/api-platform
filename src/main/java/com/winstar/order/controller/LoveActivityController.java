@@ -2,6 +2,7 @@ package com.winstar.order.controller;
 
 import com.winstar.coupon.service.CouponService;
 import com.winstar.exception.MissingParameterException;
+import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.order.entity.CouponLog;
 import com.winstar.order.entity.Insurance;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
 
@@ -40,32 +42,33 @@ public class LoveActivityController {
 
     /**
      * 发优惠券
-     * @param openId 微信id
      * @return 0 or 1
      */
     @PostMapping(value = "/giveCoupon", produces = "application/json;charset=utf-8")
-    public ResponseEntity giveCoupon(@RequestParam String openId){
+    public ResponseEntity giveCoupon( HttpServletRequest request ) throws NotFoundException, NotRuleException {
 
-        String  accountId = accountService.findAccountIdByOpenid(openId);
-        List<CouponLog> couponLogs = couponLogRepository.findByOpenId(openId);
+        String accountId = accountService.getAccountId(request);
+        Account account = accountService.findById(accountId);
+
+        List<CouponLog> couponLogs = couponLogRepository.findByAccountId(accountId);
         String result = "0";
         if(couponLogs.size()<=0){
-            result = loveActivityService.giveCoupon(accountId, openId);
+            result = loveActivityService.giveCoupon(accountId, account.getOpenid());
         }
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     /**
      * 查询保险
-     * @param openId 微信id
      * @return 0 已领取   1 已领完   2 可以领取
      */
     @ResponseBody
     @GetMapping(value = "/insurance", produces = "application/json;charset=utf-8")
-    public ResponseEntity getInsurance(@RequestParam String openId){
-        String  accountId = accountService.findAccountIdByOpenid(openId);
+    public ResponseEntity getInsurance( HttpServletRequest request ) throws NotFoundException, NotRuleException {
+        String accountId = accountService.getAccountId(request);
+        Account account = accountService.findById(accountId);
 
-        List<Insurance> insurances = insuranceRepository.findByOpenId(openId);
+        List<Insurance> insurances = insuranceRepository.findByAccountId(accountId);
         if(insurances.size()>0){
             return new ResponseEntity<>("0",HttpStatus.OK);
         }
@@ -78,22 +81,24 @@ public class LoveActivityController {
 
     /**
      * 保存保险
-     * @param openId 微信id
      * @param insurance 保险参数
      * @return 保险
      */
     @PostMapping(value = "/insurance", produces = "application/json;charset=utf-8")
-    public ResponseEntity saveInsurance(@RequestParam String openId, @RequestBody Insurance insurance) throws MissingParameterException, NotRuleException {
+    public ResponseEntity saveInsurance( HttpServletRequest request, @RequestBody Insurance insurance) throws MissingParameterException, NotRuleException, NotFoundException {
         if( StringUtils.isEmpty(insurance.getPersonName()) || StringUtils.isEmpty(insurance.getIdentNumber()) || StringUtils.isEmpty(insurance.getEmail()) || StringUtils.isEmpty(insurance.getPhoneNumber())){
             throw new MissingParameterException("missPara.love");
         }
-        List<Insurance> insurances = insuranceRepository.findByOpenId(openId);
+        String accountId = accountService.getAccountId(request);
+        Account account = accountService.findById(accountId);
+
+        List<Insurance> insurances = insuranceRepository.findByAccountId(accountId);
         if(insurances.size()>0){
             throw new NotRuleException("exists.love");
         }
         insurance.setCreateTime(new Date());
         insurance.setIsSend("0");
-        insurance.setOpenId(openId);
+        insurance.setAccountId(accountId);
         Insurance ins = insuranceRepository.save(insurance);
         return new ResponseEntity<>(ins, HttpStatus.OK);
     }

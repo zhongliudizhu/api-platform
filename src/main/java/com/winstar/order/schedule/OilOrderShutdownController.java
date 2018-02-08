@@ -75,7 +75,7 @@ public class OilOrderShutdownController {
             }
         }
         flowOrderRepository.save(flowOrders);
-        logger.info("关闭油券订单数量："+flowOrders.size());
+        logger.info("关闭流量订单数量："+flowOrders.size());
     }
 
 }
