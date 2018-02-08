@@ -49,7 +49,6 @@ public class LoveActivityController {
 
         String accountId = accountService.getAccountId(request);
         Account account = accountService.findById(accountId);
-
         List<CouponLog> couponLogs = couponLogRepository.findByAccountId(accountId);
         String result = "0";
         if(couponLogs.size()<=0){
@@ -66,8 +65,6 @@ public class LoveActivityController {
     @GetMapping(value = "/insurance", produces = "application/json;charset=utf-8")
     public ResponseEntity getInsurance( HttpServletRequest request ) throws NotFoundException, NotRuleException {
         String accountId = accountService.getAccountId(request);
-        Account account = accountService.findById(accountId);
-
         List<Insurance> insurances = insuranceRepository.findByAccountId(accountId);
         if(insurances.size()>0){
             return new ResponseEntity<>("0",HttpStatus.OK);
@@ -90,8 +87,6 @@ public class LoveActivityController {
             throw new MissingParameterException("missPara.love");
         }
         String accountId = accountService.getAccountId(request);
-        Account account = accountService.findById(accountId);
-
         List<Insurance> insurances = insuranceRepository.findByAccountId(accountId);
         if(insurances.size()>0){
             throw new NotRuleException("exists.love");
