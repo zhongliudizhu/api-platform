@@ -70,7 +70,13 @@ public class LoveActivityController {
             return new ResponseEntity<>("0",HttpStatus.OK);
         }
         List<Insurance> today = insuranceRepository.findByCreateTimeBetween(DateUtil.getDayBegin(), new Date());
-        if(today.size()>=200){
+        int num = 200;
+        Date date = new Date(1518537601000l);
+        Date time = new Date();
+        if( time.after(date)){
+            num = 100;
+        }
+        if(today.size()>=num){
             return new ResponseEntity<>("1",HttpStatus.OK);
         }
         return new ResponseEntity<>("2", HttpStatus.OK);
