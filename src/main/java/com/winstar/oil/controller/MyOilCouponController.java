@@ -100,6 +100,7 @@ public class MyOilCouponController {
             oilSetMealVo.setTotalPrice((Double) obj[3]);
             oilSetMealVo.setOrderId((String) obj[4]);
             oilSetMealVo.setSendState((String) obj[5]);
+            oilSetMealVo.setCreateTime((String) obj[6]);
             oilSetMeals.add(oilSetMealVo);
         }
         return oilSetMeals;

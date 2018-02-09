@@ -207,7 +207,7 @@ public class DateUtil {
      * @param timestamps 时间long集合
      * @return 日期
      */
-    private static Date getAccurateDate(List<Long> timestamps) {
+    public static Date getAccurateDate(List<Long> timestamps) {
         Date date = null;
         long timestamp = 0;
         Map<Long, long[]> map = new HashMap<Long, long[]>();

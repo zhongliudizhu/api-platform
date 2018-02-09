@@ -15,5 +15,5 @@ import java.util.List;
  **/
 public interface GoodsRepository extends JpaRepository<Goods,String>,JpaSpecificationExecutor<Goods> {
 
-    List<Goods> findByStatusAndIdIn(Integer status,JSONArray array);
+    List<Goods> findByStatusAndIdInOrderByPriceAsc(Integer status,JSONArray array);
 }
