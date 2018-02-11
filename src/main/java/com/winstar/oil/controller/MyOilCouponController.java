@@ -77,6 +77,7 @@ public class MyOilCouponController {
 
     @RequestMapping(value = "/sendOilCoupon",method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
+    @CrossOrigin
     public ResponseEntity sendOilCoupon(
         @RequestBody Map map
     ) throws Exception {
