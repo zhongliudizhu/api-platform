@@ -85,7 +85,7 @@ public class GoodsController {
         log.setAccountId(accountId);
         log.setActivityId(activityId);
         log.setUrl(request.getRequestURI());
-        ServiceManager.pageViewLogService.savePageViewLog(log);
+        ServiceManager.pageViewLogService.saveAsyncPageViewLog(log);
         Activity activity = activityRepository.findOne(activityId);
         if(activity==null) {
             logger.info("活动不存在！");
@@ -99,15 +99,15 @@ public class GoodsController {
             logger.info("活动商品不存在！");
             throw new NotFoundException("this activity has no goods");
         }
-
-
         JSONArray array= JSONArray.parseArray(activity.getGoods());
-        Boolean b=oneMoneyCouponRecordService.checkBuyAuth(accountId);
-        logger.info(array.toString());
-        if(!b || !checkTime()){
-            for(int i=0;i<array.size();i++){
-                if(array.getString(i).toString().equals(GoodId)){
-                    array.remove(i);
+        if("3".equals(activityId)){
+            Boolean b=oneMoneyCouponRecordService.checkBuyAuth(accountId);
+            logger.info(array.toString());
+            if(!b || !checkTime()){
+                for(int i=0;i<array.size();i++){
+                    if(array.getString(i).toString().equals(GoodId)){
+                        array.remove(i);
+                    }
                 }
             }
         }
