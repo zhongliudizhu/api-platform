@@ -70,6 +70,9 @@ public class WsdPayController {
         if(WsdUtils.isEmpty(oilOrder)){
             throw new NotFoundException("orderNumber");
         }
+        if(oilOrder.getIsAvailable().equals("1")){
+            throw new NotFoundException("orderNumber");
+        }
         //判断订单是否是否支付成功过
         List<PayOrder> orders = payOrderService.findByOrderNumberAndState(orderNumber, EnumType.PAY_STATE_SUCCESS.valueStr());
         if(WsdUtils.isNotEmpty(orders) && orders.size() > 0){
