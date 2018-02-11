@@ -11,6 +11,7 @@ import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.Constant;
 import com.winstar.order.utils.OilOrderUtil;
+import com.winstar.order.vo.ResponseVo;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
@@ -19,6 +20,7 @@ import com.winstar.user.service.AccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.executable.ValidateOnExecution;
 import java.util.Date;
 import java.util.List;
 
@@ -48,7 +51,8 @@ public class OilOrderController {
     private CouponService couponService;
     @Autowired
     private AccountService accountService;
-
+    @Value("${info.amount}")
+    private Integer amount;
     /**
      * 添加油券订单
      * @param itemId 商品id
@@ -70,12 +74,21 @@ public class OilOrderController {
             logger.error("查询商品失败，itemId：" + itemId);
             throw new NotFoundException("goods.order");
         }
+
+
         //3.根据活动id查询活动
         Activity activity = shopService.findByActivityId(activityId);
         if(ObjectUtils.isEmpty(activity)){
             logger.error("查询活动失败，activityId：" + activityId);
             throw new NotFoundException("activity.order");
         }
+        // 活动一：判断每日每个商品只能前一百名购买
+        if(activity.getType()==1){
+            if(!OilOrderUtil.judgeOneDay(itemId,amount)){
+               throw new NotRuleException("oneDay100");
+            }
+        }
+
         if(activity.getType()!=2&&!StringUtils.isEmpty(couponId)){
             logger.error("只有活动2能使用优惠券！" );
             throw new NotRuleException("canNotUseCoupon.order");

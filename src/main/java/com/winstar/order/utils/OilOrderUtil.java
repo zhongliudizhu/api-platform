@@ -173,4 +173,16 @@ public class OilOrderUtil {
     }
 
 
+    /*
+    * 判断商品数量是否超过一定数量  超过  false
+    * */
+    public static boolean judgeOneDay(String itemId,Integer amount){
+        List<OilOrder> oilOrders =  ServiceManager.oilOrderRepository.findByIsAvailableAndItemIdAndCreateTime(Constant.IS_NORMAL_NORMAL,itemId,DateUtil.getDayBegin(),DateUtil.getDayEnd());
+        if(oilOrders.size()>amount){
+            return false;
+        }
+        return true;
+    }
+
+
 }
