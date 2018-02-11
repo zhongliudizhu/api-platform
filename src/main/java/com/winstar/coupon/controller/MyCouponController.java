@@ -134,7 +134,7 @@ public class MyCouponController {
         if (StringUtils.isEmpty(goodsId))  throw new MissingParameterException("goodsId");
         Goods goods=goodsRepository.findOne(goodsId);
         if(goods==null) throw new NotFoundException("this goods is NotFound");
-        Double money=goods.getSaledPrice();
+        Double money=goods.getPrice();
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
         List<MyCoupon> list = couponService.findMyUsableCoupon(accountId, money);

@@ -53,6 +53,7 @@ public class SendOilCouponService {
         String shopId = MapUtils.getString(map,"shopId");
         String orderId = MapUtils.getString(map,"orderId");
         String accountId = MapUtils.getString(map,"accountId");
+        logger.info("orderId:" + orderId + "，shopId:" + shopId + "，accountId:" + accountId);
         if(WsdUtils.isEmpty(shopId)){
             logger.info("shopId为空");
             throw new MissingParameterException("shopId");
