@@ -1,6 +1,9 @@
 package com.winstar.oil.controller;
 
 import com.google.common.collect.Maps;
+import com.winstar.cashier.comm.EnumType;
+import com.winstar.cashier.entity.PayOrder;
+import com.winstar.cashier.repository.PayOrderRepository;
 import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
@@ -12,11 +15,14 @@ import com.winstar.oil.repository.OilCouponRepository;
 import com.winstar.oil.repository.OilCouponSearchLogRepository;
 import com.winstar.oil.service.OilCouponUpdateService;
 import com.winstar.oil.service.SendOilCouponService;
+import com.winstar.order.entity.OilOrder;
+import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.user.service.AccountService;
 import com.winstar.utils.AESUtil;
 import com.winstar.utils.WebUitl;
 import com.winstar.utils.WsdUtils;
 import com.winstar.vo.OilSetMealVo;
+import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +30,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -62,12 +69,40 @@ public class MyOilCouponController {
     @Autowired
     AccountService accountService;
 
+    @Autowired
+    PayOrderRepository payOrderRepository;
+
+    @Autowired
+    OilOrderRepository oilOrderRepository;
+
     @RequestMapping(value = "/sendOilCoupon",method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public void sendOilCoupon(
+    public ResponseEntity sendOilCoupon(
         @RequestBody Map map
     ) throws Exception {
-        oilCouponService.checkCard(map);
+        Map<String,String> resultMap = new HashMap<>();
+        String orderId = MapUtils.getString(map,"orderId");
+        OilOrder oilOrder = oilOrderRepository.findBySerialNumber(orderId);
+        if(WsdUtils.isEmpty(oilOrder)){
+            resultMap.put("status","FAIL");
+            resultMap.put("result", "该订单不存在！");
+            return new ResponseEntity<>(resultMap,HttpStatus.OK);
+        }
+        List<PayOrder> orders = payOrderRepository.findByOrderNumberAndState(orderId, EnumType.PAY_STATE_SUCCESS.valueStr());
+        if(WsdUtils.isEmpty(orders) || orders.size() == 0){
+            resultMap.put("status","FAIL");
+            resultMap.put("result", "该订单未支付！");
+            return new ResponseEntity<>(resultMap,HttpStatus.OK);
+        }
+        List<MyOilCoupon> myOilCoupons = myOilCouponRepository.findByOrderIdOrderByUseStateAsc(orderId);
+        if(WsdUtils.isNotEmpty(myOilCoupons) && orders.size() > 0){
+            resultMap.put("status","FAIL");
+            resultMap.put("result", "该订单已发券！");
+            return new ResponseEntity<>(resultMap,HttpStatus.OK);
+        }
+        map.put("accountId", oilOrder.getAccountId());
+        map.put("shopId", oilOrder.getItemId());
+        return oilCouponService.checkCard(map);
     }
 
     @RequestMapping(value = "/myOilSetMeal",method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
