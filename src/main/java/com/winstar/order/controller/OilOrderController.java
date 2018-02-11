@@ -11,7 +11,6 @@ import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.Constant;
 import com.winstar.order.utils.OilOrderUtil;
-import com.winstar.order.vo.ResponseVo;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
@@ -29,7 +28,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.executable.ValidateOnExecution;
 import java.util.Date;
 import java.util.List;
 
@@ -75,6 +73,39 @@ public class OilOrderController {
             throw new NotFoundException("goods.order");
         }
 
+        Integer soldAmount = OilOrderUtil.getSoldAmount(goods.getPrice());
+
+        if(goods.getPrice()==100){
+           if(soldAmount>13900){
+              throw new NotRuleException("soldOut.order");
+           }
+        }
+        if(goods.getPrice()==200){
+            if(soldAmount>6900){
+                throw new NotRuleException("soldOut.order");
+            }
+        }
+        if(goods.getPrice()==300){
+            if(soldAmount>4567){
+                throw new NotRuleException("soldOut.order");
+            }
+        }
+        if(goods.getPrice()==500){
+            if(soldAmount>2700){
+                throw new NotRuleException("soldOut.order");
+            }
+        }
+        if(goods.getPrice()==1000){
+            if(soldAmount>1300){
+                throw new NotRuleException("soldOut.order");
+            }
+        }
+        if(goods.getPrice()==2000){
+            if(soldAmount>600){
+                throw new NotRuleException("soldOut.order");
+            }
+        }
+
 
         //3.根据活动id查询活动
         Activity activity = shopService.findByActivityId(activityId);
@@ -82,12 +113,12 @@ public class OilOrderController {
             logger.error("查询活动失败，activityId：" + activityId);
             throw new NotFoundException("activity.order");
         }
-        // 活动一：判断每日每个商品只能前一百名购买
+       /* // 活动一：判断每日每个商品只能前一百名购买
         if(activity.getType()==1){
             if(!OilOrderUtil.judgeOneDay(itemId,amount)){
                throw new NotRuleException("oneDay100.order");
             }
-        }
+        }*/
 
         if(activity.getType()!=2&&!StringUtils.isEmpty(couponId)){
             logger.error("只有活动2能使用优惠券！" );
@@ -103,6 +134,9 @@ public class OilOrderController {
             }
         }
         if(itemId.equals(Constant.ONE_BUY_ITEMID)){
+            if(soldAmount>8321){
+                throw new NotRuleException("soldOut.order");
+            }
             String isEnable = OilOrderUtil.isEnable(accountId);
             if(isEnable.equals("500")){
                 logger.info("one:todayMoreThan500");

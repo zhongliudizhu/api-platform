@@ -184,5 +184,14 @@ public class OilOrderUtil {
         return true;
     }
 
+    /*
+    * 查询商品数量
+    * */
+    public static Integer getSoldAmount(Double price){
+        return  ServiceManager.oilOrderRepository.findByItemTotalValue(price).size();
+    }
+
+
+
 
 }
