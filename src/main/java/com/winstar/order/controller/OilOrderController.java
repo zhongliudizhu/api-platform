@@ -85,7 +85,7 @@ public class OilOrderController {
         // 活动一：判断每日每个商品只能前一百名购买
         if(activity.getType()==1){
             if(!OilOrderUtil.judgeOneDay(itemId,amount)){
-               throw new NotRuleException("oneDay100");
+               throw new NotRuleException("oneDay100.order");
             }
         }
 
