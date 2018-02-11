@@ -60,6 +60,8 @@ public class OilOrderServiceImpl implements OilOrderService {
 
             oilOrder.setSendStatus(3);
             oilOrder.setStatus(3);
+            /******************/
+            oilOrder.setIsAvailable("0");
             oilOrder.setUpdateTime(time);
             oilOrder.setFinishTime(time);
             oilOrderRepository.save(oilOrder);
