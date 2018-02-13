@@ -75,7 +75,7 @@ public class OilOrderController {
 
         Integer soldAmount = OilOrderUtil.getSoldAmount(goods.getPrice());
 
-        if(goods.getPrice()==100){
+        /*if(goods.getPrice()==100){
            if(soldAmount>13900){
               throw new NotRuleException("soldOut.order");
            }
@@ -94,7 +94,7 @@ public class OilOrderController {
             if(soldAmount>2700){
                 throw new NotRuleException("soldOut.order");
             }
-        }
+        }*/
         if(goods.getPrice()==1000){
             if(soldAmount>1300){
                 throw new NotRuleException("soldOut.order");
