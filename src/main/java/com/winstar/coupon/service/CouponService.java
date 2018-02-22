@@ -262,7 +262,7 @@ public class CouponService {
             logger.info(couponId + "的优惠券已失效");
             return null;
         }
-        if (coupon.getUseRule() >= saledPrice) {
+        if (coupon.getUseRule() > saledPrice) {
             logger.info(couponId + "的优惠券不能使用，该优惠券满" + coupon.getUseRule() + "元可使用，商品价格：" + saledPrice);
             return null;
         }
