@@ -14,4 +14,5 @@ public interface InsuranceRepository extends JpaRepository<Insurance, String>{
     List<Insurance> findByAccountId(String accountId);
 
     List<Insurance> findByCreateTimeBetween( Date begin, Date end );
+
 }

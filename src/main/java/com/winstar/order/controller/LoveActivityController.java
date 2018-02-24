@@ -70,14 +70,18 @@ public class LoveActivityController {
             return new ResponseEntity<>("0",HttpStatus.OK);
         }
         List<Insurance> today = insuranceRepository.findByCreateTimeBetween(DateUtil.getDayBegin(), new Date());
+        List<Insurance> total = insuranceRepository.findAll();
         int num = 200;
         Date date = new Date(1518537601000l);
         Date time = new Date();
-        if( time.after(date)){
-            num = 100;
+        if(time.after(new Date(1519574401000L))&&time.before(new Date(1519658999000L))){
+            num = 1000;
         }
         if(today.size()>=num){
             return new ResponseEntity<>("1",HttpStatus.OK);
+        }
+        if(total.size()>3000){
+            return new ResponseEntity<>("3",HttpStatus.OK);
         }
         return new ResponseEntity<>("2", HttpStatus.OK);
     }

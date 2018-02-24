@@ -220,7 +220,7 @@ public class OilOrderController {
         if(ObjectUtils.isEmpty(order)){
             throw  new NotFoundException("oilOrder.order");
         }
-        return new ResponseEntity(order,HttpStatus.OK);
+        return new ResponseEntity<>(order,HttpStatus.OK);
     }
 
     /**
