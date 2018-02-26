@@ -73,9 +73,28 @@ public class OilOrderController {
             throw new NotFoundException("goods.order");
         }
 
-        Integer soldAmount = OilOrderUtil.getSoldAmount(goods.getPrice());
+        Integer soldAmount = OilOrderUtil.getSoldAmount(goods.getPrice(),Constant.CBC_ACTIVITY_SEC);
 
-        /*if(goods.getPrice()==100){
+        //3.根据活动id查询活动
+        Activity activity = shopService.findByActivityId(activityId);
+        if(ObjectUtils.isEmpty(activity)){
+            logger.error("查询活动失败，activityId：" + activityId);
+            throw new NotFoundException("activity.order");
+        }
+       /* // 活动一：判断每日每个商品只能前一百名购买
+        if(activity.getType()==1){
+            if(!OilOrderUtil.judgeOneDay(itemId,amount)){
+               throw new NotRuleException("oneDay100.order");
+            }
+        }*/
+
+        if(activity.getType()!=2&&!StringUtils.isEmpty(couponId)){
+            logger.error("只有活动2能使用优惠券！" );
+            throw new NotRuleException("canNotUseCoupon.order");
+        }
+
+        if(activity.getType()==2){
+             /*if(goods.getPrice()==100){
            if(soldAmount>13900){
               throw new NotRuleException("soldOut.order");
            }
@@ -95,35 +114,19 @@ public class OilOrderController {
                 throw new NotRuleException("soldOut.order");
             }
         }*/
-        if(goods.getPrice()==1000){
-            if(soldAmount>1300){
-                throw new NotRuleException("soldOut.order");
+            if(goods.getPrice()==1000){
+                if(soldAmount>1300){
+                    throw new NotRuleException("soldOut.order");
+                }
             }
-        }
-        if(goods.getPrice()==2000){
-            if(soldAmount>600){
-                throw new NotRuleException("soldOut.order");
+            if(goods.getPrice()==2000){
+                if(soldAmount>600){
+                    throw new NotRuleException("soldOut.order");
+                }
             }
+
         }
 
-
-        //3.根据活动id查询活动
-        Activity activity = shopService.findByActivityId(activityId);
-        if(ObjectUtils.isEmpty(activity)){
-            logger.error("查询活动失败，activityId：" + activityId);
-            throw new NotFoundException("activity.order");
-        }
-       /* // 活动一：判断每日每个商品只能前一百名购买
-        if(activity.getType()==1){
-            if(!OilOrderUtil.judgeOneDay(itemId,amount)){
-               throw new NotRuleException("oneDay100.order");
-            }
-        }*/
-
-        if(activity.getType()!=2&&!StringUtils.isEmpty(couponId)){
-            logger.error("只有活动2能使用优惠券！" );
-            throw new NotRuleException("canNotUseCoupon.order");
-        }
         if(StringUtils.isEmpty(goods.getCouponTempletId())&&!StringUtils.isEmpty(couponId)){
             throw new NotRuleException("canNotUseCoupon.order");
         }

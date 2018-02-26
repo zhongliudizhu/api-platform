@@ -187,8 +187,8 @@ public class OilOrderUtil {
     /*
     * 查询商品数量
     * */
-    public static Integer getSoldAmount(Double price){
-        return  ServiceManager.oilOrderRepository.findByItemTotalValue(price).size();
+    public static Integer getSoldAmount(Double price, String activityId ){
+        return  ServiceManager.oilOrderRepository.findByItemTotalValue(price,activityId).size();
     }
 
 
