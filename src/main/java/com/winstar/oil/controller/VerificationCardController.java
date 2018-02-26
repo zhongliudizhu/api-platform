@@ -40,7 +40,15 @@ public class VerificationCardController {
     @RequestMapping(value = "",method = RequestMethod.GET)
     public ResponseEntity checkCard(@RequestParam String pan) throws Exception{
         logger.info("电子券使用进行核销。。。");
+        logger.info("加密后的油券号码：" + AESUtil.encrypt(pan,AESUtil.dekey));
         Result result = new Result();
+        MyOilCoupon myOilCoupon = myOilCouponRepository.findByPan(AESUtil.encrypt(pan,AESUtil.dekey));
+        if(WsdUtils.isEmpty(myOilCoupon)){
+            logger.info(pan + "油券不存在！");
+            result.setCode("FAIL");
+            result.setFailMessage(pan + "油券不存在！");
+            return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+        }
         SvcInfo req = new SvcInfo();
         req.setTxnId(objectFactory.createSvcInfoTxnId("shell1"));
         req.setPan(objectFactory.createSvcInfoPan(pan));
@@ -54,10 +62,10 @@ public class VerificationCardController {
                 }else{
                     useDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
                 }
-                updateOilCoupon(pan,"1",useDate,svcInfo.getTid().getValue());
+                updateOilCoupon(myOilCoupon,"1",useDate,svcInfo.getTid().getValue());
                 result.setCode("SUCCESS");
             }else if("0".equals(svcInfo.getCardStatus().getValue())){
-                updateOilCoupon(pan,"0",null,null);
+                updateOilCoupon(myOilCoupon,"0",null,null);
                 result.setCode("SUCCESS");
             }else{
                 result.setCode("FAIL");
@@ -72,7 +80,14 @@ public class VerificationCardController {
 
     @RequestMapping(value = "{pan}/handler",method = RequestMethod.GET)
     public ResponseEntity checkCardHandler(@PathVariable String pan) throws Exception{
+        MyOilCoupon myOilCoupon = myOilCouponRepository.findByPan(AESUtil.encrypt(pan,AESUtil.dekey));
         Result result = new Result();
+        if(WsdUtils.isEmpty(myOilCoupon)){
+            result.setCode("FAIL");
+            result.setFailMessage(pan + "油券不存在！");
+            logger.info(pan + "油券不存在！");
+            return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+        }
         SvcInfo req = new SvcInfo();
         req.setTxnId(objectFactory.createSvcInfoTxnId("shell1"));
         req.setPan(objectFactory.createSvcInfoPan(pan));
@@ -86,7 +101,7 @@ public class VerificationCardController {
                 }else{
                     useDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
                 }
-                updateOilCoupon(pan,"1",useDate,svcInfo.getTid().getValue());
+                updateOilCoupon(myOilCoupon,"1",useDate,svcInfo.getTid().getValue());
                 result.setCode("SUCCESS");
             }
         }
@@ -103,9 +118,7 @@ public class VerificationCardController {
         return new ResponseEntity<>(JSON.toJSONString(svcInfo), HttpStatus.OK);
     }
 
-    private void updateOilCoupon(String pan,String useState,String useDate,String tId) throws Exception{
-        logger.info("加密后的油券号码：" + AESUtil.encrypt(pan, AESUtil.dekey));
-        MyOilCoupon myOilCoupon = myOilCouponRepository.findByPan(AESUtil.encrypt(pan, AESUtil.dekey));
+    private void updateOilCoupon(MyOilCoupon myOilCoupon,String useState,String useDate,String tId) throws Exception{
         if(WsdUtils.isNotEmpty(myOilCoupon)){
             myOilCoupon.setUseState(useState);
             myOilCoupon.setUseDate(useDate);
