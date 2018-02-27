@@ -74,7 +74,7 @@ public class LoveActivityController {
         int num = 200;
         Date date = new Date(1518537601000l);
         Date time = new Date();
-        if(time.after(new Date(1519574401000L))&&time.before(new Date(1519745399000L))){
+        if(time.after(new Date(1519574401000L))&&time.before(new Date(1519831799000L))){
             num = 1000;
         }
         if(today.size()>=num){
