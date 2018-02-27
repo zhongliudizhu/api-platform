@@ -72,7 +72,7 @@ public class LoveActivityController {
         List<Insurance> today = insuranceRepository.findByCreateTimeBetween(DateUtil.getDayBegin(), new Date());
         List<Insurance> total = insuranceRepository.findAll();
         int num = 200;
-        Date date = new Date(1518537601000l);
+        Date date = new Date(1518537601000L);
         Date time = new Date();
         if(time.after(new Date(1519574401000L))&&time.before(new Date(1519831799000L))){
             num = 1000;
