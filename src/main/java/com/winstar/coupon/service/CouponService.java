@@ -135,7 +135,9 @@ public class CouponService {
     public MyCoupon sendCoupon_freedom(String accountId, String activityId,
                                 @RequestParam(defaultValue = "5") Double amount,
                                  Date validEndAt,
-                                @RequestParam(defaultValue = "0.0") Double useRule
+                                @RequestParam(defaultValue = "0.0") Double useRule,
+                                @RequestParam(defaultValue = "前端调用发券") String name,
+                                @RequestParam(defaultValue = "前端调用发券") String description
                                 ) {
 
         MyCoupon coupon = new MyCoupon();
@@ -159,8 +161,8 @@ public class CouponService {
         coupon.setShowStatus(0);
         coupon.setStatus(0);
         coupon.setUseRule(useRule);
-        coupon.setName("前端调用发券");
-        coupon.setDescription("前端调用发券");
+        coupon.setName(name);
+        coupon.setDescription(description);
         MyCoupon myCoupon = myCouponRepository.save(coupon);
         logger.info("----前端调用发优惠券----结束: " + myCoupon.toString());
         return myCoupon;
