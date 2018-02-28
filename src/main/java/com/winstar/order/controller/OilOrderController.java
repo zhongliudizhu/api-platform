@@ -93,7 +93,7 @@ public class OilOrderController {
             throw new NotRuleException("canNotUseCoupon.order");
         }
 
-        if(activity.getType()==2){
+        if(activity.getType()==1){
              /*if(goods.getPrice()==100){
            if(soldAmount>13900){
               throw new NotRuleException("soldOut.order");
