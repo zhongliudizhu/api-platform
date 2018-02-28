@@ -26,8 +26,8 @@ public class LoveActivityService {
     @Transactional
     public String giveCoupon(String accountId, String openId){
         try {
-            couponService.sendCoupon_freedom(accountId,"2",5.0,new Date(1522425599000L),100.0);
-            couponService.sendCoupon_freedom(accountId,"2",10.0,new Date(1522425599000L),200.0);
+            couponService.sendCoupon_freedom(accountId,"2",5.0,new Date(1522425599000L),100.0, "", "");
+            couponService.sendCoupon_freedom(accountId,"2",10.0,new Date(1522425599000L),200.0, "", "");
             CouponLog couponLog = new CouponLog();
             couponLog.setAccountId(accountId);
             couponLog.setOpenId(openId);
