@@ -151,7 +151,7 @@ public class CouponService {
         calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd ");
         Date date=DateUtil.StringToDate(format.format(calendar.getTime()) +"23:59:59");
-        if(validEndAt==null){
+        if(validEndAt!=null){
             coupon.setValidEndAt(validEndAt);
         }else{
             coupon.setValidEndAt(date);
