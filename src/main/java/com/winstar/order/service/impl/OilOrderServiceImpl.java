@@ -13,6 +13,7 @@ import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.FlowOrderUtil;
 import com.winstar.order.vo.FlowResult;
 import com.winstar.order.vo.PayInfoVo;
+import com.winstar.user.service.OneMoneyCouponRecordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -36,7 +37,7 @@ public class OilOrderServiceImpl implements OilOrderService {
     @Autowired
     private FlowOrderRepository flowOrderRepository;
     @Autowired
-    private CouponService couponService;
+    private OneMoneyCouponRecordService oneMoneyCouponRecordService;
     @Value("${info.flowUrl}")
     private String flowUrl;
     @Override
@@ -51,6 +52,9 @@ public class OilOrderServiceImpl implements OilOrderService {
             OilOrder oilOrder = oilOrderRepository.findBySerialNumber(serialNumber);
             if(ObjectUtils.isEmpty(oilOrder)||oilOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)){
                 return "2";
+            }
+            if(oilOrder.getItemId().equals(Constant.ONE_BUY_ITEMID)){
+                oneMoneyCouponRecordService.changeStatus(oilOrder.getAccountId());
             }
             oilOrder.setBankSerialNo(payInfo.getBankSerialNumber());
             oilOrder.setPayPrice(Arith.div(payInfo.getPayPrice(),100));//分转换元
