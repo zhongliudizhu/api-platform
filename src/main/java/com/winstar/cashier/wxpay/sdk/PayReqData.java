@@ -54,7 +54,7 @@ public class PayReqData {
     //商品ID		trade_type=NATIVE，此参数必传。此id为二维码中包含的商品ID，商户自行定义。
     private String product_id = "";
     //指定支付方式	no_credit--指定不能使用信用卡支付
-    private String limit_pay = "no_credit";
+    /*private String limit_pay = "no_credit";*/
     //用户标识
     private String openid = "";
     //微信订单号
