@@ -78,4 +78,9 @@ public class Goods {
      * 类型 所属活动 1 折中折 2 赠券 3 0.01元活动
      */
     private Integer type;
+
+    /**
+     * 售罄状态  0 未售  1 已售罄  （置灰）
+     */
+    private Integer isSale;
 }
