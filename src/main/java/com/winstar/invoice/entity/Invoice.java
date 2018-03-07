@@ -12,7 +12,7 @@ import java.util.Date;
 
 /**
  * @author shoo on 2017/10/23 14:01.
- *  发票
+ * 发票
  */
 @Getter
 @Setter
@@ -29,98 +29,43 @@ public class Invoice {
     @GeneratedValue(generator = "idGenerator")
     @Column(length = 50)
     private String id;
-    /*
-    * 类型 0 个人  1 公司
-    * */
-    private Integer type;
-    /*
-    *姓名
-    * */
-    @Column(length = 50)
-    private String personName;
-    /*
-    * 身份证号
-    * */
-    @Column(length = 50)
-    private String identNumber;
-    /*
-    * 手机号
-    * */
-    @Column(length = 50)
-    private String phoneNo;
-    /*
-    * 电子邮箱
-    * */
-    @Column(length = 50)
-    private String email;
-    /*
-    * 公司名称
-    * */
-    @Column(length = 50)
-    private String companyName;
-    /*
-    * 纳税人识别号
-    * */
-    @Column(length = 50)
-    private String registrationNo;
-    /*
-    * 公司地址
-    * */
-    @Column(length = 200)
-    private String companyAddress;
-    /*
-    * 电话
-    * */
-    @Column(length = 50)
-    private String telephone;
-    /*
-    * 开户银行
-    * */
-    @Column(length = 50)
-    private String depositBank;
-    /*
-    * 银行账号
-    * */
-    @Column(length = 50)
-    private String bankAccount;
-    /*
-    *  0 待开票  1 开票完成  2 信息变更 3 申请重开 4 已拒绝 5 已重开
-    * */
-    private Integer status;
-    /*
-    * 创建时间
-    * */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    private Date createTime;
-    /*
-    * 开票时间
-    * */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    private Date invoiceTime;
 
-    /*
-    * 修改时间
-    * */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    private Date updateTime;
-    /*
-    * 订单序列号
-    * */
-    @Column(length = 50)
-    private String orderSerialNo;
-    /*
-    * 订单金额
-    * */
-    private Double payPrice;
+    /**
+     * 业务订单号
+     */
+    private String orderNumber;
+    /**
+     * 返回值 1000	返回成功
+     1001	企业授权错误
+     1002	流水已开票
+     1003	无业务流水
+     1004	接收失败，未知异常
 
-    /*
-    * 油券总值
-    * */
-    private Double oilTotalValue;
-    /*
-    * 是否删除  0 否  1 已删除
-    * */
-    @Column(length = 10)
-    private String isDel;
+     */
+    private String result;
+    /**
+     * 开票时间
+     */
+    private Date time;
+    /**
+     * 发票代码
+     */
+    private String fpDm;
+    /**
+     * 发票号码
+     */
+    private String fpHm;
+    /**
+     * 业务类型 1，正常开票，2作废、3冲红
+     */
+    private String billingType;
+    /**
+     * Pdf下载路径
+     */
+    private String pdfUrl;
+    /**
+     * 发送时间
+     */
+    private Date sendTime;
 
 }
