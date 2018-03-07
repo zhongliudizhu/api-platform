@@ -94,6 +94,11 @@ public class OilOrderController {
         }
 
         if(activity.getType()==1){
+
+            if(goods.getIsSale() == 1){
+                logger.error("商品"+goods.getId()+"已售罄！" );
+                throw new NotRuleException("isSale.order");
+            }
              /*if(goods.getPrice()==100){
            if(soldAmount>13900){
               throw new NotRuleException("soldOut.order");
