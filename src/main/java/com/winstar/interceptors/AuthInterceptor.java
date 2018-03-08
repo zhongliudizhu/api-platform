@@ -37,6 +37,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         excludeUrls.add("/api/v1/cbc/payCallback");
         excludeUrls.add("/api/v1/cbc/wxPay/notify");
         excludeUrls.add("/api/v1/cbc/creditPay/notify");
+        excludeUrls.add("/api/v1/orders/invoice/callBack");
     }
 
     @Override
