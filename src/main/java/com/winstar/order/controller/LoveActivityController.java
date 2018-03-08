@@ -96,6 +96,9 @@ public class LoveActivityController {
         if( StringUtils.isEmpty(insurance.getPersonName()) || StringUtils.isEmpty(insurance.getIdentNumber()) || StringUtils.isEmpty(insurance.getEmail()) || StringUtils.isEmpty(insurance.getPhoneNumber())){
             throw new MissingParameterException("missPara.love");
         }
+        if(!StringUtils.isEmpty(insurance.getPersonName())){
+            throw new MissingParameterException("activityClosed.love");
+        }
         String accountId = accountService.getAccountId(request);
         List<Insurance> insurances = insuranceRepository.findByAccountId(accountId);
         if(insurances.size()>0){
