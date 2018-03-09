@@ -1,6 +1,5 @@
 package com.winstar.cashier.wxpay.controller;
 
-import com.google.common.collect.Maps;
 import com.winstar.cashier.comm.EnumType;
 import com.winstar.cashier.construction.utils.DateUtil;
 import com.winstar.cashier.entity.PayLog;
@@ -11,9 +10,7 @@ import com.winstar.cashier.wxpay.common.Signature;
 import com.winstar.cashier.wxpay.common.XMLParser;
 import com.winstar.cashier.wxpay.config.WsdWechatConfig;
 import com.winstar.cashier.wxpay.pay.WxPay;
-import com.winstar.exception.NotFoundException;
 import com.winstar.oil.service.SendOilCouponService;
-import com.winstar.order.entity.OilOrder;
 import com.winstar.order.service.OilOrderService;
 import com.winstar.order.vo.PayInfoVo;
 import com.winstar.utils.WsdUtils;
@@ -21,6 +18,7 @@ import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -154,16 +152,6 @@ public class NotifyController {
                 savePayLog(respMap,"OK","订单支付成功",request);
                 //通知订单那边是否支付成功 ------>>>  回调
                 modifyOrder(payOrder,respMap);
-                //通知油卡发送
-                if(payOrder.getOrderOwner().equals("1") && respMap.get("result_code").toString().equalsIgnoreCase("SUCCESS")){
-                    Map<String,String> map = Maps.newHashMap();
-                    map.put("orderId",payOrder.getOrderNumber());
-                    OilOrder oilOrder = orderService.getOneOrder(payOrder.getOrderNumber());
-                    map.put("shopId",WsdUtils.isEmpty(oilOrder) ? null : oilOrder.getItemId());
-                    map.put("accountId",WsdUtils.isEmpty(oilOrder) ? null : oilOrder.getAccountId());
-                    logger.info("开始通知油卡的发送。。。");
-                    sendOilCouponService.checkCard(map);
-                }
             }else{
                 savePayLog(respMap,"ERROR","查询订单不存在",request);
             }
@@ -173,7 +161,8 @@ public class NotifyController {
         return "0000";
     }
 
-    private void modifyOrder(PayOrder payOrder,Map<String,Object> respMap) throws NotFoundException {
+    @Async
+    private void modifyOrder(PayOrder payOrder,Map<String,Object> respMap) throws Exception {
         PayInfoVo payInfoVo = new PayInfoVo();
         payInfoVo.setOrderSerialNumber(payOrder.getOrderNumber());
         payInfoVo.setBankSerialNumber(MapUtils.getString(respMap, "transaction_id"));
@@ -182,6 +171,11 @@ public class NotifyController {
         payInfoVo.setPayTime(DateUtil.parseTime(MapUtils.getString(respMap, "time_end")));
         payInfoVo.setPayType(payOrder.getPayWay());
         orderService.updateOrderCashier(payInfoVo);
+        //通知油卡发送
+        if(payOrder.getOrderOwner().equals("1") && "Y".equals(MapUtils.getString(respMap, "SUCCESS"))){
+            logger.info("开始通知油卡的发送。。。");
+            sendOilCouponService.checkCard(payOrder.getOrderNumber());
+        }
     }
 
 }

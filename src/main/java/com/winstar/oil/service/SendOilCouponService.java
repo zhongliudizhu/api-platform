@@ -2,7 +2,6 @@ package com.winstar.oil.service;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
-import com.winstar.coupon.entity.CouponTemplate;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.coupon.service.CouponTemplateService;
 import com.winstar.exception.MissingParameterException;
@@ -10,19 +9,18 @@ import com.winstar.exception.NotFoundException;
 import com.winstar.oil.entity.MyOilCoupon;
 import com.winstar.oil.repository.MyOilCouponRepository;
 import com.winstar.oil.utils.PriceAndNum;
+import com.winstar.order.entity.OilOrder;
+import com.winstar.order.service.OilOrderService;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
 import com.winstar.utils.WsdUtils;
-import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -47,18 +45,23 @@ public class SendOilCouponService {
     @Autowired
     CouponTemplateService couponTemplateService;
 
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity checkCard(@RequestBody Map map) throws Exception{
+    @Autowired
+    OilOrderService orderService;
+
+    @Async
+    public ResponseEntity checkCard(String orderNumber) throws Exception{
         logger.info("执行油卡发送操作。。。");
-        String shopId = MapUtils.getString(map,"shopId");
-        String orderId = MapUtils.getString(map,"orderId");
-        String accountId = MapUtils.getString(map,"accountId");
-        logger.info("orderId:" + orderId + "，shopId:" + shopId + "，accountId:" + accountId);
+        long beginTime = System.currentTimeMillis();
+        logger.info("执行发券开始时间：" + beginTime);
+        OilOrder oilOrder = orderService.getOneOrder(orderNumber);
+        String shopId = oilOrder.getItemId();
+        String accountId = oilOrder.getAccountId();
+        logger.info("orderId:" + orderNumber + "，shopId:" + shopId + "，accountId:" + accountId);
         if(WsdUtils.isEmpty(shopId)){
             logger.info("shopId为空");
             throw new MissingParameterException("shopId");
         }
-        if(WsdUtils.isEmpty(orderId)){
+        if(WsdUtils.isEmpty(orderNumber)){
             logger.info("orderId为空");
             throw new MissingParameterException("orderId");
         }
@@ -74,16 +77,19 @@ public class SendOilCouponService {
             return new ResponseEntity<>(resultMap,HttpStatus.OK);
         }
         //判断是否发过券
-        List<MyOilCoupon> myOilCoupons = myOilCouponRepository.findByOrderIdOrderByUseStateAsc(orderId);
+        List<MyOilCoupon> myOilCoupons = myOilCouponRepository.findByOrderIdOrderByUseStateAsc(orderNumber);
         if(WsdUtils.isNotEmpty(myOilCoupons) && myOilCoupons.size() > 0){
-            logger.info(orderId + "订单号已经发过券了");
+            logger.info(orderNumber + "订单号已经发过券了");
             return new ResponseEntity<>(new HashMap<>(), HttpStatus.OK);
         }
         Goods shopInfo = shopService.findByGoodsId(shopId);
         if(WsdUtils.isEmpty(shopInfo)){
             throw new NotFoundException("shopInfo");
         }
-        Map<String,String> resultMap = send(shopInfo,accountId,orderId);
+        Map<String,String> resultMap = send(shopInfo,accountId,orderNumber);
+        long endTime = System.currentTimeMillis();
+        logger.info("执行发券结束时间：" + endTime);
+        logger.info("发券消耗时间：" + (endTime - beginTime) + "ms");
         return new ResponseEntity<>(resultMap,HttpStatus.OK);
     }
 
