@@ -171,8 +171,7 @@ public class NotifyController {
         payInfoVo.setPayTime(DateUtil.parseTime(MapUtils.getString(respMap, "time_end")));
         payInfoVo.setPayType(payOrder.getPayWay());
         orderService.updateOrderCashier(payInfoVo);
-        //通知油卡发送
-        if(payOrder.getOrderOwner().equals("1") && "Y".equals(MapUtils.getString(respMap, "SUCCESS"))){
+        if(payOrder.getOrderOwner().equals("1") && respMap.get("result_code").toString().equalsIgnoreCase("SUCCESS")){
             logger.info("开始通知油卡的发送。。。");
             sendOilCouponService.checkCard(payOrder.getOrderNumber());
         }
