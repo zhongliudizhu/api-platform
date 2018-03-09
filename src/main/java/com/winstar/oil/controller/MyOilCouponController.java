@@ -101,9 +101,7 @@ public class MyOilCouponController {
             resultMap.put("result", "该订单已发券！");
             return new ResponseEntity<>(resultMap,HttpStatus.OK);
         }
-        map.put("accountId", oilOrder.getAccountId());
-        map.put("shopId", oilOrder.getItemId());
-        return oilCouponService.checkCard(map);
+        return oilCouponService.checkCard(orderId);
     }
 
     @RequestMapping(value = "/myOilSetMeal",method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
