@@ -1,6 +1,5 @@
 package com.winstar.cashier.construction.controller;
 
-import com.google.common.collect.Maps;
 import com.winstar.cashier.comm.EnumType;
 import com.winstar.cashier.construction.utils.AppUtils;
 import com.winstar.cashier.construction.utils.DateUtil;
@@ -12,7 +11,6 @@ import com.winstar.cashier.repository.PayLogRepository;
 import com.winstar.cashier.repository.PayOrderRepository;
 import com.winstar.exception.NotFoundException;
 import com.winstar.oil.service.SendOilCouponService;
-import com.winstar.order.entity.OilOrder;
 import com.winstar.order.service.OilOrderService;
 import com.winstar.order.vo.PayInfoVo;
 import com.winstar.utils.WsdUtils;
@@ -21,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -114,19 +113,15 @@ public class PayCallbackController {
             modifyOrder(payOrder,respMap);
             //通知油卡发送
             if(payOrder.getOrderOwner().equals("1") && "1".equals(MapUtils.getString(respMap, "state"))){
-                Map<String,String> map = Maps.newHashMap();
-                map.put("orderId",payOrder.getOrderNumber());
-                OilOrder oilOrder = orderService.getOneOrder(payOrder.getOrderNumber());
-                map.put("accountId",WsdUtils.isEmpty(oilOrder) ? null : oilOrder.getAccountId());
-                map.put("shopId",WsdUtils.isEmpty(oilOrder) ? null : oilOrder.getItemId());
                 logger.info("开始通知油卡的发送。。。");
-                sendOilCouponService.checkCard(map);
+                sendOilCouponService.checkCard(payOrder.getOrderNumber());
             }
         }else{
             savePayLog(respMap,"ERROR","订单已对账！",request);
         }
     }
 
+    @Async
     private void modifyOrder(PayOrder payOrder,Map<String,String> respMap) throws NotFoundException {
         PayInfoVo payInfoVo = new PayInfoVo();
         payInfoVo.setOrderSerialNumber(payOrder.getOrderNumber());
