@@ -1,6 +1,5 @@
 package com.winstar.invoice.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,7 +31,7 @@ public class Invoice {
     /**
      * 用户Id
      */
-    private String accountId
+    private String accountId;
 
     /**
      * 油券ID
