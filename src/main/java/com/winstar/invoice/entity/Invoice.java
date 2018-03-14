@@ -34,9 +34,14 @@ public class Invoice {
     private String accountId;
 
     /**
-     * 油券编号
+     *
      */
-    private String pan;
+    private String itemId;
+
+    /**
+     * 发票金额
+     */
+    private Double price;
 
     /**
      * 类型 1 ：个人 2：单位
