@@ -88,6 +88,10 @@ public class Invoice {
      */
     private Integer status;
 
-
+    /*
+       * 操作人
+       * */
+    @Column(length = 50)
+    private String doPerson;
 
 }
