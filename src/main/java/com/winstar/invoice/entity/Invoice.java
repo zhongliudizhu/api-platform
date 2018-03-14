@@ -33,10 +33,6 @@ public class Invoice {
      */
     private String accountId;
 
-    /**
-     *
-     */
-    private String itemId;
 
     /**
      * 发票金额

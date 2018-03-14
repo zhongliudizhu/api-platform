@@ -94,4 +94,10 @@ public class MyOilCoupon {
     @Column(length = 1)
     private String sendState;
 
+    /**
+     * 实际售价 （开发票用）
+     */
+    @Transient
+    private Double payPrice;
+
 }

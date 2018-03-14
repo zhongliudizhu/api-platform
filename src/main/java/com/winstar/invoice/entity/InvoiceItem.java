@@ -30,6 +30,8 @@ public class InvoiceItem {
     @GeneratedValue(generator = "idGenerator")
     @Column(length = 50)
     private String id;
+
+    private String invoiceId;
     /**
      * 油券ID
      */
@@ -38,12 +40,9 @@ public class InvoiceItem {
      * 用户Id
      */
     private String accountId;
+
     /**
-     * 电子券金额
-     */
-    private Double panAmt;
-    /**
-     * 售价
+     * 售价(计算后)
      */
     private Double salePrice;
 
