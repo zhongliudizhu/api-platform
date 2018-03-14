@@ -1,6 +1,8 @@
 package com.winstar.oil.repository;
 
 import com.winstar.oil.entity.MyOilCoupon;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -34,5 +36,7 @@ public interface MyOilCouponRepository extends JpaSpecificationExecutor<MyOilCou
     MyOilCoupon findByPan(String pan);
 
     List<MyOilCoupon> findByOrderIdOrderByUseStateAsc(String orderId);
+
+    Page<MyOilCoupon> findByAccountIdAndUseState(String accountId, String useState, Pageable pageable);
 
 }

@@ -14,12 +14,12 @@ import com.winstar.order.service.OilOrderService;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
 import com.winstar.utils.WsdUtils;
+import lombok.Synchronized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -48,9 +48,9 @@ public class SendOilCouponService {
     @Autowired
     OilOrderService orderService;
 
-    @Async
+    @Synchronized
     public ResponseEntity checkCard(String orderNumber) throws Exception{
-        logger.info("执行油卡发送操作。。。");
+        logger.info(orderNumber + "，执行油卡发送操作。。。");
         long beginTime = System.currentTimeMillis();
         logger.info("执行发券开始时间：" + beginTime);
         OilOrder oilOrder = orderService.getOneOrder(orderNumber);
