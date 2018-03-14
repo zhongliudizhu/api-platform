@@ -18,8 +18,16 @@ public class MyOilCouponService {
     @Autowired
     MyOilCouponRepository myOilCouponRepository;
 
-    public Page<MyOilCoupon> findUsedCoupon(String accountId, List<String> pans, Pageable pageable){
-        return myOilCouponRepository.findByAccountIdAndUseStateAndPanNotIn(accountId,"1",pans,pageable);
+    public Page<MyOilCoupon> findUsedCoupon(String accountId, List<String> ids, Pageable pageable){
+        return myOilCouponRepository.findByAccountIdAndUseStateAndIdIn(accountId,"1",ids,pageable);
+    }
+
+    public List<MyOilCoupon> findByOrderId(String orderId){
+        return myOilCouponRepository.findByOrderIdOrderByUseStateAsc(orderId);
+    }
+
+    public MyOilCoupon findOne(String id){
+        return myOilCouponRepository.findOne(id);
     }
 
 }
