@@ -139,7 +139,7 @@ public class NotifyController {
      */
     private String modifyOrder(PayOrder payOrder,Map<String, Object> respMap,HttpServletRequest request){
         try{
-
+            long beginTime = System.currentTimeMillis();
             if(WsdUtils.isNotEmpty(payOrder) && payOrder.getState().equals(EnumType.PAY_STATE_SUCCESS.valueStr())){
                 return "0000";
             }
@@ -150,6 +150,8 @@ public class NotifyController {
                 payOrderService.save(payOrder);
                 logger.info("订单支付成功...");
                 savePayLog(respMap,"OK","订单支付成功",request);
+                long endTime = System.currentTimeMillis();
+                logger.info("修改支付订单消耗时间：" + (endTime - beginTime) + "ms，支付订单号：" + payOrder.getPayOrderNumber() + "，订单号：" + payOrder.getOrderNumber());
                 //通知订单那边是否支付成功 ------>>>  回调
                 modifyOrder(payOrder,respMap);
             }else{
@@ -163,6 +165,7 @@ public class NotifyController {
 
     @Async
     private void modifyOrder(PayOrder payOrder,Map<String,Object> respMap) throws Exception {
+        long beginTime = System.currentTimeMillis();
         PayInfoVo payInfoVo = new PayInfoVo();
         payInfoVo.setOrderSerialNumber(payOrder.getOrderNumber());
         payInfoVo.setBankSerialNumber(MapUtils.getString(respMap, "transaction_id"));
@@ -171,6 +174,8 @@ public class NotifyController {
         payInfoVo.setPayTime(DateUtil.parseTime(MapUtils.getString(respMap, "time_end")));
         payInfoVo.setPayType(payOrder.getPayWay());
         orderService.updateOrderCashier(payInfoVo);
+        long endTime = System.currentTimeMillis();
+        logger.info("修改订单消耗时间：" + (endTime - beginTime) + "ms，订单号：" + payOrder.getOrderNumber());
         if(payOrder.getOrderOwner().equals("1") && respMap.get("result_code").toString().equalsIgnoreCase("SUCCESS")){
             logger.info("开始通知油卡的发送。。。");
             sendOilCouponService.checkCard(payOrder.getOrderNumber());
