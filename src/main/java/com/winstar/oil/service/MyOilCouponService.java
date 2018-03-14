@@ -19,7 +19,7 @@ public class MyOilCouponService {
     MyOilCouponRepository myOilCouponRepository;
 
     public Page<MyOilCoupon> findUsedCoupon(String accountId, List<String> ids, Pageable pageable){
-        return myOilCouponRepository.findByAccountIdAndUseStateAndIdIn(accountId,"1",ids,pageable);
+        return myOilCouponRepository.findByAccountIdAndUseStateAndIdNotIn(accountId,"1",ids,pageable);
     }
 
     public List<MyOilCoupon> findByOrderId(String orderId){

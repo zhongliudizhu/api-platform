@@ -37,6 +37,6 @@ public interface MyOilCouponRepository extends JpaSpecificationExecutor<MyOilCou
 
     List<MyOilCoupon> findByOrderIdOrderByUseStateAsc(String orderId);
 
-    Page<MyOilCoupon> findByAccountIdAndUseStateAndIdIn(String accountId, String useState, List<String> ids, Pageable pageable);
+    Page<MyOilCoupon> findByAccountIdAndUseStateAndIdNotIn(String accountId, String useState, List<String> ids, Pageable pageable);
 
 }
