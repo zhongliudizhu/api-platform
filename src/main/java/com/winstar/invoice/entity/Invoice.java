@@ -75,6 +75,10 @@ public class Invoice {
      */
     private Date createDate;
 
+    /**
+     * 开票状态 0 待开 1 已开
+     */
+    private Integer status;
 
 
 
