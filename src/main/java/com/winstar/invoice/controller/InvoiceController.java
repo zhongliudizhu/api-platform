@@ -11,8 +11,10 @@ import com.winstar.oil.entity.MyOilCoupon;
 import com.winstar.oil.service.MyOilCouponService;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.service.OilOrderService;
+import com.winstar.order.utils.DateUtil;
 import com.winstar.shop.entity.Activity;
 import com.winstar.user.service.AccountService;
+import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -89,7 +92,18 @@ public class InvoiceController {
         Sort sort = new Sort(Sort.Direction.DESC, "useDate");
         Pageable pageable = new PageRequest(nextPage, pageSize, sort);
 
-        Page<MyOilCoupon> page = myOilCouponService.findUsedCoupon(accountId,ids, pageable);
+        Date now=new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(now);
+        calendar.add(Calendar.DATE, -3);//三天前
+        Date endTime=calendar.getTime();
+
+        calendar.setTime(now);
+        calendar.add(Calendar.MONTH, -3);//三天前
+        Date startTime = calendar.getTime();
+
+        Page<MyOilCoupon> page = myOilCouponService.findUsedCoupon( accountId, startTime, endTime,  ids, pageable);
+//        Page<MyOilCoupon> page = myOilCouponService.findUsedCoupon(accountId,ids, pageable);
         List<MyOilCoupon> list = page.getContent();
 
         if (list.size() == 0) throw new NotFoundException("MyOilCoupon");
