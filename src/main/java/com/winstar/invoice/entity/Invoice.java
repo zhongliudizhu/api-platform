@@ -34,9 +34,9 @@ public class Invoice {
     private String accountId;
 
     /**
-     * 油券ID
+     * 油券编号
      */
-    private String oilNumber;
+    private String pan;
 
     /**
      * 类型 1 ：个人 2：单位
@@ -70,9 +70,13 @@ public class Invoice {
      */
     private String taxpayerNumber;
     /**
-     *
+     * 审请时间
      */
     private Date createDate;
+    /**
+     * 开票时间
+     */
+    private Date updateDate;
 
     /**
      * 开票状态 0 待开 1 已开

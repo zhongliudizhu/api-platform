@@ -1,30 +1,38 @@
 package com.winstar.invoice.controller;
 
-import com.winstar.exception.MissingParameterException;
-import com.winstar.exception.NotFoundException;
-import com.winstar.exception.NotRuleException;
+
+import com.sun.xml.internal.ws.encoding.ImageDataContentHandler;
+import com.winstar.exception.*;
 import com.winstar.invoice.entity.Invoice;
 import com.winstar.invoice.repository.InvoiceRepository;
-import com.winstar.order.entity.OilOrder;
-import com.winstar.order.repository.OilOrderRepository;
-import com.winstar.order.utils.DateUtil;
-import net.sf.json.JSONObject;
+import com.winstar.oil.entity.MyOilCoupon;
+import com.winstar.oil.service.MyOilCouponService;
+import com.winstar.shop.entity.Activity;
+import com.winstar.user.service.AccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.ObjectUtils;
+import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author shoo on 2017/10/23 15:16.
- *  发票
+ * 发票
  */
 @RestController
 @RequestMapping("/api/v1/orders/invoice")
@@ -33,64 +41,126 @@ public class InvoiceController {
     @Autowired
     private InvoiceRepository invoiceRepository;
 
+    @Autowired
+    MyOilCouponService myOilCouponService;
 
-    /*
-    * 回调通知地址
-    * */
-    @RequestMapping(value = "/callBack", method = RequestMethod.POST,produces = "application/json;charset=utf-8")
+    @Autowired
+    AccountService accountService;
 
-    public boolean callBack( @RequestParam String result,String orderNumber)
-            throws MissingParameterException, NotFoundException, NotRuleException {
-        if(StringUtils.isEmpty(result)){
-            throw new MissingParameterException("result");
-        }
+    /**
+     * 未开发票的油卷
+     * @return
+     * @throws MissingParameterException
+     * @throws InvalidParameterException
+     * @throws NotRuleException
+     * @throws NotFoundException
+     * @throws ServiceUnavailableException
+     */
+    @RequestMapping(value = "/query", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public List<MyOilCoupon> query(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") Integer nextPage,
+            @RequestParam(defaultValue = "5") Integer pageSize
+    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
+            ServiceUnavailableException {
+        String accountId = accountService.getAccountId(request);
+        if (StringUtils.isEmpty(accountId)) throw new NotFoundException("MyOilCoupon");
+        List<Invoice> invoices=invoiceRepository.findByAccountId(accountId);
+        List<String> ids=new ArrayList<>();
+         if(invoices.size()>0){
+            for(Invoice invoice:invoices){
+                ids.add(invoice.getPan());
+            }
+        }else{
+             ids.add("");
+         }
+        Sort sort = new Sort(Sort.Direction.DESC, "useDate");
+        Pageable pageable = new PageRequest(nextPage, pageSize, sort);
 
-        JSONObject json=JSONObject.fromObject(result);
+        Page<MyOilCoupon> page = myOilCouponService.findUsedCoupon(accountId,ids, pageable);
+        List<MyOilCoupon> list = page.getContent();
 
-        if(json.containsKey("Result") && "1000".equals(json.getString("Result"))){
-            Invoice invoice=invoiceRepository.findByOrderNumber(orderNumber);
-            if(invoice==null) invoice=new Invoice();
-            invoice.setBillingType(json.getString("BillingType"));
-            invoice.setFpDm(json.getString("FpDm"));
-            invoice.setFpHm(json.getString("FpHm"));
-            invoice.setOrderNumber(json.getString("OrderNumber"));
-            invoice.setPdfUrl(json.getString("PdfUrl"));
-            invoice.setResult(json.getString("Result"));
-            invoice.setTime(DateUtil.StringToDate(json.getString("Time"),"yyyy-MM-dd hh:mm:ss"));
-            invoice.setSendTime(DateUtil.StringToDate(json.getString("SendTime"),"yyyy-MM-dd hh:mm:ss"));
-            invoiceRepository.save(invoice);
+        if (list.size() == 0) throw new NotFoundException("MyOilCoupon");
 
-        }
-        //失败
-        if(json.containsKey("returnCode")){
-            Invoice invoice=new Invoice();
-            invoice.setOrderNumber(orderNumber);
-            invoice.setResult(json.getString("returnCode"));
-            invoiceRepository.save(invoice);
-            return false;
-        }
-
-        return true;
+        return list;
     }
 
-    /*
-    * 查询发票
-    * */
-    @RequestMapping(method = RequestMethod.GET,produces = "application/json;charset=utf-8")
-    public ResponseEntity getOne(@RequestParam String orderNumber)
-            throws MissingParameterException, NotFoundException, NotRuleException {
-
-        if(StringUtils.isEmpty(orderNumber)){
-            throw new MissingParameterException("orderSerialNo.invoice");
+    /**
+     * 审请开票
+     */
+    @RequestMapping(value = "/makeInvoice", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public Invoice makeInvoice(
+            HttpServletRequest request,
+            String pan,
+            Integer type,
+            String name,String oilType,String email,String phone,String companyName,String taxpayerNumber
+    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
+            ServiceUnavailableException {
+        String accountId = accountService.getAccountId(request);
+        if (StringUtils.isEmpty(accountId)) throw new NotFoundException("MyOilCoupon");
+        if(type==null) throw new MissingParameterException("type");
+        if(pan==null) throw new MissingParameterException("pan");
+        if(oilType==null) throw new MissingParameterException("oilType");
+        if(email==null) throw new MissingParameterException("email");
+        if(phone==null) throw new MissingParameterException("phone");
+        Invoice invoice=new Invoice();
+        if(type==1){
+            if(name==null) throw new MissingParameterException("name");
+            invoice.setName(name);
         }
 
-        Invoice origin = invoiceRepository.findByOrderNumber(orderNumber);
-        if(ObjectUtils.isEmpty(origin)){
-            throw new NotFoundException("invoice.invoice");
+        if(type==2){
+            if(companyName==null) throw new MissingParameterException("companyName");
+            if(taxpayerNumber==null) throw new MissingParameterException("taxpayerNumber");
+            invoice.setCompanyName(companyName);
+            invoice.setTaxpayerNumber(taxpayerNumber);
         }
-        return  new ResponseEntity(origin, HttpStatus.OK);
+
+        invoice.setAccountId(accountId);
+        invoice.setType(type);
+        invoice.setPan(pan);
+        invoice.setOilType(oilType);
+        invoice.setEmail(email);
+        invoice.setPhone(phone);
+        invoice.setStatus(0);
+       Invoice in= invoiceRepository.save(invoice);
+
+       return in;
+
     }
 
+    /**
+     * 查询我开票历史
+     * @param request
+     * @param nextPage
+     * @param pageSize
+     * @return
+     * @throws MissingParameterException
+     * @throws InvalidParameterException
+     * @throws NotRuleException
+     * @throws NotFoundException
+     * @throws ServiceUnavailableException
+     */
+    @RequestMapping(value = "/history", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public List<Invoice> history(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") Integer nextPage,
+            @RequestParam(defaultValue = "5") Integer pageSize
+    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
+            ServiceUnavailableException {
+        String accountId = accountService.getAccountId(request);
 
+        Sort sort = new Sort(Sort.Direction.DESC, "createDate");
+        Pageable pageable = new PageRequest(nextPage, pageSize, sort);
+
+        Page<Invoice> page = invoiceRepository.findByAccountId(accountId, pageable);
+        if (page.getContent().size() == 0) throw new NotFoundException("Invoice");
+
+
+        return page.getContent();
+    }
 
 }
