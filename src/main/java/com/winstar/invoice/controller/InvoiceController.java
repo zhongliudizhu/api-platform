@@ -99,7 +99,7 @@ public class InvoiceController {
         Date endTime=calendar.getTime();
 
         calendar.setTime(now);
-        calendar.add(Calendar.MONTH, -3);//三天前
+        calendar.add(Calendar.MONTH, -3);//三月前
         Date startTime = calendar.getTime();
 
         Page<MyOilCoupon> page = myOilCouponService.findUsedCoupon( accountId, startTime, endTime,  ids, pageable);
