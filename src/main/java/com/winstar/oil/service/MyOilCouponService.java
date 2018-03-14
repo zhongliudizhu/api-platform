@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * Created by zl on 2018/3/14
  */
@@ -16,8 +18,8 @@ public class MyOilCouponService {
     @Autowired
     MyOilCouponRepository myOilCouponRepository;
 
-    public Page<MyOilCoupon> findUsedCoupon(String accountId, Pageable pageable){
-        return myOilCouponRepository.findByAccountIdAndUseState(accountId,"1",pageable);
+    public Page<MyOilCoupon> findUsedCoupon(String accountId, List<String> pans, Pageable pageable){
+        return myOilCouponRepository.findByAccountIdAndUseStateAndPanNotIn(accountId,"1",pans,pageable);
     }
 
 }
