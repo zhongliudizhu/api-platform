@@ -1,6 +1,5 @@
 package com.winstar.invoice.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +11,7 @@ import java.util.Date;
 
 /**
  * @author shoo on 2017/10/23 14:01.
- * 发票
+ *  发票
  */
 @Getter
 @Setter
@@ -29,43 +28,57 @@ public class Invoice {
     @GeneratedValue(generator = "idGenerator")
     @Column(length = 50)
     private String id;
+    /**
+     * 用户Id
+     */
+    private String accountId;
 
     /**
-     * 业务订单号
+     * 油券ID
      */
-    private String orderNumber;
-    /**
-     * 返回值 1000	返回成功
-     1001	企业授权错误
-     1002	流水已开票
-     1003	无业务流水
-     1004	接收失败，未知异常
+    private String oilNumber;
 
-     */
-    private String result;
     /**
-     * 开票时间
+     * 类型 1 ：个人 2：单位
      */
-    private Date time;
+    private Integer type;
+
     /**
-     * 发票代码
+     * 姓名
      */
-    private String fpDm;
+    private String name;
+
     /**
-     * 发票号码
+     * 油品种类
      */
-    private String fpHm;
+    private String oilType;
+
     /**
-     * 业务类型 1，正常开票，2作废、3冲红
+     * 邮箱
      */
-    private String billingType;
+    private String email;
     /**
-     * Pdf下载路径
+     * 手机
      */
-    private String pdfUrl;
+    private String phone;
     /**
-     * 发送时间
+     * 公司
      */
-    private Date sendTime;
+    private String companyName;
+    /**
+     * 纳税人识别号
+     */
+    private String taxpayerNumber;
+    /**
+     *
+     */
+    private Date createDate;
+
+    /**
+     * 开票状态 0 待开 1 已开
+     */
+    private Integer status;
+
+
 
 }
