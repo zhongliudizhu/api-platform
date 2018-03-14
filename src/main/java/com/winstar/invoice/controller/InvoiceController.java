@@ -144,6 +144,8 @@ public class InvoiceController {
         }
         Double price=new Double(0);
         for(String id : ids ){
+            InvoiceItem item=invoiceItemRepository.findByOilId(id);
+            if(item!=null) throw new NotRuleException("this ["+id+"] has maked" );
             MyOilCoupon myOilCoupon= myOilCouponService.findOne(id);
             if(myOilCoupon==null ) throw new NotFoundException(id);
             myOilCoupon=this.reckon(myOilCoupon,myOilCoupon.getOrderId());

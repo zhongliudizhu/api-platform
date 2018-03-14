@@ -15,4 +15,5 @@ import java.util.List;
 public interface InvoiceItemRepository extends JpaSpecificationExecutor<InvoiceItem>,JpaRepository<InvoiceItem,String> {
 
     List<InvoiceItem> findByAccountId(String accountId);
+    InvoiceItem findByOilId(String oilId);
 }
