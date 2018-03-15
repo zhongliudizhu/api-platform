@@ -66,7 +66,7 @@ public class MyOilCouponService {
                 Predicate[] p = new Predicate[list.size()];
                 if(ids.size()>0){
                     Predicate in=root.get("id").in(ids);
-                    cb.not(in);
+                    list.add(cb.not(in));
                 }
                 return cb.and(list.toArray(p));
             }
