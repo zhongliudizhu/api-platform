@@ -28,7 +28,7 @@ spring:
   profiles: default
 
 info:
-  cardUrl: https://coupons.easy-pass.cn/shellCoupons/services/SvcService
+  cardUrl: https://wanglt.easy-pass.cn/webservice/services/SvcService
   profilesActive: false
   flowUrl: http://192.168.118.7:2300/api/v1/flow/order
   amount: 100

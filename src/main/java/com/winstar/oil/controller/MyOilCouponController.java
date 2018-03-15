@@ -7,14 +7,17 @@ import com.winstar.cashier.repository.PayOrderRepository;
 import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
+import com.winstar.oil.entity.LookingUsedCoupon;
 import com.winstar.oil.entity.MyOilCoupon;
 import com.winstar.oil.entity.OilCoupon;
 import com.winstar.oil.entity.OilCouponSearchLog;
+import com.winstar.oil.repository.LookingUsedCouponRepository;
 import com.winstar.oil.repository.MyOilCouponRepository;
 import com.winstar.oil.repository.OilCouponRepository;
 import com.winstar.oil.repository.OilCouponSearchLogRepository;
 import com.winstar.oil.service.OilCouponUpdateService;
 import com.winstar.oil.service.SendOilCouponService;
+import com.winstar.oil.utils.RequestSvcInfoUtils;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.user.service.AccountService;
@@ -23,6 +26,7 @@ import com.winstar.utils.WebUitl;
 import com.winstar.utils.WsdUtils;
 import com.winstar.vo.OilSetMealVo;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +39,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import ws.object.ObjectFactory;
+import ws.object.SvcInfo;
+import ws.result.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -74,6 +81,11 @@ public class MyOilCouponController {
 
     @Autowired
     OilOrderRepository oilOrderRepository;
+
+    @Autowired
+    LookingUsedCouponRepository lookingUsedCouponRepository;
+
+    private final static ObjectFactory objectFactory = new ObjectFactory();
 
     @RequestMapping(value = "/sendOilCoupon",method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -208,6 +220,7 @@ public class MyOilCouponController {
             String pan = AESUtil.decrypt(myOilCoupon.getPan(),AESUtil.dekey);
             map.put("result", AESUtil.encrypt(pan,AESUtil.key));
             saveSearchLog(accountId,WsdUtils.getIpAddress(request),myOilCoupon.getPan(),myOilCoupon.getOrderId());
+            activateOilCoupon(myOilCoupon.getPan(),myOilCoupon.getPanAmt());
             return map;
         }
         String sortStr = "[{property:'createTime',direction:'asc'}]";
@@ -220,7 +233,10 @@ public class MyOilCouponController {
         }
         OilCoupon oilCoupon = oilCoupons.getContent().get(new Random().nextInt(oilCoupons.getContent().size()));
         logger.info(oilCoupon.getPan());
-        updateService.updateOilCoupon(myOilCoupon,oilCoupon);
+        Result activeResult = activateOilCoupon(oilCoupon.getPan(),oilCoupon.getPanAmt());
+        if(WsdUtils.isNotEmpty(activeResult) && activeResult.getCode().equals("SUCCESS")){
+            updateService.updateOilCoupon(myOilCoupon,oilCoupon);
+        }
         Map<String,Object> map = Maps.newHashMap();
         if(WsdUtils.isEmpty(myOilCoupon.getPan())){
             logger.info("更新券码没有成功，发券失败！");
@@ -242,6 +258,73 @@ public class MyOilCouponController {
         log.setPan(pan);
         log.setOrderId(orderId);
         oilCouponSearchLogRepository.save(log);
+    }
+
+    @RequestMapping(value = "activate/{id}",method = RequestMethod.GET)
+    public ResponseEntity activatePan(@PathVariable String id, HttpServletRequest request) throws Exception {
+        String accountId = request.getHeader("accountId");
+        if(WsdUtils.isEmpty(accountId)){
+            throw new MissingParameterException("accountId");
+        }
+        MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
+        if(WsdUtils.isEmpty(myOilCoupon)){
+            throw new NotFoundException("oilCoupon.not_found");
+        }
+        if(!accountId.equals(myOilCoupon.getAccountId())){
+            throw new NotRuleException("oilCoupon.not_is_you");
+        }
+        if(WsdUtils.isEmpty(myOilCoupon.getPan())){
+            throw new NotRuleException("oilCoupon.not_found");
+        }
+        return new ResponseEntity<>(activateOilCoupon(myOilCoupon.getPan(), myOilCoupon.getPanAmt()), HttpStatus.OK);
+    }
+
+    private Result activateOilCoupon(String pan, Double panAmt) throws Exception {
+        Result result = new Result();
+        String panText = AESUtil.decrypt(pan,AESUtil.dekey);
+        logger.info("激活的券码：" + pan + "，明文：" + panText);
+        long beginTime = System.currentTimeMillis();
+        SvcInfo req = new SvcInfo();
+        req.setTxnId(objectFactory.createSvcInfoTxnId("activate"));
+        req.setAccGrp(objectFactory.createSvcInfoAccGrp("activate"));
+        req.setYwy(objectFactory.createSvcInfoYwy("wsdyjx"));
+        req.setAuthNo(objectFactory.createSvcInfoAuthNo("w7raSRr3M33CyEN2hdwKWAjZKHX3kSjd"));
+        req.setPan(objectFactory.createSvcInfoPan(panText));
+        req.setBalAmt(objectFactory.createSvcInfoBalAmt(panAmt + ""));
+        SvcInfo svcInfo = RequestSvcInfoUtils.getSvcInfo(req);
+        logger.info("rc:" + svcInfo.getRc().getValue() + "，rcDetail:" + svcInfo.getRcDetail().getValue());
+        long endTime = System.currentTimeMillis();
+        logger.info("激活消耗时间：" + (endTime - beginTime) + "ms");
+        if(svcInfo.getRc().getValue().equals("00")){
+            logger.info("激活成功！");
+            saveLookingUsedCoupon(pan,"1",null,beginTime,endTime,svcInfo);
+            result.setCode("SUCCESS");
+            result.setFailMessage("激活成功！");
+        }else{
+            logger.info("激活失败！");
+            Date useDate = DateUtils.parseDate(svcInfo.getTxnDate().getValue() + svcInfo.getTxnTime().getValue(), "yyyyMMddHHmmss");
+            saveLookingUsedCoupon(pan,"0",useDate,beginTime,endTime,svcInfo);
+            result.setCode("FAIL");
+            result.setFailMessage("激活失败！");
+        }
+        return result;
+    }
+
+    @Async
+    private void saveLookingUsedCoupon(String pan,String activateState, Date useDate, long beginTime, long endTime, SvcInfo svcInfo) throws Exception {
+        LookingUsedCoupon lookingUsedCoupon = new LookingUsedCoupon();
+        lookingUsedCoupon.setPan(pan);
+        lookingUsedCoupon.setPanText(AESUtil.decrypt(pan,AESUtil.dekey));
+        lookingUsedCoupon.setLookDate(new Date());
+        lookingUsedCoupon.setUseDate(useDate);
+        lookingUsedCoupon.setTId(svcInfo.getTid().getValue());
+        lookingUsedCoupon.setActivateState(activateState);
+        lookingUsedCoupon.setBeginTime(beginTime);
+        lookingUsedCoupon.setEndTime(endTime);
+        lookingUsedCoupon.setTimeConsuming(endTime - beginTime);
+        lookingUsedCoupon.setRc(svcInfo.getRc().getValue());
+        lookingUsedCoupon.setRcDetail(svcInfo.getRcDetail().getValue());
+        lookingUsedCouponRepository.save(lookingUsedCoupon);
     }
 
 }
