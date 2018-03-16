@@ -21,7 +21,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -220,6 +219,7 @@ public class CouponService {
      */
     public MyCoupon cancelMyCoupon(String id) {
         MyCoupon myCoupon = myCouponRepository.findOne(id);
+        if(myCoupon==null) return null;
         myCoupon.setUseDate(null);
         myCoupon.setStatus(0);
         MyCoupon coupon = myCouponRepository.save(myCoupon);
