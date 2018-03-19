@@ -302,7 +302,10 @@ public class MyOilCouponController {
             result.setFailMessage("激活成功！");
         }else{
             logger.info("激活失败！");
-            Date useDate = DateUtils.parseDate(svcInfo.getTxnDate().getValue() + svcInfo.getTxnTime().getValue(), "yyyyMMddHHmmss");
+            Date useDate = null;
+            if(WsdUtils.isNotEmpty(svcInfo.getTxnDate().getValue()) && WsdUtils.isNotEmpty(svcInfo.getTxnTime().getValue())){
+                useDate = DateUtils.parseDate(svcInfo.getTxnDate().getValue() + svcInfo.getTxnTime().getValue(), "yyyyMMddHHmmss");
+            }
             saveLookingUsedCoupon(pan,"0",useDate,beginTime,endTime,svcInfo);
             result.setCode("FAIL");
             result.setFailMessage("激活失败！");
