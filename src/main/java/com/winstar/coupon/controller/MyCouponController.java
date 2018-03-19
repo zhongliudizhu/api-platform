@@ -24,6 +24,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -69,11 +70,12 @@ public class MyCouponController {
             Integer status,
             @RequestParam(defaultValue = "1") Integer pageNumber,
             @RequestParam(defaultValue = "10000") Integer pageSize
-    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
+    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
+            ServiceUnavailableException {
 
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
-        if (StringUtils.isEmpty(accountId))  throw new NotRuleException("accountId");
+        if (StringUtils.isEmpty(accountId)) throw new NotRuleException("accountId");
         Sort sorts = new Sort(Sort.Direction.DESC, "createdAt");
         Pageable pageable = new PageRequest(pageNumber - 1, pageSize, sorts);
         Page<MyCoupon> page = myCouponRepository.findAll(new Specification<MyCoupon>() {
@@ -98,7 +100,7 @@ public class MyCouponController {
      * 发券
      *
      * @param activityId 活动ID
-     * @param goodsId 商品ID
+     * @param goodsId    商品ID
      * @return MyCoupon
      */
     @RequestMapping(value = "/sendCoupon", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -107,7 +109,8 @@ public class MyCouponController {
             HttpServletRequest request,
             String activityId,
             String goodsId
-    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
+    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
+            ServiceUnavailableException {
         String accountId = accountService.getAccountId(request);
         MyCoupon myCoupon = couponService.sendCoupon(accountId, activityId, goodsId);
         return myCoupon;
@@ -117,7 +120,7 @@ public class MyCouponController {
      * 查询当前商品我可用的优惠券
      *
      * @param request
-     * @param goodsId   商品id
+     * @param goodsId 商品id
      * @return List<MyCoupon>
      * @throws MissingParameterException
      * @throws InvalidParameterException
@@ -125,16 +128,18 @@ public class MyCouponController {
      * @throws NotFoundException
      * @throws ServiceUnavailableException
      */
-    @RequestMapping(value = "/findMyUsableCoupon", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/findMyUsableCoupon", method = RequestMethod.GET, produces = MediaType
+            .APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<MyCoupon> findMyUsableCoupon(
             HttpServletRequest request,
             String goodsId
-    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
-        if (StringUtils.isEmpty(goodsId))  throw new MissingParameterException("goodsId");
-        Goods goods=goodsRepository.findOne(goodsId);
-        if(goods==null) throw new NotFoundException("this goods is NotFound");
-        Double money=goods.getPrice();
+    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
+            ServiceUnavailableException {
+        if (StringUtils.isEmpty(goodsId)) throw new MissingParameterException("goodsId");
+        Goods goods = goodsRepository.findOne(goodsId);
+        if (goods == null) throw new NotFoundException("this goods is NotFound");
+        Double money = goods.getPrice();
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
         List<MyCoupon> list = couponService.findMyUsableCoupon(accountId, money);
@@ -142,4 +147,30 @@ public class MyCouponController {
         return list;
     }
 
+    /**
+     * 发券
+     *
+     * @return MyCoupon
+     */
+    @RequestMapping(value = "/wechatSendCoupon", method = RequestMethod.POST, produces = MediaType
+            .APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public MyCoupon wechatSendCoupon(
+            HttpServletRequest request,
+            String openId,
+            @RequestParam(defaultValue = "5") Double amount,
+            Date validEndAt, String activityId,
+            @RequestParam(defaultValue = "0.0") Double useRule,
+            @RequestParam(defaultValue = "前端调用发券") String name,
+            @RequestParam(defaultValue = "前端调用发券") String description
+    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
+            ServiceUnavailableException {
+        if(openId==null) throw  new MissingParameterException("openId");
+        if(validEndAt==null) throw  new MissingParameterException("validEndAt");
+        String accountId = accountService.findAccountIdByOpenid(openId);
+        if(StringUtils.isEmpty(accountId)) throw new NotFoundException("openId");
+        MyCoupon myCoupon = couponService.sendCoupon_freedom(accountId, activityId, amount, validEndAt, useRule, name, description);
+
+        return myCoupon;
+    }
 }
