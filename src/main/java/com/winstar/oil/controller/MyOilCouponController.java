@@ -262,7 +262,7 @@ public class MyOilCouponController {
 
     @RequestMapping(value = "activate/{id}",method = RequestMethod.GET)
     public ResponseEntity activatePan(@PathVariable String id, HttpServletRequest request) throws Exception {
-        String accountId = request.getHeader("accountId");
+        String accountId = accountService.getAccountId(request);
         if(WsdUtils.isEmpty(accountId)){
             throw new MissingParameterException("accountId");
         }
