@@ -70,12 +70,11 @@ public class MyCouponController {
             Integer status,
             @RequestParam(defaultValue = "1") Integer pageNumber,
             @RequestParam(defaultValue = "10000") Integer pageSize
-    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
-            ServiceUnavailableException {
+    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
 
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
-        if (StringUtils.isEmpty(accountId)) throw new NotRuleException("accountId");
+        if (StringUtils.isEmpty(accountId))  throw new NotRuleException("accountId");
         Sort sorts = new Sort(Sort.Direction.DESC, "createdAt");
         Pageable pageable = new PageRequest(pageNumber - 1, pageSize, sorts);
         Page<MyCoupon> page = myCouponRepository.findAll(new Specification<MyCoupon>() {
@@ -100,7 +99,7 @@ public class MyCouponController {
      * 发券
      *
      * @param activityId 活动ID
-     * @param goodsId    商品ID
+     * @param goodsId 商品ID
      * @return MyCoupon
      */
     @RequestMapping(value = "/sendCoupon", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -109,8 +108,7 @@ public class MyCouponController {
             HttpServletRequest request,
             String activityId,
             String goodsId
-    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
-            ServiceUnavailableException {
+    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
         String accountId = accountService.getAccountId(request);
         MyCoupon myCoupon = couponService.sendCoupon(accountId, activityId, goodsId);
         return myCoupon;
@@ -120,7 +118,7 @@ public class MyCouponController {
      * 查询当前商品我可用的优惠券
      *
      * @param request
-     * @param goodsId 商品id
+     * @param goodsId   商品id
      * @return List<MyCoupon>
      * @throws MissingParameterException
      * @throws InvalidParameterException

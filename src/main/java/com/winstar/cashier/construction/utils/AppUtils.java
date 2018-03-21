@@ -79,7 +79,7 @@ public class AppUtils {
 		Map<String, String> treeMap = Maps.newTreeMap();
 		treeMap.putAll(Maps.filterEntries(dataMap, predicate));
 		// null置为空
-		String join = Joiner.on('&').withKeyValueSeparator("=").useForNull("").join(treeMap);
+		String join = Joiner.on("&").withKeyValueSeparator("=").useForNull("").join(treeMap);
 		return join;
 	}
 
@@ -215,7 +215,7 @@ public class AppUtils {
 		}
 		Map<String, String> treeMap = Maps.newTreeMap();
 		treeMap.putAll(Maps.filterEntries(reqMap, predicate));
-		String join = Joiner.on('&').withKeyValueSeparator("=").useForNull("").join(treeMap);
+		String join = Joiner.on("&").withKeyValueSeparator("=").useForNull("").join(treeMap);
 		String signSrc = join + "&" + Crypto.GetMessageDigest(signKey, PayConfPC.SIGNMETHOD, charset);
 		System.out.println("签名字符串：" + signSrc);
 		String sign = Crypto.GetMessageDigest(signSrc, PayConfPC.SIGNMETHOD, charset);

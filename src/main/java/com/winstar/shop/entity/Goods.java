@@ -83,4 +83,5 @@ public class Goods {
      * 售罄状态  0 未售  1 已售罄  （置灰）
      */
     private Integer isSale;
+
 }

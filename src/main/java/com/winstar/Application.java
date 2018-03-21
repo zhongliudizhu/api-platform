@@ -1,5 +1,6 @@
 package com.winstar;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.winstar.interceptors.AuthInterceptor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -41,6 +42,11 @@ public class Application extends WebMvcConfigurerAdapter {
     @LoadBalanced
     public RestTemplate restTemplate() {
         return new RestTemplate();
+    }
+    @Bean
+    public ObjectMapper ObjectMapper(){
+        ObjectMapper objectMapper=new ObjectMapper();
+        return objectMapper;
     }
 
 }

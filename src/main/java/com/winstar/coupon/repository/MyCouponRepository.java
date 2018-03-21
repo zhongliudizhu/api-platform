@@ -4,6 +4,7 @@ import com.winstar.coupon.entity.MyCoupon;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -17,4 +18,12 @@ public interface MyCouponRepository extends JpaRepository<MyCoupon,String> ,JpaS
     List<MyCoupon> findByAccountId(String accountId);
 
     List<MyCoupon> findByAccountIdAndStatusAndUseRuleLessThanEqual(String accountId,Integer status,Double rules);
+
+    List<MyCoupon> findByAccountIdAndActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(Object accountId, String activityId, Date startMonth, Date endMonth);
+
+    List<MyCoupon> findByAccountIdAndActivityId(Object accountId, String activityId);
+
+    List<MyCoupon> findByActivityId(String activityId);
+
+
 }
