@@ -178,10 +178,12 @@ public class CouponService {
         Date now = new Date();
         List<MyCoupon> list = myCouponRepository.findByAccountId(accountId);
         for (MyCoupon coupon : list) {
-            if (coupon.getValidEndAt() != null && coupon.getValidEndAt().getTime() < now.getTime()) {
-                coupon.setStatus(2);
-                logger.info("----处理过期券----MyCouponId: " + coupon.getId() + " 已过期");
-                myCouponRepository.save(coupon);
+            if(coupon.getStatus()==0){
+                if (coupon.getValidEndAt() != null && coupon.getValidEndAt().getTime() < now.getTime()) {
+                    coupon.setStatus(2);
+                    logger.info("----处理过期券----MyCouponId: " + coupon.getId() + " 已过期");
+                    myCouponRepository.save(coupon);
+                }
             }
         }
         logger.info("----处理过期券-结束---accountId: " + accountId);
