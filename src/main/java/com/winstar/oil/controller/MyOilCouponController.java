@@ -224,7 +224,7 @@ public class MyOilCouponController {
             return map;
         }
         String sortStr = "[{property:'createTime',direction:'asc'}]";
-        Pageable pageable = WebUitl.buildPageRequest(0, 50, sortStr);
+        Pageable pageable = WebUitl.buildPageRequest(0, 150, sortStr);
         long beginTime = System.currentTimeMillis();
         Page<OilCoupon> oilCoupons = oilCouponRepository.findByPanAmtAndOilState(myOilCoupon.getPanAmt(),"0",pageable);
         if(WsdUtils.isEmpty(oilCoupons) || oilCoupons.getContent().size() == 0){
