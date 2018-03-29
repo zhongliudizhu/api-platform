@@ -3,6 +3,7 @@ package com.winstar.order.service;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.order.entity.CouponLog;
 import com.winstar.order.repository.CouponLogRepository;
+import com.winstar.utils.WsdUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +27,10 @@ public class LoveActivityService {
     @Transactional
     public String giveCoupon(String accountId, String openId){
         try {
-            couponService.sendCoupon_freedom(accountId,"2",5.0,new Date(1522425599000L),100.0, "", "");
-            couponService.sendCoupon_freedom(accountId,"2",10.0,new Date(1522425599000L),200.0, "", "");
+            String couponName1 = "S1-" + WsdUtils.getRandomNumber(8);
+            String couponName2 = "S2-" + WsdUtils.getRandomNumber(8);
+            couponService.sendCoupon_freedom(accountId,"2",5.0,new Date(1522425599000L),100.0, couponName1, "手心活动发5元优惠券");
+            couponService.sendCoupon_freedom(accountId,"2",10.0,new Date(1522425599000L),200.0, couponName2, "手心活动发10元优惠券");
             CouponLog couponLog = new CouponLog();
             couponLog.setAccountId(accountId);
             couponLog.setOpenId(openId);

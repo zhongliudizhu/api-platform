@@ -84,4 +84,6 @@ public class Goods {
      */
     private Integer isSale;
 
+    private Integer limitAmount;
+
 }

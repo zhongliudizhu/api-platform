@@ -66,14 +66,16 @@ public class OilOrderController {
         String accountId = accountService.getAccountId(request);
         Account account = accountService.findById(accountId);
         String serialNumber = OilOrderUtil.getSerialNumber();
+
         //2.根据商品id 查询商品
         Goods goods = shopService.findByGoodsId(itemId);
+        logger.error("开始添加订单，goodsId：" + goods.getId());
         if(ObjectUtils.isEmpty(goods)){
             logger.error("查询商品失败，itemId：" + itemId);
             throw new NotFoundException("goods.order");
         }
 
-        Integer soldAmount = OilOrderUtil.getSoldAmount(goods.getPrice(),Constant.CBC_ACTIVITY_SEC);
+        Integer soldAmount =  OilOrderUtil.getSoldAmount(itemId);
 
         //3.根据活动id查询活动
         Activity activity = shopService.findByActivityId(activityId);
@@ -87,54 +89,25 @@ public class OilOrderController {
                throw new NotRuleException("oneDay100.order");
             }
         }*/
-
-        if(activity.getType()!=2&&!StringUtils.isEmpty(couponId)){
-            logger.error("只有活动2能使用优惠券！" );
+        if(activity.getType()==1 && !StringUtils.isEmpty(couponId)){
+            logger.error("只有活动2和3能使用优惠券！" );
             throw new NotRuleException("canNotUseCoupon.order");
         }
 
-        if(activity.getType()==1){
-
-            if(goods.getIsSale() == 1){
-                logger.error("商品"+goods.getId()+"已售罄！" );
-                throw new NotRuleException("isSale.order");
-            }
-             /*if(goods.getPrice()==100){
-           if(soldAmount>13900){
-              throw new NotRuleException("soldOut.order");
-           }
+        if(goods.getIsSale() == 1){
+            logger.error("商品"+goods.getId()+"已售罄！" );
+            throw new NotRuleException("isSale.order");
         }
-        if(goods.getPrice()==200){
-            if(soldAmount>6900){
-                throw new NotRuleException("soldOut.order");
-            }
-        }
-        if(goods.getPrice()==300){
-            if(soldAmount>4567){
-                throw new NotRuleException("soldOut.order");
-            }
-        }
-        if(goods.getPrice()==500){
-            if(soldAmount>2700){
-                throw new NotRuleException("soldOut.order");
-            }
-        }*/
-            if(goods.getPrice()==1000){
-                if(soldAmount>1300){
-                    throw new NotRuleException("soldOut.order");
-                }
-            }
-            if(goods.getPrice()==2000){
-                if(soldAmount>600){
-                    throw new NotRuleException("soldOut.order");
-                }
-            }
-
+        //判断是否超过限售数量
+        if(goods.getLimitAmount()!=null && goods.getLimitAmount()!=0 && (soldAmount >= goods.getLimitAmount())){
+            logger.error("商品"+goods.getId()+"已超售！" );
+            throw new NotRuleException("soldOut.order");
         }
 
         if(StringUtils.isEmpty(goods.getCouponTempletId())&&!StringUtils.isEmpty(couponId)){
             throw new NotRuleException("canNotUseCoupon.order");
         }
+
         //activity 1 and 3 auth infoCard
         if(activityId.equals("1") || activityId.equals("3")){
             if(StringUtils.isEmpty(account.getAuthInfoCard())){
@@ -192,6 +165,7 @@ public class OilOrderController {
         oilOrder = OilOrderUtil.initOrder(oilOrder,goods,activity.getType());
         oilOrder = orderRepository.save(oilOrder);
         //6.生成订单
+        logger.error("添加订单成功，goodsId：" + goods.getId());
         return new ResponseEntity<>(oilOrder, HttpStatus.OK);
     }
 

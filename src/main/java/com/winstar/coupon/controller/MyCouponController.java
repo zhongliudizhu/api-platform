@@ -4,9 +4,11 @@ import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.exception.*;
+import com.winstar.order.utils.DateUtil;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.GoodsRepository;
 import com.winstar.user.service.AccountService;
+import com.winstar.utils.WsdUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +26,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -86,6 +89,45 @@ public class MyCouponController {
                 if (status != null) {
                     list.add(cb.equal(root.<Integer>get("status"), status));
                 }
+                list.add(cb.notEqual(root.<Integer>get("activityId"), "3"));
+                Predicate[] p = new Predicate[list.size()];
+                return cb.and(list.toArray(p));
+            }
+        }, pageable);
+        if (page.getContent().size() == 0) throw new NotFoundException("mycoupon");
+
+        return page.getContent();
+    }
+
+    @RequestMapping(value = "/queryType", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public List<MyCoupon> query(
+            HttpServletRequest request,
+            Integer status,
+            String activityId,
+            @RequestParam(defaultValue = "1") Integer pageNumber,
+            @RequestParam(defaultValue = "10000") Integer pageSize
+    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
+
+        String accountId = accountService.getAccountId(request);
+        couponService.checkExpired(accountId);
+
+        if (StringUtils.isEmpty(accountId))  throw new NotRuleException("accountId");
+        if (StringUtils.isEmpty(status))  throw new NotRuleException("status");
+        if (StringUtils.isEmpty(activityId))  throw new NotRuleException("activityId");
+
+        Sort sorts = new Sort(Sort.Direction.DESC, "createdAt");
+        Pageable pageable = new PageRequest(pageNumber - 1, pageSize, sorts);
+        Page<MyCoupon> page = myCouponRepository.findAll(new Specification<MyCoupon>() {
+            public Predicate toPredicate(Root<MyCoupon> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+                List<Predicate> list = new ArrayList<Predicate>();
+
+                list.add(cb.equal(root.<String>get("accountId"), accountId));
+                list.add(cb.equal(root.<Integer>get("status"), status));
+                list.add(cb.equal(root.<Integer>get("activityId"), activityId));
+                Date now = new Date();
+                list.add(cb.greaterThan(root.get("validEndAt"), now.getTime()));
+
                 Predicate[] p = new Predicate[list.size()];
                 return cb.and(list.toArray(p));
             }
@@ -113,7 +155,19 @@ public class MyCouponController {
         MyCoupon myCoupon = couponService.sendCoupon(accountId, activityId, goodsId);
         return myCoupon;
     }
-
+    /**
+     * 活动3发券 20元优惠券
+     * @return MyCoupon
+     */
+    @RequestMapping(value = "/giveCoupon", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public MyCoupon sendCoupon_freedom(@RequestParam String openId) throws  ServiceUnavailableException {
+        String accountId = accountService.findAccountIdByOpenid(openId);
+        String couponName = "X1-" + WsdUtils.getRandomNumber(8);
+        Date time = DateUtil.addInteger(new Date(), Calendar.MONTH,1);
+        MyCoupon myCoupon = couponService.sendCoupon_freedom(accountId,"3",20.0,time,100.0,couponName,"20元优惠券");
+        return myCoupon;
+    }
     /**
      * 查询当前商品我可用的优惠券
      *

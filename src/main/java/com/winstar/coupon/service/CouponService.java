@@ -243,6 +243,10 @@ public class CouponService {
                logger.info("优惠券："+coupon.getId()+" 过期");
                list.remove(coupon);
            }
+            if(coupon.getActivityId().equals("3")){
+                logger.info("优惠券：不能使用类型3的券");
+                list.remove(coupon);
+            }
         }
         return list;
     }

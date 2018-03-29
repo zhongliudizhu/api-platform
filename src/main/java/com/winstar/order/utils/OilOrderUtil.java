@@ -75,7 +75,7 @@ public class OilOrderUtil {
             order.setPayPrice(Arith.sub(goods.getSaledPrice(),order.getDiscountAmount()));
             order.setCouponTempletId(goods.getCouponTempletId());
         }else if(activityType==3){
-            if(goods.getId().equals(Constant.ONE_BUY_ITEMID)){
+            if(goods.getId().equals(Constant.ONE_BUY_ITEMID9)||goods.getId().equals(Constant.ONE_BUY_ITEMID10)){
                 order.setPayPrice(goods.getSaledPrice());
             }else{
                 order.setPayPrice(Arith.mul(goods.getSaledPrice(),goods.getDisCount()));
@@ -95,7 +95,7 @@ public class OilOrderUtil {
         StringBuilder sb = new StringBuilder("");
         List<OilDetailVo> oils = StringFormatUtils.jsonStr2List(goods.getCouponDetail(),OilDetailVo.class);
         for (OilDetailVo vo:oils
-             ) {
+                ) {
             sb.append(vo.getPrice()).append("元x").append(vo.getNum()).append("张+");
         }
         sb.deleteCharAt(sb.length()-1);
@@ -128,7 +128,7 @@ public class OilOrderUtil {
 
         }else{
             for (OilOrder oilOrder:oilOrders
-                 ) {
+                    ) {
                 if(oilOrder.getPayStatus()==1){
                     return "1";
                 }
@@ -159,7 +159,7 @@ public class OilOrderUtil {
     * 20元油券今天已售数量
     * */
     private static List<OilOrder> todaySold(){
-       return ServiceManager.oilOrderRepository.findByIsAvailableAndItemIdAndCreateTime(Constant.IS_NORMAL_NORMAL,Constant.ONE_BUY_ITEMID,DateUtil.getDayBegin(),DateUtil.getDayEnd());
+        return ServiceManager.oilOrderRepository.findByIsAvailableAndItemIdAndCreateTime(Constant.IS_NORMAL_NORMAL,Constant.ONE_BUY_ITEMID,DateUtil.getDayBegin(),DateUtil.getDayEnd());
     }
 
     /*
@@ -187,8 +187,8 @@ public class OilOrderUtil {
     /*
     * 查询商品数量
     * */
-    public static Integer getSoldAmount(Double price, String activityId ){
-        return  ServiceManager.oilOrderRepository.findByItemTotalValue(price,activityId).size();
+    public static Integer getSoldAmount( String itemId ){
+        return  ServiceManager.oilOrderRepository.findByItemId(itemId, DateUtil.getMonthBegin(),DateUtil.getMonthEnd()).size();
     }
 
 

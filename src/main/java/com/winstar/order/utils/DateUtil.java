@@ -191,7 +191,7 @@ public class DateUtil {
      * @param amount 数值
      * @return 计算后日期
      */
-    private static Date addInteger(Date date, int dateType, int amount) {
+    public static Date addInteger(Date date, int dateType, int amount) {
         Date myDate = null;
         if (date != null) {
             Calendar calendar = Calendar.getInstance();
