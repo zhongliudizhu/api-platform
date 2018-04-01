@@ -76,7 +76,9 @@ public class OilOrderUtil {
             order.setCouponTempletId(goods.getCouponTempletId());
         }else if(activityType==3){
             if(goods.getId().equals(Constant.ONE_BUY_ITEMID9)||goods.getId().equals(Constant.ONE_BUY_ITEMID10)){
-                order.setPayPrice(goods.getSaledPrice());
+//                order.setPayPrice(goods.getSaledPrice());
+                order.setPayPrice(Arith.sub(goods.getSaledPrice(),order.getDiscountAmount()));
+                order.setCouponTempletId(goods.getCouponTempletId());
             }else{
                 order.setPayPrice(Arith.mul(goods.getSaledPrice(),goods.getDisCount()));
             }
