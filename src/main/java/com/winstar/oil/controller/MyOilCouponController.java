@@ -113,7 +113,21 @@ public class MyOilCouponController {
             resultMap.put("result", "该订单已发券！");
             return new ResponseEntity<>(resultMap,HttpStatus.OK);
         }
-        return oilCouponService.checkCard(orderId);
+        //如果订单状态是未支付，则修改为支付成功状态
+        if(oilOrder.getPayStatus()==0){
+            oilOrder.setBankSerialNo(orders.get(0).getQid());
+            oilOrder.setPayTime(orders.get(0).getUpdaedAt());
+            oilOrder.setPayType(orders.get(0).getPayWay());
+            oilOrder.setPayStatus(Integer.valueOf(orders.get(0).getState()));
+            oilOrder.setSendStatus(3);
+            oilOrder.setStatus(3);
+            /******************/
+            oilOrder.setIsAvailable("0");
+            oilOrder.setUpdateTime(orders.get(0).getUpdaedAt());
+            oilOrder.setFinishTime(orders.get(0).getUpdaedAt());
+            oilOrderRepository.save(oilOrder);
+        }
+        return oilCouponService.handlerSendOilCoupon(orderId, oilOrder.getItemId(), oilOrder.getAccountId());
     }
 
     @RequestMapping(value = "/myOilSetMeal",method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

@@ -94,6 +94,52 @@ public class SendOilCouponService {
     }
 
     /**
+     * 手动发券
+     * @throws Exception
+     */
+    @Synchronized
+    public ResponseEntity handlerSendOilCoupon(String orderNumber, String shopId, String accountId) throws Exception{
+        logger.info(orderNumber + "，手动执行油卡发送操作。。。");
+        long beginTime = System.currentTimeMillis();
+        logger.info("手动执行发券开始时间：" + beginTime);
+        logger.info("orderId:" + orderNumber + "，shopId:" + shopId + "，accountId:" + accountId);
+        if(WsdUtils.isEmpty(shopId)){
+            logger.info("shopId为空");
+            throw new MissingParameterException("shopId");
+        }
+        if(WsdUtils.isEmpty(orderNumber)){
+            logger.info("orderId为空");
+            throw new MissingParameterException("orderId");
+        }
+        if(WsdUtils.isEmpty(accountId)){
+            logger.info("accountId为空");
+            throw new MissingParameterException("accountId");
+        }
+        if(shopId.equals("8")){
+            Map<String,String> resultMap = Maps.newHashMap();
+            couponService.sendCoupon(accountId,"3","8");
+            logger.info("0.01元抢购发卡成功！");
+            resultMap.put("status","OK");
+            return new ResponseEntity<>(resultMap,HttpStatus.OK);
+        }
+        //判断是否发过券
+        List<MyOilCoupon> myOilCoupons = myOilCouponRepository.findByOrderIdOrderByUseStateAsc(orderNumber);
+        if(WsdUtils.isNotEmpty(myOilCoupons) && myOilCoupons.size() > 0){
+            logger.info(orderNumber + "订单号已经发过券了");
+            return new ResponseEntity<>(new HashMap<>(), HttpStatus.OK);
+        }
+        Goods shopInfo = shopService.findByGoodsId(shopId);
+        if(WsdUtils.isEmpty(shopInfo)){
+            throw new NotFoundException("shopInfo");
+        }
+        Map<String,String> resultMap = send(shopInfo,accountId,orderNumber);
+        long endTime = System.currentTimeMillis();
+        logger.info("执行发券结束时间：" + endTime);
+        logger.info("发券消耗时间：" + (endTime - beginTime) + "ms");
+        return new ResponseEntity<>(resultMap,HttpStatus.OK);
+    }
+
+    /**
      * 发卡
      */
     private Map<String,String> send(Goods goods,String accountId,String orderId) throws Exception{
