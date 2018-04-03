@@ -66,6 +66,18 @@ public class Activity {
      */
     private Integer payedNumber;
 
+    /**
+     * 禁售
+     */
+    @Transient
+    private Integer isSale;
+
+    /**
+     * 已领
+     */
+    @Transient
+    private Integer isGet;
+
     @Transient
     private List<Goods> goodsList;
 

@@ -189,8 +189,8 @@ public class OilOrderUtil {
     /*
     * 查询商品数量
     * */
-    public static Integer getSoldAmount( String itemId ){
-        return  ServiceManager.oilOrderRepository.findByItemId(itemId, DateUtil.getMonthBegin(),DateUtil.getMonthEnd()).size();
+    public static Integer getSoldAmount( String itemId ,Date startDate, Date endDate ){
+        return  ServiceManager.oilOrderRepository.findByItemId(itemId, startDate,endDate).size();
     }
 
 

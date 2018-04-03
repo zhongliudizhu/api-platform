@@ -2,9 +2,24 @@ package com.winstar.order.utils;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class DateUtil {
+
+    public static Date getInputDate(String input){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime ldt = LocalDateTime.parse(input, formatter);
+
+        ZoneId zoneId = ZoneId.systemDefault();
+        ZonedDateTime zdt = ldt.atZone(zoneId);
+        Date date = Date.from(zdt.toInstant());
+
+        return date;
+    }
 
     /**
      * 获取当天开始时间

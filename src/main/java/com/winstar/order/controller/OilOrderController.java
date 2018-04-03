@@ -1,6 +1,7 @@
 package com.winstar.order.controller;
 
 import com.winstar.cashier.construction.utils.Arith;
+
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.exception.MissingParameterException;
@@ -10,6 +11,7 @@ import com.winstar.exception.ServiceUnavailableException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.Constant;
+import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.OilOrderUtil;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
@@ -69,19 +71,25 @@ public class OilOrderController {
 
         //2.根据商品id 查询商品
         Goods goods = shopService.findByGoodsId(itemId);
-        logger.error("开始添加订单，goodsId：" + goods.getId());
+        logger.info("开始添加订单，goodsId：" + goods.getId());
         if(ObjectUtils.isEmpty(goods)){
             logger.error("查询商品失败，itemId：" + itemId);
             throw new NotFoundException("goods.order");
         }
 
-        Integer soldAmount =  OilOrderUtil.getSoldAmount(itemId);
+
 
         //3.根据活动id查询活动
         Activity activity = shopService.findByActivityId(activityId);
         if(ObjectUtils.isEmpty(activity)){
             logger.error("查询活动失败，activityId：" + activityId);
             throw new NotFoundException("activity.order");
+        }
+        Integer soldAmount = 0;
+        if(activity.getType()==3){
+           soldAmount =  OilOrderUtil.getSoldAmount(itemId, DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-06-30 23:59:59"));
+        }else{
+            soldAmount =  OilOrderUtil.getSoldAmount(itemId,  DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
         }
        /* // 活动一：判断每日每个商品只能前一百名购买
         if(activity.getType()==1){
@@ -103,6 +111,7 @@ public class OilOrderController {
             logger.error("商品"+goods.getId()+"已超售！" );
             throw new NotRuleException("soldOut.order");
         }
+
 
         if(StringUtils.isEmpty(goods.getCouponTempletId())&&!StringUtils.isEmpty(couponId)){
             throw new NotRuleException("canNotUseCoupon.order");
@@ -165,7 +174,7 @@ public class OilOrderController {
         oilOrder = OilOrderUtil.initOrder(oilOrder,goods,activity.getType());
         oilOrder = orderRepository.save(oilOrder);
         //6.生成订单
-        logger.error("添加订单成功，goodsId：" + goods.getId());
+        logger.info("添加订单成功，goodsId：" + goods.getId());
         return new ResponseEntity<>(oilOrder, HttpStatus.OK);
     }
 
