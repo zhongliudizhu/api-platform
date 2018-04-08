@@ -3,6 +3,7 @@ package com.winstar.coupon.repository;
 import com.winstar.coupon.entity.MyCoupon;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Date;
 import java.util.List;
@@ -27,5 +28,11 @@ public interface MyCouponRepository extends JpaRepository<MyCoupon,String> ,JpaS
 
     List<MyCoupon> findByActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(String activityId, Date startMonth, Date endMonth);
 
+    @Query("select f from MyCoupon f where f.accountId=?1 " +
+            "and f.status = ?2 " +
+            "and f.useRule <= ?3 " +
+            "and f.validEndAt >= ?4 " +
+            "and f.activityId not in ?5")
+    List<MyCoupon> findMyUsableCoupon(String accountId,Integer status,Double rules,Date nowTime,List<String > activity);
 
 }

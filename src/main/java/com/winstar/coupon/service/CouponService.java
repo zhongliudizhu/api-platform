@@ -5,6 +5,7 @@ import com.winstar.coupon.entity.CouponTemplate;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.CouponTemplateRepository;
 import com.winstar.coupon.repository.MyCouponRepository;
+import com.winstar.couponActivity.utils.ActivityIdEnum;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
@@ -24,6 +25,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 ;
@@ -236,18 +238,29 @@ public class CouponService {
      * @return MyCoupon
      */
     public List<MyCoupon> findMyUsableCoupon(String accountId, Double money) {
-        List<MyCoupon> list=myCouponRepository.findByAccountIdAndStatusAndUseRuleLessThanEqual(accountId, 0, money);
-        for(MyCoupon coupon:list){
-            Date now = new Date();
-           if(coupon.getValidEndAt().getTime()<now.getTime()){
-               logger.info("优惠券："+coupon.getId()+" 过期");
-               list.remove(coupon);
-           }
-            if(coupon.getActivityId().equals("3")){
-                logger.info("优惠券：不能使用类型3的券");
-                list.remove(coupon);
-            }
-        }
+//        List<MyCoupon> list=myCouponRepository.findByAccountIdAndStatusAndUseRuleLessThanEqual(accountId, 0, money);
+//        for(MyCoupon coupon:list){
+//            Date now = new Date();
+//           if(coupon.getValidEndAt().getTime()<now.getTime()){
+//               logger.info("优惠券："+coupon.getId()+" 过期");
+//               list.remove(coupon);
+//           }
+//            if(coupon.getActivityId().equals("3")
+//                    ||coupon.getActivityId().equals("101")
+//                    ||coupon.getActivityId().equals("102")
+//                    ||coupon.getActivityId().equals("103")
+//                    ||coupon.getActivityId().equals("104")){
+//                logger.info("优惠券：不能使用类型3、101、102、103、104的券");
+//                list.remove(coupon);
+//            }
+//        }
+//        List<MyCoupon> list = new LinkedList<>();
+        List<String> types = new LinkedList<>();
+        types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_3.getActivity()));
+        types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_101.getActivity()));
+        types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_103.getActivity()));
+        types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_104.getActivity()));
+        List<MyCoupon> list = myCouponRepository.findMyUsableCoupon(accountId,0,money, new Date(),types);
         return list;
     }
 

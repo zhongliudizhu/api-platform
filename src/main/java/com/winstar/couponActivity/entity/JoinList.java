@@ -6,16 +6,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.Date;
 
 /**
- * WhiteList
+ * CareJuanList
  *
  * @author: Big BB
- * @create 2018-03-16 14:10
+ * @create 2018-04-03 10:06
  * @DESCRIPTION:
  **/
 @Setter
@@ -23,8 +21,8 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "cbc_white_list")
-public class WhiteList {
+@Table(name = "cbc_join_list")
+public class JoinList {
     /**
      * 唯一标识
      */
@@ -33,20 +31,15 @@ public class WhiteList {
     @GeneratedValue(generator = "idGenerator")
     private String id;
 
-    private String driverLicense;
-
-    private String phoneNumber;
-
-    private String time;
-
-    private Integer type;
-
-    private String coupon;
-
-    private String sendTime;
-
-    private Integer sign;
-
     private String accountId;
 
+
+    private String plateNumber;
+
+    private Integer isVerify;
+
+    private Date createTime;
+
+    @Transient
+    private Integer number;
 }

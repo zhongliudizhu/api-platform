@@ -90,6 +90,10 @@ public class MyCouponController {
                     list.add(cb.equal(root.<Integer>get("status"), status));
                 }
                 list.add(cb.notEqual(root.<Integer>get("activityId"), "3"));
+                list.add(cb.notEqual(root.<Integer>get("activityId"), "101"));
+                list.add(cb.notEqual(root.<Integer>get("activityId"), "102"));
+                list.add(cb.notEqual(root.<Integer>get("activityId"), "103"));
+                list.add(cb.notEqual(root.<Integer>get("activityId"), "104"));
                 Predicate[] p = new Predicate[list.size()];
                 return cb.and(list.toArray(p));
             }
@@ -123,7 +127,7 @@ public class MyCouponController {
                 List<Predicate> list = new ArrayList<Predicate>();
 
                 list.add(cb.equal(root.<String>get("accountId"), accountId));
-                list.add(cb.equal(root.<Integer>get("status"), status));
+                list.add(cb.equal(root.<Integer>get("status"), 0));
                 list.add(cb.equal(root.<Integer>get("activityId"), activityId));
                 Date now = new Date();
                 list.add(cb.greaterThan(root.get("validEndAt"), now.getTime()));

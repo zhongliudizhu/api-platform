@@ -2,6 +2,7 @@ package com.winstar.order.utils;
 
 
 import com.winstar.cashier.construction.utils.Arith;
+import com.winstar.couponActivity.utils.ActivityIdEnum;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.vo.OilDetailVo;
 import com.winstar.shop.entity.Goods;
@@ -65,24 +66,29 @@ public class OilOrderUtil {
      */
     public static OilOrder initOrder(OilOrder order, Goods goods, Integer activityType){
 
-        if(activityType==1){
+        if(activityType == ActivityIdEnum.ACTIVITY_ID_1.getActivity()){
             if(goods.getId().equals(Constant.ONE_BUY_ITEMID)){
                 order.setPayPrice(goods.getSaledPrice());
             }else{
                 order.setPayPrice(Arith.mul(goods.getSaledPrice(),goods.getDisCount()));
             }
-        }else if(activityType==2){
+        }else if(activityType == ActivityIdEnum.ACTIVITY_ID_2.getActivity()){
             order.setPayPrice(Arith.sub(goods.getSaledPrice(),order.getDiscountAmount()));
             order.setCouponTempletId(goods.getCouponTempletId());
-        }else if(activityType==3){
+        }else if(activityType == ActivityIdEnum.ACTIVITY_ID_3.getActivity()){
             if(goods.getId().equals(Constant.ONE_BUY_ITEMID9)||goods.getId().equals(Constant.ONE_BUY_ITEMID10)){
-//                order.setPayPrice(goods.getSaledPrice());
                 order.setPayPrice(Arith.sub(goods.getSaledPrice(),order.getDiscountAmount()));
                 order.setCouponTempletId(goods.getCouponTempletId());
             }else{
                 order.setPayPrice(Arith.mul(goods.getSaledPrice(),goods.getDisCount()));
             }
+        }else if(activityType == ActivityIdEnum.ACTIVITY_ID_101.getActivity()
+                ||activityType == ActivityIdEnum.ACTIVITY_ID_103.getActivity()
+                ||activityType == ActivityIdEnum.ACTIVITY_ID_104.getActivity() ){
+            order.setPayPrice(Arith.sub(goods.getSaledPrice(),order.getDiscountAmount()));
+            order.setCouponTempletId(goods.getCouponTempletId());
         }
+
         order.setSalePrice(goods.getSaledPrice());
         order.setItemTotalValue(goods.getPrice());//油劵总面值
         order.setOilDetail(getOilDetail(goods));

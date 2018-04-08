@@ -13,6 +13,7 @@ import java.util.Map;
 @Component
 public class RequestServerUtil {
 
+
     public static ResponseEntity<String> getRequest(RestTemplate restTemplate, String url,Map uriVariables){
         HttpEntity<Map<String,Object>> entity = new HttpEntity<>(null,RequestServerUtil.getJsonHeaders());
         ResponseEntity<String> responseEntity =null;

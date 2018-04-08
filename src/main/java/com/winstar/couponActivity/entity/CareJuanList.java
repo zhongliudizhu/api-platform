@@ -10,12 +10,13 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Date;
 
 /**
- * WhiteList
+ * CareJuanList
  *
  * @author: Big BB
- * @create 2018-03-16 14:10
+ * @create 2018-04-03 10:06
  * @DESCRIPTION:
  **/
 @Setter
@@ -23,8 +24,8 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "cbc_white_list")
-public class WhiteList {
+@Table(name = "cbc_care_juan_list")
+public class CareJuanList {
     /**
      * 唯一标识
      */
@@ -33,20 +34,13 @@ public class WhiteList {
     @GeneratedValue(generator = "idGenerator")
     private String id;
 
-    private String driverLicense;
+    private String accountId;
+
+    private String name;
 
     private String phoneNumber;
 
-    private String time;
+    private String plateNumber;
 
-    private Integer type;
-
-    private String coupon;
-
-    private String sendTime;
-
-    private Integer sign;
-
-    private String accountId;
-
+    private Date creatTime;
 }
