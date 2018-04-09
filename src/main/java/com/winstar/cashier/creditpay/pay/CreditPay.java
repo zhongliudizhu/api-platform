@@ -1,11 +1,13 @@
 package com.winstar.cashier.creditpay.pay;
 
 import com.google.common.collect.Maps;
+import com.winstar.cashier.comm.EnumType;
 import com.winstar.cashier.construction.utils.AppUtils;
 import com.winstar.cashier.construction.utils.DateUtil;
 import com.winstar.cashier.construction.utils.PayConfPC;
 import com.winstar.cashier.construction.utils.PayUtils;
 import com.winstar.cashier.creditpay.config.CreditConfig;
+import com.winstar.cashier.creditpay.config.DebitConfig;
 import com.winstar.cashier.entity.PayLog;
 import com.winstar.cashier.entity.PayOrder;
 import com.winstar.cashier.repository.PayLogRepository;
@@ -63,22 +65,22 @@ public class CreditPay {
         payOrder.setOrderOwner(MapUtils.getString(payMap,"orderOwner"));
         payOrder.setSubPayWay(MapUtils.getString(payMap,"subPayWay"));
         payOrder = payOrderRepository.save(payOrder);
-        return payment(getReqMap(payOrder.getPayOrderNumber(),MapUtils.getString(payMap,"orderAmount")),MapUtils.getString(payMap,"orderNumber"),MapUtils.getString(payMap,"applyUrl"), payLogRepository);
+        return payment(getReqMap(payOrder.getPayOrderNumber(),MapUtils.getString(payMap,"orderAmount"),MapUtils.getString(payMap,"bankCode")),MapUtils.getString(payMap,"orderNumber"),MapUtils.getString(payMap,"applyUrl"), payLogRepository);
     }
 
-    private static Map<String, String> getReqMap(String orderId, String payment) {
+    private static Map<String, String> getReqMap(String orderId, String payment, String bankCode) {
         Map<String, String> reqMap = Maps.newHashMap();
-        reqMap.put("MERCHANTID", CreditConfig.merchantid);
-        reqMap.put("POSID", CreditConfig.posid);
-        reqMap.put("BRANCHID", CreditConfig.branchid);
+        reqMap.put("MERCHANTID", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.merchantid : DebitConfig.merchantid);
+        reqMap.put("POSID", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.posid : DebitConfig.posid);
+        reqMap.put("BRANCHID", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.branchid : DebitConfig.branchid);
         reqMap.put("ORDERID", orderId);
         reqMap.put("PAYMENT", payment);
-        reqMap.put("CURCODE", CreditConfig.curcode);
-        reqMap.put("TXCODE", CreditConfig.txcode);
+        reqMap.put("CURCODE", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.curcode : DebitConfig.curcode);
+        reqMap.put("TXCODE", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.txcode : DebitConfig.txcode);
         reqMap.put("REMARK1", "");
         reqMap.put("REMARK2", "");
         reqMap.put("TYPE", "1");
-        reqMap.put("PUB", CreditConfig.pubkey30);
+        reqMap.put("PUB", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.pubkey30 : DebitConfig.pubkey30);
         reqMap.put("GATEWAY", "");
         reqMap.put("CLIENTIP", profilesActive ? CreditConfig.clientIp_prod : CreditConfig.clientIp_test);
         reqMap.put("REGINFO", "");
