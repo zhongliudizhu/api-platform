@@ -93,6 +93,8 @@ public class WsdPayController {
             return PayMoney.pay(payMap,request,payOrderService,payLogService);
         }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr())){
             return CreditPay.pay(payMap,request,payOrderService,payLogService);
+        }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr())){
+            return CreditPay.pay(payMap,request,payOrderService,payLogService);
         }
         return null;
     }
@@ -128,7 +130,8 @@ public class WsdPayController {
                 && !bankCode.equals(EnumType.PAY_BANKCODE_UNIONPAY.valueStr())
                 && !bankCode.equals(EnumType.PAY_BANKCODE_ALIPAY.valueStr())
                 && !bankCode.equals(EnumType.PAY_BANKCODE_WECHAT.valueStr())
-                && !bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr())){
+                && !bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr())
+                && !bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr())){
             logger.info("bankCode 参数不合法!");
             PayLog log = new PayLog(orderNumber,"",ip,applyUrl,"","ERROR","支付方式不合法!");
             payLogService.save(log);
@@ -206,9 +209,12 @@ public class WsdPayController {
         }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION.valueStr())){
             payMap.put("payWay", EnumType.PAY_WAY_CONSTRUCTION.value());
             subBankCode = WsdUtils.isEmpty(subBankCode) ? EnumType.PAY_WAY_CONSTRUCTION.valueStr() : subBankCode;
-        }else{
+        }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr())){
             payMap.put("payWay", EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr());
             subBankCode = WsdUtils.isEmpty(subBankCode) ? EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr() : subBankCode;
+        }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr())){
+            payMap.put("payWay", EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr());
+            subBankCode = WsdUtils.isEmpty(subBankCode) ? EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr() : subBankCode;
         }
         return subBankCode;
     }
