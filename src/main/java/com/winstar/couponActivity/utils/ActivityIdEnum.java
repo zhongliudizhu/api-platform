@@ -17,11 +17,14 @@ public enum  ActivityIdEnum {
     ACTIVITY_ID_104("购车分期获赠加油优惠券-200元", 104),
 
 
-    ACTIVITY_status_0("未领取", 0),
-    ACTIVITY_status_1("领取", 1),
-    ACTIVITY_status_2("重复领取", 2),
-    ACTIVITY_status_3("已售罄", 3),
-    ACTIVITY_status_4("已使用", 4),
+    ACTIVITY_STATUS_0("未领取", 0),
+    ACTIVITY_STATUS_1("领取", 1),
+    ACTIVITY_STATUS_2("重复领取", 2),
+    ACTIVITY_STATUS_3("已售罄", 3),
+    ACTIVITY_STATUS_4("已使用", 4),
+
+    ACTIVITY_VERIFY_0("未领取千万加油补贴", 0),
+    ACTIVITY_VERIFY_1("已领取", 1),
 
     ACTIVITY_sign_1("纯信", 1),
     ACTIVITY_sign_2("纯储", 2),

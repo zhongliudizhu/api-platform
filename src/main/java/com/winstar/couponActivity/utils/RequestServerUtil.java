@@ -1,5 +1,7 @@
 package com.winstar.couponActivity.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
@@ -12,7 +14,7 @@ import java.util.Map;
  */
 @Component
 public class RequestServerUtil {
-
+    public static final Logger logger = LoggerFactory.getLogger(RequestServerUtil.class);
 
     public static ResponseEntity<String> getRequest(RestTemplate restTemplate, String url,Map uriVariables){
         HttpEntity<Map<String,Object>> entity = new HttpEntity<>(null,RequestServerUtil.getJsonHeaders());
@@ -20,7 +22,7 @@ public class RequestServerUtil {
         try {
           responseEntity = restTemplate.exchange(url, HttpMethod.GET,entity, String.class,uriVariables);
         } catch (Exception e){
-           e.printStackTrace();
+            logger.error("RequestServerUtil.getRequest.error");
         }
         return responseEntity;
     }
@@ -34,7 +36,7 @@ public class RequestServerUtil {
         try {
          responseEntity = restTemplate.exchange(orderUrl, HttpMethod.GET,entity, String.class,reqOrderMap);
         } catch (Exception e){
-            e.printStackTrace();
+            logger.error("RequestServerUtil.getRequestToken.error");
         }
         return responseEntity;
     }
@@ -48,7 +50,7 @@ public class RequestServerUtil {
         try {
             responseEntity = restTemplate.exchange(orderUrl, HttpMethod.GET,entity,String.class,reqOrderMap);
         } catch (Exception e){
-            e.printStackTrace();
+            logger.error("RequestServerUtil.getRequestFromToken.error");
         }
         return responseEntity;
     }

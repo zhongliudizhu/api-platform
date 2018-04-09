@@ -122,7 +122,7 @@ public class CouponActivityController {
         if(ObjectUtils.isEmpty(joinList)){
             joinList = new JoinList();
             joinList.setCreateTime(new Date());
-            joinList.setIsVerify(0);//0：为未领取千万加油补贴  1：已领取
+            joinList.setIsVerify(ActivityIdEnum.ACTIVITY_VERIFY_0.getActivity());//0：为未领取千万加油补贴  1：已领取
         }
 
         if(!plateNumber.equals(joinList.getPlateNumber())){
@@ -130,6 +130,26 @@ public class CouponActivityController {
             joinList.setAccountId(accountId.toString());
             joinList.setPlateNumber(plateNumber);
             joinList = joinListRepository.save(joinList);
+        }
+        int count = joinListRepository.findByCreateTimeLessThanEqual(joinList.getCreateTime()).size();
+        joinList.setNumber(10000 + count);
+        return joinList;
+    }
+
+    /**
+     * 参加手心活动
+     * @param request
+     * @return
+     * @throws NotFoundException
+     */
+    @RequestMapping(value = "joinVerify",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public JoinList JoinVerify(HttpServletRequest request) throws NotFoundException,NotRuleException{
+        Object accountId = request.getAttribute("accountId");
+
+        JoinList joinList = joinListRepository.findByAccountId(accountId.toString());
+        if(ObjectUtils.isEmpty(joinList)){
+            throw new NotFoundException("CouponActivity.notJoin");
         }
         int count = joinListRepository.findByCreateTimeLessThanEqual(joinList.getCreateTime()).size();
         joinList.setNumber(10000 + count);
@@ -145,7 +165,7 @@ public class CouponActivityController {
     @ResponseStatus(HttpStatus.OK)
     public List<Activity> findAll(HttpServletRequest request) throws NotFoundException{
         Object accountId = request.getAttribute("accountId");
-
+        logger.info("获取二期活动详情");
         List<Activity> list = getActivity(accountId);
         if(ObjectUtils.isEmpty(list)){
               throw new NotFoundException("couponActivity.notActivity");
@@ -173,16 +193,25 @@ public class CouponActivityController {
                     activity.getType()==ActivityIdEnum.ACTIVITY_ID_104.getActivity()){
                 soldAmount = myCouponRepository.findByActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(String.valueOf(activity.getType()),DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-06-30 23:59:59")).size();
                 List<MyCoupon>  myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(activity.getType()),DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-06-30 23:59:59"));
+                if(Integer.parseInt(couponActivity.getSendRule()) <= soldAmount){
+                    activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_3.getActivity());//0 ：未领取 1：已领取 3:售罄
+                }
                 if(!ObjectUtils.isEmpty(myCoupons)){
-                   activity.setIsGet(1);
+                   activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
+                    if(myCoupons.get(0).getStatus() == MyCouponEnum.COUPON_NOT_USE_1.getStatus()){
+                        activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_4.getActivity());
+                    }
                 }
             }else{
                 soldAmount =  myCouponRepository.findByActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(String.valueOf(activity.getType()),DateUtil.getMonthBegin(),DateUtil.getMonthEnd()).size();
                 List<MyCoupon>  myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(activity.getType()),DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
+                if(Integer.parseInt(couponActivity.getSendRule()) <= soldAmount){
+                    activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_3.getActivity());//0 ：未领取 1：已领取 3:售罄
+                }
                 if(!ObjectUtils.isEmpty(myCoupons)){
-                    activity.setIsGet(ActivityIdEnum.ACTIVITY_status_1.getActivity()); //0 ：未领取 1：已领取 3:售罄 4：已使用
+                    activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity()); //0 ：未领取 1：已领取 3:售罄 4：已使用
                     if(myCoupons.get(0).getStatus() == MyCouponEnum.COUPON_NOT_USE_1.getStatus()){
-                        activity.setIsGet(ActivityIdEnum.ACTIVITY_status_4.getActivity());
+                        activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_4.getActivity());
                     }
                 }
                 WhiteList whiteList = whiteListRepository.findByAccountIdAndTypeAndTime(accountId.toString(),ActivityIdEnum.ACTIVITY_ID_101.getActivity(),TimeUtil.getMonth());
@@ -191,10 +220,6 @@ public class CouponActivityController {
                 }else{
                     activity.setSign(whiteList.getSign());
                 }
-
-            }
-            if(Integer.parseInt(couponActivity.getSendRule()) <= soldAmount){
-                activity.setIsGet(3);//0 ：未领取 1：已领取 3:售罄
             }
             activity.setGoods("");//置空商品
         }
@@ -218,33 +243,38 @@ public class CouponActivityController {
 
         Object accountId = request.getAttribute("accountId");
         Account account = accountService.findById(accountId.toString());
-        logger.info("openid:"+account.getOpenid());
+        logger.info("openid:"+account.getOpenid()+"-----二期开始发券-----");
 
-        //白名单验证
-        List<WhiteList> whiteLists101 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTime(driverLicense,phoneNumber,ActivityIdEnum.ACTIVITY_ID_101.getActivity(),TimeUtil.getMonth());
-        List<WhiteList> whiteLists102 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTime(driverLicense.substring(10,18),phoneNumber,ActivityIdEnum.ACTIVITY_ID_102.getActivity(),TimeUtil.getMonth());
-        List<WhiteList> whiteLists103 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTime(driverLicense,phoneNumber,ActivityIdEnum.ACTIVITY_ID_103.getActivity(),TimeUtil.getMonth());
-        List<WhiteList> whiteLists104 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTime(driverLicense,phoneNumber,ActivityIdEnum.ACTIVITY_ID_104.getActivity(),TimeUtil.getMonth());
+        if(StringUtils.isEmpty(driverLicense)){
+            throw new NotRuleException("couponActivity.driverLicense");
+        }
+        if(StringUtils.isEmpty(phoneNumber)){
+            throw new NotRuleException("couponActivity.phoneNumber");
+        }
 
         //匹配车辆
         if(compareCars(plateNumber, driverLicense)){
             throw new NotRuleException("couponActivity.notMatchCars");
         }
-
+        //白名单验证 依次验证
+        List<WhiteList> whiteLists101 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTime(driverLicense,phoneNumber,ActivityIdEnum.ACTIVITY_ID_101.getActivity(),TimeUtil.getMonth());
+        List<WhiteList> whiteLists102 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTime(driverLicense.substring(10,18),phoneNumber,ActivityIdEnum.ACTIVITY_ID_102.getActivity(),TimeUtil.getMonth());
+        List<WhiteList> whiteLists103 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTime(driverLicense,phoneNumber,ActivityIdEnum.ACTIVITY_ID_103.getActivity(),TimeUtil.getMonth());
+        List<WhiteList> whiteLists104 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTime(driverLicense,phoneNumber,ActivityIdEnum.ACTIVITY_ID_104.getActivity(),TimeUtil.getMonth());
         if(ObjectUtils.isEmpty(whiteLists101)&&ObjectUtils.isEmpty(whiteLists102)
                 &&ObjectUtils.isEmpty(whiteLists103)&&ObjectUtils.isEmpty(whiteLists104)){
             throw new NotRuleException("couponActivity.notWhiteLists");
         }else{
             JoinList joinList = joinListRepository.findByAccountId(accountId.toString());
-            joinList.setIsVerify(1);
-            joinListRepository.save(joinList);
-
+            if(!ObjectUtils.isEmpty(joinList)){
+                joinList.setIsVerify(ActivityIdEnum.ACTIVITY_VERIFY_1.getActivity());
+                joinListRepository.save(joinList);
+            }
         }
-
         //识别纯储和纯信
         Integer sign = getSign(whiteLists101,whiteLists102);
 
-        //发券
+        //领取资格&发卷  4个活动依次发送（101和102为互斥，并要进行打标）
         List<VerifyResult> list = new LinkedList<>();
         if (!ObjectUtils.isEmpty(whiteLists101)){
             List<VerifyResult> getCouponLists101 = getCouponLists(accountId, whiteLists101,sign);
@@ -262,7 +292,7 @@ public class CouponActivityController {
             List<VerifyResult> getCouponLists104 = getCouponLists(accountId, whiteLists104,0);
             list.addAll(getCouponLists104);
         }
-
+        logger.info("openid:"+account.getOpenid()+"-----发券完毕-----");
         return list;
     }
 
@@ -280,38 +310,44 @@ public class CouponActivityController {
         for (WhiteList w : whiteLists) {
             VerifyResult verifyResult = new VerifyResult();
             List<MyCoupon> coupons = null;
-            if (w.getType() == ActivityIdEnum.ACTIVITY_ID_103.getActivity()
-                    ||w.getType() == ActivityIdEnum.ACTIVITY_ID_104.getActivity()){
+            //判断加油包是否被领取
+            // 103、104  整个活动期间
+            if (w.getType() == ActivityIdEnum.ACTIVITY_ID_103.getActivity()||w.getType() == ActivityIdEnum.ACTIVITY_ID_104.getActivity()){
                 activityId = w.getType();
                 coupons = myCouponRepository.findByAccountIdAndActivityId(accountId, String.valueOf(w.getType()));
+           //101、102 每个月
             }else{
                 activityId = ActivityIdEnum.ACTIVITY_ID_101.getActivity();
                 coupons = myCouponRepository.findByAccountIdAndActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(activityId), TimeUtil.getMonthStart(),TimeUtil.getMonthLast());
             }
-            verifyResult.setAccountId(accountId.toString());
-            verifyResult.setType(activityId);
-            verifyResult.setSign(sign);
-
+            //如果用户没有领取券，则发放加油补贴
             if(ObjectUtils.isEmpty(coupons)){
                 CouponActivity couponActivity = couponActivityRepository.findOne(String.valueOf(w.getType()));
                 String couponName = couponActivity.getDescription()+"-" + WsdUtils.getRandomNumber(8);
-                int size = myCouponRepository.findByActivityId(couponActivity.getId()).size();
+                int size = myCouponRepository.findByActivityId(couponActivity.getId()).size();//获取活动发券总量
                 if(size <= Integer.parseInt(couponActivity.getSendRule())){
+                    logger.info("accountId:"+accountId+"|"+activityId+"-----发券-----");
                     Date time = DateUtil.addInteger(new Date(), Calendar.MONTH,1);
                     couponService.sendCoupon_freedom(
                             accountId.toString(),String.valueOf(activityId),couponActivity.getAmount(),time,couponActivity.getUseRule(), couponName, couponActivity.getName());
+                    //回填白名单  1、打标储蓄&信用 2、记录发送时间
+                    logger.info("accountId:"+accountId+"|"+sign+"-----打标-----");
                     w.setSign(sign);
                     w.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
                     w.setAccountId(accountId.toString());
                     whiteListRepository.save(w);
 
-                    verifyResult.setIsGet(ActivityIdEnum.ACTIVITY_status_1.getActivity());//领取成功
+                    verifyResult.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());//领取成功
                 }else{
-                    verifyResult.setIsGet(ActivityIdEnum.ACTIVITY_status_3.getActivity());//售罄
+                    verifyResult.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_3.getActivity());//售罄
                 }
             }else{
-                verifyResult.setIsGet(ActivityIdEnum.ACTIVITY_status_2.getActivity());//重复领取
+                verifyResult.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_2.getActivity());//重复领取
             }
+            verifyResult.setAccountId(accountId.toString());
+            verifyResult.setType(activityId);
+            verifyResult.setSign(sign);
+            //返回领取结果
             verifyResults.add(verifyResult);
         }
         return verifyResults;
@@ -355,12 +391,13 @@ public class CouponActivityController {
             HttpServletRequest request, String name, String phoneNumber, String plateNumber
     ) throws NotRuleException, NotFoundException {
         Object accountId = request.getAttribute("accountId");
+        if(StringUtils.isEmpty(name)||StringUtils.isEmpty(phoneNumber)||StringUtils.isEmpty(plateNumber)){
+            throw new NotRuleException("getCareCoupons.params");
+        }
+
         CareJuanList  careJuanList = careJuanListRepository.findByAccountId(accountId.toString());
         if (!ObjectUtils.isEmpty(careJuanList)){
             throw new NotFoundException("getCareCoupons.isGet");
-        }
-        if(StringUtils.isEmpty(name)||StringUtils.isEmpty(phoneNumber)||StringUtils.isEmpty(plateNumber)){
-            throw new NotRuleException("getCareCoupons.params");
         }
 
         careJuanList = new CareJuanList();
@@ -413,6 +450,7 @@ public class CouponActivityController {
             HttpServletRequest request
     ) throws NotRuleException, NotFoundException {
         Object accountId = request.getAttribute("accountId");
+        logger.info("accountId:"+accountId+"-----爱车10元优惠券-----");
         List<LoveCarLog>  loveCarLogs= loveCarRepository.findByAccountId(accountId.toString());
         if (!ObjectUtils.isEmpty(loveCarLogs)){
             throw new NotRuleException("getLoveCarCoupons.isGet");
@@ -424,6 +462,7 @@ public class CouponActivityController {
         loveCarLog = loveCarRepository.save(loveCarLog);
 
         couponService.sendCoupon_freedom(accountId.toString(),"2",10.0,DateUtil.getInputDate("2018-06-30 23:59:59"),200.0, "人保滴滴：爱车大礼包10元优惠券", "人保滴滴：爱车大礼包10元优惠券");
+        logger.info("accountId:"+accountId+"-----爱车10元优惠券，发送完毕-----");
         return loveCarLog;
     }
 
