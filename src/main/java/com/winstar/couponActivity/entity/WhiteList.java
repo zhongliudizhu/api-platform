@@ -6,10 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * WhiteList
@@ -48,5 +45,8 @@ public class WhiteList {
     private Integer sign;
 
     private String accountId;
+
+    @Column(nullable=false,columnDefinition="INT default 0")
+    private Integer isGet;
 
 }

@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -251,25 +252,21 @@ public class CouponActivityController {
         if(StringUtils.isEmpty(phoneNumber)){
             throw new NotRuleException("couponActivity.phoneNumber");
         }
-
         //匹配车辆
         if(compareCars(plateNumber, driverLicense)){
+            logger.info("openid:"+account.getOpenid()+"-----二期开始发券[couponActivity.notMatchCars]");
             throw new NotRuleException("couponActivity.notMatchCars");
         }
         //白名单验证 依次验证
-        List<WhiteList> whiteLists101 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTime(driverLicense,phoneNumber,ActivityIdEnum.ACTIVITY_ID_101.getActivity(),TimeUtil.getMonth());
-        List<WhiteList> whiteLists102 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTime(driverLicense.substring(10,18),phoneNumber,ActivityIdEnum.ACTIVITY_ID_102.getActivity(),TimeUtil.getMonth());
-        List<WhiteList> whiteLists103 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTime(driverLicense,phoneNumber,ActivityIdEnum.ACTIVITY_ID_103.getActivity(),TimeUtil.getMonth());
-        List<WhiteList> whiteLists104 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTime(driverLicense,phoneNumber,ActivityIdEnum.ACTIVITY_ID_104.getActivity(),TimeUtil.getMonth());
+        List<WhiteList> whiteLists101 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTimeAndIsGet(driverLicense,phoneNumber,ActivityIdEnum.ACTIVITY_ID_101.getActivity(),TimeUtil.getMonth(),0);
+        List<WhiteList> whiteLists102 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTimeAndIsGet(driverLicense.substring(10,18),phoneNumber,ActivityIdEnum.ACTIVITY_ID_102.getActivity(),TimeUtil.getMonth(),0);
+        List<WhiteList> whiteLists103_104 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeNotAndTimeAndIsGet(driverLicense,phoneNumber,ActivityIdEnum.ACTIVITY_ID_101.getActivity(),TimeUtil.getMonth(),0);
         if(ObjectUtils.isEmpty(whiteLists101)&&ObjectUtils.isEmpty(whiteLists102)
-                &&ObjectUtils.isEmpty(whiteLists103)&&ObjectUtils.isEmpty(whiteLists104)){
+                &&ObjectUtils.isEmpty(whiteLists103_104)){
+            logger.info("openid:"+account.getOpenid()+"-----二期开始发券[couponActivity.notWhiteLists]");
             throw new NotRuleException("couponActivity.notWhiteLists");
         }else{
-            JoinList joinList = joinListRepository.findByAccountId(accountId.toString());
-            if(!ObjectUtils.isEmpty(joinList)){
-                joinList.setIsVerify(ActivityIdEnum.ACTIVITY_VERIFY_1.getActivity());
-                joinListRepository.save(joinList);
-            }
+            updateJoinList(accountId);//更新参加状态
         }
         //识别纯储和纯信
         Integer sign = getSign(whiteLists101,whiteLists102);
@@ -277,25 +274,50 @@ public class CouponActivityController {
         //领取资格&发卷  4个活动依次发送（101和102为互斥，并要进行打标）
         List<VerifyResult> list = new LinkedList<>();
         if (!ObjectUtils.isEmpty(whiteLists101)){
+            logger.info("openid:"+account.getOpenid()+"-----二期开始发券[101]");
             List<VerifyResult> getCouponLists101 = getCouponLists(accountId, whiteLists101,sign);
             list.addAll(getCouponLists101);
         }
         if(ObjectUtils.isEmpty(whiteLists101)&&!ObjectUtils.isEmpty(whiteLists102)){
+            logger.info("openid:"+account.getOpenid()+"-----二期开始发券[102]");
             List<VerifyResult> couponLists102 = getCouponLists(accountId, whiteLists102,sign);
             list.addAll(couponLists102);
         }
-        if (!ObjectUtils.isEmpty(whiteLists103)){
-            List<VerifyResult> getCouponLists103 = getCouponLists(accountId, whiteLists103,0);
+        if (!ObjectUtils.isEmpty(whiteLists103_104)){
+            logger.info("openid:"+account.getOpenid()+"-----二期开始发券[103/104]");
+            List<VerifyResult> getCouponLists103 = getCouponLists(accountId, whiteLists103_104,0);
             list.addAll(getCouponLists103);
-        }
-        if (!ObjectUtils.isEmpty(whiteLists104)){
-            List<VerifyResult> getCouponLists104 = getCouponLists(accountId, whiteLists104,0);
-            list.addAll(getCouponLists104);
         }
         logger.info("openid:"+account.getOpenid()+"-----发券完毕-----");
         return list;
     }
 
+    @Async
+    private  void  updateJoinList(Object accountId){
+        JoinList joinList = joinListRepository.findByAccountId(accountId.toString());
+        if(!ObjectUtils.isEmpty(joinList)){
+            joinList.setIsVerify(ActivityIdEnum.ACTIVITY_VERIFY_1.getActivity());
+            joinListRepository.save(joinList);
+        }
+    }
+    @Async
+    private  void  updateWhiteList(Object accountId,WhiteList w,Integer sign){
+        logger.info("accountId:"+accountId+"|"+sign+"-----打标-----");
+
+        w.setSign(sign);
+        w.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
+        w.setAccountId(accountId.toString());
+        if(sign == 3){
+            List<WhiteList> whiteLists102 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTimeAndIsGet(w.getDriverLicense().substring(10,18),w.getPhoneNumber(),ActivityIdEnum.ACTIVITY_ID_102.getActivity(),TimeUtil.getMonth(),0);
+            whiteLists102.get(0).setIsGet(1);
+            whiteLists102.get(0).setSign(sign);
+            whiteLists102.get(0).setAccountId(accountId.toString());
+            whiteLists102.get(0).setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
+            whiteListRepository.save( whiteLists102.get(0));
+        }
+        w.setIsGet(1);
+        whiteListRepository.save(w);
+    }
     /**
      * 发券
      * @param accountId
@@ -331,11 +353,7 @@ public class CouponActivityController {
                     couponService.sendCoupon_freedom(
                             accountId.toString(),String.valueOf(activityId),couponActivity.getAmount(),time,couponActivity.getUseRule(), couponName, couponActivity.getName());
                     //回填白名单  1、打标储蓄&信用 2、记录发送时间
-                    logger.info("accountId:"+accountId+"|"+sign+"-----打标-----");
-                    w.setSign(sign);
-                    w.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
-                    w.setAccountId(accountId.toString());
-                    whiteListRepository.save(w);
+                    updateWhiteList(accountId,w,sign);
 
                     verifyResult.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());//领取成功
                 }else{

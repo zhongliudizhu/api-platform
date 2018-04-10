@@ -16,7 +16,7 @@ import java.util.List;
 public interface WhiteListRepository extends JpaRepository<WhiteList,String>,JpaSpecificationExecutor<WhiteList> {
     List<WhiteList> findByDriverLicenseAndPhoneNumberAndTime(String driverLicense, String phoneNumber, String time);
 
-    List<WhiteList> findByDriverLicenseAndPhoneNumberAndTypeAndTime(String driverLicense, String phoneNumber, Integer type, String time);
-
-   WhiteList findByAccountIdAndTypeAndTime(String accountId, Integer type, String time);
+    List<WhiteList> findByDriverLicenseAndPhoneNumberAndTypeAndTimeAndIsGet(String driverLicense, String phoneNumber, Integer type, String time,Integer isGet);
+    List<WhiteList> findByDriverLicenseAndPhoneNumberAndTypeNotAndTimeAndIsGet(String driverLicense, String phoneNumber, Integer type, String time,Integer isGet);
+    WhiteList findByAccountIdAndTypeAndTime(String accountId, Integer type, String time);
 }
