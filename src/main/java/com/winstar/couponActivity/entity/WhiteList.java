@@ -48,4 +48,6 @@ public class WhiteList {
 
     private Integer isGet;
 
+    private String createTime;
+
 }
