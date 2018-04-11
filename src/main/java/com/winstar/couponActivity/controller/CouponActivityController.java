@@ -524,10 +524,11 @@ public class CouponActivityController {
             throw new NotFoundException("vehicleValue.not");
         }
         try {
-            if (!StringUtils.isEmpty(vehicleValue.getCdrq())){
+            if (StringUtils.isEmpty(vehicleValue.getCl())){
                 vehicleValue.setCl(TimeUtil.dayComparePrecise(TimeUtil.getStringToDate(vehicleValue.getCdrq()),new Date()));
+                vehicleValueRepository.save(vehicleValue);
             }
-        } catch (ParseException e) {
+        } catch (Exception e) {
             throw new NotRuleException("vehicleValue.getTime");
         }
 

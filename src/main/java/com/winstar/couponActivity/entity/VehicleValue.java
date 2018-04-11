@@ -21,7 +21,7 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "cbc_vehicle_value")
+@Table(name = "jh_id1_che")
 public class VehicleValue {
     /**
      * 唯一标识

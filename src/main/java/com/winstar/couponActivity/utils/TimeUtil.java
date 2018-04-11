@@ -21,9 +21,8 @@ public class TimeUtil {
 
 
      public static Date getStringToDate(String time) throws ParseException {
-         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-         Date date = sdf.parse("2014-10-20 11:27:08");
-         System.out.println(date);
+         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+         Date date = sdf.parse(time);
          return date;
      }
 
@@ -46,8 +45,8 @@ public class TimeUtil {
         int toYear = to.get(Calendar.YEAR);
         int toMonth = to.get(Calendar.MONTH);
         int toDay = to.get(Calendar.DAY_OF_MONTH);
-        int year = toYear  -  fromYear;
-        int month = toMonth  - fromMonth;
+        double  year = toYear  -  fromYear;
+        double  month = toMonth  - fromMonth;
         int day = toDay  - fromDay;
         DecimalFormat df = new DecimalFormat("######0.0");
         return df.format(year + month / 12);
