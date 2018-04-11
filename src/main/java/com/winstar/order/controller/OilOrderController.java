@@ -77,8 +77,6 @@ public class OilOrderController {
             throw new NotFoundException("goods.order");
         }
 
-
-
         //3.根据活动id查询活动
         Activity activity = shopService.findByActivityId(activityId);
         if(ObjectUtils.isEmpty(activity)){
@@ -111,7 +109,6 @@ public class OilOrderController {
             logger.error("商品"+goods.getId()+"已超售！" );
             throw new NotRuleException("soldOut.order");
         }
-
 
         if(StringUtils.isEmpty(goods.getCouponTempletId())&&!StringUtils.isEmpty(couponId)){
             throw new NotRuleException("canNotUseCoupon.order");

@@ -46,7 +46,6 @@ public class WhiteList {
 
     private String accountId;
 
-    @Column(nullable=false,columnDefinition="INT default 0")
     private Integer isGet;
 
 }

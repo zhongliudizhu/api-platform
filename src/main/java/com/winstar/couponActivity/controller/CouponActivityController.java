@@ -37,6 +37,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -70,6 +71,8 @@ public class CouponActivityController {
     LoveCarRepository loveCarRepository;
     @Autowired
     JoinListRepository joinListRepository;
+    @Autowired
+    VehicleValueRepository vehicleValueRepository;
     @Autowired
     RestTemplate restTemplate;
     @Autowired
@@ -300,6 +303,7 @@ public class CouponActivityController {
             joinListRepository.save(joinList);
         }
     }
+
     @Async
     private  void  updateWhiteList(Object accountId,WhiteList w,Integer sign){
         logger.info("accountId:"+accountId+"|"+sign+"-----打标-----");
@@ -318,6 +322,7 @@ public class CouponActivityController {
         w.setIsGet(1);
         whiteListRepository.save(w);
     }
+
     /**
      * 发券
      * @param accountId
@@ -504,6 +509,32 @@ public class CouponActivityController {
         }
         return flag;
     }
+
+    @RequestMapping(value = "/vehicleValue", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public VehicleValue  getVehicleValue(
+            HttpServletRequest request, String plateNumber
+    ) throws NotRuleException, NotFoundException {
+        Object accountId = request.getAttribute("accountId");
+        if(StringUtils.isEmpty(plateNumber)){
+          throw new NotRuleException("vehicleValue.plateNumber");
+        }
+        VehicleValue vehicleValue =  vehicleValueRepository.findByHphm(plateNumber);
+        if(ObjectUtils.isEmpty(vehicleValue)){
+            throw new NotFoundException("vehicleValue.not");
+        }
+        try {
+            if (!StringUtils.isEmpty(vehicleValue.getCdrq())){
+                vehicleValue.setCl(TimeUtil.dayComparePrecise(TimeUtil.getStringToDate(vehicleValue.getCdrq()),new Date()));
+            }
+        } catch (ParseException e) {
+            throw new NotRuleException("vehicleValue.getTime");
+        }
+
+        return vehicleValue;
+    }
+
+
 
     /**
      * 优驾行添加车辆比对六合一车辆

@@ -1,5 +1,6 @@
 package com.winstar.couponActivity.utils;
 
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
@@ -17,6 +18,40 @@ import java.util.GregorianCalendar;
  * @DESCRIPTION:
  **/
 public class TimeUtil {
+
+
+     public static Date getStringToDate(String time) throws ParseException {
+         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+         Date date = sdf.parse("2014-10-20 11:27:08");
+         System.out.println(date);
+         return date;
+     }
+
+
+    /**
+     * 计算2个日期之间相差的  相差多少年月日
+     * 比如：2011-02-02 到  2017-03-02 相差 6年，1个月，0天
+     * @param fromDate
+     * @param toDate
+     * @return
+     */
+    public static String  dayComparePrecise(Date fromDate,Date toDate){
+        Calendar  from  =  Calendar.getInstance();
+        from.setTime(fromDate);
+        Calendar  to  =  Calendar.getInstance();
+        to.setTime(toDate);
+        int fromYear = from.get(Calendar.YEAR);
+        int fromMonth = from.get(Calendar.MONTH);
+        int fromDay = from.get(Calendar.DAY_OF_MONTH);
+        int toYear = to.get(Calendar.YEAR);
+        int toMonth = to.get(Calendar.MONTH);
+        int toDay = to.get(Calendar.DAY_OF_MONTH);
+        int year = toYear  -  fromYear;
+        int month = toMonth  - fromMonth;
+        int day = toDay  - fromDay;
+        DecimalFormat df = new DecimalFormat("######0.0");
+        return df.format(year + month / 12);
+    }
 
     public static Date getMonthStart(){
         //规定返回日期格式

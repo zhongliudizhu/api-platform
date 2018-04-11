@@ -17,6 +17,8 @@ public interface WhiteListRepository extends JpaRepository<WhiteList,String>,Jpa
     List<WhiteList> findByDriverLicenseAndPhoneNumberAndTime(String driverLicense, String phoneNumber, String time);
 
     List<WhiteList> findByDriverLicenseAndPhoneNumberAndTypeAndTimeAndIsGet(String driverLicense, String phoneNumber, Integer type, String time,Integer isGet);
+
     List<WhiteList> findByDriverLicenseAndPhoneNumberAndTypeNotAndTimeAndIsGet(String driverLicense, String phoneNumber, Integer type, String time,Integer isGet);
+
     WhiteList findByAccountIdAndTypeAndTime(String accountId, Integer type, String time);
 }
