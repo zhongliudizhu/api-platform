@@ -66,6 +66,7 @@ public class WsdPayController {
         String bankCode = MapUtils.getString(payMap,"bankCode");
         String applyUrl = MapUtils.getString(payMap,"applyUrl");
         String ip = MapUtils.getString(payMap,"ip");
+        long beginTime = System.currentTimeMillis();
         OilOrder oilOrder = orderService.getOneOrder(orderNumber);
         if(WsdUtils.isEmpty(oilOrder)){
             throw new NotFoundException("orderNumber");
@@ -92,9 +93,15 @@ public class WsdPayController {
         }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION.valueStr())){
             return PayMoney.pay(payMap,request,payOrderService,payLogService);
         }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr())){
-            return CreditPay.pay(payMap,request,payOrderService,payLogService);
+            ResponseEntity entity = CreditPay.pay(payMap,request,payOrderService,payLogService);
+            long endTime = System.currentTimeMillis();
+            logger.info("信用卡整体消耗时间：" + (endTime - beginTime) + "ms");
+            return entity;
         }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr())){
-            return CreditPay.pay(payMap,request,payOrderService,payLogService);
+            ResponseEntity entity = CreditPay.pay(payMap,request,payOrderService,payLogService);
+            long endTime = System.currentTimeMillis();
+            logger.info("储蓄卡整体消耗时间：" + (endTime - beginTime) + "ms");
+            return entity;
         }
         return null;
     }

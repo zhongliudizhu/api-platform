@@ -43,6 +43,7 @@ public class CreditPay {
     private static final Logger logger = LoggerFactory.getLogger(CreditPay.class);
 
     public static ResponseEntity pay(Map<String,Object> payMap,HttpServletRequest request, PayOrderRepository payOrderRepository, PayLogRepository payLogRepository){
+        long beginTime = System.currentTimeMillis();
         PayOrder payOrder = new PayOrder();
         payOrder.setOrderNumber(MapUtils.getString(payMap,"orderNumber"));
         payOrder.setPayOrderNumber(DateUtil.currentTimeToSS() + WsdUtils.getRandomNumber(8));
@@ -65,6 +66,8 @@ public class CreditPay {
         payOrder.setOrderOwner(MapUtils.getString(payMap,"orderOwner"));
         payOrder.setSubPayWay(MapUtils.getString(payMap,"subPayWay"));
         payOrder = payOrderRepository.save(payOrder);
+        long endTime = System.currentTimeMillis();
+        logger.info("生成支付订单消耗时间：" + (endTime - beginTime) + "ms");
         return payment(getReqMap(payOrder.getPayOrderNumber(),MapUtils.getString(payMap,"orderAmount"),MapUtils.getString(payMap,"bankCode")),MapUtils.getString(payMap,"orderNumber"),MapUtils.getString(payMap,"applyUrl"), payLogRepository);
     }
 
@@ -97,6 +100,7 @@ public class CreditPay {
      * @return ResponseEntity
      */
     private static ResponseEntity payment(Map<String, String> reqMap, String orderNumber, String applyUrl, PayLogRepository payLogRepository){
+        long beginTime = System.currentTimeMillis();
         //定义接口参数
         StringBuilder formbuffer = new StringBuilder();
         String[] paramKeys = new String[]{
@@ -119,6 +123,8 @@ public class CreditPay {
         //返回Map集合数据
         Map<String,String> retmap = Maps.newHashMap();
         retmap.put("formStr", formbuffer.toString());
+        long endTime = System.currentTimeMillis();
+        logger.info("生成表单时间：" + (endTime - beginTime) + "ms");
         return new ResponseEntity<>(retmap, HttpStatus.OK);
     }
 
