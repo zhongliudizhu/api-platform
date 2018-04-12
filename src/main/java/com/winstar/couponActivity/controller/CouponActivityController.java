@@ -96,12 +96,12 @@ public class CouponActivityController {
         Object accountId = request.getAttribute("accountId");
         Account account = accountService.findById(accountId.toString());
         logger.info("openid:"+account.getOpenid());
-        String token =  reqAccount(account.getOpenid(),"1");//获取优驾行Token
+        String token =  CouponActivityUtil.reqAccount(account.getOpenid(),"1",restTemplate,getTokenInfoUrl,objectMapper);//获取优驾行Token
         if(StringUtils.isEmpty(token)){
             throw  new NotFoundException("couponActivity.notYJXToken");
         }
         logger.info("token:"+token);
-        List<String> localCars = reqCars(token);//获取添加车辆
+        List<String> localCars = CouponActivityUtil.reqCars(token,restTemplate,getLocalCarsUrl,objectMapper);//获取添加车辆
         if (ObjectUtils.isEmpty(localCars)){
            throw  new NotFoundException("couponActivity.notLocalCars");
         }
@@ -168,12 +168,15 @@ public class CouponActivityController {
     @RequestMapping(value = "/findAll",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<Activity> findAll(HttpServletRequest request) throws NotFoundException{
+        long startTime = new Date().getTime();
         Object accountId = request.getAttribute("accountId");
         logger.info("获取二期活动详情");
         List<Activity> list = getActivity(accountId);
         if(ObjectUtils.isEmpty(list)){
               throw new NotFoundException("couponActivity.notActivity");
         }
+        long endTime = new Date().getTime();
+        logger.info("获取二期活动详情耗时: "+ (endTime -startTime)+"ms");
         return list;
     }
 
@@ -244,7 +247,7 @@ public class CouponActivityController {
     public List<VerifyResult>   giveCoupons(
             HttpServletRequest request, String driverLicense, String phoneNumber, String plateNumber
     ) throws NotRuleException, NotFoundException {
-
+        long startTime = new Date().getTime();
         Object accountId = request.getAttribute("accountId");
         Account account = accountService.findById(accountId.toString());
         logger.info("openid:"+account.getOpenid()+"-----二期开始发券-----");
@@ -256,7 +259,7 @@ public class CouponActivityController {
             throw new NotRuleException("couponActivity.phoneNumber");
         }
         //匹配车辆
-        if(compareCars(plateNumber, driverLicense)){
+        if(CouponActivityUtil.compareCars(plateNumber, driverLicense,restTemplate,getSixInOneCarsUrl,objectMapper)){
             logger.info("openid:"+account.getOpenid()+"-----二期开始发券[couponActivity.notMatchCars]");
             throw new NotRuleException("couponActivity.notMatchCars");
         }
@@ -272,7 +275,7 @@ public class CouponActivityController {
             updateJoinList(accountId);//更新参加状态
         }
         //识别纯储和纯信
-        Integer sign = getSign(whiteLists101,whiteLists102);
+        Integer sign = CouponActivityUtil.getSign(whiteLists101,whiteLists102);
 
         //领取资格&发卷  4个活动依次发送（101和102为互斥，并要进行打标）
         List<VerifyResult> list = new LinkedList<>();
@@ -291,36 +294,9 @@ public class CouponActivityController {
             List<VerifyResult> getCouponLists103 = getCouponLists(accountId, whiteLists103_104,0);
             list.addAll(getCouponLists103);
         }
-        logger.info("openid:"+account.getOpenid()+"-----发券完毕-----");
+        long endTime = new Date().getTime();
+        logger.info("openid:"+account.getOpenid()+"-----发券完毕----- |"+ (endTime -startTime)+"ms");
         return list;
-    }
-
-    @Async
-    private  void  updateJoinList(Object accountId){
-        JoinList joinList = joinListRepository.findByAccountId(accountId.toString());
-        if(!ObjectUtils.isEmpty(joinList)){
-            joinList.setIsVerify(ActivityIdEnum.ACTIVITY_VERIFY_1.getActivity());
-            joinListRepository.save(joinList);
-        }
-    }
-
-    @Async
-    private  void  updateWhiteList(Object accountId,WhiteList w,Integer sign){
-        logger.info("accountId:"+accountId+"|"+sign+"-----打标-----");
-
-        w.setSign(sign);
-        w.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
-        w.setAccountId(accountId.toString());
-        if(sign == 3){
-            List<WhiteList> whiteLists102 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTimeAndIsGet(w.getDriverLicense().substring(10,18),w.getPhoneNumber(),ActivityIdEnum.ACTIVITY_ID_102.getActivity(),TimeUtil.getMonth(),0);
-            whiteLists102.get(0).setIsGet(1);
-            whiteLists102.get(0).setSign(sign);
-            whiteLists102.get(0).setAccountId(accountId.toString());
-            whiteLists102.get(0).setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
-            whiteListRepository.save( whiteLists102.get(0));
-        }
-        w.setIsGet(1);
-        whiteListRepository.save(w);
     }
 
     /**
@@ -375,29 +351,6 @@ public class CouponActivityController {
         }
         return verifyResults;
     }
-
-    /**
-     * 识别纯信、纯储、交叉
-     * @param whiteLists101
-     * @param whiteLists102
-     * @return
-     */
-    private Integer getSign(List<WhiteList> whiteLists101, List<WhiteList> whiteLists102){
-        Integer sign = 0;
-
-        if (!ObjectUtils.isEmpty(whiteLists101)&&ObjectUtils.isEmpty(whiteLists102)){
-            sign = ActivityIdEnum.ACTIVITY_sign_1.getActivity(); //纯信
-        }
-        if(ObjectUtils.isEmpty(whiteLists101)&&!ObjectUtils.isEmpty(whiteLists102)){
-            sign = ActivityIdEnum.ACTIVITY_sign_2.getActivity(); //纯储
-        }
-        if(!ObjectUtils.isEmpty(whiteLists101)&&!ObjectUtils.isEmpty(whiteLists102)){
-            sign = ActivityIdEnum.ACTIVITY_sign_3.getActivity(); //交叉
-        }
-       return sign;
-    }
-
-
     /**
      *  领取汽车养护券
      * @param request
@@ -534,110 +487,31 @@ public class CouponActivityController {
 
         return vehicleValue;
     }
-
-
-
-    /**
-     * 优驾行添加车辆比对六合一车辆
-     *
-     * @param driverLicense
-     * @return
-     */
-    private boolean compareCars(String plateNumber, String driverLicense){
-        boolean flag = true;
-
-        List<String> sixInOneCars  = reqSixInOneCars(driverLicense);//获取本人名下车辆
-        if(StringUtils.isEmpty(sixInOneCars)){
-            return true;
+    @Async
+    private  void  updateJoinList(Object accountId){
+        JoinList joinList = joinListRepository.findByAccountId(accountId.toString());
+        if(!ObjectUtils.isEmpty(joinList)){
+            joinList.setIsVerify(ActivityIdEnum.ACTIVITY_VERIFY_1.getActivity());
+            joinListRepository.save(joinList);
         }
-        if(sixInOneCars.contains(plateNumber)){
-            flag = false;
-        }
-        return flag;
     }
 
-    /**
-     * 获取优驾行token
-     */
-    private String reqAccount(String openid, String type) {
-        Map<String ,String> urlVariables = new HashMap<String ,String>();
-        urlVariables.put("userId", openid);
-        urlVariables.put("type", type);
-        ResponseEntity<String> tokenBody = RequestServerUtil.getRequest(restTemplate,getTokenInfoUrl, urlVariables);
-        if(tokenBody.getStatusCode().value()==200){
-            String accountContent = tokenBody.getBody().toString();
-            JsonNode tokenNodeContentNode = null;
-            try {
-                tokenNodeContentNode = objectMapper.readTree(accountContent);
-            } catch (IOException e) {
-                return null;
-            }
-            JsonNode tokenNode = tokenNodeContentNode.path("token");
+    @Async
+    private  void  updateWhiteList(Object accountId,WhiteList w,Integer sign){
+        logger.info("accountId:"+accountId+"|"+sign+"-----打标-----");
 
-            return tokenNode.textValue();
+        w.setSign(sign);
+        w.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
+        w.setAccountId(accountId.toString());
+        if(sign == 3){
+            List<WhiteList> whiteLists102 = whiteListRepository.findByDriverLicenseAndPhoneNumberAndTypeAndTimeAndIsGet(w.getDriverLicense().substring(10,18),w.getPhoneNumber(),ActivityIdEnum.ACTIVITY_ID_102.getActivity(),TimeUtil.getMonth(),0);
+            whiteLists102.get(0).setIsGet(1);
+            whiteLists102.get(0).setSign(sign);
+            whiteLists102.get(0).setAccountId(accountId.toString());
+            whiteLists102.get(0).setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
+            whiteListRepository.save( whiteLists102.get(0));
         }
-        return null;
-    }
-
-    /**
-     * 获取添加车辆
-     */
-    private  List<String> reqCars(String token) {
-        if (StringUtils.isEmpty(token)) {
-            return null;
-        }
-        Map<String, Object> reqOrderMap = new HashMap<>();
-
-        List<String> carVos = new LinkedList<>();
-        ResponseEntity<String> responseCars = RequestServerUtil.getRequestToken(restTemplate,getLocalCarsUrl,reqOrderMap,token);
-        try {
-            if(responseCars.getStatusCode().value()==200){
-                String carsContent = responseCars.getBody().toString();
-                JsonNode carsContentNode = objectMapper.readTree(carsContent);
-                JsonNode carNode = carsContentNode.path("objData");
-                Iterator<JsonNode> iterator = carNode.elements();
-                while (iterator.hasNext()) {
-                    JsonNode result = iterator.next();
-                    JsonNode resultNode = objectMapper.readTree(result.toString());
-                    carVos.add(resultNode.path("plateNumber").textValue().toString());
-                }
-            }
-        } catch (Exception e) {
-            return null;
-        }
-        return carVos;
-    }
-
-    /**
-     * 获取用户名下的车辆
-     * @param driverLicense
-     * @return
-     */
-    private  List<String> reqSixInOneCars(String driverLicense) {
-        if (StringUtils.isEmpty(driverLicense)) {
-            return null;
-        }
-        Map<String, String> reqOrderMap = new HashMap<>();
-        reqOrderMap.put("certificateNumber",driverLicense);
-        reqOrderMap.put("certificateType","A");
-        String token_id = "2b254bec-dd48-11e6-81f7-9457a5545c84";
-        List<String> carVos = new LinkedList<>();
-
-        try {
-            ResponseEntity<String> responseCars = RequestServerUtil.getRequestFromToken(restTemplate,getSixInOneCarsUrl,reqOrderMap,token_id);
-            if(responseCars.getStatusCode().value()==200){
-                String carsContent = responseCars.getBody().toString();
-                JsonNode carsContentNode  = objectMapper.readTree(carsContent);
-                Iterator<JsonNode> iterator = carsContentNode.elements();
-                while (iterator.hasNext()) {
-                    JsonNode result = iterator.next();
-                    JsonNode resultNode = objectMapper.readTree(result.toString());
-                    carVos.add(resultNode.path("number").textValue().toString());
-                }
-            }
-        } catch (IOException e) {
-            return null;
-        }
-        return carVos;
+        w.setIsGet(1);
+        whiteListRepository.save(w);
     }
 }

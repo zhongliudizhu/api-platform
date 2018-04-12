@@ -11,6 +11,7 @@ public class ValuationParam {
     private String regDate;
     private String mile;
     private String zone;
+    private Integer price;
 
     public String getModelId() {
         return modelId;
@@ -50,5 +51,13 @@ public class ValuationParam {
 
     public void setPlateNumber(String plateNumber) {
         this.plateNumber = plateNumber;
+    }
+
+    public Integer getPrice() {
+        return price;
+    }
+
+    public void setPrice(Integer price) {
+        this.price = price;
     }
 }

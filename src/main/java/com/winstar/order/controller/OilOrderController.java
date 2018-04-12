@@ -68,7 +68,7 @@ public class OilOrderController {
         String accountId = accountService.getAccountId(request);
         Account account = accountService.findById(accountId);
         String serialNumber = OilOrderUtil.getSerialNumber();
-
+         long startTime = System.currentTimeMillis();
         //2.根据商品id 查询商品
         Goods goods = shopService.findByGoodsId(itemId);
         logger.info("开始添加订单，goodsId：" + goods.getId());
@@ -171,7 +171,8 @@ public class OilOrderController {
         oilOrder = OilOrderUtil.initOrder(oilOrder,goods,activity.getType());
         oilOrder = orderRepository.save(oilOrder);
         //6.生成订单
-        logger.info("添加订单成功，goodsId：" + goods.getId());
+        long endTime = System.currentTimeMillis();
+        logger.info("添加订单成功，goodsId：" + goods.getId()+"|总用时: "+(endTime-startTime));
         return new ResponseEntity<>(oilOrder, HttpStatus.OK);
     }
 
