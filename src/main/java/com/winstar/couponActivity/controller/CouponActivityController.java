@@ -375,7 +375,10 @@ public class CouponActivityController {
         if (!ObjectUtils.isEmpty(careJuanList)){
             throw new NotFoundException("getCareCoupons.isGet");
         }
-
+        Integer careJuanListSzie = careJuanListRepository.findByCreatTime(DateUtil.getDayBegin(),DateUtil.getDayEnd()).size();
+        if(careJuanListSzie >= 40){
+            throw new NotRuleException("getCareCoupons.isOut");
+        }
         careJuanList = new CareJuanList();
         careJuanList.setAccountId(accountId.toString());
         careJuanList.setName(name);
@@ -409,6 +412,10 @@ public class CouponActivityController {
         CareJuanList  getCareJuanList = careJuanListRepository.findByAccountId(accountId.toString());
         if (!ObjectUtils.isEmpty(getCareJuanList)){
             flag = true;
+        }
+        Integer careJuanListSzie = careJuanListRepository.findByCreatTime(DateUtil.getDayBegin(),DateUtil.getDayEnd()).size();
+        if(careJuanListSzie >= 40){
+            throw new NotRuleException("getCareCoupons.isOut");
         }
         return flag;
     }
