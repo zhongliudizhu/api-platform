@@ -4,6 +4,7 @@ import com.winstar.cashier.construction.utils.Arith;
 
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.service.CouponService;
+import com.winstar.couponActivity.utils.ActivityIdEnum;
 import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
@@ -98,6 +99,17 @@ public class OilOrderController {
         if(activity.getType()==1 && !StringUtils.isEmpty(couponId)){
             logger.error("只有活动2和3能使用优惠券！" );
             throw new NotRuleException("canNotUseCoupon.order");
+        }
+
+        //验证特价商品有没有资格
+        if(activity.getType()== ActivityIdEnum.ACTIVITY_ID_101.getActivity()
+                ||activity.getType()== ActivityIdEnum.ACTIVITY_ID_102.getActivity()
+                ||activity.getType()== ActivityIdEnum.ACTIVITY_ID_103.getActivity()
+                ||activity.getType()== ActivityIdEnum.ACTIVITY_ID_104.getActivity()
+                ||activity.getType()== ActivityIdEnum.ACTIVITY_ID_3.getActivity()){
+           if(StringUtils.isEmpty(couponId)){
+               throw new NotRuleException("notAbility.order");
+           }
         }
 
         if(goods.getIsSale() == 1){
