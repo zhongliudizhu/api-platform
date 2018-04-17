@@ -22,12 +22,21 @@ public class CouponActivityUtil {
 
     /**
      * 识别纯信、纯储、交叉
-     * @param whiteLists101
-     * @param whiteLists102
      * @return
      */
-    public static Integer getSign(List<WhiteList> whiteLists101, List<WhiteList> whiteLists102){
+    public static Integer getSign(List<WhiteList> whiteLists){
         Integer sign = 0;
+        WhiteList whiteLists101 = null;
+        WhiteList whiteLists102 = null;
+
+        for (WhiteList whiteList : whiteLists) {
+            if (whiteList.getType() == 101 ){
+                whiteLists101 = whiteList;
+            }
+            if(whiteList.getType() == 102){
+                whiteLists102 = whiteList;
+            }
+        }
 
         if (!ObjectUtils.isEmpty(whiteLists101)&&ObjectUtils.isEmpty(whiteLists102)){
             sign = ActivityIdEnum.ACTIVITY_sign_1.getActivity(); //纯信
