@@ -8,14 +8,16 @@ import com.winstar.couponActivity.vo.CarCondition;
 import com.winstar.couponActivity.vo.recentDeal;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,26 +29,61 @@ public class ValuationReport {
 
 
 
-    //获取汽车历史价格趋势
-    public  String getCarHistoricalPrice(String modelId,String zone,String regDate,String mile) throws Exception {
+    //获取汽车未来价格趋势（按月份）
+    public static String getCarHistoricalPrice(String modelId,String zone,String regDate,String mile,RestTemplate restTemplate) throws Exception {
 
-        StringBuilder json = new StringBuilder();
+        String getCarHistoricalPrice = "";
         String url="https://api.che300.com/service/common/eval?oper=getMonthResidualTrend&modelId="+modelId+"&zone="+zone+"&regDate="+regDate+"&mile="+mile+"&token=27e73d6efa5df6544ab4e3fe714e957a";
-
-        return   requestURLUtil(url);
+        Map<String ,Object> urlVariables = new HashMap<String ,Object>();
+        ResponseEntity<String> StringBody = RequestServerUtil.getRequest(restTemplate,url,urlVariables);
+        if(StringBody.getStatusCode().value()==200){
+            getCarHistoricalPrice = StringBody.getBody().toString();
+        }
+        return   getCarHistoricalPrice;
     }
-
-    //获取汽车未来价格趋势预测
-    public  String getCarFuturePrice(String modelId,String zone,String regDate,String mile){
+    //获取汽车未来价格趋势预测（按年）
+    public static String getCarFuturePrice(String modelId,String zone,String regDate,String mile,RestTemplate restTemplate){
 
         //示例
         //https://api.che300.com/service/common/eval?oper=getUsedCarResidualAnalysis&modelId=1&zone=11&regDate=2016-07&mile=0.5&token=
-        StringBuilder json = new StringBuilder();
+        String getCarFuturePrice = "";
         String url="https://api.che300.com/service/common/eval?oper=getUsedCarResidualAnalysis&modelId="+modelId+"&zone="+zone+"&regDate="+regDate+"&mile="+mile+"&token=&token=27e73d6efa5df6544ab4e3fe714e957a";
-
-        return   requestURLUtil(url);
+        Map<String ,Object> urlVariables = new HashMap<String ,Object>();
+        ResponseEntity<String> StringBody = RequestServerUtil.getRequest(restTemplate,url,urlVariables);
+        if(StringBody.getStatusCode().value()==200){
+            getCarFuturePrice = StringBody.getBody().toString();
+        }
+        return   getCarFuturePrice;
     }
 
+    //获取汽车详细配置
+    public static String getModelParameters(String modelId,RestTemplate restTemplate){
+
+        //示例
+        //https://api.che300.com/service/common/eval?oper=getUsedCarResidualAnalysis&modelId=1&zone=11&regDate=2016-07&mile=0.5&token=
+        String getCarFuturePrice = "";
+        String url="http://api.che300.com/service/getModelParameters?modelId="+modelId+"&token=&token=27e73d6efa5df6544ab4e3fe714e957a";
+        Map<String ,Object> urlVariables = new HashMap<String ,Object>();
+        ResponseEntity<String> StringBody = RequestServerUtil.getRequest(restTemplate,url,urlVariables);
+        if(StringBody.getStatusCode().value()==200){
+            getCarFuturePrice = StringBody.getBody().toString();
+        }
+        return   getCarFuturePrice;
+    }
+    //获取汽车未来价格趋势预测（按年）
+    public static String getUsedCarPrice(String modelId,String zone,String regDate,String mile,RestTemplate restTemplate){
+
+        //示例
+        //https://api.che300.com/service/common/eval?oper=getUsedCarResidualAnalysis&modelId=1&zone=11&regDate=2016-07&mile=0.5&token=
+        String getUsedCarPrice = "";
+        String url="http://testapi.che300.com/service/getUsedCarPrice?&modelId="+modelId+"&zone="+zone+"&regDate="+regDate+"&mile="+mile+"&token=&token=2d59efa689a9c6a7d99913a28a633410";
+        Map<String ,Object> urlVariables = new HashMap<String ,Object>();
+        ResponseEntity<String> StringBody = RequestServerUtil.getRequest(restTemplate,url,urlVariables);
+        if(StringBody.getStatusCode().value()==200){
+            getUsedCarPrice = StringBody.getBody().toString();
+        }
+        return   getUsedCarPrice;
+    }
 
     //获取汽车所有信息
     public  String getCarNews(String modelId,String zone,String regDate,String mile) throws Exception {
@@ -81,9 +118,9 @@ public class ValuationReport {
             //获取汽车成交记录 json  数据
             CarDealRecord =c.getCarDealRecord(URL);
             //获取汽车历史价格趋势 json  数据
-            CarHistoricalPrice= c.getCarHistoricalPrice(modelId,zone,regDate,mile);
+//            CarHistoricalPrice= c.getCarHistoricalPrice(modelId,zone,regDate,mile);
             //获取汽车未来价格趋势预测  json  数据
-            CarFuturePrice=c.getCarFuturePrice(modelId,zone,regDate,mile);
+//            CarFuturePrice=c.getCarFuturePrice(modelId,zone,regDate,mile,restTemplate);
 
         }catch (JSONException e) {
             e.printStackTrace();

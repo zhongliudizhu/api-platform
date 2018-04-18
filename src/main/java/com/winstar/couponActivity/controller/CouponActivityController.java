@@ -9,7 +9,10 @@ import com.winstar.coupon.util.MyCouponEnum;
 import com.winstar.couponActivity.entity.*;
 import com.winstar.couponActivity.repository.*;
 import com.winstar.couponActivity.utils.*;
+import com.winstar.couponActivity.vo.QueryLogParam;
+import com.winstar.couponActivity.vo.SaleVehicleRecordParam;
 import com.winstar.couponActivity.vo.VerifyResult;
+import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 
@@ -29,10 +32,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
@@ -73,6 +73,9 @@ public class CouponActivityController {
     JoinListRepository joinListRepository;
     @Autowired
     VehicleValueRepository vehicleValueRepository;
+    @Autowired
+    QueryLogRepository queryLogRepository;
+
     @Autowired
     RestTemplate restTemplate;
     @Autowired
@@ -279,6 +282,8 @@ public class CouponActivityController {
         for (WhiteList whiteList:whiteLists) {
             logger.info("openid:"+account.getOpenid()+"-----二期开始发券[" + whiteList.getType() +"]");
             if(sign == 3 && whiteList.getType() == 102){
+                whiteList.setIsGet(1);
+                whiteListRepository.save(whiteList);
                 continue;
             }else{
                 if(whiteList.getType() == 103||whiteList.getType() == 104){
@@ -464,6 +469,14 @@ public class CouponActivityController {
         return flag;
     }
 
+    /**
+     * 查询车辆价值
+     * @param request
+     * @param plateNumber
+     * @return
+     * @throws NotRuleException
+     * @throws NotFoundException
+     */
     @RequestMapping(value = "/vehicleValue", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public VehicleValue  getVehicleValue(
@@ -487,6 +500,36 @@ public class CouponActivityController {
         }
 
         return vehicleValue;
+    }
+
+    /**
+     * 访问记录
+     * @param request
+     * @param queryLogParam
+     * @return
+     * @throws NotFoundException
+     * @throws MissingParameterException
+     */
+    @RequestMapping(value = "queryLog", method = RequestMethod.POST ,produces = MediaType.APPLICATION_JSON_VALUE)
+    public QueryLog queryLog(HttpServletRequest request,@RequestBody QueryLogParam queryLogParam)throws NotFoundException, MissingParameterException {
+        Object accountId = request.getAttribute("accountId");
+
+        if (ObjectUtils.isEmpty(queryLogParam)) {
+            throw new MissingParameterException("QueryLogParam.queryLogParam");
+        }
+        if (ObjectUtils.isEmpty(queryLogParam.getApplyUrl())) {
+            throw new MissingParameterException("QueryLogParam.getApplyUrl");
+        }
+        if (StringUtils.isEmpty(queryLogParam.getCode())) {
+            throw new MissingParameterException("QueryLogParam.getApplyUrl");
+        }
+
+        QueryLog queryLog = new QueryLog();
+        queryLog.setApplyUrl(queryLogParam.getApplyUrl());
+        queryLog.setCode(queryLogParam.getCode());
+        queryLog.setCreatedAt(new Date());
+        queryLogRepository.save(queryLog);
+        return queryLog;
     }
     @Async
     private  void  updateJoinList(Object accountId){

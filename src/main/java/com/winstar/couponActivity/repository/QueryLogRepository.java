@@ -1,6 +1,6 @@
-package com.winstar.cashier.repository;
+package com.winstar.couponActivity.repository;
 
-import com.winstar.cashier.entity.QueryLog;
+import com.winstar.couponActivity.entity.QueryLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

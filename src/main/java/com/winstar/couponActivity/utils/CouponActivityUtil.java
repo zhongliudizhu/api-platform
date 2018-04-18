@@ -153,4 +153,25 @@ public class CouponActivityUtil {
         }
         return flag;
     }
+
+    /**
+     * 验证车牌号与发动机号是否匹配
+     * @return
+     */
+    public static  Boolean testVehicle(String plateNumber,String engineNumber,RestTemplate restTemplate,ObjectMapper objectMapper) {
+        boolean flag = true;
+        if (StringUtils.isEmpty(plateNumber)||StringUtils.isEmpty(engineNumber)) {
+            return true;
+        }
+        Map<String, String> reqOrderMap = new HashMap<>();
+
+        String token_id = "2b254bec-dd48-11e6-81f7-9457a5545c84";
+        String testVehicleUrl = "http://mobile.sxwinstar.net/wechat_access/api/v1/platenumbers/plateNumberSearch?plateNumber="+plateNumber+"&engineNumber="+engineNumber;
+        ResponseEntity<String> responseCars = RequestServerUtil.getRequestFromToken(restTemplate,testVehicleUrl,reqOrderMap,token_id);
+        if(responseCars.getStatusCode().value()==200){
+            return false;
+        }
+        return flag;
+    }
+
 }

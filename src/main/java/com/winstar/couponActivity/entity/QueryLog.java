@@ -1,4 +1,4 @@
-package com.winstar.cashier.entity;
+package com.winstar.couponActivity.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
