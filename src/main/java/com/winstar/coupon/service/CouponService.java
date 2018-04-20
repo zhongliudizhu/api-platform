@@ -55,6 +55,9 @@ public class CouponService {
     @Autowired
     ActivityRepository activityRepository;
 
+    @Autowired
+
+
     /**
      * 发送优惠券
      *
@@ -274,7 +277,7 @@ public class CouponService {
      */
     public MyCoupon checkIfMyCouponAvailable(Double saledPrice, String couponId) {
         MyCoupon coupon = myCouponRepository.findOne(couponId);
-        if (coupon == null || coupon.getStatus() == 2) {
+        if (coupon == null || coupon.getStatus() == 2 ||coupon.getStatus() ==1) {
             logger.info(couponId + "的优惠券不存在或已失效");
             return null;
         }
