@@ -201,11 +201,11 @@ public class CouponActivityController {
             Integer soldAmount = 0;
             if(activity.getType()==ActivityIdEnum.ACTIVITY_ID_103.getActivity()||
                     activity.getType()==ActivityIdEnum.ACTIVITY_ID_104.getActivity()){
-                soldAmount = myCouponRepository.findByActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(String.valueOf(activity.getType()),DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-06-30 23:59:59")).size();
+//                soldAmount = myCouponRepository.findByActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(String.valueOf(activity.getType()),DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-06-30 23:59:59")).size();
                 List<MyCoupon>  myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(activity.getType()),DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-06-30 23:59:59"));
-                if(Integer.parseInt(couponActivity.getSendRule()) <= soldAmount){
-                    activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_3.getActivity());//0 ：未领取 1：已领取 3:售罄
-                }
+//                if(Integer.parseInt(couponActivity.getSendRule()) <= soldAmount){
+//                    activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_3.getActivity());//0 ：未领取 1：已领取 3:售罄
+//                }
                 if(!ObjectUtils.isEmpty(myCoupons)){
                    activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
                     if(myCoupons.get(0).getStatus() == MyCouponEnum.COUPON_NOT_USE_1.getStatus()){
@@ -213,11 +213,11 @@ public class CouponActivityController {
                     }
                 }
             }else{
-                soldAmount =  myCouponRepository.findByActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(String.valueOf(activity.getType()),DateUtil.getMonthBegin(),DateUtil.getMonthEnd()).size();
+//                soldAmount =  myCouponRepository.findByActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(String.valueOf(activity.getType()),DateUtil.getMonthBegin(),DateUtil.getMonthEnd()).size();
                 List<MyCoupon>  myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(activity.getType()),DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
-                if(Integer.parseInt(couponActivity.getSendRule()) <= soldAmount){
-                    activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_3.getActivity());//0 ：未领取 1：已领取 3:售罄
-                }
+//                if(Integer.parseInt(couponActivity.getSendRule()) <= soldAmount){
+//                    activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_3.getActivity());//0 ：未领取 1：已领取 3:售罄
+//                }
                 if(!ObjectUtils.isEmpty(myCoupons)){
                     activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity()); //0 ：未领取 1：已领取 3:售罄 4：已使用
                     if(myCoupons.get(0).getStatus() == MyCouponEnum.COUPON_NOT_USE_1.getStatus()){
@@ -326,7 +326,7 @@ public class CouponActivityController {
         if(ObjectUtils.isEmpty(coupons)){
             CouponActivity couponActivity = couponActivityRepository.findOne(String.valueOf(whiteList.getType()));
             String couponName = couponActivity.getDescription()+"-" + WsdUtils.getRandomNumber(8);
-            int size = myCouponRepository.findByActivityId(couponActivity.getId()).size();//获取活动发券总量
+            int size = 0;//获取活动发券总量
             if(size <= Integer.parseInt(couponActivity.getSendRule())){
                 logger.info("accountId:"+accountId+"|"+activityId+"-----发券-----");
                 Date time = DateUtil.addInteger(new Date(), Calendar.MONTH,1);

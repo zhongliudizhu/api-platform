@@ -84,12 +84,7 @@ public class OilOrderController {
             logger.error("查询活动失败，activityId：" + activityId);
             throw new NotFoundException("activity.order");
         }
-        Integer soldAmount = 0;
-        if(activity.getType()==3){
-           soldAmount =  OilOrderUtil.getSoldAmount(itemId, DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-06-30 23:59:59"));
-        }else{
-            soldAmount =  OilOrderUtil.getSoldAmount(itemId,  DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
-        }
+
        /* // 活动一：判断每日每个商品只能前一百名购买
         if(activity.getType()==1){
             if(!OilOrderUtil.judgeOneDay(itemId,amount)){
@@ -115,6 +110,12 @@ public class OilOrderController {
         if(goods.getIsSale() == 1){
             logger.error("商品"+goods.getId()+"已售罄！" );
             throw new NotRuleException("isSale.order");
+        }
+        Integer soldAmount = 0;
+        if(activity.getType()==3 || activity.getType() == 103 || activity.getType() ==104 ){
+            soldAmount =  OilOrderUtil.getSoldAmount(itemId, DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-06-30 23:59:59"));
+        }else{
+            soldAmount =  OilOrderUtil.getSoldAmount(itemId,  DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
         }
         //判断是否超过限售数量
         if(goods.getLimitAmount()!=null && goods.getLimitAmount()!=0 && (soldAmount >= goods.getLimitAmount())){
