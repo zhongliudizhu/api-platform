@@ -55,9 +55,6 @@ public class CouponService {
     @Autowired
     ActivityRepository activityRepository;
 
-    @Autowired
-
-
     /**
      * 发送优惠券
      *

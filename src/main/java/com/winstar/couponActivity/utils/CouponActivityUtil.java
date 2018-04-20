@@ -144,9 +144,12 @@ public class CouponActivityUtil {
     public static boolean compareCars(String plateNumber, String driverLicense,RestTemplate restTemplate,String getSixInOneCarsUrl,ObjectMapper objectMapper){
         boolean flag = true;
 
-        List<String> sixInOneCars  = CouponActivityUtil.reqSixInOneCars(driverLicense,restTemplate,getSixInOneCarsUrl,objectMapper);//获取本人名下车辆
+        List<String> sixInOneCars  = CouponActivityUtil.reqSixInOneCars(driverLicense,restTemplate,getSixInOneCarsUrl,objectMapper);//18位获取本人名下车辆
         if(StringUtils.isEmpty(sixInOneCars)){
-            return true;
+            sixInOneCars  = CouponActivityUtil.reqSixInOneCars(ICUtil.get15Ic(driverLicense),restTemplate,getSixInOneCarsUrl,objectMapper);//15位获取本人名下车辆
+            if(StringUtils.isEmpty(sixInOneCars)){
+                return true;
+            }
         }
         if(sixInOneCars.contains(plateNumber)){
             flag = false;
