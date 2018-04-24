@@ -384,6 +384,8 @@ public class CouponActivityController {
         careJuanList.setPhoneNumber(phoneNumber);
         careJuanList.setPlateNumber(plateNumber);
         careJuanList.setCreatTime(new Date());
+        careJuanList.setType(0);
+        careJuanList.setJoinType(0);
         CareJuanList  getCareJuanList = careJuanListRepository.save(careJuanList);
         if (ObjectUtils.isEmpty(getCareJuanList)){
             throw new NotFoundException("getCareCoupons.error");

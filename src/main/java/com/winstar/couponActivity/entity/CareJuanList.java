@@ -43,4 +43,8 @@ public class CareJuanList {
     private String plateNumber;
 
     private Date creatTime;
+
+    private Integer type; // 0:手心活动免费洗车  1：秒杀免费洗车  2：秒杀免费洗车&消毒
+
+    private Integer joinType;// 1:交安卡  2：优驾行
 }
