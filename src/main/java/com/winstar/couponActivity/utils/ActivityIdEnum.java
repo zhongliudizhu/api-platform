@@ -16,6 +16,9 @@ public enum  ActivityIdEnum {
     ACTIVITY_ID_103("购车分期获赠加油优惠券-100元", 103),
     ACTIVITY_ID_104("购车分期获赠加油优惠券-200元", 104),
 
+    ACTIVITY_ID_201("交安卡周四秒杀", 201),
+    ACTIVITY_ID_202("优驾行周四秒杀", 202),
+
 
     ACTIVITY_STATUS_0("未领取", 0),
     ACTIVITY_STATUS_1("领取", 1),

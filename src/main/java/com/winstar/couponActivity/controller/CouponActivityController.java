@@ -75,7 +75,8 @@ public class CouponActivityController {
     VehicleValueRepository vehicleValueRepository;
     @Autowired
     QueryLogRepository queryLogRepository;
-
+    @Autowired
+    SaleVehicleRecordRepository saleVehicleRecordRepository;
     @Autowired
     RestTemplate restTemplate;
     @Autowired
@@ -201,11 +202,11 @@ public class CouponActivityController {
             Integer soldAmount = 0;
             if(activity.getType()==ActivityIdEnum.ACTIVITY_ID_103.getActivity()||
                     activity.getType()==ActivityIdEnum.ACTIVITY_ID_104.getActivity()){
-                soldAmount = myCouponRepository.findByActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(String.valueOf(activity.getType()),DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-06-30 23:59:59")).size();
+//                soldAmount = myCouponRepository.findByActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(String.valueOf(activity.getType()),DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-06-30 23:59:59")).size();
                 List<MyCoupon>  myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(activity.getType()),DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-06-30 23:59:59"));
-                if(Integer.parseInt(couponActivity.getSendRule()) <= soldAmount){
-                    activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_3.getActivity());//0 ：未领取 1：已领取 3:售罄
-                }
+//                if(Integer.parseInt(couponActivity.getSendRule()) <= soldAmount){
+//                    activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_3.getActivity());//0 ：未领取 1：已领取 3:售罄
+//                }
                 if(!ObjectUtils.isEmpty(myCoupons)){
                    activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
                     if(myCoupons.get(0).getStatus() == MyCouponEnum.COUPON_NOT_USE_1.getStatus()){
@@ -213,11 +214,11 @@ public class CouponActivityController {
                     }
                 }
             }else{
-                soldAmount =  myCouponRepository.findByActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(String.valueOf(activity.getType()),DateUtil.getMonthBegin(),DateUtil.getMonthEnd()).size();
+//                soldAmount =  myCouponRepository.findByActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(String.valueOf(activity.getType()),DateUtil.getMonthBegin(),DateUtil.getMonthEnd()).size();
                 List<MyCoupon>  myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(activity.getType()),DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
-                if(Integer.parseInt(couponActivity.getSendRule()) <= soldAmount){
-                    activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_3.getActivity());//0 ：未领取 1：已领取 3:售罄
-                }
+//                if(Integer.parseInt(couponActivity.getSendRule()) <= soldAmount){
+//                    activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_3.getActivity());//0 ：未领取 1：已领取 3:售罄
+//                }
                 if(!ObjectUtils.isEmpty(myCoupons)){
                     activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity()); //0 ：未领取 1：已领取 3:售罄 4：已使用
                     if(myCoupons.get(0).getStatus() == MyCouponEnum.COUPON_NOT_USE_1.getStatus()){
@@ -326,12 +327,18 @@ public class CouponActivityController {
         if(ObjectUtils.isEmpty(coupons)){
             CouponActivity couponActivity = couponActivityRepository.findOne(String.valueOf(whiteList.getType()));
             String couponName = couponActivity.getDescription()+"-" + WsdUtils.getRandomNumber(8);
-            int size = myCouponRepository.findByActivityId(couponActivity.getId()).size();//获取活动发券总量
+            int size = 0;//获取活动发券总量
             if(size <= Integer.parseInt(couponActivity.getSendRule())){
                 logger.info("accountId:"+accountId+"|"+activityId+"-----发券-----");
-                Date time = DateUtil.addInteger(new Date(), Calendar.MONTH,1);
-                couponService.sendCoupon_freedom(
-                        accountId.toString(),String.valueOf(activityId),couponActivity.getAmount(),time,couponActivity.getUseRule(), couponName, couponActivity.getName());
+//                Date time = DateUtil.addInteger(new Date(), Calendar.MONTH,1);
+                if(activityId ==  ActivityIdEnum.ACTIVITY_ID_101.getActivity()){
+                    couponService.sendCoupon_freedom(
+                            accountId.toString(),String.valueOf(activityId),couponActivity.getAmount(),DateUtil.getMonthEnd(),couponActivity.getUseRule(), couponName, couponActivity.getName());
+                }else{
+                    couponService.sendCoupon_freedom(
+                            accountId.toString(),String.valueOf(activityId),couponActivity.getAmount(),DateUtil.getInputDate("2018-07-31 23:59:59"),couponActivity.getUseRule(), couponName, couponActivity.getName());
+                }
+
                 //回填白名单  1、打标储蓄&信用 2、记录发送时间
                 updateWhiteList(accountId,whiteList,sign);
 
@@ -370,20 +377,22 @@ public class CouponActivityController {
             throw new NotRuleException("getCareCoupons.params");
         }
 
-        CareJuanList  careJuanList = careJuanListRepository.findByAccountId(accountId.toString());
-        if (!ObjectUtils.isEmpty(careJuanList)){
+        List<CareJuanList>  careJuanLists = careJuanListRepository.findByAccountId(accountId.toString());
+        if (!ObjectUtils.isEmpty(careJuanLists)){
             throw new NotFoundException("getCareCoupons.isGet");
         }
         Integer careJuanListSzie = careJuanListRepository.findByCreatTime(DateUtil.getDayBegin(),DateUtil.getDayEnd()).size();
         if(careJuanListSzie >= 40){
             throw new NotRuleException("getCareCoupons.isOut");
         }
-        careJuanList = new CareJuanList();
+        CareJuanList careJuanList = new CareJuanList();
         careJuanList.setAccountId(accountId.toString());
         careJuanList.setName(name);
         careJuanList.setPhoneNumber(phoneNumber);
         careJuanList.setPlateNumber(plateNumber);
         careJuanList.setCreatTime(new Date());
+        careJuanList.setType(0);
+        careJuanList.setJoinType(0);
         CareJuanList  getCareJuanList = careJuanListRepository.save(careJuanList);
         if (ObjectUtils.isEmpty(getCareJuanList)){
             throw new NotFoundException("getCareCoupons.error");
@@ -408,7 +417,7 @@ public class CouponActivityController {
     ) throws NotRuleException, NotFoundException {
         Object accountId = request.getAttribute("accountId");
         boolean flag = false;
-        CareJuanList  getCareJuanList = careJuanListRepository.findByAccountId(accountId.toString());
+        List<CareJuanList>  getCareJuanList = careJuanListRepository.findByAccountId(accountId.toString());
         if (!ObjectUtils.isEmpty(getCareJuanList)){
             flag = true;
         }
@@ -501,6 +510,7 @@ public class CouponActivityController {
 
         return vehicleValue;
     }
+
 
     /**
      * 访问记录

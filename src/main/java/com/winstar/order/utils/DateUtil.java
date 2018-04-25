@@ -133,6 +133,8 @@ public class DateUtil {
         currentDate.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
         return (Date)currentDate.getTime().clone();
     }
+
+
     /**
      * 获取现在时间
      *

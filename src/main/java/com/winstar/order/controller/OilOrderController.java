@@ -84,12 +84,7 @@ public class OilOrderController {
             logger.error("查询活动失败，activityId：" + activityId);
             throw new NotFoundException("activity.order");
         }
-        Integer soldAmount = 0;
-        if(activity.getType()==3){
-           soldAmount =  OilOrderUtil.getSoldAmount(itemId, DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-06-30 23:59:59"));
-        }else{
-            soldAmount =  OilOrderUtil.getSoldAmount(itemId,  DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
-        }
+
        /* // 活动一：判断每日每个商品只能前一百名购买
         if(activity.getType()==1){
             if(!OilOrderUtil.judgeOneDay(itemId,amount)){
@@ -101,20 +96,16 @@ public class OilOrderController {
             throw new NotRuleException("canNotUseCoupon.order");
         }
 
-        //验证特价商品有没有资格
-        if(activity.getType()== ActivityIdEnum.ACTIVITY_ID_101.getActivity()
-                ||activity.getType()== ActivityIdEnum.ACTIVITY_ID_102.getActivity()
-                ||activity.getType()== ActivityIdEnum.ACTIVITY_ID_103.getActivity()
-                ||activity.getType()== ActivityIdEnum.ACTIVITY_ID_104.getActivity()
-                ||activity.getType()== ActivityIdEnum.ACTIVITY_ID_3.getActivity()){
-           if(StringUtils.isEmpty(couponId)){
-               throw new NotRuleException("notAbility.order");
-           }
-        }
 
         if(goods.getIsSale() == 1){
             logger.error("商品"+goods.getId()+"已售罄！" );
             throw new NotRuleException("isSale.order");
+        }
+        Integer soldAmount = 0;
+        if(activity.getType()==3 || activity.getType() == 103 || activity.getType() ==104 ){
+            soldAmount =  OilOrderUtil.getSoldAmount(itemId, DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-06-30 23:59:59"));
+        }else{
+            soldAmount =  OilOrderUtil.getSoldAmount(itemId,  DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
         }
         //判断是否超过限售数量
         if(goods.getLimitAmount()!=null && goods.getLimitAmount()!=0 && (soldAmount >= goods.getLimitAmount())){
@@ -149,7 +140,7 @@ public class OilOrderController {
             }
         }
         if(activityId.equals(Constant.CBC_ACTIVITY_FIR)){
-            String canBuy = OilOrderUtil.judgeActivity(accountId,activityId);
+            String canBuy = OilOrderUtil.judgeActivity(accountId,"1");
             if(canBuy.equals("1")){
                 logger.error("活动一商品，每用户一个月只能买一次" );
                 throw new NotRuleException("oneMonthOnce.order");
@@ -158,7 +149,36 @@ public class OilOrderController {
                 throw new NotRuleException("haveNotPay.order");
             }
         }
-
+        //验证特价商品有没有资格
+        if(activity.getType()== ActivityIdEnum.ACTIVITY_ID_101.getActivity()
+                ||activity.getType()== ActivityIdEnum.ACTIVITY_ID_102.getActivity()){
+            if(StringUtils.isEmpty(couponId)){
+                throw new NotRuleException("notAbility.order");
+            }
+            String canBuy = OilOrderUtil.judgeActivity(accountId,activityId);
+            if(canBuy.equals("1")){
+                logger.error("活动101、102，每用户一个月只能买一次" );
+                throw new NotRuleException("oneMonthOnce.order");
+            }else if(canBuy.equals("2")){
+                logger.error("活动101、102，有未关闭订单" );
+                throw new NotRuleException("haveNotPay.order");
+            }
+        }
+        if(activity.getType()== ActivityIdEnum.ACTIVITY_ID_103.getActivity()
+                ||activity.getType()== ActivityIdEnum.ACTIVITY_ID_104.getActivity()
+                ||activity.getType()== ActivityIdEnum.ACTIVITY_ID_3.getActivity()){
+            if(StringUtils.isEmpty(couponId)){
+                throw new NotRuleException("notAbility.order");
+            }
+            String canBuy = OilOrderUtil.judgeActivity2(accountId,activityId);
+            if(canBuy.equals("1")){
+                logger.error("活动103、104、3，活动期间只能买一次" );
+                throw new NotRuleException("oneMonthOnce.order");
+            }else if(canBuy.equals("2")){
+                logger.error("活动103、104、3，有未关闭订单" );
+                throw new NotRuleException("haveNotPay.order");
+            }
+        }
         //5.初始化订单及订单项
         OilOrder oilOrder = new OilOrder(accountId,serialNumber, Constant.ORDER_STATUS_CREATE,Constant.PAY_STATUS_NOT_PAID,new Date(),Constant.REFUND_STATUS_ORIGINAL,itemId,activityId);
         //4.如果优惠券，查询优惠券
@@ -175,7 +195,6 @@ public class OilOrderController {
             }else if (ObjectUtils.isEmpty(myCoupon.getDiscountRate())){
                 oilOrder.setDiscountAmount(myCoupon.getAmount());
             }
-
         }
         if(!StringUtils.isEmpty(oilOrder.getCouponId())){
             couponService.useCoupon(couponId);

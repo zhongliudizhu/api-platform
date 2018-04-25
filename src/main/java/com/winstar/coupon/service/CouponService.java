@@ -6,6 +6,8 @@ import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.CouponTemplateRepository;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.couponActivity.utils.ActivityIdEnum;
+import com.winstar.order.entity.OilOrder;
+import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
@@ -54,6 +56,9 @@ public class CouponService {
 
     @Autowired
     ActivityRepository activityRepository;
+
+    @Autowired
+    OilOrderRepository oilOrderRepository;
 
     /**
      * 发送优惠券
@@ -274,7 +279,7 @@ public class CouponService {
      */
     public MyCoupon checkIfMyCouponAvailable(Double saledPrice, String couponId) {
         MyCoupon coupon = myCouponRepository.findOne(couponId);
-        if (coupon == null || coupon.getStatus() == 2) {
+        if (coupon == null || coupon.getStatus() == 2 ||coupon.getStatus() ==1) {
             logger.info(couponId + "的优惠券不存在或已失效");
             return null;
         }
@@ -285,6 +290,11 @@ public class CouponService {
         }
         if (coupon.getUseRule() > saledPrice) {
             logger.info(couponId + "的优惠券不能使用，该优惠券满" + coupon.getUseRule() + "元可使用，商品价格：" + saledPrice);
+            return null;
+        }
+        List<OilOrder>  oilOrderSize = oilOrderRepository.findByCouponId(couponId);
+        if(!ObjectUtils.isEmpty(oilOrderSize)){
+            logger.info(couponId + "的优惠券已使用");
             return null;
         }
         return coupon;

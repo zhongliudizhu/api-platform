@@ -16,7 +16,11 @@ import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.order.utils.DateUtil;
+import com.winstar.user.entity.AccessToken;
+import com.winstar.user.utils.ServiceManager;
 import org.apache.commons.collections.MapUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -37,6 +41,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/cbc/valuations")
 public class ValuationController {
+
+    public static final Logger logger = LoggerFactory.getLogger(ValuationController.class);
 
     @Autowired
     VehicleValueRepository vehicleValueRepository;
@@ -162,47 +168,7 @@ public class ValuationController {
         return carHistoricalPrice;
     }
 
-    /**
-     * 出售汽车
-     * @param request
-     * @param valuationParam
-     * @return
-     * @throws NotFoundException
-     * @throws MissingParameterException
-     */
-    @RequestMapping(value = "saleVehicle", method = RequestMethod.POST ,produces = MediaType.APPLICATION_JSON_VALUE)
-     public SaleVehicleRecord SaveSaleVehicle(HttpServletRequest request,@RequestBody SaleVehicleRecordParam valuationParam)throws NotFoundException, MissingParameterException{
-        Object accountId = request.getAttribute("accountId");
 
-        if (ObjectUtils.isEmpty(valuationParam)) {
-            throw new MissingParameterException("SaleVehicleRecordParam.valuations");
-        }
-        if (ObjectUtils.isEmpty(valuationParam.getPhoneNumber())) {
-            throw new MissingParameterException("valuations.getPhoneNumber");
-        }
-        if (StringUtils.isEmpty(valuationParam.getPrice())) {
-            throw new MissingParameterException("valuations.getPrice");
-        }
-        if (StringUtils.isEmpty(valuationParam.getSaleTime())) {
-            throw new MissingParameterException("valuations.getSaleTime");
-        }
-        if (StringUtils.isEmpty(valuationParam.getPlateNumber())) {
-            throw new MissingParameterException("valuations.getPlateNumber");
-        }
-
-        SaleVehicleRecord saleVehicleRecord = saleVehicleRecordRepository.findByAccountId(accountId.toString());
-        if(ObjectUtils.isEmpty(saleVehicleRecord)){
-            saleVehicleRecord = new SaleVehicleRecord();
-        }
-        saleVehicleRecord.setAccountId(accountId.toString());
-        saleVehicleRecord.setCreateTime(new Date());
-        saleVehicleRecord.setPhoneNumber(valuationParam.getPhoneNumber());
-        saleVehicleRecord.setPrice(valuationParam.getPrice());
-        saleVehicleRecord.setSaleTime(valuationParam.getSaleTime());
-        saleVehicleRecord.setPlateNumber(valuationParam.getPlateNumber());
-        saleVehicleRecordRepository.save(saleVehicleRecord);
-        return saleVehicleRecord;
-    }
 
     /**
      * 查询车辆详情
@@ -250,32 +216,82 @@ public class ValuationController {
      * @throws NotFoundException
      * @throws MissingParameterException
      */
-    @RequestMapping(value = "getUsedCarPrice", method = RequestMethod.GET ,produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getUsedCarPrice(HttpServletRequest request,String modelId,String regDate,String mile,String zone)
+    @RequestMapping(value = "getUsedCarPrice", method = RequestMethod.POST ,produces = MediaType.APPLICATION_JSON_VALUE)
+    public String getUsedCarPrice(HttpServletRequest request,@RequestBody ValuationParam valuationParam)
             throws NotFoundException, MissingParameterException{
-        if (StringUtils.isEmpty(modelId)) {
-            throw new MissingParameterException("modelId.valuations");
+        Object accountId = request.getAttribute("accountId");
+        logger.info("--------"+accountId);
+        if (StringUtils.isEmpty(valuationParam.getModelId())) {
+            throw new MissingParameterException("modelId.getModelId");
         }
-        if (StringUtils.isEmpty(regDate)) {
+        if (StringUtils.isEmpty(valuationParam.getRegDate())) {
             throw new MissingParameterException("regDate.valuations");
         }
-        if (StringUtils.isEmpty(mile)) {
+        if (StringUtils.isEmpty(valuationParam.getMile())) {
             throw new MissingParameterException("mile.valuations");
         }
-        if (StringUtils.isEmpty(zone)) {
+        if (StringUtils.isEmpty(valuationParam.getZone())) {
             throw new MissingParameterException("zone.valuations");
         }
 
         //获取汽车所有指导价
         String getUsedCarPrice = "";
         try {
-            getUsedCarPrice= ValuationReport.getUsedCarPrice(modelId,zone,regDate,mile,restTemplate);
+            getUsedCarPrice= ValuationReport.getUsedCarPrice(valuationParam.getModelId(),valuationParam.getZone(),valuationParam.getRegDate(),valuationParam.getMile(),restTemplate);
         } catch (Exception e) {
             getUsedCarPrice ="";
         }
         if(StringUtils.isEmpty(getUsedCarPrice)){
             throw new NotFoundException("priceHistoricalRecord.not");
         }
+        logger.info(getUsedCarPrice);
         return getUsedCarPrice;
+    }
+    /**
+     * 出售汽车
+     * @param request
+     * @param valuationParam
+     * @return
+     * @throws NotFoundException
+     * @throws MissingParameterException
+     */
+    @RequestMapping(value = "saleVehicle", method = RequestMethod.POST ,produces = MediaType.APPLICATION_JSON_VALUE)
+    public SaleVehicleRecord SaveSaleVehicle(HttpServletRequest request,@RequestBody SaleVehicleRecordParam valuationParam)throws NotFoundException, MissingParameterException{
+        logger.info("预售爱车");
+        if (ObjectUtils.isEmpty(valuationParam)) {
+            throw new MissingParameterException("SaleVehicleRecordParam.valuations");
+        }
+        if (ObjectUtils.isEmpty(valuationParam.getPhoneNumber())) {
+            throw new MissingParameterException("valuations.getPhoneNumber");
+        }
+        if (StringUtils.isEmpty(valuationParam.getPrice())) {
+            throw new MissingParameterException("valuations.getPrice");
+        }
+        if (StringUtils.isEmpty(valuationParam.getSaleTime())) {
+            throw new MissingParameterException("valuations.getSaleTime");
+        }
+        if (StringUtils.isEmpty(valuationParam.getPlateNumber())) {
+            throw new MissingParameterException("valuations.getPlateNumber");
+        }
+        if (StringUtils.isEmpty(valuationParam.getAccountId())) {
+            throw new MissingParameterException("valuations.getAccountId");
+        }
+        AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(valuationParam.getAccountId());
+        if(ObjectUtils.isEmpty(accessToken)){
+            throw new MissingParameterException("valuations.notAccountId");
+        }
+
+        SaleVehicleRecord saleVehicleRecord = saleVehicleRecordRepository.findByAccountId(accessToken.getAccountId());
+        if(ObjectUtils.isEmpty(saleVehicleRecord)){
+            saleVehicleRecord = new SaleVehicleRecord();
+        }
+        saleVehicleRecord.setAccountId(accessToken.getAccountId());
+        saleVehicleRecord.setCreateTime(new Date());
+        saleVehicleRecord.setPhoneNumber(valuationParam.getPhoneNumber());
+        saleVehicleRecord.setPrice(valuationParam.getPrice());
+        saleVehicleRecord.setSaleTime(valuationParam.getSaleTime());
+        saleVehicleRecord.setPlateNumber(valuationParam.getPlateNumber());
+        saleVehicleRecordRepository.save(saleVehicleRecord);
+        return saleVehicleRecord;
     }
 }

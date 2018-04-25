@@ -96,6 +96,22 @@ public class OilOrderUtil {
     }
 
     /**
+     * 周四秒杀日
+     * @param order
+     * @param goods
+     * @param activityType
+     * @return
+     */
+    public static OilOrder initOrderSecKill(OilOrder order, Goods goods, Integer activityType){
+
+        order.setPayPrice(Arith.mul(goods.getSaledPrice(),goods.getDisCount()));
+        order.setSalePrice(goods.getSaledPrice());
+        order.setItemTotalValue(goods.getPrice());//油劵总面值
+        order.setOilDetail(getOilDetail(goods));
+        return order;
+    }
+
+    /**
      * 根据商品信息拼接油券详情  如：100元x1张+50元x2张+200元x5张
      * @return 油券详情字符串
      */
@@ -133,10 +149,45 @@ public class OilOrderUtil {
         List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,DateUtil.getMonthBegin(), DateUtil.getMonthEnd() );
         if(oilOrders.size()<1){
             return "0";
+        }else{
+            for (OilOrder oilOrder:oilOrders) {
+                if(oilOrder.getPayStatus()==1){
+                    return "1";
+                }
+            }
+            return "2";
+        }
+    }
+
+    /*
+   * 判断用户是否能参加周四秒杀活动  0 可以购买   1 已购买  2 有未关闭订单
+   * */
+    public static String judgeActivitySecKill(String accountId, String activityId){
+        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,DateUtil.getWeekBegin(), DateUtil.getWeekEnd());
+        if(oilOrders.size()<1){
+            return "0";
 
         }else{
-            for (OilOrder oilOrder:oilOrders
-                    ) {
+            for (OilOrder oilOrder:oilOrders) {
+                if(oilOrder.getPayStatus()==1){
+                    return "1";
+                }
+            }
+            return "2";
+        }
+    }
+    /*
+  * 判断用户是否能参加103\104\3活动  0 可以购买   1 已购买  2 有未关闭订单
+  * */
+    public static String judgeActivity2(String accountId, String activityId){
+        Date begin =  DateUtil.getInputDate("2018-03-29 00:00:01");
+        Date end = DateUtil.getInputDate("2018-06-30 23:59:59");
+        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,begin, end);
+        if(oilOrders.size()<1){
+            return "0";
+
+        }else{
+            for (OilOrder oilOrder:oilOrders) {
                 if(oilOrder.getPayStatus()==1){
                     return "1";
                 }

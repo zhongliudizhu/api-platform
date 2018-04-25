@@ -39,15 +39,18 @@ public class AuthInterceptor implements HandlerInterceptor {
         excludeUrls.add("/api/v1/cbc/creditPay/notify");
         excludeUrls.add("/api/v1/orders/invoice/callBack");
         excludeUrls.add("/api/v1/cbc/mycoupon/giveCoupon");
+        excludeUrls.add("/api/v1/cbc/valuations");
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o) throws Exception {
-        if (excludeUrls.contains(request.getRequestURI()) || request.getRequestURI().contains("/api/v1/cbc/account") || request.getRequestURI().startsWith("/api/v1/cbc/verification") ) {
+        if (excludeUrls.contains(request.getRequestURI()) || request.getRequestURI().contains("/api/v1/cbc/account")|| request.getRequestURI().contains("/api/v1/cbc/valuations") || request.getRequestURI().startsWith("/api/v1/cbc/verification") ) {
             return true;
         }
 
         String tokenId = request.getHeader("token_id");
+
+        System.out.println(tokenId);
 
         if (StringUtils.isEmpty(tokenId)) {
             unauthorized(response);
