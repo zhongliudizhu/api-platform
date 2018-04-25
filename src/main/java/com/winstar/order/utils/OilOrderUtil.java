@@ -149,7 +149,6 @@ public class OilOrderUtil {
         List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,DateUtil.getMonthBegin(), DateUtil.getMonthEnd() );
         if(oilOrders.size()<1){
             return "0";
-
         }else{
             for (OilOrder oilOrder:oilOrders) {
                 if(oilOrder.getPayStatus()==1){
@@ -164,7 +163,7 @@ public class OilOrderUtil {
    * 判断用户是否能参加周四秒杀活动  0 可以购买   1 已购买  2 有未关闭订单
    * */
     public static String judgeActivitySecKill(String accountId, String activityId){
-        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,DateUtil.getDayBegin(), DateUtil.getDayEnd());
+        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,DateUtil.getWeekBegin(), DateUtil.getWeekEnd());
         if(oilOrders.size()<1){
             return "0";
 

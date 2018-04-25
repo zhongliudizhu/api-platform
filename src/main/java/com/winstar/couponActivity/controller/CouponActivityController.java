@@ -75,7 +75,8 @@ public class CouponActivityController {
     VehicleValueRepository vehicleValueRepository;
     @Autowired
     QueryLogRepository queryLogRepository;
-
+    @Autowired
+    SaleVehicleRecordRepository saleVehicleRecordRepository;
     @Autowired
     RestTemplate restTemplate;
     @Autowired
@@ -329,9 +330,15 @@ public class CouponActivityController {
             int size = 0;//获取活动发券总量
             if(size <= Integer.parseInt(couponActivity.getSendRule())){
                 logger.info("accountId:"+accountId+"|"+activityId+"-----发券-----");
-                Date time = DateUtil.addInteger(new Date(), Calendar.MONTH,1);
-                couponService.sendCoupon_freedom(
-                        accountId.toString(),String.valueOf(activityId),couponActivity.getAmount(),time,couponActivity.getUseRule(), couponName, couponActivity.getName());
+//                Date time = DateUtil.addInteger(new Date(), Calendar.MONTH,1);
+                if(activityId ==  ActivityIdEnum.ACTIVITY_ID_101.getActivity()){
+                    couponService.sendCoupon_freedom(
+                            accountId.toString(),String.valueOf(activityId),couponActivity.getAmount(),DateUtil.getMonthEnd(),couponActivity.getUseRule(), couponName, couponActivity.getName());
+                }else{
+                    couponService.sendCoupon_freedom(
+                            accountId.toString(),String.valueOf(activityId),couponActivity.getAmount(),DateUtil.getInputDate("2018-07-31 23:59:59"),couponActivity.getUseRule(), couponName, couponActivity.getName());
+                }
+
                 //回填白名单  1、打标储蓄&信用 2、记录发送时间
                 updateWhiteList(accountId,whiteList,sign);
 
@@ -370,15 +377,15 @@ public class CouponActivityController {
             throw new NotRuleException("getCareCoupons.params");
         }
 
-        CareJuanList  careJuanList = careJuanListRepository.findByAccountId(accountId.toString());
-        if (!ObjectUtils.isEmpty(careJuanList)){
+        List<CareJuanList>  careJuanLists = careJuanListRepository.findByAccountId(accountId.toString());
+        if (!ObjectUtils.isEmpty(careJuanLists)){
             throw new NotFoundException("getCareCoupons.isGet");
         }
         Integer careJuanListSzie = careJuanListRepository.findByCreatTime(DateUtil.getDayBegin(),DateUtil.getDayEnd()).size();
         if(careJuanListSzie >= 40){
             throw new NotRuleException("getCareCoupons.isOut");
         }
-        careJuanList = new CareJuanList();
+        CareJuanList careJuanList = new CareJuanList();
         careJuanList.setAccountId(accountId.toString());
         careJuanList.setName(name);
         careJuanList.setPhoneNumber(phoneNumber);
@@ -410,7 +417,7 @@ public class CouponActivityController {
     ) throws NotRuleException, NotFoundException {
         Object accountId = request.getAttribute("accountId");
         boolean flag = false;
-        CareJuanList  getCareJuanList = careJuanListRepository.findByAccountId(accountId.toString());
+        List<CareJuanList>  getCareJuanList = careJuanListRepository.findByAccountId(accountId.toString());
         if (!ObjectUtils.isEmpty(getCareJuanList)){
             flag = true;
         }
@@ -503,6 +510,7 @@ public class CouponActivityController {
 
         return vehicleValue;
     }
+
 
     /**
      * 访问记录

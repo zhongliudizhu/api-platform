@@ -169,7 +169,7 @@ public class MyCouponController {
         String accountId = accountService.findAccountIdByOpenid(openId);
         String couponName = "X1-" + WsdUtils.getRandomNumber(8);
         Date time = DateUtil.addInteger(new Date(), Calendar.MONTH,1);
-        MyCoupon myCoupon = couponService.sendCoupon_freedom(accountId,"3",20.0,time,100.0,couponName,"20元优惠券");
+        MyCoupon myCoupon = couponService.sendCoupon_freedom(accountId,"3",20.0,DateUtil.getInputDate("2018-06-30 23:59:59"),100.0,couponName,"20元优惠券");
         return myCoupon;
     }
     /**

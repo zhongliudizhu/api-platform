@@ -101,7 +101,7 @@ public class OilOrderSecKillController {
         if(activity.getType()== ActivityIdEnum.ACTIVITY_ID_202.getActivity()){
             soldAmount = OilOrderUtil.getSoldAmount(itemId, DateUtil.getDayBegin(), DateUtil.getDayEnd());
         }else{
-            soldAmount = OilOrderUtil.getSoldAmount(itemId,  DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
+            soldAmount = OilOrderUtil.getSoldAmount(itemId,  DateUtil.getDayBegin(),DateUtil.getDayEnd());
         }
         //判断是否超过限售数量
         if(goods.getLimitAmount()!=null && goods.getLimitAmount()!=0 && (soldAmount >= goods.getLimitAmount())){
@@ -113,23 +113,31 @@ public class OilOrderSecKillController {
             if(StringUtils.isEmpty(account.getAuthInfoCard())){
                 throw new NotRuleException("notBindInfoCard.order");
             }
-
             String canBuy = OilOrderUtil.judgeActivity(accountId,activityId);
             if(canBuy.equals("1")){
-                logger.error("活动一商品，每用户一个月只能买一次" );
+                logger.error("活动201，每用户一个月只能买一次" );
                 throw new NotRuleException("oneMonthOnce.order");
             }else if(canBuy.equals("2")){
-                logger.error("活动一商品，有未关闭订单" );
+                logger.error("活动201，有未关闭订单" );
+                throw new NotRuleException("haveNotPay.order");
+            }
+
+            String canBuy86 = OilOrderUtil.judgeActivity(accountId,"1");
+            if(canBuy86.equals("1")){
+                logger.error("活动1已参加，201无法购买" );
+                throw new NotRuleException("oneMonthOnce.order");
+            }else if(canBuy86.equals("2")){
+                logger.error("活动1，有未关闭订单" );
                 throw new NotRuleException("haveNotPay.order");
             }
         }
         if(activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_202.getActivity()))){
             String canBuy = OilOrderUtil.judgeActivitySecKill(accountId,activityId);
             if(canBuy.equals("1")){
-                logger.error("活动一商品，每用户一天只能买一次" );
+                logger.error("活动202，每用户一天只能买一次" );
                 throw new NotRuleException("oneMonthOnce.order");
             }else if(canBuy.equals("2")){
-                logger.error("活动一商品，有未关闭订单" );
+                logger.error("活动202，有未关闭订单" );
                 throw new NotRuleException("haveNotPay.order");
             }
         }
@@ -164,10 +172,15 @@ public class OilOrderSecKillController {
         if(StringUtils.isEmpty(activityId)||StringUtils.isEmpty(salePrice)){
             throw new NotRuleException("getCareCoupons.params");
         }
-
-        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByActivityId(activityId,DateUtil.getDayBegin(), DateUtil.getDayEnd());
+        List<CareJuanList>  careJuanList = careJuanListRepository.findByAccountIdandJoinTypeAndTypeAndTime(accountId.toString(),DateUtil.getWeekBegin(),DateUtil.getWeekEnd());
         Map<String,String> map = new HashMap<>();
-        if(oilOrders.size() <= 100){
+        if (!ObjectUtils.isEmpty(careJuanList)){
+            map.put("result", "0");
+            return map;
+        }
+        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByActivityId(activityId,DateUtil.getDayBegin(), DateUtil.getDayEnd());
+
+        if(oilOrders.size() <= 200){
             if(salePrice == 1000){
                 map.put("result","1");//领取免费洗车卷
             }else if(salePrice == 2000){
@@ -200,15 +213,15 @@ public class OilOrderSecKillController {
         if(StringUtils.isEmpty(name)||StringUtils.isEmpty(phoneNumber)||StringUtils.isEmpty(plateNumber)||StringUtils.isEmpty(type)){
             throw new NotRuleException("NotRuleException.params");
         }
-        CareJuanList  careJuanList = careJuanListRepository.findByAccountId(accountId.toString());
-        if (!ObjectUtils.isEmpty(careJuanList)){
+        List<CareJuanList>  careJuanLists = careJuanListRepository.findByAccountIdandJoinTypeAndTypeAndTime(accountId.toString(),DateUtil.getWeekBegin(),DateUtil.getWeekEnd());
+        if (!ObjectUtils.isEmpty(careJuanLists)){
             throw new NotFoundException("getCareCoupons.isGet");
         }
-        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByActivityId(activityId,DateUtil.getDayBegin(), DateUtil.getDayEnd());
-        if(oilOrders.size() >= 100){
+        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByActivityId(activityId,DateUtil.getWeekBegin(), DateUtil.getWeekEnd());
+        if(oilOrders.size() >= 200){
             throw new NotRuleException("getCareCoupons.isOut");
         }
-        careJuanList = new CareJuanList();
+        CareJuanList careJuanList = new CareJuanList();
         careJuanList.setAccountId(accountId.toString());
         careJuanList.setName(name);
         careJuanList.setPhoneNumber(phoneNumber);
@@ -224,13 +237,20 @@ public class OilOrderSecKillController {
         if (ObjectUtils.isEmpty(getCareJuanList)){
             throw new NotFoundException("getCareCoupons.error");
         }
-        sendMsg(sendMsgUrl,phoneNumber);
+        String content = "";
+        if(type.equals("2")){
+            content = "您已成功在优驾行微信平台领取到免费洗车与车内臭氧消毒权益，请您在3个工作日内前往西安精典汽车服务有限公司体验。一店地址：西安市雁翔路与西影路十字向南100米路西；联系电：029—89293377；二店地址：西安市莲湖区顺城北路东侧200米路南；联系电话：029—87312300。每人仅限一次。";
+        }else{
+            content = "您已成功在优驾行微信平台领取到免费洗车权益，请您在3个工作日内前往西安精典汽车服务有限公司体验。一店地址：西安市雁翔路与西影路十字向南100米路西；联系电：029—89293377；二店地址：西安市莲湖区顺城北路东侧200米路南；联系电话：029—87312300。每人仅限一次。";
+        }
+
+        sendMsg(sendMsgUrl,phoneNumber,content);
         return getCareJuanList;
     }
 
     @Async
-    public void sendMsg(String sendMsgUrl, String phoneNo){
-         String content = "恭喜你，报名免费洗车资格成功！";
+    public void sendMsg(String sendMsgUrl, String phoneNo,String content){
+
         SmsResult text = sendNotice(sendMsgUrl,content,phoneNo);
         logger.info(text.getStatus());
 

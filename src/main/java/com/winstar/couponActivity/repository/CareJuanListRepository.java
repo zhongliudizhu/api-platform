@@ -17,9 +17,12 @@ import java.util.List;
  * @DESCRIPTION:
  **/
 public interface CareJuanListRepository extends JpaRepository<CareJuanList,String>,JpaSpecificationExecutor<CareJuanList> {
-    CareJuanList findByAccountId(String accountId);
+    List<CareJuanList> findByAccountId(String accountId);
 
     @Query("select o from CareJuanList o where o.creatTime between ?1 and ?2")
     List<CareJuanList> findByCreatTime(Date beginTime , Date endTime);
+
+    @Query("select o from CareJuanList o where o.accountId = ?1 and o.type <> 0 and o.creatTime between ?2 and ?3")
+    List<CareJuanList> findByAccountIdandJoinTypeAndTypeAndTime(String accountId,Date beginTime , Date endTime);
 
 }
