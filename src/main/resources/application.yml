@@ -21,6 +21,17 @@ spring:
     hikari:
       max-lifetime: 1900000
       maximum-pool-size: 10
+  redis:
+    database: 7
+    host: 192.168.118.111
+    port: 6379
+    password:
+    pool.max-active: 1000
+    pool.max-wait: -1
+    pool.max-idle: 8
+    pool.min-idle: 0
+    timeout: 10000
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -54,6 +65,16 @@ spring:
     hikari:
       max-lifetime: 1900000
       maximum-pool-size: 500
+  redis:
+    database: 7
+    host: 10.0.20.165
+    port: 6379
+    password:
+    pool.max-active: -1
+    pool.max-wait: -1
+    pool.max-idle: 8
+    pool.min-idle: 0
+    timeout: 10000
   jpa:
     hibernate:
       ddl-auto: none
