@@ -31,6 +31,7 @@ public class Invoice {
     /**
      * 用户Id
      */
+    @Column(length = 50)
     private String accountId;
 
 
@@ -47,28 +48,34 @@ public class Invoice {
     /**
      * 姓名
      */
+    @Column(length = 50)
     private String name;
 
     /**
      * 油品种类
      */
+    @Column(length = 5)
     private String oilType;
 
     /**
      * 邮箱
      */
+    @Column(length = 30)
     private String email;
     /**
      * 手机
      */
+    @Column(length = 80)
     private String phone;
     /**
      * 公司
      */
+    @Column(length = 80)
     private String companyName;
     /**
      * 纳税人识别号
      */
+    @Column(length = 80)
     private String taxpayerNumber;
     /**
      * 审请时间
@@ -78,6 +85,27 @@ public class Invoice {
      * 开票时间
      */
     private Date updateDate;
+
+    /*
+  * 公司地址
+  * */
+    @Column(length = 200)
+    private String companyAddress;
+    /*
+    * 电话
+    * */
+    @Column(length = 50)
+    private String telephone;
+    /*
+    * 开户银行
+    * */
+    @Column(length = 50)
+    private String depositBank;
+    /*
+    * 银行账号
+    * */
+    @Column(length = 50)
+    private String bankAccount;
 
     /**
      * 开票状态 0 待开 1 已开
