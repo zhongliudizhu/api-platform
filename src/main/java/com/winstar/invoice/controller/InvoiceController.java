@@ -110,8 +110,8 @@ public class InvoiceController {
         Integer num = oils.size();
         OilOrder order = oilOrderService.getOneOrder(orderId);
         BigDecimal payprice = new BigDecimal(order.getPayPrice());
-        BigDecimal p=new BigDecimal(num);
-        BigDecimal payPrice = payprice.divide(p,2,BigDecimal.ROUND_HALF_UP) ;
+        BigDecimal p = new BigDecimal(num);
+        BigDecimal payPrice = payprice.divide(p, 2, BigDecimal.ROUND_HALF_UP);
         myOilCoupon.setPayPrice(payPrice.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
 
         return myOilCoupon;
@@ -126,7 +126,7 @@ public class InvoiceController {
             HttpServletRequest request,
             String[] ids, Integer type, String name, String oilType, String email, String phone, String companyName,
             String
-                    taxpayerNumber
+                    taxpayerNumber, String companyAddress, String telephone, String depositBank, String bankAccount
     ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
             ServiceUnavailableException {
         String accountId = accountService.getAccountId(request);
@@ -156,8 +156,8 @@ public class InvoiceController {
             MyOilCoupon myOilCoupon = myOilCouponService.findOne(id);
             if (myOilCoupon == null) throw new NotFoundException(id);
             myOilCoupon = this.reckon(myOilCoupon, myOilCoupon.getOrderId());
-            BigDecimal p=new BigDecimal(myOilCoupon.getPayPrice());
-            price=price.add(p) ;
+            BigDecimal p = new BigDecimal(myOilCoupon.getPayPrice());
+            price = price.add(p);
         }
         invoice.setPrice(price.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
         invoice.setAccountId(accountId);
@@ -167,6 +167,11 @@ public class InvoiceController {
         invoice.setPhone(phone);
         invoice.setStatus(0);
         invoice.setCreateDate(new Date());
+        if(!StringUtils.isEmpty(telephone))invoice.setTelephone(telephone);
+        if(!StringUtils.isEmpty(companyAddress))invoice.setCompanyAddress(companyAddress);
+        if(!StringUtils.isEmpty(depositBank))invoice.setDepositBank(depositBank);
+        if(!StringUtils.isEmpty(bankAccount))invoice.setTelephone(bankAccount);
+
         Invoice in = invoiceRepository.save(invoice);
         for (String id : ids) {
             MyOilCoupon myOilCoupon = myOilCouponService.findOne(id);
@@ -174,7 +179,7 @@ public class InvoiceController {
             item.setInvoiceId(in.getId());
             item.setAccountId(accountId);
             item.setOilId(id);
-            BigDecimal p=new BigDecimal(myOilCoupon.getPayPrice());
+            BigDecimal p = new BigDecimal(myOilCoupon.getPayPrice());
             item.setSalePrice(p.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             invoiceItemRepository.save(item);
         }
