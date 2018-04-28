@@ -167,9 +167,9 @@ public class CouponActivityUtil {
         boolean flag = true;
 
         List<String> sixInOneCars  = CouponActivityUtil.reqSixInOneCars(driverLicense,restTemplate,getSixInOneCarsUrl,objectMapper);//18位获取本人名下车辆
-        if(StringUtils.isEmpty(sixInOneCars)){
+        if(ObjectUtils.isEmpty(sixInOneCars)){
             sixInOneCars  = CouponActivityUtil.reqSixInOneCars(ICUtil.get15Ic(driverLicense),restTemplate,getSixInOneCarsUrl,objectMapper);//15位获取本人名下车辆
-            if(StringUtils.isEmpty(sixInOneCars)){
+            if(ObjectUtils.isEmpty(sixInOneCars)){
                 return true;
             }
         }
@@ -178,6 +178,7 @@ public class CouponActivityUtil {
         }
         return flag;
     }
+
 
     /**
      * 验证车牌号与发动机号是否匹配
