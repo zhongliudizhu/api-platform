@@ -2,8 +2,10 @@ package com.winstar.couponActivity.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.winstar.couponActivity.entity.SaleVehicleRecord;
+import com.winstar.couponActivity.entity.VehicleInfo;
 import com.winstar.couponActivity.entity.VehicleValue;
 import com.winstar.couponActivity.repository.SaleVehicleRecordRepository;
+import com.winstar.couponActivity.repository.VehicleInfoRepository;
 import com.winstar.couponActivity.repository.VehicleValueRepository;
 import com.winstar.couponActivity.utils.CouponActivityUtil;
 import com.winstar.couponActivity.utils.GrabUtils;
@@ -31,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -48,6 +51,8 @@ public class ValuationController {
     VehicleValueRepository vehicleValueRepository;
     @Autowired
     SaleVehicleRecordRepository saleVehicleRecordRepository;
+    @Autowired
+    VehicleInfoRepository vehicleInfoRepository;
 
     @Autowired
     RestTemplate restTemplate;
@@ -199,13 +204,36 @@ public class ValuationController {
         if(CouponActivityUtil.testVehicle(plateNumber,engineNumber,restTemplate,objectMapper)){
             throw new NotRuleException("notMatchEngineNumber");
         }
+        VehicleInfo vehicleInfo = vehicleInfoRepository.findOne(plateNumber);
         VehicleDetail vehicleDetail = new VehicleDetail();
         String getModelParameters = ValuationReport.getModelParameters(modelId,restTemplate);
         Map<String,String> map = ParamJsonUtil.AnalysisParamJsonUtil(getModelParameters);
         vehicleDetail.setBrand(map.get("brand"));
-        vehicleDetail.setEnvironmental(map.get("environmental"));
-        vehicleDetail.setDisplacement(map.get("displacement"));
-        vehicleDetail.setPower(map.get("power"));
+        vehicleDetail.setEnvironmental(map.get("environmental"));//环保标准
+        vehicleDetail.setDisplacement(map.get("displacement"));//排量
+        vehicleDetail.setPower(map.get("power"));//功率
+        if(!ObjectUtils.isEmpty(vehicleInfo)){
+            vehicleDetail.setCheckTime(vehicleInfo.getYxqz());//检验有效期止
+            vehicleDetail.setIsChina(vehicleInfo.getGcjk());
+            vehicleDetail.setRegisterTime(vehicleInfo.getCcdjrq());
+            vehicleDetail.setStrongInsuranceTime(vehicleInfo.getBxzzrq());
+            if(!StringUtils.isEmpty(vehicleInfo.getClly())){
+                if(Integer.parseInt(vehicleInfo.getClly()) ==1){
+                    vehicleDetail.setIsTransfer("新注册");
+                }else if(Integer.parseInt(vehicleInfo.getClly()) ==2){
+                    vehicleDetail.setIsTransfer("转入");
+                }else{
+                    vehicleDetail.setIsTransfer("过户");
+                }
+            }
+            if(!StringUtils.isEmpty(vehicleInfo.getDybj())) {
+                if(Integer.parseInt(vehicleInfo.getDybj()) == 0){
+                    vehicleDetail.setMortgageStatus("未抵押");
+                }else{
+                    vehicleDetail.setMortgageStatus("抵押");
+                }
+            }
+        }
         return vehicleDetail;
     }
 
@@ -293,5 +321,57 @@ public class ValuationController {
         saleVehicleRecord.setPlateNumber(valuationParam.getPlateNumber());
         saleVehicleRecordRepository.save(saleVehicleRecord);
         return saleVehicleRecord;
+    }
+
+    /**
+     * 判断是否已经预售爱车
+     * @param request
+     * @return
+     * @throws NotFoundException
+     * @throws MissingParameterException
+     */
+    @RequestMapping(value = "isSaleVehicle", method = RequestMethod.GET ,produces = MediaType.APPLICATION_JSON_VALUE)
+    public Map<String,String> isSaleVehicle(HttpServletRequest request,String  accountId)throws NotFoundException, MissingParameterException{
+        logger.info("判断是否已经预售爱车");
+        Object accountId_test = request.getAttribute("accountId");
+        logger.error("---------test--------- :"+accountId_test);
+        if (StringUtils.isEmpty(accountId)) {
+            throw new MissingParameterException("isSaleVehicle.token_id");
+        }
+        AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(accountId);
+        if(ObjectUtils.isEmpty(accessToken)){
+            throw new MissingParameterException("isSaleVehicle.notAccountId");
+        }
+        Map<String,String> map = new HashMap<>();
+        SaleVehicleRecord saleVehicleRecord = saleVehicleRecordRepository.findByAccountId(accessToken.getAccountId());
+        if(ObjectUtils.isEmpty(saleVehicleRecord)){
+            map.put("result","0");
+        }else{
+            map.put("result","1");
+        }
+        return map;
+    }
+
+    /**
+     * 获取汽车详情
+     * @param request
+     * @return
+     * @throws NotFoundException
+     * @throws MissingParameterException
+     */
+    @RequestMapping(value = "getVehicleInfo", method = RequestMethod.GET ,produces = MediaType.APPLICATION_JSON_VALUE)
+    public String getVehicleInfo(HttpServletRequest request,String plateNumber,String plateNumberType,String  accountId )throws NotFoundException, MissingParameterException{
+        logger.info("获取汽车详情");
+        AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(accountId);
+        if(ObjectUtils.isEmpty(accessToken)){
+            throw new MissingParameterException("getVehicleInfo.notAccountId");
+        }
+        String carInfo = null;
+        String getCarInfoUrl = "https://mobile.sxwinstar.net/wechat_access/api/v1/platenumbers/plateNumberTypeSearch?plateNumber={plateNumber}&plateNumberType={plateNumberType}";
+        carInfo = CouponActivityUtil.reqCarInfo(plateNumber, plateNumberType,restTemplate,getCarInfoUrl,objectMapper);
+        if (StringUtils.isEmpty(carInfo)) {
+            throw new NotFoundException("getVehicleInfo.not");
+        }
+        return carInfo;
     }
 }

@@ -136,6 +136,28 @@ public class CouponActivityUtil {
     }
 
     /**
+     * 获取车辆详情
+     * @return
+     */
+    public static  String reqCarInfo(String plateNumber,String plateNumberType,RestTemplate restTemplate,String getCarInfoUrl,ObjectMapper objectMapper) {
+        if (StringUtils.isEmpty(plateNumber)||StringUtils.isEmpty(plateNumberType)) {
+            return null;
+        }
+        Map<String, String> reqMap = new HashMap<>();
+        reqMap.put("plateNumber",plateNumber);
+        reqMap.put("plateNumberType",plateNumberType);
+        String token_id = "2b254bec-dd48-11e6-81f7-9457a5545c84";
+        String carInfo = null;
+            ResponseEntity<String> responseCars = RequestServerUtil.getRequestFromToken(restTemplate,getCarInfoUrl,reqMap,token_id);
+            if(responseCars.getStatusCode().value()==200){
+                carInfo = responseCars.getBody().toString();
+            }else{
+                return null;
+            }
+        return carInfo;
+    }
+
+    /**
      * 优驾行添加车辆比对六合一车辆
      *
      * @param driverLicense

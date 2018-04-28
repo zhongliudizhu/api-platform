@@ -109,7 +109,7 @@ public class OilOrderSecKillController {
             throw new NotRuleException("soldOut.order");
         }
         if(activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_201.getActivity()))){
-            //activity 201  auth infoCard
+//            activity 201  auth infoCard
             if(StringUtils.isEmpty(account.getAuthInfoCard())){
                 throw new NotRuleException("notBindInfoCard.order");
             }
@@ -178,7 +178,7 @@ public class OilOrderSecKillController {
             map.put("result", "0");
             return map;
         }
-        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByActivityId(activityId,DateUtil.getDayBegin(), DateUtil.getDayEnd());
+        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByActivityId(activityId,DateUtil.getWeekBegin(), DateUtil.getWeekEnd());
 
         if(oilOrders.size() <= 200){
             if(salePrice == 1000){

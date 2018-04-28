@@ -148,6 +148,14 @@ public class OilOrderController {
                 logger.error("活动一商品，有未关闭订单" );
                 throw new NotRuleException("haveNotPay.order");
             }
+            String canBuySeckill = OilOrderUtil.judgeActivity(accountId,"201");
+            if(canBuySeckill.equals("1")){
+                logger.error("活动201，每用户一个月只能买一次" );
+                throw new NotRuleException("oneMonthOnce.order");
+            }else if(canBuySeckill.equals("2")){
+                logger.error("活动201，有未关闭订单" );
+                throw new NotRuleException("haveNotPay.order");
+            }
         }
         //验证特价商品有没有资格
         if(activity.getType()== ActivityIdEnum.ACTIVITY_ID_101.getActivity()

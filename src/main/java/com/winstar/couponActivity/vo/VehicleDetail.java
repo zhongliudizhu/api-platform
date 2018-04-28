@@ -1,5 +1,7 @@
 package com.winstar.couponActivity.vo;
 
+import java.util.Date;
+
 /**
  * VehicleDetail
  *
@@ -13,7 +15,7 @@ public class VehicleDetail {
 
     private String brand;//中文品牌
 
-    private String isChina;//是否国产
+    private String isChina;//是否国产   A：国产
 
     private String displacement;//排量
 
@@ -21,19 +23,19 @@ public class VehicleDetail {
 
     private Integer vehicleStatus;//机动车状态
 
-    private Integer mortgageStatus;//抵押状态
+    private String mortgageStatus;//抵押状态
 
-    private String checkTime;//检验有效期
+    private Date checkTime;//检验有效期   2019/8/31 星期六
 
-    private String strongInsuranceTime;//交强险有效期
+    private Date strongInsuranceTime;//交强险有效期
 
     private String productionTime;//出厂日期
 
-    private String registerTime;//初登日期
+    private Date registerTime;//初登日期
 
-    private Integer isTransfer;//是否过户
+    private String isTransfer;//是否过户  0：未过户  1：过户
 
-    private String environmental;//环保情况
+    private String environmental;//环保情况   GB18352.5-2013(国五阶段)/GB18352.5-2013国Ⅴ
 
     private String location;//车辆所在地
 
@@ -89,27 +91,27 @@ public class VehicleDetail {
         this.vehicleStatus = vehicleStatus;
     }
 
-    public Integer getMortgageStatus() {
+    public String getMortgageStatus() {
         return mortgageStatus;
     }
 
-    public void setMortgageStatus(Integer mortgageStatus) {
+    public void setMortgageStatus(String mortgageStatus) {
         this.mortgageStatus = mortgageStatus;
     }
 
-    public String getCheckTime() {
+    public Date getCheckTime() {
         return checkTime;
     }
 
-    public void setCheckTime(String checkTime) {
+    public void setCheckTime(Date checkTime) {
         this.checkTime = checkTime;
     }
 
-    public String getStrongInsuranceTime() {
+    public Date getStrongInsuranceTime() {
         return strongInsuranceTime;
     }
 
-    public void setStrongInsuranceTime(String strongInsuranceTime) {
+    public void setStrongInsuranceTime(Date strongInsuranceTime) {
         this.strongInsuranceTime = strongInsuranceTime;
     }
 
@@ -121,19 +123,19 @@ public class VehicleDetail {
         this.productionTime = productionTime;
     }
 
-    public String getRegisterTime() {
+    public Date getRegisterTime() {
         return registerTime;
     }
 
-    public void setRegisterTime(String registerTime) {
+    public void setRegisterTime(Date registerTime) {
         this.registerTime = registerTime;
     }
 
-    public Integer getIsTransfer() {
+    public String getIsTransfer() {
         return isTransfer;
     }
 
-    public void setIsTransfer(Integer isTransfer) {
+    public void setIsTransfer(String isTransfer) {
         this.isTransfer = isTransfer;
     }
 
