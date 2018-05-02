@@ -13,7 +13,10 @@ public class SaleVehicleRecordParam {
     private String phoneNumber;
 
     private String plateNumber;
+
     private String accountId;
+
+    private String model;
 
     public String getAccountId() {
         return accountId;
@@ -23,7 +26,13 @@ public class SaleVehicleRecordParam {
         this.accountId = accountId;
     }
 
+    public String getModel() {
+        return model;
+    }
 
+    public void setModel(String model) {
+        this.model = model;
+    }
 
     public Double getPrice() {
         return price;

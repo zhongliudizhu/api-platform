@@ -46,4 +46,6 @@ public class SaleVehicleRecord {
     private Date createTime;
 
     private String plateNumber;
+
+    private String model;
 }

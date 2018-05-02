@@ -304,6 +304,9 @@ public class ValuationController {
         if (StringUtils.isEmpty(valuationParam.getAccountId())) {
             throw new MissingParameterException("valuations.getAccountId");
         }
+        if (StringUtils.isEmpty(valuationParam.getModel())) {
+            throw new MissingParameterException("valuations.getModel");
+        }
         AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(valuationParam.getAccountId());
         if(ObjectUtils.isEmpty(accessToken)){
             throw new MissingParameterException("valuations.notAccountId");
@@ -319,6 +322,7 @@ public class ValuationController {
         saleVehicleRecord.setPrice(valuationParam.getPrice());
         saleVehicleRecord.setSaleTime(valuationParam.getSaleTime());
         saleVehicleRecord.setPlateNumber(valuationParam.getPlateNumber());
+        saleVehicleRecord.setModel(valuationParam.getModel());
         saleVehicleRecordRepository.save(saleVehicleRecord);
         return saleVehicleRecord;
     }
