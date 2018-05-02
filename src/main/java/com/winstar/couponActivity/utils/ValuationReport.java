@@ -76,7 +76,7 @@ public class ValuationReport {
         //示例
         //https://api.che300.com/service/common/eval?oper=getUsedCarResidualAnalysis&modelId=1&zone=11&regDate=2016-07&mile=0.5&token=
         String getUsedCarPrice = "";
-        String url="http://testapi.che300.com/service/getUsedCarPrice?&modelId="+modelId+"&zone="+zone+"&regDate="+regDate+"&mile="+mile+"&token=&token=2d59efa689a9c6a7d99913a28a633410";
+        String url="http://api.che300.com/service/getUsedCarPrice?&modelId="+modelId+"&zone="+zone+"&regDate="+regDate+"&mile="+mile+"&token=27e73d6efa5df6544ab4e3fe714e957a";
         Map<String ,Object> urlVariables = new HashMap<String ,Object>();
         ResponseEntity<String> StringBody = RequestServerUtil.getRequest(restTemplate,url,urlVariables);
         if(StringBody.getStatusCode().value()==200){
