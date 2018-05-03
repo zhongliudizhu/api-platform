@@ -1,5 +1,7 @@
 server:
   port: ${{SERVER_PORT}:20001}
+  tomcat:
+       uri-encoding: UTF-8
 
 management:
   port: ${{MANAGEMENT_PORT}:20002}
@@ -35,7 +37,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: false
+    show-sql: true
   profiles: default
 
 info:
@@ -46,6 +48,7 @@ info:
   getTokenInfoUrl: http://192.168.118.111:7000/api/user/account/{userId}/{type}/getTokenInfo
   getLocalCarsUrl: http://192.168.118.111:7000/api/user/vehicle/getUserVehicleWechat
   getSixInOneCarsUrl: http://mobile.sxwinstar.net/wechat_access/api/v1/platenumbers/certificateNumberTypeSearch?certificateNumber={certificateNumber}&&certificateType={certificateType}
+  sendMsgUrl: http://sms.sxjiashi.com:8080/api/v2/smsSend/sendNotice
 #建行信息卡校验
 bank:
   sms:
@@ -64,7 +67,7 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       max-lifetime: 1900000
-      maximum-pool-size: 500
+      maximum-pool-size: 1000
   redis:
     database: 7
     host: 10.0.20.165
@@ -101,7 +104,7 @@ info:
   getTokenInfoUrl: http://mobile.sxwinstar.net/wechat_access/api/user/account/{userId}/{type}/getTokenInfo
   getLocalCarsUrl: http://mobile.sxwinstar.net/wechat_access/api/user/vehicle/getUserVehicleWechat
   getSixInOneCarsUrl: http://mobile.sxwinstar.net/wechat_access/api/v1/platenumbers/certificateNumberTypeSearch?certificateNumber={certificateNumber}&&certificateType={certificateType}
-
+  sendMsgUrl: http://sms.sxjiashi.com:8030/api/v2/smsSend/sendNotice
 #建行信息卡校验
 bank:
   sms:
