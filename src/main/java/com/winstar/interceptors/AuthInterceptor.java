@@ -40,6 +40,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         excludeUrls.add("/api/v1/orders/invoice/callBack");
         excludeUrls.add("/api/v1/cbc/mycoupon/giveCoupon");
         excludeUrls.add("/api/v1/cbc/valuations");
+        excludeUrls.add("/api/v1/cbc/time/nowTime");
     }
 
     @Override

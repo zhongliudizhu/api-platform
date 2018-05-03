@@ -48,4 +48,8 @@ public class SaleVehicleRecord {
     private String plateNumber;
 
     private String model;
+
+    private String mile;
+
+    private String registerTime;
 }

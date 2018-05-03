@@ -219,11 +219,11 @@ public class ValuationController {
             vehicleDetail.setStrongInsuranceTime(vehicleInfo.getBxzzrq());
             if(!StringUtils.isEmpty(vehicleInfo.getClly())){
                 if(Integer.parseInt(vehicleInfo.getClly()) ==1){
-                    vehicleDetail.setIsTransfer("新注册");
+                    vehicleDetail.setIsTransfer("否");
                 }else if(Integer.parseInt(vehicleInfo.getClly()) ==2){
-                    vehicleDetail.setIsTransfer("转入");
+                    vehicleDetail.setIsTransfer("是");
                 }else{
-                    vehicleDetail.setIsTransfer("过户");
+                    vehicleDetail.setIsTransfer("是");
                 }
             }
             if(!StringUtils.isEmpty(vehicleInfo.getDybj())) {
@@ -307,6 +307,12 @@ public class ValuationController {
         if (StringUtils.isEmpty(valuationParam.getModel())) {
             throw new MissingParameterException("valuations.getModel");
         }
+        if (StringUtils.isEmpty(valuationParam.getMile())) {
+            throw new MissingParameterException("valuations.getMile");
+        }
+        if (StringUtils.isEmpty(valuationParam.getRegisterTime())) {
+            throw new MissingParameterException("valuations.getRegisterTime");
+        }
         AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(valuationParam.getAccountId());
         if(ObjectUtils.isEmpty(accessToken)){
             throw new MissingParameterException("valuations.notAccountId");
@@ -323,6 +329,8 @@ public class ValuationController {
         saleVehicleRecord.setSaleTime(valuationParam.getSaleTime());
         saleVehicleRecord.setPlateNumber(valuationParam.getPlateNumber());
         saleVehicleRecord.setModel(valuationParam.getModel());
+        saleVehicleRecord.setMile(valuationParam.getMile());
+        saleVehicleRecord.setRegisterTime(valuationParam.getRegisterTime());
         saleVehicleRecordRepository.save(saleVehicleRecord);
         return saleVehicleRecord;
     }

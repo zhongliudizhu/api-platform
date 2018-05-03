@@ -18,6 +18,10 @@ public class SaleVehicleRecordParam {
 
     private String model;
 
+    private String mile;
+
+    private String registerTime;
+
     public String getAccountId() {
         return accountId;
     }
@@ -64,5 +68,21 @@ public class SaleVehicleRecordParam {
 
     public void setPlateNumber(String plateNumber) {
         this.plateNumber = plateNumber;
+    }
+
+    public String getMile() {
+        return mile;
+    }
+
+    public void setMile(String mile) {
+        this.mile = mile;
+    }
+
+    public String getRegisterTime() {
+        return registerTime;
+    }
+
+    public void setRegisterTime(String registerTime) {
+        this.registerTime = registerTime;
     }
 }
