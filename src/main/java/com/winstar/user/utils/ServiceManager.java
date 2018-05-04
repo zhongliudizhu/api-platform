@@ -1,5 +1,9 @@
 package com.winstar.user.utils;
 
+import com.winstar.carLifeMall.entity.ItemSellerRelation;
+import com.winstar.carLifeMall.repository.ItemRepository;
+import com.winstar.carLifeMall.repository.ItemSellerRelationRepository;
+import com.winstar.carLifeMall.repository.SellerRepository;
 import com.winstar.order.repository.FlowOrderRepository;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.user.repository.AccessTokenRepository;
@@ -30,6 +34,26 @@ public class ServiceManager {
     public static FlowOrderRepository flowOrderRepository;
 
     public static SmsService smsService;
+
+    public static ItemRepository itemRepository;
+    public static SellerRepository sellerRepository;
+
+    public static ItemSellerRelationRepository itemSellerRelationRepository;
+
+    @Autowired
+    public void setItemSellerRelationRepository(ItemSellerRelationRepository itemSellerRelationRepository) {
+        ServiceManager.itemSellerRelationRepository = itemSellerRelationRepository;
+    }
+
+    @Autowired
+    public void setSellerRepository(SellerRepository sellerRepository) {
+        ServiceManager.sellerRepository = sellerRepository;
+    }
+
+    @Autowired
+    public void setItemRepository(ItemRepository itemRepository) {
+        ServiceManager.itemRepository = itemRepository;
+    }
 
     @Autowired
     public void setSmsService(SmsService smsService) {
@@ -75,8 +99,9 @@ public class ServiceManager {
     public void setOilOrderRepository(OilOrderRepository oilOrderRepository) {
         ServiceManager.oilOrderRepository = oilOrderRepository;
     }
+
     @Autowired
-    public void setFlowOrderRepository(FlowOrderRepository flowOrderRepository){
+    public void setFlowOrderRepository(FlowOrderRepository flowOrderRepository) {
         ServiceManager.flowOrderRepository = flowOrderRepository;
     }
 }

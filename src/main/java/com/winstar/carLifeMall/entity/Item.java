@@ -1,10 +1,16 @@
 package com.winstar.carLifeMall.entity;
 
+import com.winstar.user.utils.ServiceManager;
+import groovy.lang.Category;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.loader.custom.Return;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * 名称： Seller
@@ -16,6 +22,9 @@ import java.util.Date;
 @Data
 @Table(name = "CBC_CAR_LIFE_ITEM")
 public class Item {
+    @Transient
+    public static final Integer STATUS_NORMAL = 0;
+
     /**
      * 唯一标识
      */
@@ -24,6 +33,10 @@ public class Item {
     @GeneratedValue(generator = "idGenerator")
     @Column(length = 50)
     private String id;
+
+    @Column(length = 50)
+    private String categoryId;
+
     /**
      * 名称
      */
@@ -64,9 +77,29 @@ public class Item {
      * 更新时间
      */
     private Date updateTime;
+
+    /**
+     * 活动类别 0 常规 1 抢购
+     */
+    @Column(length = 2, columnDefinition = "int default 0")
+    private Integer activeType;
+
     /**
      * 商品状态 0 正常 1 下架
      */
     @Column(length = 2, columnDefinition = "int default 0")
     private Integer status;
+
+    /**
+     * 获取卖家信息
+     *
+     * @return
+     */
+    public List<Seller> getSeller() {
+        List<ItemSellerRelation> list = ServiceManager.itemSellerRelationRepository.findByItemId(id);
+        List<Seller> result = list.stream().map(t -> {
+            return t.getSeller();
+        }).collect(toList());
+        return result;
+    }
 }

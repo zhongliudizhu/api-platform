@@ -1,10 +1,13 @@
 package com.winstar.carLifeMall.entity;
 
+import com.winstar.user.utils.ServiceManager;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 名称： Seller
@@ -16,6 +19,8 @@ import java.util.Date;
 @Data
 @Table(name = "CBC_CAR_LIFE_CATEGORY")
 public class Category {
+    @Transient
+    public static final Integer STATUS_NORMAL = 0;
     /**
      * 唯一标识
      */
@@ -29,11 +34,7 @@ public class Category {
      */
     @Column(length = 50)
     private String name;
-    /**
-     * 地址
-     */
-    @Column(length = 50)
-    private String address;
+
     /**
      * 创建时间
      */
@@ -46,4 +47,8 @@ public class Category {
      * 状态 0正常 1锁定
      */
     private Integer status;
+
+    public List<Item> getItems() {
+        return ServiceManager.itemRepository.findByCategoryIdAndStatus(id, Item.STATUS_NORMAL);
+    }
 }

@@ -16,6 +16,9 @@ import java.util.Date;
 @Data
 @Table(name = "CBC_CAR_LIFE_SELLER")
 public class Seller {
+
+    @Transient
+    public static final Integer STATUS_NORMAL = 0;
     /**
      * 唯一标识
      */
