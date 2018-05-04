@@ -58,6 +58,18 @@ public class OilOrderUtil {
         return serialNumber;
     }
 
+    /**
+     * 生成汽车生活订单序列号
+     *
+     * @return 订单序列号
+     */
+    public static String getCarLifeSerialNumber(){
+        int r1=getRandomNum(5);
+        int r2 = getRandomNum(5);
+        String serialNumber = DateUtil.DateToString(new Date(), "yyyyMMddHHmmss");
+        serialNumber = serialNumber + "wxcar"+ String.valueOf(r1) + String.valueOf(r2);
+        return serialNumber;
+    }
 
     /**
      * 根据商品填充订单
