@@ -11,7 +11,7 @@ import java.util.Date;
  * 名称： Seller
  * 作者： dpw
  * 日期： 2018-05-03 16:05
- * 描述： 商家
+ * 描述： 订单
  **/
 @Entity
 @Data
@@ -35,6 +35,9 @@ public class Orders {
       * */
     @Column(length = 50)
     private String accountId;
+    /**
+     * 订单编号
+     */
     @Column(length = 50)
     private String orderSerial;
     /*
@@ -54,7 +57,6 @@ public class Orders {
     * 优惠金额
     * */
     private Double discountAmount;
-
     /*
     *手机号
     * */
@@ -70,6 +72,11 @@ public class Orders {
     * */
     @Column(length = 100)
     private String mark;
+    /*
+   * 优惠券id
+   * */
+    @Column(length = 50)
+    private String couponId;
     /*
     *下单时间
     * */
@@ -109,7 +116,6 @@ public class Orders {
     * 支付方式 0：建行 1：银联 2：微信 3：支付宝
     * */
     private Integer payType;
-
     /*
     *状态 1 订单生成(未支付) 2 待发货(支付成功) 3 已发货 4 已确认收货
     * */

@@ -42,15 +42,15 @@ public class OrdersItems {
     @Column(length = 50)
     private String sellerName;
     /**
-     * 商品名称
+     * 商品ID
      */
     @Column(length = 50)
-    private String itemName;
+    private String itemId;
     /**
-     * 预约事项详情
+     * 商品名称
      */
     @Column(length = 300)
-    private String itemDetails;
+    private String itemName;
     /**
      * 预约时间
      */

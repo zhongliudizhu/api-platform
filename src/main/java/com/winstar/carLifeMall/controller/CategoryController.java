@@ -3,6 +3,7 @@ package com.winstar.carLifeMall.controller;
 import com.winstar.carLifeMall.entity.Category;
 import com.winstar.carLifeMall.repository.CategoryRepository;
 import com.winstar.exception.NotFoundException;
+import com.winstar.user.utils.ServiceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,7 +30,7 @@ public class CategoryController {
      */
     @RequestMapping("/list")
     public List<Category> findList() throws NotFoundException {
-        List<Category> list = categoryRepository.findByStatus(Category.STATUS_NORMAL);
+        List<Category> list = ServiceManager.categoryService.findByStatus();
         if (list.size() == 0) throw new NotFoundException("category");
 
         return list;

@@ -79,7 +79,7 @@ public class Item {
     private Date updateTime;
 
     /**
-     * 活动类别 0 常规 1 抢购
+     * 活动类别 0 常规 1 秒杀
      */
     @Column(length = 2, columnDefinition = "int default 0")
     private Integer activeType;

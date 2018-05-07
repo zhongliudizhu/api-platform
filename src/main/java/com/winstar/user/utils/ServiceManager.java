@@ -1,9 +1,10 @@
 package com.winstar.user.utils;
 
 import com.winstar.carLifeMall.entity.ItemSellerRelation;
-import com.winstar.carLifeMall.repository.ItemRepository;
-import com.winstar.carLifeMall.repository.ItemSellerRelationRepository;
-import com.winstar.carLifeMall.repository.SellerRepository;
+import com.winstar.carLifeMall.entity.Orders;
+import com.winstar.carLifeMall.repository.*;
+import com.winstar.carLifeMall.service.CategoryService;
+import com.winstar.coupon.service.CouponService;
 import com.winstar.order.repository.FlowOrderRepository;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.user.repository.AccessTokenRepository;
@@ -37,8 +38,38 @@ public class ServiceManager {
 
     public static ItemRepository itemRepository;
     public static SellerRepository sellerRepository;
-
     public static ItemSellerRelationRepository itemSellerRelationRepository;
+
+    public static CategoryRepository categoryRepository;
+    public static CategoryService categoryService;
+    public static OrdersRepository ordersRepository;
+    public static OrdersItemsRepository ordersItemsRepository;
+    public static CouponService couponService;
+
+    @Autowired
+    public void setCouponService(CouponService couponService) {
+        ServiceManager.couponService = couponService;
+    }
+
+    @Autowired
+    public void setOrdersItemsRepository(OrdersItemsRepository ordersItemsRepository) {
+        ServiceManager.ordersItemsRepository = ordersItemsRepository;
+    }
+
+    @Autowired
+    public void setOrdersRepository(OrdersRepository ordersRepository) {
+        ServiceManager.ordersRepository = ordersRepository;
+    }
+
+    @Autowired
+    public void setCategoryService(CategoryService categoryService) {
+        ServiceManager.categoryService = categoryService;
+    }
+
+    @Autowired
+    public void setCategoryRepository(CategoryRepository categoryRepository) {
+        ServiceManager.categoryRepository = categoryRepository;
+    }
 
     @Autowired
     public void setItemSellerRelationRepository(ItemSellerRelationRepository itemSellerRelationRepository) {
