@@ -1,8 +1,8 @@
 package com.winstar.user.utils;
 
-import com.winstar.carLifeMall.entity.ItemSellerRelation;
-import com.winstar.carLifeMall.entity.Orders;
+import com.winstar.carLifeMall.entity.CarLifeOrders;
 import com.winstar.carLifeMall.repository.*;
+import com.winstar.carLifeMall.service.CarLifeOrdersService;
 import com.winstar.carLifeMall.service.CategoryService;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.order.repository.FlowOrderRepository;
@@ -17,7 +17,6 @@ import com.winstar.user.service.PageViewLogService;
 import com.winstar.user.service.SmsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 @Component
 public class ServiceManager {
@@ -27,24 +26,25 @@ public class ServiceManager {
     public static PageViewLogRepository pageViewLogRepository;
     public static PageViewLogService pageViewLogService;
     public static AccountService accountService;
-
     public static OneMoneyCouponRecordService oneMoneyCouponRecordService;
-
     public static OneMoneyCouponRecordRepository oneMoneyCouponRecordRepository;
     public static OilOrderRepository oilOrderRepository;
     public static FlowOrderRepository flowOrderRepository;
-
     public static SmsService smsService;
-
     public static ItemRepository itemRepository;
     public static SellerRepository sellerRepository;
     public static ItemSellerRelationRepository itemSellerRelationRepository;
-
     public static CategoryRepository categoryRepository;
     public static CategoryService categoryService;
     public static OrdersRepository ordersRepository;
     public static OrdersItemsRepository ordersItemsRepository;
     public static CouponService couponService;
+    public static CarLifeOrdersService carLifeOrdersService;
+
+    @Autowired
+    public void setCarLifeOrdersService(CarLifeOrdersService carLifeOrdersService) {
+        ServiceManager.carLifeOrdersService = carLifeOrdersService;
+    }
 
     @Autowired
     public void setCouponService(CouponService couponService) {

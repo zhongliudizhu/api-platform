@@ -14,4 +14,6 @@ import java.util.List;
  **/
 public interface ItemSellerRelationRepository extends JpaRepository<ItemSellerRelation, String> {
     List<ItemSellerRelation> findByItemId(String itemId);
+
+    long countByItemIdAndSellerId(String itemId, String sellerId);
 }

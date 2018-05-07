@@ -18,21 +18,13 @@ public class CarLifeOrdersParam {
      */
     private String sellerId;
     /**
-     * 商家名称
-     */
-    private String sellerName;
-    /**
      * 商品名称
      */
     private String itemId;
     /**
-     * 预约事项详情
-     */
-    private String itemName;
-    /**
      * 预约时间
      */
-    private Date reserveTime;
+    private String reserveTime;
     /**
      * 预约手机号码
      */

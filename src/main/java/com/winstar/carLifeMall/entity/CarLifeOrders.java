@@ -21,7 +21,7 @@ import java.util.Date;
         @Index(name = "idx_pay_status", columnList = "payStatus"),
         @Index(name = "idx_order_serial", columnList = "orderSerial")
 })
-public class Orders {
+public class CarLifeOrders {
     /**
      * 唯一标识
      */
