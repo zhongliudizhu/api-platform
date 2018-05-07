@@ -11,7 +11,7 @@ import java.util.List;
  * 日期： 2018-05-04 10:45
  * 描述： 订单
  **/
-public interface OrdersRepository extends JpaRepository<CarLifeOrders, String> {
+public interface CarLifeOrdersRepository extends JpaRepository<CarLifeOrders, String> {
     CarLifeOrders findByOrderSerial(String orderSerial);
 
 

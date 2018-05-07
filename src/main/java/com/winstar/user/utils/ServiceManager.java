@@ -1,6 +1,5 @@
 package com.winstar.user.utils;
 
-import com.winstar.carLifeMall.entity.CarLifeOrders;
 import com.winstar.carLifeMall.repository.*;
 import com.winstar.carLifeMall.service.CarLifeOrdersService;
 import com.winstar.carLifeMall.service.CategoryService;
@@ -36,7 +35,7 @@ public class ServiceManager {
     public static ItemSellerRelationRepository itemSellerRelationRepository;
     public static CategoryRepository categoryRepository;
     public static CategoryService categoryService;
-    public static OrdersRepository ordersRepository;
+    public static CarLifeOrdersRepository carLifeOrdersRepository;
     public static OrdersItemsRepository ordersItemsRepository;
     public static CouponService couponService;
     public static CarLifeOrdersService carLifeOrdersService;
@@ -57,8 +56,8 @@ public class ServiceManager {
     }
 
     @Autowired
-    public void setOrdersRepository(OrdersRepository ordersRepository) {
-        ServiceManager.ordersRepository = ordersRepository;
+    public void setOrdersRepository(CarLifeOrdersRepository carLifeOrdersRepository) {
+        ServiceManager.carLifeOrdersRepository = carLifeOrdersRepository;
     }
 
     @Autowired

@@ -1,11 +1,15 @@
 package com.winstar.carLifeMall.service;
 
 import com.winstar.carLifeMall.entity.CarLifeOrders;
+import com.winstar.cashier.construction.utils.Arith;
 import com.winstar.exception.NotFoundException;
 import com.winstar.order.utils.Constant;
+import com.winstar.order.vo.PayInfoVo;
 import com.winstar.user.utils.ServiceManager;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+
+import java.util.Date;
 
 /**
  * 名称： OrdersService
@@ -24,11 +28,48 @@ public class CarLifeOrdersService {
      */
     public CarLifeOrders getCarLifeOrdersBySerialNo(String serialNo) throws NotFoundException {
 
-        CarLifeOrders carLifeOrders = ServiceManager.ordersRepository.findByOrderSerial(serialNo);
-            if(ObjectUtils.isEmpty(carLifeOrders)|| carLifeOrders.getIsAvailable()== Integer.valueOf(Constant.IS_NORMAL_CANCELED)){
-                throw new NotFoundException("oilOrder.order");
-            }
+        CarLifeOrders carLifeOrders = ServiceManager.carLifeOrdersRepository.findByOrderSerial(serialNo);
+        if (ObjectUtils.isEmpty(carLifeOrders) || carLifeOrders.getIsAvailable() == Integer.valueOf(Constant.IS_NORMAL_CANCELED)) {
+            throw new NotFoundException("oilOrder.order");
+        }
 
         return carLifeOrders;
     }
+
+    /**
+     * 更新订单支付状态
+     *
+     * @param payInfo
+     * @return
+     * @throws NotFoundException
+     */
+    public String updateCarLifeOrderCashier(PayInfoVo payInfo) throws NotFoundException {
+        Date time = new Date();
+        Integer payStatus = payInfo.getPayState();
+        if (payStatus != 0 && payStatus != 1) {
+            return "1";
+        }
+        String serialNumber = payInfo.getOrderSerialNumber();
+        CarLifeOrders carLifeOrders = ServiceManager.carLifeOrdersRepository.findByOrderSerial(serialNumber);
+        if (ObjectUtils.isEmpty(carLifeOrders) || carLifeOrders.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)) {
+            return "2";
+        }
+
+        carLifeOrders.setBankSerialNo(payInfo.getBankSerialNumber());
+        carLifeOrders.setPayPrice(Arith.div(payInfo.getPayPrice(), 100));//分转换元
+        carLifeOrders.setPayTime(payInfo.getPayTime());
+        carLifeOrders.setPayType(payInfo.getPayType());
+        carLifeOrders.setPayStatus(payInfo.getPayState());
+
+        carLifeOrders.setSendStatus(3);
+        carLifeOrders.setStatus(3);
+
+        carLifeOrders.setIsAvailable(Integer.valueOf(Constant.IS_NORMAL_NORMAL));
+        carLifeOrders.setUpdateTime(time);
+        carLifeOrders.setFinishTime(time);
+        ServiceManager.carLifeOrdersRepository.save(carLifeOrders);
+
+        return "ok";
+    }
+
 }

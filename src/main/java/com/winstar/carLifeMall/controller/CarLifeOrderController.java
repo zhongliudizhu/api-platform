@@ -89,7 +89,7 @@ public class CarLifeOrderController {
         carLifeOrders.setPhoneNo(carLifeOrdersParam.getReserveMobile());
         carLifeOrders.setSalePrice(item.getSalePrice());
         carLifeOrders.setPayPrice(item.getSalePrice());
-        CarLifeOrders carLifeOrdersSaved = ServiceManager.ordersRepository.save(carLifeOrders);
+        CarLifeOrders carLifeOrdersSaved = ServiceManager.carLifeOrdersRepository.save(carLifeOrders);
 
         OrdersItems ordersItems = new OrdersItems();
         ordersItems.setItemId(item.getId());
@@ -118,7 +118,7 @@ public class CarLifeOrderController {
         if (StringUtils.isEmpty(serialNumber)) {
             throw new MissingParameterException("serialNumber.order");
         }
-        CarLifeOrders order = ServiceManager.ordersRepository.findByOrderSerial(serialNumber);
+        CarLifeOrders order = ServiceManager.carLifeOrdersRepository.findByOrderSerial(serialNumber);
         if (ObjectUtils.isEmpty(order)) {
             throw new NotFoundException("carLifeOrders");
         }
@@ -137,7 +137,7 @@ public class CarLifeOrderController {
         if (StringUtils.isEmpty(serialNumber)) {
             throw new MissingParameterException("serialNumber.carLifeOrders");
         }
-        CarLifeOrders order = ServiceManager.ordersRepository.findByOrderSerial(serialNumber);
+        CarLifeOrders order = ServiceManager.carLifeOrdersRepository.findByOrderSerial(serialNumber);
         if (ObjectUtils.isEmpty(order)) {
             throw new NotFoundException("carLifeOrders");
         }
@@ -156,7 +156,7 @@ public class CarLifeOrderController {
         if (StringUtils.isEmpty(status)) {
             throw new MissingParameterException("status.carLifeOrders");
         }
-        List<CarLifeOrders> carLifeOrders = ServiceManager.ordersRepository.findByAccountIdOrderByCreateTimeDesc(accountId);
+        List<CarLifeOrders> carLifeOrders = ServiceManager.carLifeOrdersRepository.findByAccountIdOrderByCreateTimeDesc(accountId);
         if (-1 == status) {
             carLifeOrders = carLifeOrders.stream().filter(o -> o.getIsAvailable() == Integer.valueOf(Constant.IS_NORMAL_CANCELED)).sorted().collect(toList());
         } else if (1 == status) {
@@ -186,7 +186,7 @@ public class CarLifeOrderController {
         if (StringUtils.isEmpty(serialNumber)) {
             throw new MissingParameterException("serialNumber.carLifeCarLifeOrders");
         }
-        CarLifeOrders carLifeCarLifeOrders = ServiceManager.ordersRepository.findByOrderSerial(serialNumber);
+        CarLifeOrders carLifeCarLifeOrders = ServiceManager.carLifeOrdersRepository.findByOrderSerial(serialNumber);
         if (ObjectUtils.isEmpty(carLifeCarLifeOrders)) {
             throw new NotFoundException("carLifeCarLifeOrders");
         }
@@ -200,7 +200,7 @@ public class CarLifeOrderController {
             throw new NotRuleException("notYourOrder.carLifeCarLifeOrders");
         }
         carLifeCarLifeOrders.setIsAvailable(Integer.valueOf(Constant.IS_NORMAL_CANCELED));
-        carLifeCarLifeOrders = ServiceManager.ordersRepository.save(carLifeCarLifeOrders);
+        carLifeCarLifeOrders = ServiceManager.carLifeOrdersRepository.save(carLifeCarLifeOrders);
         //返还优惠券
         if (!StringUtils.isEmpty(carLifeCarLifeOrders.getCouponId())) {
             ServiceManager.couponService.cancelMyCoupon(carLifeCarLifeOrders.getCouponId());
