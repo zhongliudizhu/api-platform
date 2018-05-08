@@ -147,9 +147,9 @@ public class CarLifeOrderController {
     /* *
      * 确认收货
      */
-    @PostMapping(value = "confirm/{serialNumber}/serialNumber", produces = "application/json;charset=utf-8")
+    @PostMapping(value = "confirm", produces = "application/json;charset=utf-8")
     @ResponseBody
-    public ResponseEntity confirmOrdersReceived(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
+    public ResponseEntity confirmOrdersReceived(@RequestParam String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
         if (StringUtils.isEmpty(serialNumber)) {
             throw new MissingParameterException("serialNumber.carLifeOrders");
         }
