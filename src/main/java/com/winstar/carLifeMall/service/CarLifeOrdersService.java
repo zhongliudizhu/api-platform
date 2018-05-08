@@ -61,7 +61,7 @@ public class CarLifeOrdersService {
         carLifeOrders.setPayType(payInfo.getPayType());
         carLifeOrders.setPayStatus(payInfo.getPayState());
 
-        carLifeOrders.setSendStatus(3);
+        carLifeOrders.setSendStatus(2);
         carLifeOrders.setStatus(3);
 
         carLifeOrders.setIsAvailable(Integer.valueOf(Constant.IS_NORMAL_NORMAL));

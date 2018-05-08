@@ -82,7 +82,7 @@ public class CarLifeOrderController {
         carLifeOrders.setIsAvailable(0);
         carLifeOrders.setIsPromotion(item.getActiveType());
         carLifeOrders.setOrderSerial(OilOrderUtil.getCarLifeSerialNumber());
-        carLifeOrders.setSendStatus(3);
+        carLifeOrders.setSendStatus(2);
         carLifeOrders.setStatus(1);
         carLifeOrders.setOrderFrom(1);
         carLifeOrders.setPayStatus(0);
@@ -141,6 +141,28 @@ public class CarLifeOrderController {
         order.setOrdersItems(ServiceManager.ordersItemsRepository.findByOrOrderSerial(order.getOrderSerial()));
 
         return new ResponseEntity<>(order, HttpStatus.OK);
+    }
+
+
+    /* *
+     * 确认收货
+     */
+    @PostMapping(value = "confirm/{serialNumber}/serialNumber", produces = "application/json;charset=utf-8")
+    @ResponseBody
+    public ResponseEntity confirmOrdersReceived(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
+        if (StringUtils.isEmpty(serialNumber)) {
+            throw new MissingParameterException("serialNumber.carLifeOrders");
+        }
+        CarLifeOrders order = ServiceManager.carLifeOrdersRepository.findByOrderSerial(serialNumber);
+        if (ObjectUtils.isEmpty(order)) {
+            throw new NotFoundException("carLifeOrders");
+        }
+        order.setSendStatus(3);
+        order.setUpdateTime(new Date());
+        CarLifeOrders carLifeOrdersSaved = ServiceManager.carLifeOrdersRepository.save(order);
+        carLifeOrdersSaved.setOrdersItems(ServiceManager.ordersItemsRepository.findByOrOrderSerial(order.getOrderSerial()));
+
+        return new ResponseEntity<>(carLifeOrdersSaved, HttpStatus.OK);
     }
 
     /**
