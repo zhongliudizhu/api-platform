@@ -53,7 +53,7 @@ public class CarLifeOrderController {
         Item itemCheck = ServiceManager.itemRepository.findOne(carLifeOrdersParam.getItemId());
         if (null == itemCheck) throw new NotFoundException("item");
         long count = ServiceManager.itemSellerRelationRepository.countByItemIdAndSellerId(carLifeOrdersParam.getItemId(), carLifeOrdersParam.getSellerId());
-        if ( count== 0)
+        if (count == 0)
             throw new NotRuleException("illegalItemSeller");
 
         Seller sellerCheck = ServiceManager.sellerRepository.findOne(carLifeOrdersParam.getSellerId());
@@ -143,7 +143,6 @@ public class CarLifeOrderController {
         return new ResponseEntity<>(order, HttpStatus.OK);
     }
 
-
     /* *
      * 确认收货
      */
@@ -154,6 +153,8 @@ public class CarLifeOrderController {
             throw new MissingParameterException("serialNumber.carLifeOrders");
         }
         CarLifeOrders order = ServiceManager.carLifeOrdersRepository.findByOrderSerial(serialNumber);
+        if (order.getIsAvailable() == 1 || order.getStatus() < 3)
+            throw new NotRuleException("illegalOrderStatus.carLifeOrders");
         if (ObjectUtils.isEmpty(order)) {
             throw new NotFoundException("carLifeOrders");
         }
@@ -187,7 +188,7 @@ public class CarLifeOrderController {
         if (carLifeOrders.size() == 0) {
             throw new NotFoundException("carLifeOrder");
         }
-        carLifeOrders.forEach(t->{
+        carLifeOrders.forEach(t -> {
             t.setOrdersItems(ServiceManager.ordersItemsRepository.findByOrOrderSerial(t.getOrderSerial()));
         });
         return new ResponseEntity<>(carLifeOrders, HttpStatus.OK);
