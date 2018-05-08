@@ -1,6 +1,7 @@
 package com.winstar.carLifeMall.controller;
 
 import com.winstar.carLifeMall.entity.Category;
+import com.winstar.carLifeMall.entity.Item;
 import com.winstar.carLifeMall.repository.CategoryRepository;
 import com.winstar.exception.NotFoundException;
 import com.winstar.user.utils.ServiceManager;
@@ -31,6 +32,10 @@ public class CategoryController {
     @RequestMapping("/list")
     public List<Category> findList() throws NotFoundException {
         List<Category> list = ServiceManager.categoryService.findByStatus();
+        list.forEach(t->{
+            List<Item> item =ServiceManager.itemRepository.findByCategoryIdAndStatus(t.getId(), Item.STATUS_NORMAL);
+            t.setItemsList(item);
+        });
         if (list.size() == 0) throw new NotFoundException("category");
 
         return list;

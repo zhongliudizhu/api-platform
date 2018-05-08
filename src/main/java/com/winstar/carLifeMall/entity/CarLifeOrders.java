@@ -21,6 +21,7 @@ import java.util.Date;
         @Index(name = "idx_pay_status", columnList = "payStatus"),
         @Index(name = "idx_order_serial", columnList = "orderSerial")
 })
+@com.fasterxml.jackson.databind.annotation.JsonSerialize
 public class CarLifeOrders {
     /**
      * 唯一标识
@@ -129,4 +130,6 @@ public class CarLifeOrders {
     * */
     @Column(length = 1, columnDefinition = "int default 1")
     private Integer sendStatus;
+    @Transient
+    private OrdersItems ordersItems;
 }

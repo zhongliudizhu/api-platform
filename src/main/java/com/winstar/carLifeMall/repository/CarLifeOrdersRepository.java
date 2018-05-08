@@ -1,8 +1,11 @@
 package com.winstar.carLifeMall.repository;
 
 import com.winstar.carLifeMall.entity.CarLifeOrders;
+import com.winstar.order.entity.OilOrder;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -14,6 +17,8 @@ import java.util.List;
 public interface CarLifeOrdersRepository extends JpaRepository<CarLifeOrders, String> {
     CarLifeOrders findByOrderSerial(String orderSerial);
 
-
     List<CarLifeOrders> findByAccountIdOrderByCreateTimeDesc(String accountId);
+
+    @Query("select o from OilOrder o where o.isAvailable=?1 and o.status=?2 and o.createTime between ?3 and ?4")
+    List<CarLifeOrders> findByIsAvailableAndStatusAndCreateTimeBetween(String isAvailable, Integer status, Date begin, Date end);
 }

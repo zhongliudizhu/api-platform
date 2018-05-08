@@ -36,7 +36,7 @@ import static java.util.stream.Collectors.toList;
  * 汽车生活订单
  */
 @RestController
-@RequestMapping("/api/v1/cbc/carLifeOrders")
+@RequestMapping("/api/v1/cbc/carLife/orders")
 public class CarLifeOrderController {
     public static final Logger logger = LoggerFactory.getLogger(CarLifeOrderController.class);
 
@@ -59,8 +59,8 @@ public class CarLifeOrderController {
         Seller sellerCheck = ServiceManager.sellerRepository.findOne(carLifeOrdersParam.getSellerId());
         if (null == sellerCheck) throw new NotFoundException("seller");
 
-        Map map = initCarLifeOrders(itemCheck, sellerCheck, carLifeOrdersParam, accountId);
-        return new ResponseEntity(map, HttpStatus.OK);
+        CarLifeOrders result = initCarLifeOrders(itemCheck, sellerCheck, carLifeOrdersParam, accountId);
+        return new ResponseEntity(result, HttpStatus.OK);
     }
 
     private void checkParam(CarLifeOrdersParam carLifeOrdersParam) throws NotRuleException {
@@ -74,7 +74,7 @@ public class CarLifeOrderController {
             throw new NotRuleException("sellerId");
     }
 
-    private Map initCarLifeOrders(Item item, Seller seller, CarLifeOrdersParam carLifeOrdersParam, String accountId) {
+    private CarLifeOrders initCarLifeOrders(Item item, Seller seller, CarLifeOrdersParam carLifeOrdersParam, String accountId) {
         CarLifeOrders carLifeOrders = new CarLifeOrders();
         carLifeOrders.setAccountId(accountId);
         carLifeOrders.setCreateTime(new Date());
@@ -85,13 +85,14 @@ public class CarLifeOrderController {
         carLifeOrders.setSendStatus(3);
         carLifeOrders.setStatus(1);
         carLifeOrders.setOrderFrom(1);
-        carLifeOrders.setPayStatus(1);
+        carLifeOrders.setPayStatus(0);
         carLifeOrders.setPhoneNo(carLifeOrdersParam.getReserveMobile());
         carLifeOrders.setSalePrice(item.getSalePrice());
         carLifeOrders.setPayPrice(item.getSalePrice());
         CarLifeOrders carLifeOrdersSaved = ServiceManager.carLifeOrdersRepository.save(carLifeOrders);
 
         OrdersItems ordersItems = new OrdersItems();
+        ordersItems.setOrderSerial(carLifeOrdersSaved.getOrderSerial());
         ordersItems.setItemId(item.getId());
         ordersItems.setItemName(item.getName());
         ordersItems.setSellerId(seller.getId());
@@ -100,11 +101,8 @@ public class CarLifeOrderController {
         ordersItems.setReserveMobile(carLifeOrdersParam.getReserveMobile());
 
         OrdersItems ordersItemsSaved = ServiceManager.ordersItemsRepository.save(ordersItems);
-
-        Map map = new HashMap();
-        map.put("carLifeOrders", carLifeOrdersSaved);
-        map.put("ordersItems", ordersItemsSaved);
-        return map;
+        carLifeOrdersSaved.setOrdersItems(ordersItemsSaved);
+        return carLifeOrders;
     }
 
     /**
@@ -112,8 +110,7 @@ public class CarLifeOrderController {
      *
      * @param serialNumber 订单序列号
      */
-    @GetMapping(value = "/judge/{serialNumber}/", produces = "application/json;charset=utf-8")
-    @ResponseBody
+    @GetMapping(value = "/judge/{serialNumber}/serialNumber")
     public ResponseEntity judgeOrder(@PathVariable String serialNumber) throws MissingParameterException, NotRuleException, NotFoundException {
         if (StringUtils.isEmpty(serialNumber)) {
             throw new MissingParameterException("serialNumber.order");
@@ -131,7 +128,7 @@ public class CarLifeOrderController {
     /* *
      * 查询单个订单-根据序列号
      */
-    @GetMapping(value = "/{serialNumber}/serialNumber", produces = "application/json;charset=utf-8")
+    @GetMapping(value = "get/{serialNumber}/serialNumber", produces = "application/json;charset=utf-8")
     @ResponseBody
     public ResponseEntity getOrders(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
         if (StringUtils.isEmpty(serialNumber)) {
@@ -141,6 +138,8 @@ public class CarLifeOrderController {
         if (ObjectUtils.isEmpty(order)) {
             throw new NotFoundException("carLifeOrders");
         }
+        order.setOrdersItems(ServiceManager.ordersItemsRepository.findByOrOrderSerial(order.getOrderSerial()));
+
         return new ResponseEntity<>(order, HttpStatus.OK);
     }
 
@@ -148,8 +147,7 @@ public class CarLifeOrderController {
      * 根据条件查询用户订单集合
      * 0 全部  -1 已取消  1 待支付  3 已完成
      */
-    @GetMapping(value = "/{status}/status", produces = "application/json;charset=utf-8")
-    @ResponseBody
+    @GetMapping(value = "list/{status}/status")
     public ResponseEntity getOrdersByAccountId(@PathVariable Integer status, HttpServletRequest request)
             throws NotFoundException, ServiceUnavailableException, NotRuleException, MissingParameterException {
         String accountId = ServiceManager.accountService.getAccountId(request);
@@ -158,15 +156,18 @@ public class CarLifeOrderController {
         }
         List<CarLifeOrders> carLifeOrders = ServiceManager.carLifeOrdersRepository.findByAccountIdOrderByCreateTimeDesc(accountId);
         if (-1 == status) {
-            carLifeOrders = carLifeOrders.stream().filter(o -> o.getIsAvailable() == Integer.valueOf(Constant.IS_NORMAL_CANCELED)).sorted().collect(toList());
+            carLifeOrders = carLifeOrders.stream().filter(o -> o.getIsAvailable() == Integer.valueOf(Constant.IS_NORMAL_CANCELED)).collect(toList());
         } else if (1 == status) {
-            carLifeOrders = carLifeOrders.stream().filter(o -> o.getPayStatus() == Integer.valueOf(Constant.PAY_STATUS_NOT_PAID)).sorted().collect(toList());
+            carLifeOrders = carLifeOrders.stream().filter(o -> o.getPayStatus() == Integer.valueOf(Constant.PAY_STATUS_NOT_PAID)).collect(toList());
         } else {
-            carLifeOrders = carLifeOrders.stream().filter(o -> o.getStatus() == status).filter(o -> o.getPayStatus() == 3).sorted().collect(toList());
+            carLifeOrders = carLifeOrders.stream().filter(o -> o.getStatus() == status).filter(o -> o.getPayStatus() == 3).collect(toList());
         }
         if (carLifeOrders.size() == 0) {
             throw new NotFoundException("carLifeOrder");
         }
+        carLifeOrders.forEach(t->{
+            t.setOrdersItems(ServiceManager.ordersItemsRepository.findByOrOrderSerial(t.getOrderSerial()));
+        });
         return new ResponseEntity<>(carLifeOrders, HttpStatus.OK);
     }
 
@@ -176,7 +177,7 @@ public class CarLifeOrderController {
      * @param serialNumber 订单序列号
      * @return 订单
      */
-    @PutMapping(value = "/shutdown/{serialNumber}/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/shutdown/{serialNumber}/serialNumber", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity shutdownOrder(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
         String accountId = ServiceManager.accountService.getAccountId(request);

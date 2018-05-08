@@ -48,7 +48,6 @@ public class Category {
      */
     private Integer status;
 
-    public List<Item> getItems() {
-        return ServiceManager.itemRepository.findByCategoryIdAndStatus(id, Item.STATUS_NORMAL);
-    }
+    @Transient
+    public List<Item> itemsList;
 }

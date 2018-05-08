@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * 名称： ItemRepository
  * 作者： dpw
  * 日期： 2018-05-04 10:45
- * 描述： 商品
+ * 描述： 订单商品
  **/
-public interface OrdersItemsRepository extends JpaRepository<OrdersItems, String>{
-
+public interface OrdersItemsRepository extends JpaRepository<OrdersItems, String> {
+    OrdersItems findByOrOrderSerial(String orderSerial);
 }

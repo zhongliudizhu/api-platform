@@ -28,6 +28,11 @@ public class Seller {
     @Column(length = 50)
     private String id;
     /**
+     * 联系电话
+     */
+    @Column(length = 50)
+    private String telephone;
+    /**
      * 商家名称
      */
     @Column(length = 50)
