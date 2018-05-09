@@ -25,9 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 
@@ -129,7 +127,6 @@ public class CarLifeOrderController {
      * 查询单个订单-根据序列号
      */
     @GetMapping(value = "get/{serialNumber}/serialNumber", produces = "application/json;charset=utf-8")
-    @ResponseBody
     public ResponseEntity getOrders(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
         if (StringUtils.isEmpty(serialNumber)) {
             throw new MissingParameterException("serialNumber.carLifeOrders");
@@ -147,17 +144,16 @@ public class CarLifeOrderController {
      * 确认收货
      */
     @PostMapping(value = "confirm", produces = "application/json;charset=utf-8")
-    @ResponseBody
     public ResponseEntity confirmOrdersReceived(@RequestParam String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
         if (StringUtils.isEmpty(serialNumber)) {
             throw new MissingParameterException("serialNumber.carLifeOrders");
         }
         CarLifeOrders order = ServiceManager.carLifeOrdersRepository.findByOrderSerial(serialNumber);
-        if (order.getIsAvailable() == 1 || order.getStatus() < 3)
-            throw new NotRuleException("illegalOrderStatus.carLifeOrders");
         if (ObjectUtils.isEmpty(order)) {
             throw new NotFoundException("carLifeOrders");
         }
+        if (order.getIsAvailable() == 1 || order.getStatus() < 3)
+            throw new NotRuleException("illegalOrderStatus.carLifeOrders");
         order.setSendStatus(3);
         order.setUpdateTime(new Date());
         CarLifeOrders carLifeOrdersSaved = ServiceManager.carLifeOrdersRepository.save(order);
@@ -201,7 +197,6 @@ public class CarLifeOrderController {
      * @return 订单
      */
     @PutMapping(value = "/shutdown/{serialNumber}/serialNumber", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     public ResponseEntity shutdownOrder(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
         String accountId = ServiceManager.accountService.getAccountId(request);
         if (StringUtils.isEmpty(accountId)) {
