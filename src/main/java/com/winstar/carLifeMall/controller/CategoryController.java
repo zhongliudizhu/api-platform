@@ -37,14 +37,6 @@ public class CategoryController {
             List<Item> item =ServiceManager.itemRepository.findByCategoryIdAndStatus(t.getId(), Item.STATUS_NORMAL);
             t.setItemsList(item);
         });
-        Category category = new Category();
-        category.setId("100");
-        category.setName("全部分类");
-        category.setStatus(0);
-        category.setCreateTime(new Date());
-        category.setUpdateTime(new Date());
-        category.setItemsList(ServiceManager.itemRepository.findByStatus(Item.STATUS_NORMAL));
-        list.add(category);
 
         if (list.size() == 0) throw new NotFoundException("category");
 
