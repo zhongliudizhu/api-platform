@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -36,6 +37,15 @@ public class CategoryController {
             List<Item> item =ServiceManager.itemRepository.findByCategoryIdAndStatus(t.getId(), Item.STATUS_NORMAL);
             t.setItemsList(item);
         });
+        Category category = new Category();
+        category.setId("100");
+        category.setName("全部分类");
+        category.setStatus(0);
+        category.setCreateTime(new Date());
+        category.setUpdateTime(new Date());
+        category.setItemsList(ServiceManager.itemRepository.findByStatus(Item.STATUS_NORMAL));
+        list.add(category);
+
         if (list.size() == 0) throw new NotFoundException("category");
 
         return list;
