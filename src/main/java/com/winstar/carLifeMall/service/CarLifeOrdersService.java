@@ -30,7 +30,7 @@ public class CarLifeOrdersService {
 
         CarLifeOrders carLifeOrders = ServiceManager.carLifeOrdersRepository.findByOrderSerial(serialNo);
         if (ObjectUtils.isEmpty(carLifeOrders) || carLifeOrders.getIsAvailable() == Integer.valueOf(Constant.IS_NORMAL_CANCELED)) {
-            throw new NotFoundException("oilOrder.carLifeOrders");
+            throw new NotFoundException("carLifeOrders");
         }
 
         return carLifeOrders;
