@@ -176,12 +176,10 @@ public class CarLifeOrderController {
         List<CarLifeOrders> carLifeOrders = ServiceManager.carLifeOrdersRepository.findByAccountIdOrderByCreateTimeDesc(accountId);
         if (-1 == status) {
             carLifeOrders = carLifeOrders.stream().filter(o -> o.getIsAvailable() == Integer.valueOf(Constant.IS_NORMAL_CANCELED)).collect(toList());
-        } else if (1 == status) {
-            carLifeOrders = carLifeOrders.stream().filter(o -> o.getPayStatus() == Integer.valueOf(Constant.PAY_STATUS_NOT_PAID)).collect(toList());
         } else if (0 == status) {
-            carLifeOrders = carLifeOrders.stream().filter(o -> o.getPayStatus() == Integer.valueOf(Constant.PAY_STATUS_NOT_PAID)).collect(toList());
+
         } else {
-            carLifeOrders = carLifeOrders.stream().filter(o -> o.getStatus() == status).filter(o -> o.getPayStatus() == 3).collect(toList());
+            carLifeOrders = carLifeOrders.stream().filter(o -> o.getStatus() == status).filter(o -> o.getIsAvailable().equals("0")).collect(toList());
         }
         if (carLifeOrders.size() == 0) {
             throw new NotFoundException("carLifeOrder");
