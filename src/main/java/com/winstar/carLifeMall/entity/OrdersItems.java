@@ -1,5 +1,6 @@
 package com.winstar.carLifeMall.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -41,6 +42,12 @@ public class OrdersItems {
      */
     @Column(length = 50)
     private String sellerName;
+
+    /**
+     * 服务地址
+     */
+    @Column(length = 50)
+    private String address;
     /**
      * 商品ID
      */
@@ -54,6 +61,7 @@ public class OrdersItems {
     /**
      * 预约时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date reserveTime;
     /**
      * 预约手机号码

@@ -97,6 +97,7 @@ public class CarLifeOrderController {
         ordersItems.setSellerName(seller.getName());
         ordersItems.setReserveTime(DateUtil.StringToDate(carLifeOrdersParam.getReserveTime()));
         ordersItems.setReserveMobile(carLifeOrdersParam.getReserveMobile());
+        ordersItems.setAddress(seller.getAddress());
 
         OrdersItems ordersItemsSaved = ServiceManager.ordersItemsRepository.save(ordersItems);
         carLifeOrdersSaved.setOrdersItems(ordersItemsSaved);
@@ -179,7 +180,7 @@ public class CarLifeOrderController {
         } else if (0 == status) {
 
         } else {
-            carLifeOrders = carLifeOrders.stream().filter(o -> o.getStatus() == status).filter(o -> o.getIsAvailable().equals("0")).collect(toList());
+            carLifeOrders = carLifeOrders.stream().filter(o -> o.getStatus() == status).filter(o -> o.getIsAvailable() == 0).collect(toList());
         }
         if (carLifeOrders.size() == 0) {
             throw new NotFoundException("carLifeOrder");
