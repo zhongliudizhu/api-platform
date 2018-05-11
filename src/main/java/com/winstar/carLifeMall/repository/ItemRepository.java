@@ -14,4 +14,5 @@ import java.util.List;
  **/
 public interface ItemRepository extends JpaRepository<Item, String> {
     List<Item> findByCategoryIdAndStatus(String category, Integer status);
+    List<Item> findByStatus(Integer status);
 }

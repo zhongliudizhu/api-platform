@@ -112,14 +112,14 @@ public class CarLifeOrderController {
     @GetMapping(value = "/judge/{serialNumber}/serialNumber")
     public ResponseEntity judgeOrder(@PathVariable String serialNumber) throws MissingParameterException, NotRuleException, NotFoundException {
         if (StringUtils.isEmpty(serialNumber)) {
-            throw new MissingParameterException("serialNumber.order");
+            throw new MissingParameterException("serialNumber.carLifeOrders");
         }
         CarLifeOrders order = ServiceManager.carLifeOrdersRepository.findByOrderSerial(serialNumber);
         if (ObjectUtils.isEmpty(order)) {
             throw new NotFoundException("carLifeOrders");
         }
         if (order.getIsAvailable() == Integer.valueOf(Constant.IS_NORMAL_CANCELED)) {
-            throw new NotRuleException("closed.order");
+            throw new NotRuleException("closed.carLifeOrders");
         }
         return new ResponseEntity<>(new SimpleResult("OK"), HttpStatus.OK);
     }
@@ -201,23 +201,23 @@ public class CarLifeOrderController {
     public ResponseEntity shutdownOrder(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
         String accountId = ServiceManager.accountService.getAccountId(request);
         if (StringUtils.isEmpty(accountId)) {
-            throw new NotFoundException("accountId.carLifeCarLifeOrders");
+            throw new NotFoundException("accountId.carLifeOrders");
         }
         if (StringUtils.isEmpty(serialNumber)) {
-            throw new MissingParameterException("serialNumber.carLifeCarLifeOrders");
+            throw new MissingParameterException("serialNumber.carLifeOrders");
         }
         CarLifeOrders carLifeCarLifeOrders = ServiceManager.carLifeOrdersRepository.findByOrderSerial(serialNumber);
         if (ObjectUtils.isEmpty(carLifeCarLifeOrders)) {
-            throw new NotFoundException("carLifeCarLifeOrders");
+            throw new NotFoundException("carLifeOrders");
         }
         if (carLifeCarLifeOrders.getStatus() != 1) {
-            throw new NotRuleException("cannotShutdown.carLifeCarLifeOrders");
+            throw new NotRuleException("cannotShutdown.carLifeOrders");
         }
         if (carLifeCarLifeOrders.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)) {
-            throw new NotRuleException("alreadyClosed.carLifeCarLifeOrders");
+            throw new NotRuleException("alreadyClosed.carLifeOrders");
         }
         if (!carLifeCarLifeOrders.getAccountId().equals(accountId)) {
-            throw new NotRuleException("notYourOrder.carLifeCarLifeOrders");
+            throw new NotRuleException("notYourOrder.carLifeOrders");
         }
         carLifeCarLifeOrders.setIsAvailable(Integer.valueOf(Constant.IS_NORMAL_CANCELED));
         carLifeCarLifeOrders = ServiceManager.carLifeOrdersRepository.save(carLifeCarLifeOrders);
