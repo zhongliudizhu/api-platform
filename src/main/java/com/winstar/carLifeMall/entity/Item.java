@@ -24,6 +24,7 @@ import static java.util.stream.Collectors.toList;
 public class Item {
     @Transient
     public static final Integer STATUS_NORMAL = 0;
+    public static final Integer STATUS_DELETED = 2;
 
     /**
      * 唯一标识

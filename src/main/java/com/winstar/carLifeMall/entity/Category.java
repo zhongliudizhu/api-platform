@@ -44,7 +44,7 @@ public class Category {
      */
     private Date updateTime;
     /**
-     * 状态 0正常 1锁定
+     * 状态 0正常 1锁定 2删除
      */
     private Integer status;
 
