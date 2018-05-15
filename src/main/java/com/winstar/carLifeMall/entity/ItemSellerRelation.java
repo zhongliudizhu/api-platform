@@ -38,8 +38,4 @@ public class ItemSellerRelation {
      */
     @Column(length = 50)
     private String sellerId;
-
-    public Seller getSeller() {
-        return ServiceManager.sellerRepository.findOne(sellerId);
-    }
 }

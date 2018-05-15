@@ -96,11 +96,6 @@ public class Item {
      *
      * @return
      */
-    public List<Seller> getSeller() {
-        List<ItemSellerRelation> list = ServiceManager.itemSellerRelationRepository.findByItemId(id);
-        List<Seller> result = list.stream().map(t -> {
-            return t.getSeller();
-        }).collect(toList());
-        return result;
-    }
+    @Transient
+    private List<Seller> seller;
 }

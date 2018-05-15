@@ -1,5 +1,6 @@
 package com.winstar.carLifeMall.entity;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.winstar.user.utils.ServiceManager;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
