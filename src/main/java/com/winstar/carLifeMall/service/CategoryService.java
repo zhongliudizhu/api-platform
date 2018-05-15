@@ -17,7 +17,7 @@ import java.util.List;
 public class CategoryService {
     @Cacheable(value = "getCarLifeCategory", keyGenerator = "tkKeyGenerator")
     public List<Category> findByStatus() {
-        return ServiceManager.categoryRepository.findByStatus(Category.STATUS_NORMAL);
+        return ServiceManager.categoryRepository.findByStatusNot(Category.STATUS_DELETE);
     }
 
 }

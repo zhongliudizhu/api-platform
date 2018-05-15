@@ -12,5 +12,5 @@ import java.util.List;
  * 描述： 类别
  **/
 public interface CategoryRepository extends JpaRepository<Category, String>{
-    List<Category> findByStatus(Integer status);
+    List<Category> findByStatusNot(Integer status);
 }

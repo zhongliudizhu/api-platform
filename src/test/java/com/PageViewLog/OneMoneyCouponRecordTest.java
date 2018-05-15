@@ -35,6 +35,7 @@ public class OneMoneyCouponRecordTest {
         System.out.println(redisTools.exists("bb"));
         System.out.println(redisTools.exists("bbx"));
         System.out.println(redisTools.get("bb1"));
+        redisTools.remove("bb1");
 
 /*
         boolean hasChance = oneMoneyCouponRecordService.checkBuyAuth("1");

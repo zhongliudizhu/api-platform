@@ -21,6 +21,7 @@ import java.util.List;
 public class Category {
     @Transient
     public static final Integer STATUS_NORMAL = 0;
+    public static final Integer STATUS_DELETE = 2;
     /**
      * 唯一标识
      */

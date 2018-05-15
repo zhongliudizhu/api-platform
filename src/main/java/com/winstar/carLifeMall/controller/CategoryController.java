@@ -33,7 +33,7 @@ public class CategoryController {
     public List<Category> findList() throws NotFoundException {
         List<Category> list = ServiceManager.categoryService.findByStatus();
         list.forEach(t->{
-            List<Item> item =ServiceManager.itemRepository.findByCategoryIdAndStatusNot(t.getId(), Item.STATUS_DELETED);
+            List<Item> item =ServiceManager.itemRepository.findByCategoryIdAndStatus(t.getId(), Item.STATUS_NORMAL);
             t.setItemsList(item);
         });
 

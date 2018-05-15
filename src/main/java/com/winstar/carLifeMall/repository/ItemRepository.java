@@ -13,6 +13,6 @@ import java.util.List;
  * 描述： 商品
  **/
 public interface ItemRepository extends JpaRepository<Item, String> {
-    List<Item> findByCategoryIdAndStatusNot(String category, Integer status);
+    List<Item> findByCategoryIdAndStatus(String category, Integer status);
     List<Item> findByStatus(Integer status);
 }
