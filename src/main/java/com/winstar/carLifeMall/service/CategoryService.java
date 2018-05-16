@@ -25,6 +25,19 @@ public class CategoryService {
     @Autowired
     RedisTools redisTools;
 
+    /**
+     * 商家
+     *   cbc_car_life_seller
+     *   status 0启用 1停用 2删除：0显示 1 2 不显示
+     *   商品类别
+     *   cbc_car_life_category
+     *   status 0正常 1锁定 2删除 ：0 1 显示 2不显示
+     *   商品管理
+     *   cbc_car_life_item
+     *   status 0上架 1 下架：0显示 1不显示
+     *
+     * @return
+     */
     @Cacheable(value = "getCarLifeCategory", keyGenerator = "tkKeyGenerator")
     public List<Category> findByStatus() {
 
