@@ -61,7 +61,6 @@ public class Application extends WebMvcConfigurerAdapter {
         return converter;
     }
     @Bean
-    @LoadBalanced
     public RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new ClientErrorHandler());
