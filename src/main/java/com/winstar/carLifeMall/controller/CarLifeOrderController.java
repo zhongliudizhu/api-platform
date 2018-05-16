@@ -56,9 +56,16 @@ public class CarLifeOrderController {
 
         Seller sellerCheck = ServiceManager.sellerRepository.findOne(carLifeOrdersParam.getSellerId());
         if (null == sellerCheck) throw new NotFoundException("seller");
-
+        checkStorageCount(itemCheck);
         CarLifeOrders result = initCarLifeOrders(itemCheck, sellerCheck, carLifeOrdersParam, accountId);
+
         return new ResponseEntity(result, HttpStatus.OK);
+    }
+
+    void checkStorageCount(Item item) throws NotRuleException {
+        long num = ServiceManager.carLifeOrdersRepository.countByIsAvailableAndItemId(0, item.getId());
+        if (item.getSaleStatus() == 1 || num >= item.getStorageCount())
+            throw new NotRuleException("isSale.carLifeOrders");
     }
 
     private void checkParam(CarLifeOrdersParam carLifeOrdersParam) throws NotRuleException {
@@ -136,7 +143,7 @@ public class CarLifeOrderController {
         if (ObjectUtils.isEmpty(order)) {
             throw new NotFoundException("carLifeOrders");
         }
-        order.setOrdersItems(ServiceManager.ordersItemsRepository.findByOrOrderSerial(order.getOrderSerial()));
+        order.setOrdersItems(ServiceManager.ordersItemsRepository.findByOrderSerial(order.getOrderSerial()));
 
         return new ResponseEntity<>(order, HttpStatus.OK);
     }
@@ -158,7 +165,7 @@ public class CarLifeOrderController {
         order.setSendStatus(3);
         order.setUpdateTime(new Date());
         CarLifeOrders carLifeOrdersSaved = ServiceManager.carLifeOrdersRepository.save(order);
-        carLifeOrdersSaved.setOrdersItems(ServiceManager.ordersItemsRepository.findByOrOrderSerial(order.getOrderSerial()));
+        carLifeOrdersSaved.setOrdersItems(ServiceManager.ordersItemsRepository.findByOrderSerial(order.getOrderSerial()));
 
         return new ResponseEntity<>(carLifeOrdersSaved, HttpStatus.OK);
     }
@@ -186,7 +193,7 @@ public class CarLifeOrderController {
             throw new NotFoundException("carLifeOrder");
         }
         carLifeOrders.forEach(t -> {
-            t.setOrdersItems(ServiceManager.ordersItemsRepository.findByOrOrderSerial(t.getOrderSerial()));
+            t.setOrdersItems(ServiceManager.ordersItemsRepository.findByOrderSerial(t.getOrderSerial()));
         });
         return new ResponseEntity<>(carLifeOrders, HttpStatus.OK);
     }

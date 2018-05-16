@@ -10,5 +10,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * 描述： 订单商品
  **/
 public interface OrdersItemsRepository extends JpaRepository<OrdersItems, String> {
-    OrdersItems findByOrOrderSerial(String orderSerial);
+    OrdersItems findByOrderSerial(String orderSerial);
 }

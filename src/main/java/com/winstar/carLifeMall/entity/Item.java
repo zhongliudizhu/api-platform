@@ -69,7 +69,7 @@ public class Item {
      * 库存量
      */
     @Column(columnDefinition = "int default 0")
-    private Integer storage_count;
+    private Integer storageCount;
     /**
      * 创建时间
      */
