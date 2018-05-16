@@ -125,7 +125,7 @@ public class CouponActivityController {
         if(StringUtils.isEmpty(plateNumber)){
             throw new NotRuleException("joinActivity2.plateNumber");
         }
-        JoinList joinList = joinListRepository.findByAccountId(accountId.toString());
+        JoinList joinList = joinListRepository.findByAccountIdAndCreateTime(accountId.toString(),DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
 
         if(ObjectUtils.isEmpty(joinList)){
             joinList = new JoinList();
@@ -155,7 +155,7 @@ public class CouponActivityController {
     public JoinList JoinVerify(HttpServletRequest request) throws NotFoundException,NotRuleException{
         Object accountId = request.getAttribute("accountId");
 
-        JoinList joinList = joinListRepository.findByAccountId(accountId.toString());
+        JoinList joinList = joinListRepository.findByAccountIdAndCreateTime(accountId.toString(),DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
         if(ObjectUtils.isEmpty(joinList)){
             throw new NotFoundException("CouponActivity.notJoin");
         }
@@ -275,12 +275,13 @@ public class CouponActivityController {
         }else{
             updateJoinList(accountId);//更新参加状态
         }
-        //识别纯储和纯信
-        Integer sign = CouponActivityUtil.getSign(whiteLists);
 
         //领取资格&发卷  4个活动依次发送（101和102为互斥，并要进行打标）
         List<VerifyResult> list = new LinkedList<>();
         for (WhiteList whiteList:whiteLists) {
+            //识别纯储和纯信
+            Integer sign = CouponActivityUtil.getSign(whiteLists);
+
             logger.info("openid:"+account.getOpenid()+"-----二期开始发券[" + whiteList.getType() +"]");
             if(sign == 3 && whiteList.getType() == 102){
                 whiteList.setIsGet(1);
@@ -543,7 +544,7 @@ public class CouponActivityController {
     }
     @Async
     private  void  updateJoinList(Object accountId){
-        JoinList joinList = joinListRepository.findByAccountId(accountId.toString());
+        JoinList joinList = joinListRepository.findByAccountIdAndCreateTime(accountId.toString(),DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
         if(!ObjectUtils.isEmpty(joinList)){
             joinList.setIsVerify(ActivityIdEnum.ACTIVITY_VERIFY_1.getActivity());
             joinListRepository.save(joinList);

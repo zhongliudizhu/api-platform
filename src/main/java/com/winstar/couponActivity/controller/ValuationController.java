@@ -96,12 +96,12 @@ public class ValuationController {
 //        }
 //        String status = MapUtils.getString(map, "status");
         VehicleValue vehicleValue =  vehicleValueRepository.findByHphm(valuationParam.getPlateNumber());
-        if(ObjectUtils.isEmpty(vehicleValue)){
-           throw new NotFoundException("vehicleValue.notFound");
-        }
+//        if(ObjectUtils.isEmpty(vehicleValue)){
+//           throw new NotFoundException("vehicleValue.notFound");
+//        }
 //        vehicleValue.setUpdateTime(DateUtil.getNowDate());
-        vehicleValue.setValue(valuationParam.getPrice());
-        vehicleValue = vehicleValueRepository.save(vehicleValue);
+//        vehicleValue.setValue(valuationParam.getPrice());
+//        vehicleValue = vehicleValueRepository.save(vehicleValue);
 
         return vehicleValue;
     }
