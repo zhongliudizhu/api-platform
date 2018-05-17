@@ -74,7 +74,7 @@ public class WsdPayController {
         String orderOwner = MapUtils.getString(payMap, "orderOwner");
         long beginTime = System.currentTimeMillis();
         Double payPrice;
-        if(orderOwner.equals(EnumType.PAY_SHOPNAME_CARSERVICE.valueStr())){
+        if(orderOwner.equals(EnumType.PAY_SHOPNAME_CARSERVICE.value() + "")){
             CarLifeOrders carLifeOrders = carLifeOrdersService.getCarLifeOrdersBySerialNo(orderNumber);
             if(WsdUtils.isEmpty(carLifeOrders)){
                 logger.info(orderNumber + "，汽车服务订单不存在！");
