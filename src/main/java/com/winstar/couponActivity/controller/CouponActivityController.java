@@ -503,7 +503,7 @@ public class CouponActivityController {
         try {
             if (StringUtils.isEmpty(vehicleValue.getCl())){
                 vehicleValue.setCl(TimeUtil.dayComparePrecise(TimeUtil.getStringToDate(vehicleValue.getCdrq()),new Date()));
-                vehicleValueRepository.save(vehicleValue);
+//                vehicleValueRepository.save(vehicleValue);
             }
         } catch (Exception e) {
             throw new NotRuleException("vehicleValue.getTime");
