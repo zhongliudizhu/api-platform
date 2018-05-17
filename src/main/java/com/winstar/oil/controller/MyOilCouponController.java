@@ -22,7 +22,6 @@ import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.user.service.AccountService;
 import com.winstar.utils.AESUtil;
-import com.winstar.utils.WebUitl;
 import com.winstar.utils.WsdUtils;
 import com.winstar.vo.OilSetMealVo;
 import org.apache.commons.collections.MapUtils;
@@ -30,8 +29,6 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -237,15 +234,15 @@ public class MyOilCouponController {
             activateOilCoupon(myOilCoupon.getPan(),myOilCoupon.getPanAmt());
             return map;
         }
-        String sortStr = "[{property:'createTime',direction:'asc'}]";
-        Pageable pageable = WebUitl.buildPageRequest(0, 150, sortStr);
+        /*String sortStr = "[{property:'createTime',direction:'asc'}]";
+        Pageable pageable = WebUitl.buildPageRequest(0, 150, sortStr);*/
         long beginTime = System.currentTimeMillis();
-        Page<OilCoupon> oilCoupons = oilCouponRepository.findByPanAmtAndOilState(myOilCoupon.getPanAmt(),"0",pageable);
-        if(WsdUtils.isEmpty(oilCoupons) || oilCoupons.getContent().size() == 0){
+        List<OilCoupon> oilCoupons = oilCouponRepository.findRandomOilCoupons();
+        if(WsdUtils.isEmpty(oilCoupons) || oilCoupons.size() == 0){
             logger.info("没有该面值的券码，发券失败！");
             throw new NotRuleException("oilCoupon.null");
         }
-        OilCoupon oilCoupon = oilCoupons.getContent().get(new Random().nextInt(oilCoupons.getContent().size()));
+        OilCoupon oilCoupon = oilCoupons.get(new Random().nextInt(oilCoupons.size()));
         logger.info(oilCoupon.getPan());
         Result activeResult = activateOilCoupon(oilCoupon.getPan(),oilCoupon.getPanAmt());
         if(WsdUtils.isNotEmpty(activeResult) && activeResult.getCode().equals("SUCCESS")){
