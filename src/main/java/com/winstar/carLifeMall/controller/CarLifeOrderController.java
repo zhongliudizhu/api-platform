@@ -37,6 +37,25 @@ import static java.util.stream.Collectors.toList;
 @RequestMapping("/api/v1/cbc/carLife/orders")
 public class CarLifeOrderController {
     public static final Logger logger = LoggerFactory.getLogger(CarLifeOrderController.class);
+    @GetMapping("/autoCannel/{serialNumber}/serialNumber")
+    public ResponseEntity cancelOrders(String orderSerialNo){
+        Date end = DateUtil.addMinute(DateUtil.getNowDate(),-30);
+        Date begin = DateUtil.addYear(end,-1);
+        //查出未付款未关闭的订单
+        List<CarLifeOrders> orders = ServiceManager.carLifeOrdersRepository.findByIsAvailableAndStatusAndCreateTimeBetween(0, 1,begin,end);
+        for (CarLifeOrders carLifeOrders:orders
+                ) {
+            carLifeOrders.setIsAvailable(1);
+            carLifeOrders.setUpdateTime(new Date());
+            if(!StringUtils.isEmpty(carLifeOrders.getCouponId())){
+                //1.返还优惠券
+                ServiceManager.couponService.cancelMyCoupon(carLifeOrders.getCouponId());
+            }
+        }
+        ServiceManager.carLifeOrdersRepository.save(orders);
+        logger.info("关闭汽车生活订单数量："+orders.size());
+        return new ResponseEntity("关闭成功",HttpStatus.OK);
+    }
 
     /**
      * 添加汽车服务订单

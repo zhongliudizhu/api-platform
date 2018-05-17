@@ -56,7 +56,6 @@ public class CarLifeOrdersService {
         }
 
         carLifeOrders.setBankSerialNo(payInfo.getBankSerialNumber());
-        carLifeOrders.setPayPrice(Arith.div(payInfo.getPayPrice(), 100));//分转换元
         carLifeOrders.setPayTime(payInfo.getPayTime());
         carLifeOrders.setPayType(payInfo.getPayType());
         carLifeOrders.setPayStatus(payInfo.getPayState());

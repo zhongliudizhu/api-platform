@@ -35,7 +35,7 @@ public class CarLifeOrderShutDownTask {
         Date end = DateUtil.addMinute(DateUtil.getNowDate(),-30);
         Date begin = DateUtil.addYear(end,-1);
         //查出未付款未关闭的订单
-        List<CarLifeOrders> orders = ServiceManager.carLifeOrdersRepository.findByIsAvailableAndStatusAndCreateTimeBetween("0", 1,begin,end);
+        List<CarLifeOrders> orders = ServiceManager.carLifeOrdersRepository.findByIsAvailableAndStatusAndCreateTimeBetween(0, 1,begin,end);
         for (CarLifeOrders carLifeOrders:orders
                 ) {
             carLifeOrders.setIsAvailable(1);
