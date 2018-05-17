@@ -1,5 +1,6 @@
 package com.winstar.cashier.wxpay.controller;
 
+import com.winstar.carLifeMall.service.CarLifeOrdersService;
 import com.winstar.cashier.comm.EnumType;
 import com.winstar.cashier.construction.utils.DateUtil;
 import com.winstar.cashier.entity.PayLog;
@@ -51,6 +52,9 @@ public class NotifyController {
 
     @Autowired
     private SendOilCouponService sendOilCouponService;
+
+    @Autowired
+    private CarLifeOrdersService carLifeOrdersService;
 
     @RequestMapping(value = "",method = RequestMethod.POST)
     public void notify(
@@ -173,7 +177,11 @@ public class NotifyController {
         payInfoVo.setPayState(MapUtils.getString(respMap,"result_code").equalsIgnoreCase("SUCCESS") ? EnumType.PAY_STATE_SUCCESS.value() : EnumType.PAY_STATE_FAIL.value());
         payInfoVo.setPayTime(DateUtil.parseTime(MapUtils.getString(respMap, "time_end")));
         payInfoVo.setPayType(payOrder.getPayWay());
-        orderService.updateOrderCashier(payInfoVo);
+        if(payOrder.getOrderNumber().contains("wxcar")){
+            carLifeOrdersService.updateCarLifeOrderCashier(payInfoVo);
+        }else{
+            orderService.updateOrderCashier(payInfoVo);
+        }
         long endTime = System.currentTimeMillis();
         logger.info("修改订单消耗时间：" + (endTime - beginTime) + "ms，订单号：" + payOrder.getOrderNumber());
         if(payOrder.getOrderOwner().equals("1") && respMap.get("result_code").toString().equalsIgnoreCase("SUCCESS")){

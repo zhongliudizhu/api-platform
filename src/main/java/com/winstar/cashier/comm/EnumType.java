@@ -43,6 +43,7 @@ public enum EnumType {
     PAY_SHOPNAME_SAFE(2,"保险订单","保险订单"),
     PAY_SHOPNAME_CHARGE(3,"代办订单","代办订单"),
     PAY_SHOPNAME_VALIDATECAR(4,"审车订单","审车订单"),
+    PAY_SHOPNAME_CARSERVICE(5,"汽车服务","汽车服务"),
     ;
 
     private final Integer value;
