@@ -37,8 +37,14 @@ import static java.util.stream.Collectors.toList;
 @RequestMapping("/api/v1/cbc/carLife/orders")
 public class CarLifeOrderController {
     public static final Logger logger = LoggerFactory.getLogger(CarLifeOrderController.class);
+
+    /**
+     * 关闭超过半小时不支付的订单
+     *
+     * @return
+     */
     @GetMapping("/autoCannel/{serialNumber}/serialNumber")
-    public ResponseEntity cancelOrders(String orderSerialNo){
+    public ResponseEntity cancelOrders(){
         Date end = DateUtil.addMinute(DateUtil.getNowDate(),-30);
         Date begin = DateUtil.addYear(end,-1);
         //查出未付款未关闭的订单

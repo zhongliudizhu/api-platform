@@ -51,7 +51,7 @@ public class CarLifeOrdersService {
         }
         String serialNumber = payInfo.getOrderSerialNumber();
         CarLifeOrders carLifeOrders = ServiceManager.carLifeOrdersRepository.findByOrderSerial(serialNumber);
-        if (ObjectUtils.isEmpty(carLifeOrders) || carLifeOrders.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)) {
+        if (ObjectUtils.isEmpty(carLifeOrders)) {
             return "2";
         }
 
