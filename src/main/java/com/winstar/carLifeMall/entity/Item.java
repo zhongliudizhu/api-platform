@@ -24,7 +24,12 @@ import static java.util.stream.Collectors.toList;
 public class Item {
     @Transient
     public static final Integer STATUS_NORMAL = 0;
+    @Transient
     public static final Integer STATUS_DELETED = 2;
+    @Transient
+    public static final int ACTIVE_TYPE_EARLY_MARKET = 9;
+    @Transient
+    public static final int ACTIVE_TYPE_EVENING_MARKET = 10;
 
     /**
      * 唯一标识
@@ -80,7 +85,7 @@ public class Item {
     private Date updateTime;
 
     /**
-     * 活动类别 0 常规 1 秒杀
+     * 活动类别 0 常规 1 秒杀 9 早市 10 晚市
      */
     @Column(length = 2, columnDefinition = "int default 0")
     private Integer activeType;
@@ -98,4 +103,5 @@ public class Item {
      */
     @Transient
     private List<Seller> seller;
+
 }

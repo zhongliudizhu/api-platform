@@ -1,20 +1,17 @@
-item.NotFound
-illegalItemSeller.NotRule
-seller.NotFound
-carLifeOrdersParam.NotRule
-itemId.NotRule
-reserveMobile.NotRule
-sellerId.NotRule
-serialNumber.carLifeOrders.MissingParameter
-carLifeOrders.NotFound
-closed.carLifeOrders.NotRule
-serialNumber.carLifeOrders.MissingParameter
-serialNumber.carLifeOrders.MissingParameter
-illegalOrderStatus.carLifeOrders.NotRule
-status.carLifeOrders.MissingParameter
-accountId.carLifeOrders.NotFound
-carLifeOrders.NotFound
-cannotShutdown.carLifeOrders.NotRule
-alreadyClosed.carLifeOrders.NotRule
-notYourOrder.carLifeOrders.NotRule
-category.NotFound
+accountId.carLifeOrders.NotFound 用户信息异常
+alreadyClosed.carLifeOrders.NotRule 订单已被关闭
+cannotShutdown.carLifeOrders.NotRule 订单不能关闭
+carLifeOrders.NotFound 订单不存在
+carLifeOrdersParam.NotRule 订单参数不合法
+category.NotFound 商品类别不存在
+closed.carLifeOrders.NotRule 订单已被关闭
+illegalItemSeller.NotRule 未知商品卖家
+illegalOrderStatus.carLifeOrders.NotRule 非法订单状态
+item.NotFound 商品类别不存在
+itemId.NotRule 商品类别信息不合法
+notYourOrder.carLifeOrders.NotRule 非法订单
+reserveMobile.NotRule  预约手机号不合法
+seller.NotFound 卖家不存在
+sellerId.NotRule 卖家ID不合法
+serialNumber.carLifeOrders.MissingParameter 订单序列号参数不能为空
+status.carLifeOrders.MissingParameter 订单状态参数不能为空
