@@ -2,6 +2,7 @@ package com.winstar.carLifeMall.service;
 
 import com.winstar.carLifeMall.entity.EarlyAndEveningMarketConfig;
 import com.winstar.carLifeMall.repository.EarlyAndEveningMarketConfigRepository;
+import com.winstar.exception.NotRuleException;
 import com.winstar.order.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,8 +27,14 @@ public class EarlyAndEveningMarketConfigService {
      *
      * @return
      */
-    public boolean checkIfOk(Integer type) {
+    public boolean checkIfOk(int type) throws NotRuleException {
         EarlyAndEveningMarketConfig earlyAndEveningMarketConfig = earlyAndEveningMarketConfigRepository.findByType(type);
+        if (earlyAndEveningMarketConfig == null) {
+            if (type == EarlyAndEveningMarketConfig.TYPE_EARLY_MARKET)
+                throw new NotRuleException("earlyMarketNotStarted");
+            else if (type == EarlyAndEveningMarketConfig.TYPE_EVENING_MARKET)
+                throw new NotRuleException("eveningMarketNotStarted");
+        }
         if (earlyAndEveningMarketConfig == null)
             return false;
 

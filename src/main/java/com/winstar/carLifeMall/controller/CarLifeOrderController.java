@@ -67,7 +67,7 @@ public class CarLifeOrderController {
 
     void checkEarlyAndEveningMarketIsOk(Item item) throws NotRuleException {
         if (item.getActiveType() == Item.ACTIVE_TYPE_EARLY_MARKET && !earlyAndEveningMarketConfigService.checkIfOk(EarlyAndEveningMarketConfig.TYPE_EARLY_MARKET)) {
-            throw new NotRuleException("earlyAndEveningMarketNotStarted");
+            throw new NotRuleException("earlyMarketNotStarted");
         } else if (item.getActiveType() == Item.ACTIVE_TYPE_EVENING_MARKET && !earlyAndEveningMarketConfigService.checkIfOk(EarlyAndEveningMarketConfig.TYPE_EVENING_MARKET)) {
             throw new NotRuleException("eveningMarketNotStarted");
         }
