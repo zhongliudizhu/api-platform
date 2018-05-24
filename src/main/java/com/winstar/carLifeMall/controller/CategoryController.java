@@ -1,10 +1,9 @@
 package com.winstar.carLifeMall.controller;
 
-import com.winstar.carLifeMall.entity.Category;
-import com.winstar.carLifeMall.entity.Item;
-import com.winstar.carLifeMall.entity.ItemSellerRelation;
-import com.winstar.carLifeMall.entity.Seller;
+import com.alibaba.fastjson.JSON;
+import com.winstar.carLifeMall.entity.*;
 import com.winstar.carLifeMall.repository.CategoryRepository;
+import com.winstar.carLifeMall.repository.EarlyAndEveningMarketConfigRepository;
 import com.winstar.carLifeMall.service.CategoryService;
 import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
 import com.winstar.exception.NotFoundException;
@@ -12,6 +11,8 @@ import com.winstar.exception.NotRuleException;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.user.utils.ServiceManager;
 import com.winstar.user.utils.SimpleResult;
+import com.winstar.user.utils.SimpleResultObj;
+import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +36,8 @@ public class CategoryController {
     CategoryService categoryService;
     @Autowired
     EarlyAndEveningMarketConfigService earlyAndEveningMarketConfigService;
+    @Autowired
+    EarlyAndEveningMarketConfigRepository earlyAndEveningMarketConfigRepository;
 
     /**
      * 早晚市是否开启
@@ -42,11 +45,16 @@ public class CategoryController {
      * @return
      */
     @RequestMapping("/checkEarlyAndEveningMarketIsOk/{type}/type")
-    public SimpleResult check(@PathVariable Integer type) throws NotRuleException {
-        if (earlyAndEveningMarketConfigService.checkIfOk(type))
-            return new SimpleResult("TRUE");
+    public SimpleResultObj check(@PathVariable Integer type) throws NotRuleException {
 
-        return new SimpleResult(String.valueOf(new Date().getTime() / 1000));
+
+        if (earlyAndEveningMarketConfigService.checkIfOk(type))
+            return new SimpleResultObj("TRUE");
+        EarlyAndEveningMarketConfig earlyAndEveningMarketConfig = earlyAndEveningMarketConfigRepository.findByType(type);
+        long curTime = new Date().getTime();
+        earlyAndEveningMarketConfig.setCurrentTime(curTime);
+
+        return new SimpleResultObj(earlyAndEveningMarketConfig);
     }
 
     /**

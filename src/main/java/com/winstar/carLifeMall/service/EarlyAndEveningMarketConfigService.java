@@ -2,6 +2,7 @@ package com.winstar.carLifeMall.service;
 
 import com.winstar.carLifeMall.entity.EarlyAndEveningMarketConfig;
 import com.winstar.carLifeMall.repository.EarlyAndEveningMarketConfigRepository;
+import com.winstar.exception.InvalidParameterException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.order.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +28,15 @@ public class EarlyAndEveningMarketConfigService {
      *
      * @return
      */
-    public boolean checkIfOk(int type) throws NotRuleException {
+    public boolean checkIfOk(int type) throws NotRuleException, InvalidParameterException {
         EarlyAndEveningMarketConfig earlyAndEveningMarketConfig = earlyAndEveningMarketConfigRepository.findByType(type);
         if (earlyAndEveningMarketConfig == null) {
             if (type == EarlyAndEveningMarketConfig.TYPE_EARLY_MARKET)
                 throw new NotRuleException("earlyMarketNotStarted");
             else if (type == EarlyAndEveningMarketConfig.TYPE_EVENING_MARKET)
                 throw new NotRuleException("eveningMarketNotStarted");
+            else
+                throw new InvalidParameterException("type");
         }
         if (earlyAndEveningMarketConfig == null)
             return false;

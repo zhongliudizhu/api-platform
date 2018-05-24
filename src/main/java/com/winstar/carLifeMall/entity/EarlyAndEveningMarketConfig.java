@@ -56,4 +56,8 @@ public class EarlyAndEveningMarketConfig {
 
     @Column(length = 50)
     private String weekDay;
+
+
+    @Transient
+    private long currentTime;
 }
