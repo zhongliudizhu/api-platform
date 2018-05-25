@@ -41,5 +41,5 @@ public class JoinList {
     private Date createTime;
 
     @Transient
-    private Integer number;
+    private long number;
 }
