@@ -52,5 +52,5 @@ public class EarlyAndEveningMarketConfig {
 
 
     @Transient
-    private long currentTime;
+    private long leftTime;
 }
