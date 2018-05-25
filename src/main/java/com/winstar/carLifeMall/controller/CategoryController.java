@@ -50,8 +50,14 @@ public class CategoryController {
         calendar.setTime(curTime);
 
         calendar.set(DateUtil.getYear(curTime), DateUtil.getMonth(curTime), DateUtil.getDay(curTime), earlyAndEveningMarketConfig.getMarketStartTime(), 0, 0);
-        long leftTime = calendar.getTimeInMillis()-curTime.getTime();
-        earlyAndEveningMarketConfig.setLeftTime(leftTime);
+        long leftTime = calendar.getTimeInMillis() - curTime.getTime();
+        if (leftTime >= 0)
+            earlyAndEveningMarketConfig.setLeftTime(leftTime);
+        else {
+            calendar.set(DateUtil.getYear(curTime), DateUtil.getMonth(curTime), DateUtil.getDay(DateUtil.addDay(curTime, 1)), earlyAndEveningMarketConfig.getMarketStartTime(), 0, 0);
+             leftTime = calendar.getTimeInMillis() - curTime.getTime();
+            earlyAndEveningMarketConfig.setLeftTime(leftTime);
+        }
         return new SimpleResultObj(earlyAndEveningMarketConfig);
     }
 
