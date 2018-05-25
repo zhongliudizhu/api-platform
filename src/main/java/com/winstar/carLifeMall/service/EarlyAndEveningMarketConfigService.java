@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import sun.applet.Main;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -53,14 +54,8 @@ public class EarlyAndEveningMarketConfigService {
     }
 
     private boolean checkTime(EarlyAndEveningMarketConfig earlyAndEveningMarketConfig, Date curDate) {
-        if (earlyAndEveningMarketConfig.getType() == EarlyAndEveningMarketConfig.TYPE_EARLY_MARKET) {
-            if (curDate.getTime() <= earlyAndEveningMarketConfig.getEarlyMarketStartTime().getTime() || curDate.getTime() >= earlyAndEveningMarketConfig.getEarlyMarketEndTime().getTime()) {
-                return false;
-            }
-        } else if (earlyAndEveningMarketConfig.getType() == EarlyAndEveningMarketConfig.TYPE_EVENING_MARKET) {
-            if (curDate.getTime() <= earlyAndEveningMarketConfig.getEarlyMarketStartTime().getTime() || curDate.getTime() >= earlyAndEveningMarketConfig.getEveningMarketEndTime().getTime()) {
-                return false;
-            }
+       if (DateUtil.getHour(curDate) <= earlyAndEveningMarketConfig.getMarketStartTime() || DateUtil.getHour(curDate) >= earlyAndEveningMarketConfig.getMarketEndTime()) {
+            return false;
         }
         return false;
     }

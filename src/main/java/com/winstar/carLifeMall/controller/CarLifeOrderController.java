@@ -2,6 +2,7 @@ package com.winstar.carLifeMall.controller;
 
 import com.winstar.carLifeMall.entity.*;
 import com.winstar.carLifeMall.param.CarLifeOrdersParam;
+import com.winstar.carLifeMall.repository.CarLifeOrdersRepository;
 import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
 import com.winstar.exception.*;
 import com.winstar.order.utils.Constant;
@@ -62,7 +63,7 @@ public class CarLifeOrderController {
         return new ResponseEntity("关闭成功", HttpStatus.OK);
     }
 
-    void checkEarlyAndEveningMarketIsOk(Item item) throws NotRuleException,InvalidParameterException {
+    void checkEarlyAndEveningMarketIsOk(Item item) throws NotRuleException, InvalidParameterException {
         if (item.getActiveType() == Item.ACTIVE_TYPE_EARLY_MARKET && !earlyAndEveningMarketConfigService.checkIfOk(EarlyAndEveningMarketConfig.TYPE_EARLY_MARKET)) {
             throw new NotRuleException("earlyMarketNotStarted");
         } else if (item.getActiveType() == Item.ACTIVE_TYPE_EVENING_MARKET && !earlyAndEveningMarketConfigService.checkIfOk(EarlyAndEveningMarketConfig.TYPE_EVENING_MARKET)) {
@@ -76,7 +77,7 @@ public class CarLifeOrderController {
      * @param carLifeOrdersParam 商品id
      */
     @PostMapping(value = "/add")
-    public ResponseEntity addCarLifeOrder(@RequestBody CarLifeOrdersParam carLifeOrdersParam, HttpServletRequest request) throws NotFoundException, NotRuleException,InvalidParameterException {
+    public ResponseEntity addCarLifeOrder(@RequestBody CarLifeOrdersParam carLifeOrdersParam, HttpServletRequest request) throws NotFoundException, NotRuleException, InvalidParameterException {
         String accountId = ServiceManager.accountService.getAccountId(request);
 
         checkParam(carLifeOrdersParam);
@@ -85,6 +86,7 @@ public class CarLifeOrderController {
         if (null == itemCheck) throw new NotFoundException("item");
 
         checkEarlyAndEveningMarketIsOk(itemCheck);
+        checkRepeatedBuy(itemCheck.getActiveType(), accountId);
 
         long count = ServiceManager.itemSellerRelationRepository.countByItemIdAndSellerId(carLifeOrdersParam.getItemId(), carLifeOrdersParam.getSellerId());
         if (count == 0)
@@ -96,6 +98,13 @@ public class CarLifeOrderController {
         CarLifeOrders result = initCarLifeOrders(itemCheck, sellerCheck, carLifeOrdersParam, accountId);
 
         return new ResponseEntity(result, HttpStatus.OK);
+    }
+
+    void checkRepeatedBuy(int activityType, String accountId) throws NotRuleException {
+        long times = ServiceManager.carLifeOrdersRepository.countByIsAvailableAndActivityTypeAndAccountId(0, activityType, accountId);
+        if (times > 0) {
+            throw new NotRuleException("justOnce.earlyAndEveningMarket");
+        }
     }
 
     void checkStorageCount(Item item) throws NotRuleException {

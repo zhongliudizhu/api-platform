@@ -4,6 +4,7 @@ import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.sql.Time;
 import java.util.Date;
 import java.util.List;
 
@@ -37,22 +38,14 @@ public class EarlyAndEveningMarketConfig {
      */
     private Integer type;
     /**
-     * 早市开始时间
+     * 开始时间
      */
-    private Date earlyMarketStartTime;
+    private int marketStartTime;
 
     /**
-     * 早市结束时间
+     * 结束时间
      */
-    private Date earlyMarketEndTime;
-    /**
-     * 晚市开始时间
-     */
-    private Date eveningMarketStartTime;
-    /**
-     * 晚市结束时间
-     */
-    private Date eveningMarketEndTime;
+    private int marketEndTime;
 
     @Column(length = 50)
     private String weekDay;

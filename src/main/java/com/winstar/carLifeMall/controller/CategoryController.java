@@ -6,6 +6,7 @@ import com.winstar.carLifeMall.repository.CategoryRepository;
 import com.winstar.carLifeMall.repository.EarlyAndEveningMarketConfigRepository;
 import com.winstar.carLifeMall.service.CategoryService;
 import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
+import com.winstar.exception.InvalidParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.order.utils.DateUtil;
@@ -45,8 +46,7 @@ public class CategoryController {
      * @return
      */
     @RequestMapping("/checkEarlyAndEveningMarketIsOk/{type}/type")
-    public SimpleResultObj check(@PathVariable Integer type) throws NotRuleException {
-
+    public SimpleResultObj check(@PathVariable Integer type) throws NotRuleException, InvalidParameterException {
 
         if (earlyAndEveningMarketConfigService.checkIfOk(type))
             return new SimpleResultObj("TRUE");
