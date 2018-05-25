@@ -54,10 +54,24 @@ public class EarlyAndEveningMarketConfigService {
     }
 
     private boolean checkTime(EarlyAndEveningMarketConfig earlyAndEveningMarketConfig, Date curDate) {
-       if (DateUtil.getHour(curDate) <= earlyAndEveningMarketConfig.getMarketStartTime() || DateUtil.getHour(curDate) >= earlyAndEveningMarketConfig.getMarketEndTime()) {
+
+        Calendar calendarStart = Calendar.getInstance();
+        calendarStart.setTime(curDate);
+        calendarStart.set(DateUtil.getYear(curDate), DateUtil.getMonth(curDate), DateUtil.getDay(curDate), earlyAndEveningMarketConfig.getMarketStartTime(), 0, 0);
+
+        Calendar calendarEnd = getCalendarHours(earlyAndEveningMarketConfig, curDate);
+
+       if (curDate.getTime()< calendarStart.getTimeInMillis() || curDate.getTime()>calendarEnd.getTimeInMillis()) {
             return false;
         }
         return false;
+    }
+
+    private Calendar getCalendarHours(EarlyAndEveningMarketConfig earlyAndEveningMarketConfig, Date curDate) {
+        Calendar calendarEnd = Calendar.getInstance();
+        calendarEnd.setTime(curDate);
+        calendarEnd.set(DateUtil.getYear(curDate), DateUtil.getMonth(curDate), DateUtil.getDay(curDate), earlyAndEveningMarketConfig.getMarketEndTime(), 0, 0);
+        return calendarEnd;
     }
 
 }
