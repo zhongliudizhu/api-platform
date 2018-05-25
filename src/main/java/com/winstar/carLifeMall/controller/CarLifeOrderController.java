@@ -150,6 +150,7 @@ public class CarLifeOrderController {
         ordersItems.setReserveTime(DateUtil.StringToDate(carLifeOrdersParam.getReserveTime()));
         ordersItems.setReserveMobile(carLifeOrdersParam.getReserveMobile());
         ordersItems.setAddress(seller.getAddress());
+        ordersItems.setTelephone(seller.getTelephone());
 
         OrdersItems ordersItemsSaved = ServiceManager.ordersItemsRepository.save(ordersItems);
         carLifeOrdersSaved.setOrdersItems(ordersItemsSaved);

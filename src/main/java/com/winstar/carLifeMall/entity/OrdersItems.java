@@ -68,4 +68,9 @@ public class OrdersItems {
      */
     @Column(length = 20)
     private String reserveMobile;
+    /**
+     * 商户电话
+     */
+    @Column(length = 20)
+    private String telephone;
 }

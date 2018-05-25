@@ -9,11 +9,12 @@ import java.util.List;
 
 /**
  * @author shoo on 2017/7/7 13:52.
- *         --  --
+ * --  --
  */
-public interface OilOrderRepository extends JpaRepository<OilOrder,String> {
+public interface OilOrderRepository extends JpaRepository<OilOrder, String> {
     /**
      * 根据订单序列号查询订单
+     *
      * @param serialNo 订单序列号
      * @return result
      */
@@ -25,7 +26,8 @@ public interface OilOrderRepository extends JpaRepository<OilOrder,String> {
     List<OilOrder> findByAccountId(String accountId);
 
     @Query("select o from OilOrder o where o.isAvailable=?1 and o.status=?2 and o.createTime between ?3 and ?4")
-    List<OilOrder> findByIsAvailableAndStatusAndCreateTimeBetween(String isAvailable, Integer status,Date begin, Date end);
+    List<OilOrder> findByIsAvailableAndStatusAndCreateTimeBetween(String isAvailable, Integer status, Date begin, Date end);
+
     /*
     * 每天某商品购买的总数量
     * */
@@ -58,4 +60,7 @@ public interface OilOrderRepository extends JpaRepository<OilOrder,String> {
 
     @Query("select o from OilOrder o where o.isAvailable='0'  and o.couponId=?1")
     List<OilOrder> findByCouponId(String findByCouponId);
+
+    @Query(value = "select count(0) from OilOrder o where o.isAvailable='0' and o.activityId=?1 and o.createTime  like concat('%',  SUBSTR(t2.create_time FROM 1 FOR 10),'%')   and o.accountId=?2", nativeQuery = true)
+    long countValidOrderByActivityIdAndCreateTimeAndAccountId(String activityId, String accountId);
 }
