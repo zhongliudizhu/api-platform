@@ -62,7 +62,6 @@ public class EarlyAndEveningMarketConfigService {
         Calendar calendarEnd = getCalendarHours(earlyAndEveningMarketConfig, curDate);
         calendarEnd.setTime(curDate);
         calendarEnd.set(DateUtil.getYear(curDate), DateUtil.getMonth(curDate), DateUtil.getDay(curDate), earlyAndEveningMarketConfig.getMarketEndTime(), 0, 0);
-        System.out.println(curDate.getTime()+"__"+calendarStart.getTimeInMillis()+"__"+calendarEnd.getTimeInMillis());
 
         if (curDate.getTime()> calendarStart.getTimeInMillis() && curDate.getTime()<calendarEnd.getTimeInMillis()) {
             return true;
