@@ -42,9 +42,12 @@ public class CategoryController {
     @RequestMapping("/checkEarlyAndEveningMarketIsOk/{type}/type")
     public SimpleResultObj check(@PathVariable Integer type) throws NotRuleException, InvalidParameterException {
 
-        if (earlyAndEveningMarketConfigService.checkIfOk(type))
-            return new SimpleResultObj("TRUE");
         EarlyAndEveningMarketConfig earlyAndEveningMarketConfig = earlyAndEveningMarketConfigRepository.findByType(type);
+        if (earlyAndEveningMarketConfigService.checkIfOk(type)) {
+            earlyAndEveningMarketConfig.setLeftTime(0l);
+            return new SimpleResultObj(earlyAndEveningMarketConfig);
+        }
+
         Date curTime = new Date();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(curTime);
@@ -55,7 +58,7 @@ public class CategoryController {
             earlyAndEveningMarketConfig.setLeftTime(leftTime);
         else {
             calendar.set(DateUtil.getYear(curTime), DateUtil.getMonth(curTime), DateUtil.getDay(DateUtil.addDay(curTime, 1)), earlyAndEveningMarketConfig.getMarketStartTime(), 0, 0);
-             leftTime = calendar.getTimeInMillis() - curTime.getTime();
+            leftTime = calendar.getTimeInMillis() - curTime.getTime();
             earlyAndEveningMarketConfig.setLeftTime(leftTime);
         }
         return new SimpleResultObj(earlyAndEveningMarketConfig);
