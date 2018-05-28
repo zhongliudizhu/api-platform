@@ -61,6 +61,6 @@ public interface OilOrderRepository extends JpaRepository<OilOrder, String> {
     @Query("select o from OilOrder o where o.isAvailable='0'  and o.couponId=?1")
     List<OilOrder> findByCouponId(String findByCouponId);
 
-    @Query(value = "select count(0) from OilOrder o where o.isAvailable='0' and o.activityId=?1 and o.createTime  like concat('%',  SUBSTR(t2.create_time FROM 1 FOR 10),'%')   and o.accountId=?2", nativeQuery = true)
+    @Query(value = "select count(0) from cbc_oil_order o where o.isAvailable='0' and o.activityId=?1 and o.createTime  like concat('%',  SUBSTR(t2.create_time FROM 1 FOR 10),'%')   and o.accountId=?2", nativeQuery = true)
     long countValidOrderByActivityIdAndCreateTimeAndAccountId(String activityId, String accountId);
 }
