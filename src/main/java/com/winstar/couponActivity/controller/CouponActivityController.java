@@ -139,8 +139,8 @@ public class CouponActivityController {
             joinList.setPlateNumber(plateNumber);
             joinList = joinListRepository.save(joinList);
         }
-        int count = joinListRepository.findByCreateTimeLessThanEqual(joinList.getCreateTime()).size();
-        joinList.setNumber(10000 + count);
+        long count = joinListRepository.countByCreateTimeLessThanEqual(joinList.getCreateTime());
+        joinList.setNumber(10000L + count);
         return joinList;
     }
 
@@ -159,8 +159,8 @@ public class CouponActivityController {
         if(ObjectUtils.isEmpty(joinList)){
             throw new NotFoundException("CouponActivity.notJoin");
         }
-        int count = joinListRepository.findByCreateTimeLessThanEqual(joinList.getCreateTime()).size();
-        joinList.setNumber(10000 + count);
+        long count = joinListRepository.countByCreateTimeLessThanEqual(joinList.getCreateTime());
+        joinList.setNumber(10000L + count);
         return joinList;
     }
 

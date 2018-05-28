@@ -170,7 +170,7 @@ public class InvoiceController {
         if(!StringUtils.isEmpty(telephone))invoice.setTelephone(telephone);
         if(!StringUtils.isEmpty(companyAddress))invoice.setCompanyAddress(companyAddress);
         if(!StringUtils.isEmpty(depositBank))invoice.setDepositBank(depositBank);
-        if(!StringUtils.isEmpty(bankAccount))invoice.setTelephone(bankAccount);
+        if(!StringUtils.isEmpty(bankAccount))invoice.setBankAccount(bankAccount);
 
         Invoice in = invoiceRepository.save(invoice);
         for (String id : ids) {

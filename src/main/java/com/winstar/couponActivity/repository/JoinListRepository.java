@@ -21,6 +21,8 @@ public interface JoinListRepository extends JpaRepository<JoinList,String>,JpaSp
 
     List<JoinList> findByCreateTimeLessThanEqual(Date time);
 
+    long countByCreateTimeLessThanEqual(Date time);
+
     @Query("select o from JoinList o where  o.accountId=?1 and o.createTime between ?2 and ?3")
     JoinList findByAccountIdAndCreateTime(String itemId, Date begin, Date end);
 }

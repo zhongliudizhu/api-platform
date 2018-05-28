@@ -1,14 +1,10 @@
 package com.winstar.carLifeMall.controller;
 
-import com.winstar.carLifeMall.entity.CarLifeOrders;
-import com.winstar.carLifeMall.entity.Item;
-import com.winstar.carLifeMall.entity.OrdersItems;
-import com.winstar.carLifeMall.entity.Seller;
+import com.winstar.carLifeMall.entity.*;
 import com.winstar.carLifeMall.param.CarLifeOrdersParam;
-import com.winstar.exception.MissingParameterException;
-import com.winstar.exception.NotFoundException;
-import com.winstar.exception.NotRuleException;
-import com.winstar.exception.ServiceUnavailableException;
+import com.winstar.carLifeMall.repository.CarLifeOrdersRepository;
+import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
+import com.winstar.exception.*;
 import com.winstar.order.utils.Constant;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.OilOrderUtil;
@@ -16,6 +12,7 @@ import com.winstar.user.utils.ServiceManager;
 import com.winstar.user.utils.SimpleResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,30 +35,34 @@ import static java.util.stream.Collectors.toList;
 public class CarLifeOrderController {
     public static final Logger logger = LoggerFactory.getLogger(CarLifeOrderController.class);
 
+    @Autowired
+    EarlyAndEveningMarketConfigService earlyAndEveningMarketConfigService;
+
     /**
      * 关闭超过半小时不支付的订单
      *
      * @return
      */
     @GetMapping("/autoCannel/{serialNumber}/serialNumber")
-    public ResponseEntity cancelOrders(){
-        Date end = DateUtil.addMinute(DateUtil.getNowDate(),-30);
-        Date begin = DateUtil.addYear(end,-1);
+    public ResponseEntity cancelOrders() {
+        Date end = DateUtil.addMinute(DateUtil.getNowDate(), -30);
+        Date begin = DateUtil.addYear(end, -1);
         //查出未付款未关闭的订单
-        List<CarLifeOrders> orders = ServiceManager.carLifeOrdersRepository.findByIsAvailableAndStatusAndCreateTimeBetween(0, 1,begin,end);
-        for (CarLifeOrders carLifeOrders:orders
+        List<CarLifeOrders> orders = ServiceManager.carLifeOrdersRepository.findByIsAvailableAndStatusAndCreateTimeBetween(0, 1, begin, end);
+        for (CarLifeOrders carLifeOrders : orders
                 ) {
             carLifeOrders.setIsAvailable(1);
             carLifeOrders.setUpdateTime(new Date());
-            if(!StringUtils.isEmpty(carLifeOrders.getCouponId())){
+            if (!StringUtils.isEmpty(carLifeOrders.getCouponId())) {
                 //1.返还优惠券
                 ServiceManager.couponService.cancelMyCoupon(carLifeOrders.getCouponId());
             }
         }
         ServiceManager.carLifeOrdersRepository.save(orders);
-        logger.info("关闭汽车生活订单数量："+orders.size());
-        return new ResponseEntity("关闭成功",HttpStatus.OK);
+        logger.info("关闭汽车生活订单数量：" + orders.size());
+        return new ResponseEntity("关闭成功", HttpStatus.OK);
     }
+
 
     /**
      * 添加汽车服务订单
@@ -69,12 +70,17 @@ public class CarLifeOrderController {
      * @param carLifeOrdersParam 商品id
      */
     @PostMapping(value = "/add")
-    public ResponseEntity addCarLifeOrder(@RequestBody CarLifeOrdersParam carLifeOrdersParam, HttpServletRequest request) throws NotFoundException, NotRuleException {
+    public ResponseEntity addCarLifeOrder(@RequestBody CarLifeOrdersParam carLifeOrdersParam, HttpServletRequest request) throws NotFoundException, NotRuleException, InvalidParameterException {
         String accountId = ServiceManager.accountService.getAccountId(request);
 
         checkParam(carLifeOrdersParam);
         Item itemCheck = ServiceManager.itemRepository.findOne(carLifeOrdersParam.getItemId());
+
         if (null == itemCheck) throw new NotFoundException("item");
+
+        earlyAndEveningMarketConfigService.checkEarlyAndEveningMarketIsOk(itemCheck.getActiveType());
+        checkRepeatedBuy(itemCheck.getActiveType(), accountId);
+
         long count = ServiceManager.itemSellerRelationRepository.countByItemIdAndSellerId(carLifeOrdersParam.getItemId(), carLifeOrdersParam.getSellerId());
         if (count == 0)
             throw new NotRuleException("illegalItemSeller");
@@ -85,6 +91,13 @@ public class CarLifeOrderController {
         CarLifeOrders result = initCarLifeOrders(itemCheck, sellerCheck, carLifeOrdersParam, accountId);
 
         return new ResponseEntity(result, HttpStatus.OK);
+    }
+
+    void checkRepeatedBuy(int activityType, String accountId) throws NotRuleException {
+        long times = ServiceManager.carLifeOrdersRepository.countByIsAvailableAndActivityTypeAndAccountId(0, activityType, accountId);
+        if (times > 0) {
+            throw new NotRuleException("justOnce.earlyAndEveningMarket");
+        }
     }
 
     void checkStorageCount(Item item) throws NotRuleException {
@@ -130,6 +143,7 @@ public class CarLifeOrderController {
         ordersItems.setReserveTime(DateUtil.StringToDate(carLifeOrdersParam.getReserveTime()));
         ordersItems.setReserveMobile(carLifeOrdersParam.getReserveMobile());
         ordersItems.setAddress(seller.getAddress());
+        ordersItems.setTelephone(seller.getTelephone());
 
         OrdersItems ordersItemsSaved = ServiceManager.ordersItemsRepository.save(ordersItems);
         carLifeOrdersSaved.setOrdersItems(ordersItemsSaved);

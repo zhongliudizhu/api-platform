@@ -41,6 +41,16 @@ public class AuthInterceptor implements HandlerInterceptor {
         excludeUrls.add("/api/v1/cbc/mycoupon/giveCoupon");
         excludeUrls.add("/api/v1/cbc/valuations");
         excludeUrls.add("/api/v1/cbc/time/nowTime");
+
+        excludeUrls.add("/cbc-api/error");
+        excludeUrls.add("/cbc-api/api/v1/cbc/OneMoneyCouponRecord/save");
+        excludeUrls.add("/cbc-api/api/v1/cbc/payCallback");
+        excludeUrls.add("/cbc-api/api/v1/cbc/wxPay/notify");
+        excludeUrls.add("/cbc-api/api/v1/cbc/creditPay/notify");
+        excludeUrls.add("/cbc-api/api/v1/orders/invoice/callBack");
+        excludeUrls.add("/cbc-api/api/v1/cbc/mycoupon/giveCoupon");
+        excludeUrls.add("/cbc-api/api/v1/cbc/valuations");
+        excludeUrls.add("/cbc-api/api/v1/cbc/time/nowTime");
     }
 
     @Override

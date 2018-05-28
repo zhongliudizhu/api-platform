@@ -1,20 +1,22 @@
 package com.winstar.carLifeMall.controller;
 
-import com.winstar.carLifeMall.entity.Category;
-import com.winstar.carLifeMall.entity.Item;
-import com.winstar.carLifeMall.entity.ItemSellerRelation;
-import com.winstar.carLifeMall.entity.Seller;
-import com.winstar.carLifeMall.repository.CategoryRepository;
+import com.winstar.carLifeMall.entity.*;
+import com.winstar.carLifeMall.repository.EarlyAndEveningMarketConfigRepository;
 import com.winstar.carLifeMall.service.CategoryService;
+import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
+import com.winstar.exception.InvalidParameterException;
 import com.winstar.exception.NotFoundException;
-import com.winstar.user.utils.ServiceManager;
+import com.winstar.exception.NotRuleException;
+import com.winstar.order.utils.DateUtil;
+import com.winstar.user.utils.SimpleResultObj;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * 名称： CategoryController
@@ -27,6 +29,40 @@ import static java.util.stream.Collectors.toList;
 public class CategoryController {
     @Autowired
     CategoryService categoryService;
+    @Autowired
+    EarlyAndEveningMarketConfigService earlyAndEveningMarketConfigService;
+    @Autowired
+    EarlyAndEveningMarketConfigRepository earlyAndEveningMarketConfigRepository;
+
+    /**
+     * 早晚市是否开启
+     *
+     * @return
+     */
+    @RequestMapping("/checkEarlyAndEveningMarketIsOk/{type}/type")
+    public SimpleResultObj check(@PathVariable Integer type) throws NotRuleException, InvalidParameterException {
+
+        EarlyAndEveningMarketConfig earlyAndEveningMarketConfig = earlyAndEveningMarketConfigRepository.findByType(type);
+        if (earlyAndEveningMarketConfigService.checkIfOk(type)) {
+            earlyAndEveningMarketConfig.setLeftTime(0l);
+            return new SimpleResultObj(earlyAndEveningMarketConfig);
+        }
+
+        Date curTime = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(curTime);
+
+        calendar.set(DateUtil.getYear(curTime), DateUtil.getMonth(curTime), DateUtil.getDay(curTime), earlyAndEveningMarketConfig.getMarketStartTime(), 0, 0);
+        long leftTime = calendar.getTimeInMillis() - curTime.getTime();
+        if (leftTime >= 0)
+            earlyAndEveningMarketConfig.setLeftTime(leftTime);
+        else {
+            calendar.set(DateUtil.getYear(curTime), DateUtil.getMonth(curTime), DateUtil.getDay(DateUtil.addDay(curTime, 1)), earlyAndEveningMarketConfig.getMarketStartTime(), 0, 0);
+            leftTime = calendar.getTimeInMillis() - curTime.getTime();
+            earlyAndEveningMarketConfig.setLeftTime(leftTime);
+        }
+        return new SimpleResultObj(earlyAndEveningMarketConfig);
+    }
 
     /**
      * 获取类别
@@ -42,4 +78,5 @@ public class CategoryController {
 
         return list;
     }
+
 }
