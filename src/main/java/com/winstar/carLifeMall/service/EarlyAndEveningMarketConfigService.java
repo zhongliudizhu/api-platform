@@ -1,6 +1,7 @@
 package com.winstar.carLifeMall.service;
 
 import com.winstar.carLifeMall.entity.EarlyAndEveningMarketConfig;
+import com.winstar.carLifeMall.entity.Item;
 import com.winstar.carLifeMall.repository.EarlyAndEveningMarketConfigRepository;
 import com.winstar.exception.InvalidParameterException;
 import com.winstar.exception.NotRuleException;
@@ -74,6 +75,15 @@ public class EarlyAndEveningMarketConfigService {
         calendarEnd.setTime(curDate);
         calendarEnd.set(DateUtil.getYear(curDate), DateUtil.getMonth(curDate), DateUtil.getDay(curDate), earlyAndEveningMarketConfig.getMarketEndTime(), 0, 0);
         return calendarEnd;
+    }
+
+
+    public void checkEarlyAndEveningMarketIsOk(int itemActivityType) throws NotRuleException, InvalidParameterException {
+        if (itemActivityType == Item.ACTIVE_TYPE_EARLY_MARKET && !checkIfOk(EarlyAndEveningMarketConfig.TYPE_EARLY_MARKET)) {
+            throw new NotRuleException("earlyMarketNotStarted");
+        } else if (itemActivityType == Item.ACTIVE_TYPE_EVENING_MARKET && !checkIfOk(EarlyAndEveningMarketConfig.TYPE_EVENING_MARKET)) {
+            throw new NotRuleException("eveningMarketNotStarted");
+        }
     }
 
 }

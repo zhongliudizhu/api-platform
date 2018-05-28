@@ -63,13 +63,6 @@ public class CarLifeOrderController {
         return new ResponseEntity("关闭成功", HttpStatus.OK);
     }
 
-    void checkEarlyAndEveningMarketIsOk(Item item) throws NotRuleException, InvalidParameterException {
-        if (item.getActiveType() == Item.ACTIVE_TYPE_EARLY_MARKET && !earlyAndEveningMarketConfigService.checkIfOk(EarlyAndEveningMarketConfig.TYPE_EARLY_MARKET)) {
-            throw new NotRuleException("earlyMarketNotStarted");
-        } else if (item.getActiveType() == Item.ACTIVE_TYPE_EVENING_MARKET && !earlyAndEveningMarketConfigService.checkIfOk(EarlyAndEveningMarketConfig.TYPE_EVENING_MARKET)) {
-            throw new NotRuleException("eveningMarketNotStarted");
-        }
-    }
 
     /**
      * 添加汽车服务订单
@@ -85,7 +78,7 @@ public class CarLifeOrderController {
 
         if (null == itemCheck) throw new NotFoundException("item");
 
-        checkEarlyAndEveningMarketIsOk(itemCheck);
+        earlyAndEveningMarketConfigService.checkEarlyAndEveningMarketIsOk(itemCheck.getActiveType());
         checkRepeatedBuy(itemCheck.getActiveType(), accountId);
 
         long count = ServiceManager.itemSellerRelationRepository.countByItemIdAndSellerId(carLifeOrdersParam.getItemId(), carLifeOrdersParam.getSellerId());
