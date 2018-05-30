@@ -38,6 +38,8 @@ public class CarLifeOrderController {
     @Autowired
     EarlyAndEveningMarketConfigService earlyAndEveningMarketConfigService;
 
+    private static final int ACTIVITY_EVENING_MARKET = 10;
+
     /**
      * 关闭超过半小时不支付的订单
      *
@@ -94,6 +96,9 @@ public class CarLifeOrderController {
     }
 
     void checkRepeatedBuy(int activityType, String accountId) throws NotRuleException {
+        if(activityType != ACTIVITY_EVENING_MARKET){
+            return;
+        }
         long times = ServiceManager.carLifeOrdersRepository.countByIsAvailableAndActivityTypeAndAccountId(0, activityType, accountId);
         if (times > 0) {
             throw new NotRuleException("justOnce.earlyAndEveningMarket");
