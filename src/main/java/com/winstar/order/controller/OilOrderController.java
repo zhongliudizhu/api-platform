@@ -57,8 +57,6 @@ public class OilOrderController {
     @Value("${info.amount}")
     private Integer amount;
 
-    private static final String ACTIVITY_MORNING_MARKET = "9";
-
     /**
      * 添加油券订单
      *
@@ -90,8 +88,6 @@ public class OilOrderController {
             logger.error("查询活动失败，activityId：" + activityId);
             throw new NotFoundException("activity.order");
         }
-        checkEarlyAndEveningMarket(activityId, accountId);
-
        /* // 活动一：判断每日每个商品只能前一百名购买
         if(activity.getType()==1){
             if(!OilOrderUtil.judgeOneDay(itemId,amount)){
@@ -219,18 +215,6 @@ public class OilOrderController {
         long endTime = System.currentTimeMillis();
         logger.info("添加订单成功，goodsId：" + goods.getId() + "|总用时: " + (endTime - startTime));
         return new ResponseEntity<>(oilOrder, HttpStatus.OK);
-    }
-
-    void checkEarlyAndEveningMarket(String activityId, String accountId) throws NotRuleException, InvalidParameterException {
-        if (accountId.equals(ACTIVITY_MORNING_MARKET))
-            if (StringUtils.isEmpty(activityId))
-                return;
-        earlyAndEveningMarketConfigService.checkEarlyAndEveningMarketIsOk(Integer.valueOf(activityId));
-        long times = ServiceManager.oilOrderRepository.countValidOrderByActivityIdAndCreateTimeAndAccountId(activityId, accountId);
-
-        if (times > 0) {
-            throw new NotRuleException("justOnce.earlyAndEveningMarket");
-        }
     }
 
     /**

@@ -66,6 +66,8 @@ public class OilOrderSecKillController {
     @Value("${info.sendMsgUrl}")
     private String sendMsgUrl;
 
+    private static final String ACTIVITY_MORNING_MARKET = "9";
+
     /**
      * 添加油券订单
      *
@@ -148,7 +150,7 @@ public class OilOrderSecKillController {
         }
         //5.初始化订单及订单项
         OilOrder oilOrder = new OilOrder(accountId, serialNumber, Constant.ORDER_STATUS_CREATE, Constant.PAY_STATUS_NOT_PAID, new Date(), Constant.REFUND_STATUS_ORIGINAL, itemId, activityId);
-        if (activityId.equals("201") || activityId.equals("202") || activityId.equals("9")|| activityId.equals("10")){
+        if (activityId.equals("201") || activityId.equals("202") || activityId.equals("9") || activityId.equals("10")) {
             oilOrder = OilOrderUtil.initOrderSecKill(oilOrder, goods, activity.getType());
             //6.生成订单
             oilOrder = orderRepository.save(oilOrder);
@@ -160,8 +162,10 @@ public class OilOrderSecKillController {
     }
 
     void checkEarlyAndEveningMarket(String activityId, String accountId) throws NotRuleException, InvalidParameterException {
-        if (StringUtils.isEmpty(activityId))
+
+        if (StringUtils.isEmpty(activityId) || !accountId.equals(ACTIVITY_MORNING_MARKET)) {
             return;
+        }
         earlyAndEveningMarketConfigService.checkEarlyAndEveningMarketIsOk(Integer.valueOf(activityId));
         long times = ServiceManager.oilOrderRepository.countValidOrderByActivityIdAndCreateTimeAndAccountId(activityId, accountId);
 
