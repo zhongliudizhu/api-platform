@@ -57,6 +57,8 @@ public class OilOrderController {
     @Value("${info.amount}")
     private Integer amount;
 
+    private static final String ACTIVITY_MORNING_MARKET = "9";
+
     /**
      * 添加油券订单
      *
@@ -220,8 +222,9 @@ public class OilOrderController {
     }
 
     void checkEarlyAndEveningMarket(String activityId, String accountId) throws NotRuleException, InvalidParameterException {
-        if (StringUtils.isEmpty(activityId))
-            return;
+        if (accountId.equals(ACTIVITY_MORNING_MARKET))
+            if (StringUtils.isEmpty(activityId))
+                return;
         earlyAndEveningMarketConfigService.checkEarlyAndEveningMarketIsOk(Integer.valueOf(activityId));
         long times = ServiceManager.oilOrderRepository.countValidOrderByActivityIdAndCreateTimeAndAccountId(activityId, accountId);
 
