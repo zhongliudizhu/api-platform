@@ -69,7 +69,7 @@ public class WxPay {
             wxPayParams.setTimeStamp(timeStamp + "");
             wxPayParams.setSign(getSignStr(map,timeStamp,nonce_str,config.getSignKey(),MapUtils.getString(payMap,"subPayWay")));
             wxPayParams.setSignType(data.getSign_type());
-            wxPayParams.setPartnerid(config.getMchId());
+            wxPayParams.setPartnerid(data.getMch_id());
             wxPayParams.setAppid(data.getAppid());
             wxPayParams.setWeb_url(MapUtils.getString(map,"mweb_url"));
             logger.info("返回参数：" + JSON.toJSONString(wxPayParams));

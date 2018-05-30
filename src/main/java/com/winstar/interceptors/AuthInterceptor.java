@@ -1,11 +1,12 @@
 package com.winstar.interceptors;
 
-
 import com.winstar.exception.ServiceUnavailableException;
 import com.winstar.user.entity.AccessToken;
 import com.winstar.user.utils.ServiceManager;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -27,7 +28,7 @@ import java.util.Map;
  */
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
-
+    Logger logger = LoggerFactory.getLogger(AuthInterceptor.class);
     private List<String> excludeUrls = new ArrayList<>();
 
     public AuthInterceptor() {
@@ -55,13 +56,17 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o) throws Exception {
-        if (excludeUrls.contains(request.getRequestURI()) || request.getRequestURI().contains("/api/v1/cbc/account")|| request.getRequestURI().contains("/api/v1/cbc/valuations") || request.getRequestURI().startsWith("/api/v1/cbc/verification") ) {
+        if (excludeUrls.contains(request.getRequestURI()) || request.getRequestURI().contains("/api/v1/cbc/account") || request.getRequestURI().contains("/api/v1/cbc/valuations") || request.getRequestURI().startsWith("/api/v1/cbc/verification")) {
             return true;
         }
 
         String tokenId = request.getHeader("token_id");
+        if(!StringUtils.isEmpty(request.getHeader("token-id"))){
+            tokenId = request.getHeader("token-id");
+        }
 
-        System.out.println(tokenId);
+        logger.info("url:"+request.getRequestURI());
+        logger.info("拦截器中的token_id" + tokenId);
 
         if (StringUtils.isEmpty(tokenId)) {
             unauthorized(response);
@@ -69,17 +74,21 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(tokenId);
-        if (checkAccount(response, accessToken))
+        if (checkAccount(response, accessToken)) {
+
+            logger.info("url:"+request.getRequestURI());
+            logger.info("拦截器中根据token_id获取到的AccessToken不存在"+tokenId);
             return false;
+        }
 
         request.setAttribute("accountId", accessToken.getAccountId());
         return true;
     }
 
-
     private boolean checkAccount(HttpServletResponse response, AccessToken accessToken) throws ServiceUnavailableException {
 
         if (null == accessToken || null == ServiceManager.accountRepository.findOne(accessToken.getAccountId())) {
+
             unauthorized(response);
             return true;
         }
@@ -107,7 +116,6 @@ public class AuthInterceptor implements HandlerInterceptor {
             }
         }
     }
-
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object o, ModelAndView modelAndView) throws Exception {

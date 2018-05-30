@@ -18,3 +18,4 @@ status.carLifeOrders.MissingParameter 订单状态参数不能为空
 earlyMarketNotStarted.NotRule 早市尚未开启
 eveningMarketNotStarted.NotRule 晚市尚未开启
 justOnce.earlyAndEveningMarket.NotRule 该活动每天只能购买一次
+isSale.carLifeOrders.NotRule 已售罄

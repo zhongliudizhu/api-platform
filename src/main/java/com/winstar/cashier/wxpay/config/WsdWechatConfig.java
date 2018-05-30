@@ -102,7 +102,7 @@ public class WsdWechatConfig {
     /**
      * 微信回调地址(测试)
      */
-    private String backUrl_test = "http://develop.sxeccellentdriving.com/api/v1/cbc/wxPay/notify";
+    private String backUrl_test = "http://wechat.sxeccellentdriving.com/cbc-api/api/v1/cbc/wxPay/notify";
 
     /**
      * 微信回调地址(正式)
