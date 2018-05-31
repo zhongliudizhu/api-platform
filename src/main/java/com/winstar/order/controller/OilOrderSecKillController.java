@@ -163,7 +163,7 @@ public class OilOrderSecKillController {
 
     void checkEarlyAndEveningMarket(String activityId, String accountId) throws NotRuleException, InvalidParameterException {
 
-        if (StringUtils.isEmpty(activityId) || !accountId.equals(ACTIVITY_MORNING_MARKET)) {
+        if (StringUtils.isEmpty(activityId) || !activityId.equals(ACTIVITY_MORNING_MARKET)) {
             return;
         }
         earlyAndEveningMarketConfigService.checkEarlyAndEveningMarketIsOk(Integer.valueOf(activityId));
