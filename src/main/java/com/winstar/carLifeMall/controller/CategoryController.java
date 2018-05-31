@@ -9,6 +9,8 @@ import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.user.utils.SimpleResultObj;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +35,7 @@ public class CategoryController {
     EarlyAndEveningMarketConfigService earlyAndEveningMarketConfigService;
     @Autowired
     EarlyAndEveningMarketConfigRepository earlyAndEveningMarketConfigRepository;
+    Logger logger = LoggerFactory.getLogger(CategoryController.class);
 
     /**
      * 早晚市是否开启
@@ -57,8 +60,7 @@ public class CategoryController {
         if (leftTime >= 0)
             earlyAndEveningMarketConfig.setLeftTime(leftTime);
         else {
-            calendar.set(DateUtil.getYear(curTime), DateUtil.getMonth(curTime), DateUtil.getDay(DateUtil.addDay(curTime, 1)), earlyAndEveningMarketConfig.getMarketStartTime(), 0, 0);
-            leftTime = calendar.getTimeInMillis() - curTime.getTime();
+            leftTime = calendar.getTimeInMillis()+24*60*60*1000 - curTime.getTime();
             earlyAndEveningMarketConfig.setLeftTime(leftTime);
         }
         return new SimpleResultObj(earlyAndEveningMarketConfig);
