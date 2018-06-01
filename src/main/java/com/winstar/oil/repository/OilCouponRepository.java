@@ -19,7 +19,7 @@ public interface OilCouponRepository extends JpaSpecificationExecutor<OilCoupon>
 
     Page<OilCoupon> findByPanAmtAndOilState(Double panAmt, String oilState, Pageable pageable);
 
-    @Query(value = "SELECT * FROM cbc_oil_coupon WHERE uid >= (SELECT floor(RAND()*((SELECT MAX(uid) FROM cbc_oil_coupon)-(SELECT MIN(uid) FROM cbc_oil_coupon)) + (SELECT MIN(uid) FROM cbc_oil_coupon))) and oil_state=0 LIMIT 50", nativeQuery = true)
+    @Query(value = "select * from cbc_oil_coupon where oil_state=0 order by RAND() limit 50", nativeQuery = true)
     List<OilCoupon> findRandomOilCoupons();
 
 }
