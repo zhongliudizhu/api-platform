@@ -61,6 +61,12 @@ public class CategoryController {
             earlyAndEveningMarketConfig.setLeftTime(leftTime);
         else {
             leftTime = calendar.getTimeInMillis()+24*60*60*1000 - curTime.getTime();
+
+            if(DateUtil.getWeekOfDate(curTime).equals("5"))
+                leftTime=leftTime+2*24*60*60*1000;
+            else if(DateUtil.getWeekOfDate(curTime).equals("6"))
+                leftTime=leftTime+24*60*60*1000;
+
             earlyAndEveningMarketConfig.setLeftTime(leftTime);
         }
         return new SimpleResultObj(earlyAndEveningMarketConfig);
