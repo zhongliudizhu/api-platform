@@ -46,8 +46,8 @@ info:
   profilesActive: false
   flowUrl: http://192.168.118.7:2300/api/v1/flow/order
   amount: 100
-  getTokenInfoUrl: http://192.168.118.111:7000/api/user/account/{userId}/{type}/getTokenInfo
-  getLocalCarsUrl: http://192.168.118.111:7000/api/user/vehicle/getUserVehicleWechat
+  getTokenInfoUrl: http://winstar.api.sxeccellentdriving.com/winstar-api/api/user/account/{userId}/{type}/getTokenInfo
+  getLocalCarsUrl: http://winstar.api.sxeccellentdriving.com/winstar-api/api/user/vehicle/getUserVehicleWechat
   getSixInOneCarsUrl: http://mobile.sxwinstar.net/wechat_access/api/v1/platenumbers/certificateNumberTypeSearch?certificateNumber={certificateNumber}&&certificateType={certificateType}
   sendMsgUrl: http://sms.sxjiashi.com:8080/api/v2/smsSend/sendNotice
 #建行信息卡校验
