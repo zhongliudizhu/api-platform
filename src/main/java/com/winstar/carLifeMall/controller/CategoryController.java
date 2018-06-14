@@ -57,13 +57,29 @@ public class CategoryController {
 
         calendar.set(DateUtil.getYear(curTime), DateUtil.getMonth(curTime), DateUtil.getDay(curTime), earlyAndEveningMarketConfig.getMarketStartTime(), 0, 0);
         long leftTime = calendar.getTimeInMillis() - curTime.getTime();
-        if (leftTime >= 0)
+        if (leftTime >= 0) {
+
+            if (DateUtil.getWeekOfDate(curTime).equals("6"))
+                leftTime = leftTime + getDaysMilis(2);
+            else if (DateUtil.getWeekOfDate(curTime).equals("7"))
+                leftTime = leftTime + getDaysMilis(1);
+
             earlyAndEveningMarketConfig.setLeftTime(leftTime);
-        else {
-            leftTime = calendar.getTimeInMillis()+24*60*60*1000 - curTime.getTime();
+        } else {
+            leftTime = calendar.getTimeInMillis() + getDaysMilis(1) - curTime.getTime();
+
+            if (DateUtil.getWeekOfDate(curTime).equals("5"))
+                leftTime = leftTime + getDaysMilis(2);
+            else if (DateUtil.getWeekOfDate(curTime).equals("6"))
+                leftTime = leftTime + getDaysMilis(1);
+
             earlyAndEveningMarketConfig.setLeftTime(leftTime);
         }
         return new SimpleResultObj(earlyAndEveningMarketConfig);
+    }
+
+    private long getDaysMilis(int days) {
+        return days * 24 * 60 * 60 * 1000;
     }
 
     /**
