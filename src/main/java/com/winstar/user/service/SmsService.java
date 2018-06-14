@@ -1,5 +1,7 @@
 package com.winstar.user.service;
 
+import com.winstar.ClientErrorHandler;
+import com.winstar.user.param.UpdateAccountParam;
 import com.winstar.user.vo.AuthVerifyCodeMsgResult;
 import com.winstar.user.vo.SendVerifyCodeMsgResult;
 import org.apache.commons.codec.binary.Base64;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -32,6 +35,9 @@ public class SmsService {
     String smsUser;
     @Value("${bank.sms.pwd}")
     String smsPwd;
+
+    @Value("${verify_sms_url}")
+    String verifySmsUrl;
 
     /**
      * 发送建行信息卡验证码
@@ -87,5 +93,29 @@ public class SmsService {
         authVerifyCodeMsgResult = restTemplate.postForObject(checkVerifyCodeUrl, formEntity, AuthVerifyCodeMsgResult.class);
 
         return authVerifyCodeMsgResult;
+    }
+
+
+    /**
+     * 验证登录短信是否正确
+     *
+     * @return
+     */
+    public boolean verifySms(UpdateAccountParam updateAccountParam) {
+
+
+        Map<String, Object> urlVariables = new HashMap<>();
+        urlVariables.put("phoneNumber", updateAccountParam.getMobile());
+        urlVariables.put("id", updateAccountParam.getMsgVerifyId());
+        urlVariables.put("verifyCode", updateAccountParam.getMsgVerifyCode());
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setErrorHandler(new ClientErrorHandler());
+
+        ResponseEntity resp = restTemplate.getForEntity(verifySmsUrl, String.class, urlVariables);
+        logger.debug("发送验证码"+resp.getBody().toString());
+        if (resp.getStatusCode().is2xxSuccessful()) {
+            return true;
+        }
+        return false;
     }
 }

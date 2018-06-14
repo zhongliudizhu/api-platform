@@ -8,6 +8,7 @@ import com.winstar.order.utils.StringFormatUtils;
 import com.winstar.user.entity.Account;
 import com.winstar.user.param.CCBAuthParam;
 import com.winstar.user.param.MsgContent;
+import com.winstar.user.param.UpdateAccountParam;
 import com.winstar.user.utils.ServiceManager;
 import com.winstar.user.utils.SimpleResult;
 import com.winstar.user.vo.AuthVerifyCodeEntity;
@@ -23,6 +24,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.ws.Service;
 import java.util.Date;
 import java.util.List;
 
@@ -36,6 +38,30 @@ import java.util.List;
 @RequestMapping("/api/v1/cbc/auth")
 public class AuthController {
     static Logger logger = LoggerFactory.getLogger(AuthController.class);
+
+    /**
+     * 补全手机号码
+     *
+     * @param updateAccountParam updateAccountParam
+     * @return
+     * @throws InvalidParameterException, NotRuleException
+     */
+    @PostMapping("/updateMobile")
+    public Account updateMobile(@RequestBody UpdateAccountParam updateAccountParam, HttpServletRequest request) throws InvalidParameterException, NotRuleException {
+        String accountId = ServiceManager.accountService.getAccountId(request);
+        if (null == updateAccountParam || StringUtils.isEmpty(updateAccountParam.getMobile())) {
+            throw new InvalidParameterException("updateAccountParam");
+        }
+
+        if (!ServiceManager.smsService.verifySms(updateAccountParam))
+            throw new NotRuleException("msgInvalid.user");
+
+        Account account = ServiceManager.accountRepository.findOne(accountId);
+        account.setMobile(updateAccountParam.getMobile());
+        account.setUpdateTime(new Date());
+
+        return ServiceManager.accountRepository.save(account);
+    }
 
     /**
      * 校验是否认证过
