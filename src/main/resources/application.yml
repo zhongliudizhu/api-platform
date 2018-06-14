@@ -58,6 +58,8 @@ bank:
     user: ${{BBC_SMS_USER}:test}
     pwd:  ${{BBC_SMS_PWD}:test}
 
+#万盛达验证码验证
+verify_sms_url: http://sms.sxjiashi.com:8080/api/v2/smsSend/{id}/id/{verifyCode}/verifyCode/{phoneNumber}/phoneNumber
 ---
 spring:
   datasource:
@@ -113,3 +115,6 @@ bank:
     checkVerifyCodeUrl: ${{CHECK_VERIFY_CODE}:http://113.140.28.230:5080/AuthPlatform/rest/auth/auth}
     user: ${{BBC_SMS_USER}:test}
     pwd:  ${{BBC_SMS_PWD}:test}
+
+#万盛达验证码验证
+verify_sms_url: ${VERIFY_SMS_URL}
