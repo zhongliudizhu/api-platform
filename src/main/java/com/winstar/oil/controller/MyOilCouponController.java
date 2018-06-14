@@ -237,7 +237,7 @@ public class MyOilCouponController {
         /*String sortStr = "[{property:'createTime',direction:'asc'}]";
         Pageable pageable = WebUitl.buildPageRequest(0, 150, sortStr);*/
         long beginTime = System.currentTimeMillis();
-        List<OilCoupon> oilCoupons = oilCouponRepository.findRandomOilCoupons();
+        List<OilCoupon> oilCoupons = oilCouponRepository.findRandomOilCoupons(myOilCoupon.getPanAmt());
         if(WsdUtils.isEmpty(oilCoupons) || oilCoupons.size() == 0){
             logger.info("没有该面值的券码，发券失败！");
             throw new NotRuleException("oilCoupon.null");
