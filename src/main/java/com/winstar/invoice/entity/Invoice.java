@@ -11,7 +11,7 @@ import java.util.Date;
 
 /**
  * @author shoo on 2017/10/23 14:01.
- *  发票
+ * 发票
  */
 @Getter
 @Setter
@@ -33,7 +33,6 @@ public class Invoice {
      */
     @Column(length = 50)
     private String accountId;
-
 
     /**
      * 发票金额
@@ -117,5 +116,8 @@ public class Invoice {
        * */
     @Column(length = 50)
     private String doPerson;
+
+    @Column(length = 150)
+    private String invoiceUrl;
 
 }
