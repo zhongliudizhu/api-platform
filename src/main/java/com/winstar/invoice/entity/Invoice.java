@@ -107,7 +107,7 @@ public class Invoice {
     private String bankAccount;
 
     /**
-     * 开票状态 0 待开 1 已开
+     * 开票状态 0 待开 1 已开 2开票中 3失败
      */
     private Integer status;
 
