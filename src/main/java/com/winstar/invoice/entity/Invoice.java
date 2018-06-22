@@ -53,7 +53,7 @@ public class Invoice {
     /**
      * 油品种类
      */
-    @Column(length = 5)
+    @Column(length = 50)
     private String oilType;
 
     /**
