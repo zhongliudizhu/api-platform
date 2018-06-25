@@ -3,8 +3,10 @@ package com.winstar.invoice.controller;
 import com.winstar.exception.*;
 import com.winstar.invoice.entity.Invoice;
 import com.winstar.invoice.entity.InvoiceItem;
+import com.winstar.invoice.entity.Management;
 import com.winstar.invoice.repository.InvoiceItemRepository;
 import com.winstar.invoice.repository.InvoiceRepository;
+import com.winstar.invoice.repository.ManagementRepository;
 import com.winstar.oil.entity.MyOilCoupon;
 import com.winstar.oil.service.MyOilCouponService;
 import com.winstar.order.entity.OilOrder;
@@ -50,6 +52,26 @@ public class InvoiceController {
     InvoiceItemRepository invoiceItemRepository;
     @Autowired
     OilOrderService oilOrderService;
+
+    @Autowired
+    private ManagementRepository managementRepository;
+
+    /**
+     * 校验可用发票库存
+     *
+     * @return
+     */
+    @GetMapping("checkStock")
+    public Management checkStock() throws NotRuleException {
+        return checkInvoiceStock();
+    }
+
+    private Management checkInvoiceStock() throws NotRuleException {
+        Management management = managementRepository.findByType(Management.STATUS_ON);
+        if (null == management)
+            throw new NotRuleException("noStock.makeInvoice");
+        return management;
+    }
 
     /**
      * 未开发票的油卷
@@ -129,6 +151,8 @@ public class InvoiceController {
                     taxpayerNumber, String companyAddress, String telephone, String depositBank, String bankAccount
     ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
             ServiceUnavailableException {
+        checkInvoiceStock();
+
         String accountId = accountService.getAccountId(request);
         if (StringUtils.isEmpty(accountId)) throw new NotFoundException("MyOilCoupon");
         if (type == null) throw new MissingParameterException("type");
@@ -167,10 +191,10 @@ public class InvoiceController {
         invoice.setPhone(phone);
         invoice.setStatus(0);
         invoice.setCreateDate(new Date());
-        if(!StringUtils.isEmpty(telephone))invoice.setTelephone(telephone);
-        if(!StringUtils.isEmpty(companyAddress))invoice.setCompanyAddress(companyAddress);
-        if(!StringUtils.isEmpty(depositBank))invoice.setDepositBank(depositBank);
-        if(!StringUtils.isEmpty(bankAccount))invoice.setBankAccount(bankAccount);
+        if (!StringUtils.isEmpty(telephone)) invoice.setTelephone(telephone);
+        if (!StringUtils.isEmpty(companyAddress)) invoice.setCompanyAddress(companyAddress);
+        if (!StringUtils.isEmpty(depositBank)) invoice.setDepositBank(depositBank);
+        if (!StringUtils.isEmpty(bankAccount)) invoice.setBankAccount(bankAccount);
 
         Invoice in = invoiceRepository.save(invoice);
         for (String id : ids) {
