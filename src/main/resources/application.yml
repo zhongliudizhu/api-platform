@@ -4,7 +4,7 @@ server:
        uri-encoding: UTF-8
   context-path: /cbc-api
 
-invoiceStockSwitch:
+management:
   port: ${{MANAGEMENT_PORT}:20002}
 
 endpoints:
@@ -90,7 +90,7 @@ spring:
 server:
   port: ${{SERVER_PORT}:8080}
 
-invoiceStockSwitch:
+management:
   port: ${{MANAGEMENT_PORT}:8081}
 
 endpoints:
