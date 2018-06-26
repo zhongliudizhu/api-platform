@@ -3,10 +3,10 @@ package com.winstar.invoice.controller;
 import com.winstar.exception.*;
 import com.winstar.invoice.entity.Invoice;
 import com.winstar.invoice.entity.InvoiceItem;
-import com.winstar.invoice.entity.Management;
+import com.winstar.invoice.entity.InvoiceStockSwitch;
 import com.winstar.invoice.repository.InvoiceItemRepository;
 import com.winstar.invoice.repository.InvoiceRepository;
-import com.winstar.invoice.repository.ManagementRepository;
+import com.winstar.invoice.repository.InvoiceStockSwitchRepository;
 import com.winstar.oil.entity.MyOilCoupon;
 import com.winstar.oil.service.MyOilCouponService;
 import com.winstar.order.entity.OilOrder;
@@ -52,9 +52,8 @@ public class InvoiceController {
     InvoiceItemRepository invoiceItemRepository;
     @Autowired
     OilOrderService oilOrderService;
-
     @Autowired
-    private ManagementRepository managementRepository;
+    InvoiceStockSwitchRepository invoiceStockSwitchRepository;
 
     /**
      * 校验可用发票库存
@@ -62,15 +61,15 @@ public class InvoiceController {
      * @return
      */
     @GetMapping("checkStock")
-    public Management checkStock() throws NotRuleException {
+    public InvoiceStockSwitch checkStock() throws NotRuleException {
         return checkInvoiceStock();
     }
 
-    private Management checkInvoiceStock() throws NotRuleException {
-        Management management = managementRepository.findByType(Management.STATUS_ON);
-        if (null == management)
+    private InvoiceStockSwitch checkInvoiceStock() throws NotRuleException {
+        InvoiceStockSwitch invoiceStockSwitch = invoiceStockSwitchRepository.findByType(InvoiceStockSwitch.STATUS_ON);
+        if (null == invoiceStockSwitch)
             throw new NotRuleException("noStock.makeInvoice");
-        return management;
+        return invoiceStockSwitch;
     }
 
     /**

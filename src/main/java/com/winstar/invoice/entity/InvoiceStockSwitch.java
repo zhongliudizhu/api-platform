@@ -8,8 +8,8 @@ import javax.persistence.*;
  * Created by qyc on 2018/6/20.
  */
 @Entity
-@Table(name = "cbc_management")
-public class Management {
+@Table(name = "cbc_invoice_stock_switch")
+public class InvoiceStockSwitch {
     @Transient
     public static final String STATUS_ON = "0";
 
