@@ -203,7 +203,7 @@ public class CouponActivityController {
             if(activity.getType()==ActivityIdEnum.ACTIVITY_ID_103.getActivity()||
                     activity.getType()==ActivityIdEnum.ACTIVITY_ID_104.getActivity()){
 //                soldAmount = myCouponRepository.findByActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(String.valueOf(activity.getType()),DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-06-30 23:59:59")).size();
-                List<MyCoupon>  myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(activity.getType()),DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-06-30 23:59:59"));
+                List<MyCoupon>  myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(activity.getType()),DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-07-31 23:59:59"));
 //                if(Integer.parseInt(couponActivity.getSendRule()) <= soldAmount){
 //                    activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_3.getActivity());//0 ：未领取 1：已领取 3:售罄
 //                }
