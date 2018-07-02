@@ -193,7 +193,7 @@ public class OilOrderUtil {
   * */
     public static String judgeActivity2(String accountId, String activityId){
         Date begin =  DateUtil.getInputDate("2018-03-29 00:00:01");
-        Date end = DateUtil.getInputDate("2018-06-30 23:59:59");
+        Date end = DateUtil.getInputDate("2018-07-31 23:59:59");
         List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,begin, end);
         if(oilOrders.size()<1){
             return "0";
