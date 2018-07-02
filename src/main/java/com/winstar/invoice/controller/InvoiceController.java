@@ -150,7 +150,7 @@ public class InvoiceController {
                     taxpayerNumber, String companyAddress, String telephone, String depositBank, String bankAccount
     ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
             ServiceUnavailableException {
-        //checkInvoiceStock();
+        checkInvoiceStock();
 
         String accountId = accountService.getAccountId(request);
         if (StringUtils.isEmpty(accountId)) throw new NotFoundException("MyOilCoupon");
