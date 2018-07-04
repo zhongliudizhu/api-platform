@@ -1,0 +1,9 @@
+1、api： bindMobile  手机绑定->校验手机是否已被绑定&&校验用户是否已绑定过手机号&&校验短信验证码->绑定手机号
+2、api： checkBindMobile 校验用户是否绑定手机号
+3、api： checkHasQualified 分享资格校验->校验是否绑定过信息卡&&检验是否买过油券&&检验是否买过汽车服务
+4、acceptInvitation checkBindMobile &&
+接受邀请——
+A->B  B注册优驾行&&绑定信息卡  A：+10里程 B：+20里程
+B->C  C注册优驾行&&绑定信息卡  B：+10里程 A：+5里程  C：+20里程
+C->D  D注册优驾行&&绑定信息卡  C：+10里程 B：+5里程  D：+20里程
+InvitationLog 邀请日志
