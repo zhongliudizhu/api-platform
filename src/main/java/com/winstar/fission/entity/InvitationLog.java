@@ -36,6 +36,8 @@ public class InvitationLog {
     @Column(length = 2000)
     private String invitedAccountId;
 
+    private Integer level;
+
     /**
      * 创建时间
      */
