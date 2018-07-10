@@ -60,6 +60,8 @@ bank:
 
 #万盛达验证码验证
 verify_sms_url: http://sms.sxjiashi.com:8080/api/v2/smsSend/{id}/id/{verifyCode}/verifyCode/{phoneNumber}/phoneNumber
+
+activity_id_fission: 3d15c8ca-83e4-11e8-80dd-9457a5545c84
 ---
 spring:
   datasource:
@@ -118,3 +120,5 @@ bank:
 
 #万盛达验证码验证
 verify_sms_url: ${VERIFY_SMS_URL}
+
+activity_id_fission: 3d15c8ca-83e4-11e8-80dd-9457a5545c84

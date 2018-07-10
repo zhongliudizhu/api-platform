@@ -17,33 +17,20 @@ import java.util.Date;
 @Getter
 @AllArgsConstructor
 @Entity
-@Table(name = "cbc_fission_invitation_log")
-public class InvitationLog {
-    public static int LEVEL_DIRECT = 1;
-    public static int LEVEL_INDIRECT = 2;
-
+@Table(name = "cbc_fission_user_mileage")
+public class UserMileage {
     @Id
     @GenericGenerator(name = "idGenerator", strategy = "uuid")
     @GeneratedValue(generator = "idGenerator")
     @Column(length = 32)
     private String id;
 
-    /**
-     * 邀请人accountId
-     */
     @Column(length = 50)
-    private String inviteAccountId;
+    private String accountId;
 
-    /**
-     * 被邀请人accountId
-     */
-    @Column(length = 50)
-    private String invitedAccountId;
-
-    /**
-     * 1 直接邀请  2 间接邀请
-     */
-    private Integer level;
+    private Integer mileage;
 
     private Date createTime;
+
+    private Date updateTime;
 }

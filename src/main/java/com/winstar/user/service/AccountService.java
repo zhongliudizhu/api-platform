@@ -5,7 +5,9 @@ import com.winstar.exception.NotRuleException;
 import com.winstar.user.entity.Account;
 import com.winstar.user.param.AccountParam;
 import com.winstar.user.utils.ServiceManager;
+import com.winstar.user.utils.SimpleResult;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.servlet.http.HttpServletRequest;
@@ -71,5 +73,19 @@ public class AccountService {
         Object obj = request.getAttribute("accountId");
         if (null == obj) throw new NotRuleException("accountId");
         return obj.toString();
+    }
+
+
+    public SimpleResult checkBindMobile(HttpServletRequest request) throws NotRuleException {
+        String accountId = ServiceManager.accountService.getAccountId(request);
+
+        Account account = ServiceManager.accountRepository.findOne(accountId);
+        if (StringUtils.isEmpty(account.getMobile())) return new SimpleResult("YES");
+        return new SimpleResult("NO");
+    }
+
+
+    public void checkBindDriverLicense(){
+
     }
 }

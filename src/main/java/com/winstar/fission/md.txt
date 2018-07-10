@@ -1,7 +1,19 @@
-1、api： bindMobile  手机绑定->校验手机是否已被绑定&&校验用户是否已绑定过手机号&&校验短信验证码->绑定手机号
-2、api： checkBindMobile 校验用户是否绑定手机号
-3、api： checkHasQualified 分享资格校验->校验是否绑定过信息卡&&检验是否买过油券&&检验是否买过汽车服务
-4、acceptInvitation checkBindMobile &&
+OK 1、api： bindMobile  手机绑定->校验手机是否已被绑定&&校验用户是否已绑定过手机号&&校验短信验证码->绑定手机号
+OK 2、api： checkBindMobile 校验用户是否绑定手机号
+
+3、api： checkQualified 分享资格校验->校验是否绑定过信息卡&&检验是否买过油券
+
+4、acceptInvitation  checkBindMobile&&是否有邀请人 && 是否已绑定过交安卡 -> 绑定交安卡 ->添加相关用户里程
+
+5、api：questions 答题问题列表
+
+6、api：saveAnswerQuestionRecord 保存答题记录
+
+7、api：里程兑换油券 发券&&记录里程消费日志&&修改用户里程数
+
+
+
+
 接受邀请——
 A->B  B注册优驾行&&绑定信息卡  A：+10里程 B：+20里程
 B->C  C注册优驾行&&绑定信息卡  B：+10里程 A：+5里程  C：+20里程

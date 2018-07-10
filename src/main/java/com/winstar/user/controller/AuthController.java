@@ -9,6 +9,7 @@ import com.winstar.user.entity.Account;
 import com.winstar.user.param.CCBAuthParam;
 import com.winstar.user.param.MsgContent;
 import com.winstar.user.param.UpdateAccountParam;
+import com.winstar.user.service.AccountService;
 import com.winstar.user.utils.ServiceManager;
 import com.winstar.user.utils.SimpleResult;
 import com.winstar.user.vo.AuthVerifyCodeEntity;
@@ -17,6 +18,7 @@ import com.winstar.user.vo.SendVerifyCodeEntity;
 import com.winstar.user.vo.SendVerifyCodeMsgResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +26,12 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.ws.Service;
 import java.util.Date;
 import java.util.List;
+
+import static com.winstar.user.utils.ServiceManager.accountService;
 
 /**
  * 名称： AuthController
@@ -48,7 +53,7 @@ public class AuthController {
      */
     @PostMapping("/updateMobile")
     public Account updateMobile(@RequestBody UpdateAccountParam updateAccountParam, HttpServletRequest request) throws InvalidParameterException, NotRuleException {
-        String accountId = ServiceManager.accountService.getAccountId(request);
+        String accountId = accountService.getAccountId(request);
         if (null == updateAccountParam || StringUtils.isEmpty(updateAccountParam.getMobile())) {
             throw new InvalidParameterException("updateAccountParam");
         }
@@ -64,6 +69,18 @@ public class AuthController {
     }
 
     /**
+     * 校验是否绑定过手机号
+     *
+     * @param request
+     * @return
+     * @throws NotRuleException
+     */
+    @GetMapping("/isBindMobile")
+    public SimpleResult isBindMobile(HttpServletRequest request) throws NotRuleException {
+        return accountService.checkBindMobile(request);
+    }
+
+    /**
      * 校验是否认证过
      *
      * @param request
@@ -71,7 +88,7 @@ public class AuthController {
      */
     @GetMapping("/checkIsAuth")
     public SimpleResult checkAuth(HttpServletRequest request) throws NotRuleException {
-        String accountId = ServiceManager.accountService.getAccountId(request);
+        String accountId = accountService.getAccountId(request);
         Account account = ServiceManager.accountRepository.findOne(accountId);
         if (null == account || StringUtils.isEmpty(account.getAuthInfoCard())) {
             return new SimpleResult("NO");
@@ -93,7 +110,7 @@ public class AuthController {
     @PostMapping(value = "/sendAuthMsg", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity sendAuth(@RequestParam String infoCard, @RequestParam String phone, HttpServletRequest request)
             throws NotRuleException {
-        String accountId = ServiceManager.accountService.getAccountId(request);
+        String accountId = accountService.getAccountId(request);
         MsgContent mc = new MsgContent();
         mc.setKh(infoCard);
         mc.setSjh(phone);
@@ -125,7 +142,7 @@ public class AuthController {
      */
     @PostMapping(value = "/authMsg", produces = MediaType.APPLICATION_JSON_VALUE)
     public Account authAccount(@RequestBody MsgContent msgContent, HttpServletRequest request) throws NotRuleException {
-        String accountId = ServiceManager.accountService.getAccountId(request);
+        String accountId = accountService.getAccountId(request);
 
         Account account = ServiceManager.accountRepository.findOne(accountId);
         if (null != account && !StringUtils.isEmpty(account.getAuthInfoCard()) && !StringUtils.isEmpty(account.getAuthMobile())) {

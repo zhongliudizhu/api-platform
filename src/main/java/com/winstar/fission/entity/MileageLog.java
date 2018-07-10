@@ -10,15 +10,18 @@ import javax.persistence.*;
 import java.util.Date;
 
 /**
- * Created by qyc on 2017/12/19.
+ * Created by dpw on 2018/07/6.
  */
 @NoArgsConstructor
 @Setter
 @Getter
 @AllArgsConstructor
 @Entity
-@Table(name = "cbc_mileage_log")
+@Table(name = "cbc_fission_mileage_log")
 public class MileageLog {
+    public static int ACT_TYPE_EARN = 1;
+    public static int ACT_TYPE_CONSUME = 2;
+
     @Id
     @GenericGenerator(name = "idGenerator", strategy = "uuid")
     @GeneratedValue(generator = "idGenerator")
@@ -41,6 +44,11 @@ public class MileageLog {
      * 里程数
      */
     private Integer mileage;
+
+    /**
+     * 1 赚取 2 消费
+     */
+    private Integer actType;
 
     /**
      * 创建时间
