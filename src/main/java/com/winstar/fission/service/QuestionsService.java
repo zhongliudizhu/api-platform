@@ -17,7 +17,7 @@ public class QuestionsService {
     @Autowired
     ActivityQuestionsRepository activityQuestionsRepository;
 
-    @Cacheable(cacheNames = "ACTIVITY_QUESTION", keyGenerator = "ACTIVITY_QUESTION_KEY")
+    @Cacheable(cacheNames = "ACTIVITY_QUESTION", keyGenerator = "tkKeyGenerator")
     public List<ActivityQuestions> getQuestionAll(){
         List<ActivityQuestions> list = activityQuestionsRepository.findAll();
         return list;

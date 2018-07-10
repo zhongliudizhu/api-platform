@@ -10,5 +10,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * 描述： UserMileageRepository
  **/
 public interface UserMileageRepository extends JpaRepository<UserMileage, String> {
-
+    UserMileage findByAccountId(String accountId);
 }

@@ -19,6 +19,9 @@ import java.util.Date;
 @Entity
 @Table(name = "cbc_fission_user_mileage")
 public class UserMileage {
+    public static int MILEAGE_SAFE_ANSWER = 10;
+    public static int MILEAGE_INVITE_LEVEL_ONE = 10;
+    public static int MILEAGE_INVITE_LEVEL_TWO = 20;
     @Id
     @GenericGenerator(name = "idGenerator", strategy = "uuid")
     @GeneratedValue(generator = "idGenerator")

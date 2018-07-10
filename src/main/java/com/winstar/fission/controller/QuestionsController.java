@@ -4,8 +4,14 @@ import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.fission.entity.AnswerQuestionRecord;
 import com.winstar.fission.entity.ActivityQuestions;
+import com.winstar.fission.entity.UserMileage;
+import com.winstar.fission.repository.ActivityQuestionsRepository;
 import com.winstar.fission.repository.AnswerQuestionRecordRepository;
+import com.winstar.fission.repository.MileageLogRepository;
+import com.winstar.fission.repository.UserMileageRepository;
+import com.winstar.fission.service.CommonService;
 import com.winstar.fission.service.QuestionsService;
+import com.winstar.user.utils.ServiceManager;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,13 +29,21 @@ import java.util.*;
  * 派发题库
  **/
 @RestController
-@RequestMapping("/api/v1/cbc/fission/answer/")
+@RequestMapping("/api/v1/cbc/fission/answer")
 public class QuestionsController {
 
     @Autowired
     QuestionsService questionsService;
     @Autowired
     AnswerQuestionRecordRepository answerQuestionRecordRepository;
+    @Autowired
+    ActivityQuestionsRepository activityQuestionsRepository;
+    @Autowired
+    CommonService commonService;
+    @Autowired
+    UserMileageRepository userMileageRepository;
+    @Autowired
+    MileageLogRepository mileageLogRepository;
 
     /**
      * 获取题库
@@ -57,38 +71,62 @@ public class QuestionsController {
     @PostMapping("saveAnswerQuestionRecord")
     @ResponseStatus(HttpStatus.OK)
     public AnswerQuestionRecord saveAnswerQuestionRecord(HttpServletRequest request, @RequestBody Map map) throws NotRuleException {
-        String accountId = request.getAttribute("accountId").toString();
-        AnswerQuestionRecord answerQuestionRecord = checkParamAndInitAnswerRecord(map);
+        String accountId = ServiceManager.accountService.getAccountId(request);
+        checkParam(map);
+
         AnswerQuestionRecord updateAnswerQuestionRecord = answerQuestionRecordRepository.findByAccountId(accountId);
 
+        String highestScore = MapUtils.getString(map, "highestScore");
+        int highestScoreVal = Integer.valueOf(highestScore);
+
+        boolean isFinished = highestScoreVal >= activityQuestionsRepository.countByActivityId(commonService.getActivityIdFission());
+
         if (null == updateAnswerQuestionRecord) {//用户是否首次答题
-            answerQuestionRecord.setAccountId(accountId);
-            answerQuestionRecord.setCreateTime(new Date());
-            answerQuestionRecord.setUpdateTime(new Date());
-            return answerQuestionRecordRepository.save(answerQuestionRecord);
-        } else {
-            if (updateAnswerQuestionRecord.getHighestScore() < answerQuestionRecord.getHighestScore()) {
-                updateIfNewScoreHigherThanOld(answerQuestionRecord, updateAnswerQuestionRecord);
-            } else if (isHighestScoreEqualAndSecondsLessThanOld(answerQuestionRecord, updateAnswerQuestionRecord)) {
-                updateAnswerQuestionRecord.setSeconds(answerQuestionRecord.getSeconds());
-                updateAnswerQuestionRecord.setUpdateTime(new Date());
+            updateAnswerQuestionRecord = initAnswerQuestionRecord(accountId, highestScoreVal);
+            if (isFinished) {
+                updateUserMileage(updateAnswerQuestionRecord);
             }
             return answerQuestionRecordRepository.save(updateAnswerQuestionRecord);
         }
+
+        if (updateAnswerQuestionRecord.getHighestScore() < highestScoreVal) {
+            updateIfNewScoreHigherThanOld(updateAnswerQuestionRecord, highestScoreVal);
+        }
+
+        if (isFinished) {
+            updateUserMileage(updateAnswerQuestionRecord);
+        }
+        return answerQuestionRecordRepository.save(updateAnswerQuestionRecord);
     }
 
-    private boolean isHighestScoreEqualAndSecondsLessThanOld(AnswerQuestionRecord answerQuestionRecord, AnswerQuestionRecord updateAnswerQuestionRecord) {
-        return updateAnswerQuestionRecord.getHighestScore() == answerQuestionRecord.getHighestScore() && updateAnswerQuestionRecord.getSeconds() < answerQuestionRecord.getSeconds();
+    void updateUserMileage(AnswerQuestionRecord answerQuestionRecord) {
+        //todo 更新里程数
+
+        answerQuestionRecord.setIsReceived(2);
+        answerQuestionRecord.setUpdateTime(new Date());
+        answerQuestionRecordRepository.save(answerQuestionRecord);
     }
 
-    private void updateIfNewScoreHigherThanOld(AnswerQuestionRecord answerQuestionRecord, AnswerQuestionRecord updateAnswerQuestionRecord) {
-        updateAnswerQuestionRecord.setHighestScore(answerQuestionRecord.getHighestScore());
-        updateAnswerQuestionRecord.setSeconds(answerQuestionRecord.getSeconds());
+    private AnswerQuestionRecord initAnswerQuestionRecord(String accountId, int highestScoreVal) {
+        AnswerQuestionRecord updateAnswerQuestionRecord;
+        updateAnswerQuestionRecord = new AnswerQuestionRecord();
+        updateAnswerQuestionRecord.setHighestScore(highestScoreVal);
+        updateAnswerQuestionRecord.setActivityId(commonService.getActivityIdFission());
+        updateAnswerQuestionRecord.setAccountId(accountId);
+        updateAnswerQuestionRecord.setCreateTime(new Date());
         updateAnswerQuestionRecord.setUpdateTime(new Date());
+        updateAnswerQuestionRecord.setEndTime(new Date());
+        updateAnswerQuestionRecord.setIsReceived(1);
+        return updateAnswerQuestionRecord;
     }
 
-    private AnswerQuestionRecord checkParamAndInitAnswerRecord(Map map) throws NotRuleException {
-        AnswerQuestionRecord answerQuestionRecord = new AnswerQuestionRecord();
+    private void updateIfNewScoreHigherThanOld(AnswerQuestionRecord answerQuestionRecord, int highestScore) {
+
+        answerQuestionRecord.setHighestScore(highestScore);
+        answerQuestionRecord.setUpdateTime(new Date());
+    }
+
+    private void checkParam(Map map) throws NotRuleException {
         if (StringUtils.isEmpty(map)) {
             throw new NotRuleException("answer.record.requestNull");
         }
@@ -96,8 +134,6 @@ public class QuestionsController {
         if (StringUtils.isEmpty(highestScore)) {
             throw new NotRuleException("answer.record.highestScore");
         }
-        answerQuestionRecord.setHighestScore(Integer.parseInt(highestScore));
-        return answerQuestionRecord;
     }
 
 }
