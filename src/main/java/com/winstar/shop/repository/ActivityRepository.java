@@ -15,4 +15,6 @@ import java.util.List;
  **/
 public interface ActivityRepository extends JpaSpecificationExecutor<Activity>,JpaRepository<Activity,String> {
     List<Activity>  findByTypeIn(Collection types);
+
+    Activity findByType(Integer type);
 }

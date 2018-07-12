@@ -268,7 +268,11 @@ public class CouponActivityController {
             throw new NotRuleException("couponActivity.notMatchCars");
         }
         //白名单验证 依次验证
-        List<WhiteList> whiteLists = whiteListRepository.findByPhoneNumberAndDriverLicenseLikeAndIsGetAndTime(phoneNumber,driverLicense.substring(10,18),0,TimeUtil.getMonth());
+//        List<WhiteList> whiteLists = whiteListRepository.findByPhoneNumberAndDriverLicenseLikeAndIsGetAndTime(phoneNumber,driverLicense.substring(10,18),0,TimeUtil.getMonth());
+        List<WhiteList> whiteLists = whiteListRepository.findByPhoneNumberAndDriverLicenseAndIsGetAndTypeAndTime(phoneNumber,driverLicense,0,101,TimeUtil.getMonth());
+        whiteLists.addAll( whiteListRepository.findByPhoneNumberAndDriverLicenseAndIsGetAndTypeAndTime(phoneNumber,driverLicense.substring(10,18),0,102,TimeUtil.getMonth()));
+        whiteLists.addAll(whiteListRepository.findByPhoneNumberAndDriverLicenseAndIsGetAndType(phoneNumber,driverLicense,0,103));
+        whiteLists.addAll(whiteListRepository.findByPhoneNumberAndDriverLicenseAndIsGetAndType(phoneNumber,driverLicense,0,104));
         if(ObjectUtils.isEmpty(whiteLists)){
             logger.info("openid:"+account.getOpenid()+"-----二期开始发券[couponActivity.notWhiteLists]");
             throw new NotRuleException("couponActivity.notWhiteLists");
@@ -554,7 +558,6 @@ public class CouponActivityController {
     @Async
     private  void  updateWhiteList(Object accountId,WhiteList w,Integer sign){
         logger.info("accountId:"+accountId+"|"+sign+"-----打标-----");
-
         w.setSign(sign);
         w.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
         w.setAccountId(accountId.toString());

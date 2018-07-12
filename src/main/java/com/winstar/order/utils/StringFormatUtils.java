@@ -43,9 +43,6 @@ public class StringFormatUtils {
         return df.format(serial);
     }
 
-   /* public static void main(String[] args) {
-            System.out.println(StringFormatUtils.AutoSub("000001"));
-    }*/
 
     /**
      * @Description:Json工具类

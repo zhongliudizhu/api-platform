@@ -15,6 +15,7 @@ public enum  ActivityIdEnum {
     ACTIVITY_ID_102("龙途乐享卡月度日均存款达标-50元", 102),
     ACTIVITY_ID_103("购车分期获赠加油优惠券-100元", 103),
     ACTIVITY_ID_104("购车分期获赠加油优惠券-200元", 104),
+    ACTIVITY_ID_105("百万加油补贴", 105),
 
     ACTIVITY_ID_201("交安卡周四秒杀", 201),
     ACTIVITY_ID_202("优驾行周四秒杀", 202),

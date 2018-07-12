@@ -92,7 +92,23 @@ public class TimeUtil {
     public static String getMonth(){
         LocalDate today = LocalDate.now();
         return today.toString().substring(0,7);
+    }
 
+    public  static  String getCheckTimeNextMonth(String input) throws ParseException {
+        Date checkTime = getStringYearMonth(input);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(checkTime);
+        calendar.add(Calendar.MONTH, 1);
+        return  getDateYearMonth(calendar.getTime());
+    }
+
+    public static Date getStringYearMonth(String input) throws ParseException {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM");
+        return formatter.parse(input);
+    }
+    public static String getDateYearMonth(Date input) throws ParseException {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM");
+        return formatter.format(input);
     }
 
     /**

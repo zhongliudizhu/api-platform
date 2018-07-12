@@ -1,4 +1,4 @@
-package com.winstar.couponActivity.entity;
+package com.winstar.obu.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -6,7 +6,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.util.Date;
 
 /**
  * WhiteList
@@ -20,8 +24,8 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "cbc_white_list")
-public class WhiteList {
+@Table(name = "cbc_obu_white_list")
+public class ObuWhiteList {
     /**
      * 唯一标识
      */
@@ -34,15 +38,17 @@ public class WhiteList {
 
     private String phoneNumber;
 
-    private String time;
+    private String name;
 
-    private Integer type;
+    private Date timeStart;
+
+    private Date timeEnd;
+
+    private String etc;
 
     private String coupon;
 
-    private String sendTime;
-
-    private Integer sign;
+    private Date sendTime;
 
     private String accountId;
 

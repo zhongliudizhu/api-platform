@@ -79,5 +79,8 @@ public class Activity {
     @Transient
     private List<Goods> goodsList;
 
+    @Transient
+    private Integer isVerify;
+
 
 }

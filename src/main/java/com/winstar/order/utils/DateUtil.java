@@ -20,6 +20,14 @@ public class DateUtil {
 
         return date;
     }
+    /**
+     * 获取半个小时以后的时间
+     */
+    public static Date getTime30(){
+        Calendar beforeTime = Calendar.getInstance();
+        beforeTime.add(Calendar.MINUTE, +30);// 30分钟之后的时间
+        return beforeTime.getTime();
+    }
 
     /**
      * 获取当天开始时间
@@ -48,6 +56,12 @@ public class DateUtil {
         currentDate.set(Calendar.MINUTE, 0);
         currentDate.set(Calendar.SECOND, 0);
         return (Date)currentDate.getTime().clone();
+    }
+
+    public static String getCurrentYear(){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+        Date date = new Date();
+        return sdf.format(date);
     }
 
     /**
@@ -91,6 +105,22 @@ public class DateUtil {
         currentDate.set(Calendar.SECOND, 59);
         return (Date)currentDate.getTime().clone();
     }
+    /**
+     * 获取下一個月结束时间
+     * @return date
+     */
+    public static Date getNextMonthEnd() {
+        Calendar currentDate = new GregorianCalendar();
+        int year = currentDate.get(Calendar.YEAR);
+        currentDate.add(Calendar.MONTH,1);
+        currentDate.set(Calendar.DAY_OF_MONTH,currentDate.getActualMaximum(Calendar.DAY_OF_MONTH));
+        currentDate.set(Calendar.HOUR_OF_DAY, 23);
+        currentDate.set(Calendar.MINUTE, 59);
+        currentDate.set(Calendar.SECOND, 59);
+
+        return (Date)currentDate.getTime().clone();
+    }
+
 
     /**
      * 获取当天23：30：00
@@ -840,10 +870,5 @@ public class DateUtil {
         return date1;
     }
 
-    /*public static void main(String[] args) {
-        //System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-
-        //System.out.println();
-    }*/
 
 }  

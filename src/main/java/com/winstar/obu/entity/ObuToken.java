@@ -1,4 +1,4 @@
-package com.winstar.couponActivity.entity;
+package com.winstar.obu.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,35 +10,34 @@ import javax.persistence.*;
 import java.util.Date;
 
 /**
- * CareJuanList
- *
- * @author: Big BB
- * @create 2018-04-03 10:06
- * @DESCRIPTION:
- **/
-@Setter
+ * token
+ */
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "cbc_join_list")
-public class JoinList {
-    /**
-     * 唯一标识
-     */
+@Table(name = "CBC_OBU_TOKEN")
+public class ObuToken {
     @Id
     @GenericGenerator(name = "idGenerator", strategy = "uuid")
     @GeneratedValue(generator = "idGenerator")
+    @Column(length = 32)
     private String id;
-
-    private String accountId;
-
-    private String plateNumber;
-
-    private Integer isVerify;
-
+    /**
+     * 账号ID
+     */
+    private String phoneNumber;
+    /**
+     * 账号tokenID
+     */
+    private String tokenId;
+    /**
+     * 创建时间
+     */
     private Date createTime;
-
-    @Transient
-    private long number;
+    /**
+     * 最后修改时间
+     */
+    private Date updateTime;
 }

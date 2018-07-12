@@ -1,4 +1,4 @@
-package com.winstar.couponActivity.entity;
+package com.winstar.obu.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -6,14 +6,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
-import java.util.Date;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
- * CareJuanList
+ * ObuConfig
  *
  * @author: Big BB
- * @create 2018-04-03 10:06
+ * @create 2018-07-05 15:29
  * @DESCRIPTION:
  **/
 @Setter
@@ -21,24 +23,17 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "cbc_join_list")
-public class JoinList {
-    /**
-     * 唯一标识
-     */
+@Table(name = "cbc_obu_config")
+public class ObuConfig {
+
     @Id
     @GenericGenerator(name = "idGenerator", strategy = "uuid")
     @GeneratedValue(generator = "idGenerator")
     private String id;
 
-    private String accountId;
+    private Integer type;
 
-    private String plateNumber;
+    private Integer limitNum;
 
-    private Integer isVerify;
-
-    private Date createTime;
-
-    @Transient
-    private long number;
+    private String mark;
 }

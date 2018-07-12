@@ -56,7 +56,8 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o) throws Exception {
-        if (excludeUrls.contains(request.getRequestURI()) || request.getRequestURI().contains("/api/v1/cbc/account") || request.getRequestURI().contains("/api/v1/cbc/valuations") || request.getRequestURI().startsWith("/api/v1/cbc/verification")) {
+        if (excludeUrls.contains(request.getRequestURI()) || request.getRequestURI().contains("/api/v1/cbc/account") || request.getRequestURI().contains("/api/v1/cbc/valuations") || request.getRequestURI().startsWith("/api/v1/cbc/verification")
+                || request.getRequestURI().contains("/api/v1/cbc/obuActivity")) {
             return true;
         }
 

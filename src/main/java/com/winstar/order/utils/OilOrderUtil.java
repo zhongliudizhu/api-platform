@@ -123,6 +123,17 @@ public class OilOrderUtil {
         return order;
     }
 
+
+    public static OilOrder initOrderSubsidy(OilOrder order, Goods goods, Integer activityType){
+
+        order.setPayPrice(Arith.sub(goods.getSaledPrice(),order.getDiscountAmount()));
+        order.setCouponTempletId(goods.getCouponTempletId());
+        order.setSalePrice(goods.getSaledPrice());
+        order.setItemTotalValue(goods.getPrice());//油劵总面值
+        order.setOilDetail(getOilDetail(goods));
+        return order;
+    }
+
     /**
      * 根据商品信息拼接油券详情  如：100元x1张+50元x2张+200元x5张
      * @return 油券详情字符串
@@ -197,7 +208,6 @@ public class OilOrderUtil {
         List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,begin, end);
         if(oilOrders.size()<1){
             return "0";
-
         }else{
             for (OilOrder oilOrder:oilOrders) {
                 if(oilOrder.getPayStatus()==1){
