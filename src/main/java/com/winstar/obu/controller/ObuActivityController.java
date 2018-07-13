@@ -81,8 +81,9 @@ public class ObuActivityController {
                                   @RequestParam String phoneNumber,
                                   @RequestParam(defaultValue = "0")String type) throws NotFoundException, NotRuleException{
         ResponseEntity resp = SmsUtil.sendSms(phoneNumber,sendSmsUrl);
-        ObuToken obuToken = obuTokenService.findByPhoneNumber(phoneNumber);
+
         if(type.equals("0")){
+            ObuToken obuToken = obuTokenService.findByPhoneNumber(phoneNumber);
             if(ObjectUtils.isEmpty(obuToken)){
                 obuToken = new ObuToken();
                 obuToken.setTokenId(UUIDUtils.getUUID());
@@ -94,7 +95,15 @@ public class ObuActivityController {
         return resp;
     }
 
-
+    /**
+     * 校验验证码  未用
+     * @param phoneNumber
+     * @param msgVerifyCode
+     * @param msgVerifyId
+     * @return
+     * @throws NotFoundException
+     * @throws NotRuleException
+     */
     @RequestMapping(value = "verifySMS", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     public boolean verifySMS(String phoneNumber, String msgVerifyCode, String msgVerifyId) throws NotFoundException, NotRuleException{
         UpdateAccountParam updateAccountParam =new UpdateAccountParam();
@@ -107,10 +116,7 @@ public class ObuActivityController {
         if(StringUtils.isEmpty(msgVerifyId)){
             throw new NotRuleException("couponActivity.msgVerifyId");
         }
-        updateAccountParam.setMobile(phoneNumber);
-        updateAccountParam.setMsgVerifyCode(msgVerifyCode);
-        updateAccountParam.setMsgVerifyId(msgVerifyId);
-        Boolean aBoolean = SmsUtil.verifySms(updateAccountParam,verifySmsUrl);
+        Boolean aBoolean = SmsUtil.verifySms(getUpdateAccountParam(phoneNumber,msgVerifyCode,msgVerifyId),verifySmsUrl);
         Result result = new Result();
         if(aBoolean){
             result.setResult("success");
@@ -122,6 +128,16 @@ public class ObuActivityController {
         return aBoolean;
     }
 
+    /**
+     * 获取Token
+     * @param request
+     * @param phoneNumber
+     * @param regFrom
+     * @param msgVerifyCode
+     * @param msgVerifyId
+     * @return
+     * @throws NotRuleException
+     */
     @RequestMapping(value = "getToken", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     public ObuToken getToken(HttpServletRequest request,
                              String phoneNumber, String regFrom,
@@ -135,12 +151,8 @@ public class ObuActivityController {
         if(StringUtils.isEmpty(msgVerifyId)){
             throw new NotRuleException("couponActivity.msgVerifyId");
         }
-        UpdateAccountParam updateAccountParam =new UpdateAccountParam();
-        updateAccountParam.setMobile(phoneNumber);
-        updateAccountParam.setMsgVerifyCode(msgVerifyCode);
-        updateAccountParam.setMsgVerifyId(msgVerifyId);
 
-        if (!SmsUtil.verifySms(updateAccountParam,verifySmsUrl))
+        if (!SmsUtil.verifySms(getUpdateAccountParam(phoneNumber,msgVerifyCode,msgVerifyId),verifySmsUrl))
             throw new NotRuleException("msgInvalid.code");
 
         ObuToken obuToken = obuTokenService.getToken(phoneNumber);
@@ -183,7 +195,7 @@ public class ObuActivityController {
         if(StringUtils.isEmpty(tokenId)){
             throw new NotRuleException("no_oauth");
         }
-        ObuToken obuToken = obuTokenService.getToken(phoneNumber);
+        ObuToken obuToken = obuTokenService.findByTokenId(tokenId);
         if(ObjectUtils.isEmpty(obuToken)){
             throw new NotRuleException("no_oauth");
         }
@@ -200,18 +212,13 @@ public class ObuActivityController {
             throw new NotRuleException("couponActivity.msgVerifyId");
         }
 
-        UpdateAccountParam updateAccountParam =new UpdateAccountParam();
-        updateAccountParam.setMobile(phoneNumber);
-        updateAccountParam.setMsgVerifyCode(msgVerifyCode);
-        updateAccountParam.setMsgVerifyId(msgVerifyId);
-
-        if (!SmsUtil.verifySms(updateAccountParam,verifySmsUrl))
+        if (!SmsUtil.verifySms(getUpdateAccountParam(phoneNumber,msgVerifyCode,msgVerifyId),verifySmsUrl))
             throw new NotRuleException("msgInvalid.code");
 
         ObuConfig obuConfig = obuConfigRepository.findByType(obuType);
         long count = obuRepository.countByType(obuType);//1:赠送  count:赠送总量
 
-        if(count > obuConfig.getLimitNum()){
+        if(count > obuConfig.getLimitNum() || count == 0){
             throw new NotFoundException("obu.isLimit");
         }
 
@@ -269,6 +276,14 @@ public class ObuActivityController {
         }
         return obuDots;
     }
+
+    /**
+     * 查看我的OBU
+     * @param request
+     * @return
+     * @throws NotFoundException
+     * @throws NotRuleException
+     */
     @RequestMapping(value = "myObu", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     public List<ObuInfo> myObuInfo(HttpServletRequest request) throws NotFoundException, NotRuleException{
         String tokenId = request.getHeader("obu_token_id");
@@ -287,6 +302,13 @@ public class ObuActivityController {
         return obuInfo;
     }
 
+    /**
+     * 获取活动开关
+     * @param request
+     * @return
+     * @throws NotFoundException
+     * @throws NotRuleException
+     */
     @RequestMapping(value = "getSwitch", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     public ObuConfig getSwitch(HttpServletRequest request) throws NotFoundException, NotRuleException{
         ObuConfig obuConfig = obuConfigRepository.findByType(2);
@@ -296,4 +318,13 @@ public class ObuActivityController {
         }
         return obuConfig;
     }
+
+    public UpdateAccountParam getUpdateAccountParam(String phoneNumber, String msgVerifyCode, String msgVerifyId){
+        UpdateAccountParam updateAccountParam =new UpdateAccountParam();
+        updateAccountParam.setMobile(phoneNumber);
+        updateAccountParam.setMsgVerifyCode(msgVerifyCode);
+        updateAccountParam.setMsgVerifyId(msgVerifyId);
+        return updateAccountParam;
+    }
+
 }

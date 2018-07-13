@@ -91,12 +91,12 @@ public class OilSubsidyController {
         activity.setName("百万加油补贴--第三季度活动");
         activity.setType(105);
 
-        OilSubsidyVerifyLog oilSubsidyVerifyLog = oilSubsidyVerifyLogRepository.findByAccountId(accountId.toString());
-        if(!ObjectUtils.isEmpty(oilSubsidyVerifyLog)){
-           activity.setIsVerify(1); //0 :未验证  1：已验证
-        }else{
-            activity.setIsVerify(0);
-        }
+//        OilSubsidyVerifyLog oilSubsidyVerifyLog = oilSubsidyVerifyLogRepository.findByAccountId(accountId.toString());
+//        if(!ObjectUtils.isEmpty(oilSubsidyVerifyLog)){
+//           activity.setIsVerify(1); //0 :未验证  1：已验证
+//        }else{
+//            activity.setIsVerify(0);
+//        }
         List<MyCoupon> myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(105),0, DateUtil.getInputDate("2018-07-01 00:00:01"), DateUtil.getInputDate("2019-01-31 23:59:59"));//0: 未使用
         if(!ObjectUtils.isEmpty(myCoupons)){
             activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
@@ -143,26 +143,27 @@ public class OilSubsidyController {
 
         Activity activity = getActivityInfo();
 
-        List<WhiteList> whiteLists = whiteListRepository.checkWhiteList(driverLicense, phoneNumber, 0);
-        if(ObjectUtils.isEmpty(whiteLists)){
+        WhiteList whiteList = whiteListRepository.checkWhiteList(driverLicense, phoneNumber, 0);
+        if(ObjectUtils.isEmpty(whiteList)){
             throw new NotFoundException("couponActivity.notWhiteLists");
-        }else{
-            activity.setIsVerify(1);//已验证
-            saveOilSubsidyVerifyLog(accountId.toString());//记录验证日志
         }
+//        else{
+//            activity.setIsVerify(1);//已验证
+//            saveOilSubsidyVerifyLog(accountId.toString());//记录验证日志
+//        }
 
         String nowMonth = TimeUtil.getMonth();
-        for (WhiteList whiteList:whiteLists) {
-            try {
-                if(whiteList.getTime().equals(nowMonth)||TimeUtil.getCheckTimeNextMonth(whiteList.getTime()).equals(nowMonth)){
-                    activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
-                    giveCouponInfo(accountId.toString(),whiteList);
-//                    break;
-                }
-            } catch (ParseException e) {
-              throw new InnerServerException();
+        try {
+            if(whiteList.getTime().equals(nowMonth)||TimeUtil.getCheckTimeNextMonth(whiteList.getTime()).equals(nowMonth)){
+                activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
+                giveCouponInfo(accountId.toString(),whiteList);
+            }else{
+                throw new NotFoundException("couponActivity.notWhiteLists");
             }
+        } catch (ParseException e) {
+            throw new NotFoundException("couponActivity.notWhiteLists");
         }
+
         return activity;
     }
     /**

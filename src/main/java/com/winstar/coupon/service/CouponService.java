@@ -265,6 +265,7 @@ public class CouponService {
         types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_101.getActivity()));
         types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_103.getActivity()));
         types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_104.getActivity()));
+        types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_105.getActivity()));
         List<MyCoupon> list = myCouponRepository.findMyUsableCoupon(accountId,0,money, new Date(),types);
         return list;
     }

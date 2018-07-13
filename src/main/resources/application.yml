@@ -50,6 +50,8 @@ info:
   getLocalCarsUrl: http://winstar.api.sxeccellentdriving.com/winstar-api/api/user/vehicle/getUserVehicleWechat
   getSixInOneCarsUrl: http://mobile.sxwinstar.net/wechat_access/api/v1/platenumbers/certificateNumberTypeSearch?certificateNumber={certificateNumber}&&certificateType={certificateType}
   sendMsgUrl: http://sms.sxjiashi.com:8080/api/v2/smsSend/sendNotice
+  checkBindLicense: https://mobile.sxwinstar.net/wechat_access/api/user/auth/checkBindLicense
+  authDriverLicense: https://mobile.sxwinstar.net/wechat_access/api/user/auth/auth
 #建行信息卡校验
 bank:
   sms:

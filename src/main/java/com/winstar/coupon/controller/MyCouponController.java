@@ -94,6 +94,7 @@ public class MyCouponController {
                 list.add(cb.notEqual(root.<Integer>get("activityId"), "102"));
                 list.add(cb.notEqual(root.<Integer>get("activityId"), "103"));
                 list.add(cb.notEqual(root.<Integer>get("activityId"), "104"));
+                list.add(cb.notEqual(root.<Integer>get("activityId"), "105"));
                 Predicate[] p = new Predicate[list.size()];
                 return cb.and(list.toArray(p));
             }

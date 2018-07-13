@@ -21,11 +21,11 @@ public interface WhiteListRepository extends JpaRepository<WhiteList,String>,Jpa
 
     List<WhiteList> findByPhoneNumberAndDriverLicenseAndIsGetAndType(String phoneNumber,String driverLicense,Integer isGet,Integer type);
 
-    @Query("select o from WhiteList o where o.phoneNumber = ?1 and o.driverLicense like CONCAT('%',?2) and o.isGet =?3 and o.time =?4")
+    @Query("select o from WhiteList o where o.phoneNumber = ?1 and o.driverLicense like CONCAT('%',?2) and o.isGet =?3 and o.time =?4 and o.type < 105")
     List<WhiteList> findByPhoneNumberAndDriverLicenseLikeAndIsGetAndTime(String phoneNumber,String driverLicense,Integer isGet, String time);
 
     @Query("select o from WhiteList o where o.driverLicense = ?1 and o.phoneNumber = ?2 and o.isGet =?3 and o.type = 105")
-    List<WhiteList> checkWhiteList(String driverLicense,String phoneNumber,Integer isGet);
+    WhiteList checkWhiteList(String driverLicense,String phoneNumber,Integer isGet);
 
    //List<WhiteList> findByDriverLicenseAndPhoneNumberAndTypeNotAndTimeAndIsGet(String driverLicense, String phoneNumber, Integer type, String time,Integer isGet);
 
