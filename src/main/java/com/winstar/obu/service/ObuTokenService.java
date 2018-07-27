@@ -29,7 +29,7 @@ public class ObuTokenService {
 
     public ObuToken createObuToken(ObuToken obuToken) {
         obuToken.setCreateTime(new Date());
-        obuToken.setUpdateTime(DateUtil.getTime30());
+        obuToken.setUpdateTime(DateUtil.getNextMonthEnd());
         obuToken = obuTokenRepository.save(obuToken);
         return obuToken;
     }

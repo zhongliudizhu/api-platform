@@ -56,7 +56,7 @@ public class SmsService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Basic " + base64Creds);
-
+            logger.info("base64Creds:"+base64Creds);
             MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
             headers.setContentType(type);
             headers.add("Accept", MediaType.APPLICATION_JSON.toString());
@@ -86,6 +86,7 @@ public class SmsService {
         String base64Creds = new String(base64CredsBytes);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Basic " + base64Creds);
+        logger.info("base64Creds:"+base64Creds);
         MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
         headers.setContentType(type);
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());

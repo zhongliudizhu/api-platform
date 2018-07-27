@@ -3,25 +3,36 @@ package com.winstar.obu.controller;
 import com.winstar.ClientErrorHandler;
 import com.winstar.couponActivity.entity.WhiteList;
 import com.winstar.couponActivity.utils.TimeUtil;
+import com.winstar.exception.InvalidParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
+import com.winstar.exception.ServiceUnavailableException;
 import com.winstar.obu.entity.*;
 import com.winstar.obu.repository.*;
 import com.winstar.obu.service.ObuDotService;
 import com.winstar.obu.service.ObuTokenService;
 import com.winstar.obu.utils.Result;
+import com.winstar.obu.utils.SendSmsRequest;
 import com.winstar.obu.utils.SmsUtil;
 import com.winstar.order.utils.DateUtil;
+import com.winstar.order.utils.StringFormatUtils;
 import com.winstar.user.entity.AccessToken;
 import com.winstar.user.entity.Account;
 import com.winstar.user.param.AccountParam;
+import com.winstar.user.param.CCBAuthParam;
+import com.winstar.user.param.MsgContent;
 import com.winstar.user.param.UpdateAccountParam;
 import com.winstar.user.utils.ServiceManager;
 import com.winstar.user.utils.UUIDUtils;
+import com.winstar.user.vo.AuthVerifyCodeEntity;
+import com.winstar.user.vo.AuthVerifyCodeMsgResult;
+import com.winstar.user.vo.SendVerifyCodeEntity;
+import com.winstar.user.vo.SendVerifyCodeMsgResult;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.repository.cdi.Eager;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -37,6 +48,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.winstar.user.utils.ServiceManager.accountService;
 
 /**
  * ObuActivityController
@@ -67,11 +80,15 @@ public class ObuActivityController {
     String sendSmsUrl;
     @Value("${verify_sms_url}")
     String verifySmsUrl;
+    @Value("${get_random_image_code}")
+    String getRandomCodeImageUrl;
+    @Value("${send_sms_image_url}")
+    String verifyImageSmsUrl;
 
     final static int obuType = 1;
 
     /**
-     * 发送短信
+     *  短信服务（公司内部）-发送短信
      * @param request
      * @return
      * @throws NotFoundException
@@ -96,40 +113,7 @@ public class ObuActivityController {
     }
 
     /**
-     * 校验验证码  未用
-     * @param phoneNumber
-     * @param msgVerifyCode
-     * @param msgVerifyId
-     * @return
-     * @throws NotFoundException
-     * @throws NotRuleException
-     */
-    @RequestMapping(value = "verifySMS", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    public boolean verifySMS(String phoneNumber, String msgVerifyCode, String msgVerifyId) throws NotFoundException, NotRuleException{
-        UpdateAccountParam updateAccountParam =new UpdateAccountParam();
-        if(StringUtils.isEmpty(phoneNumber)){
-            throw new NotRuleException("obu.phoneNumber");
-        }
-        if(StringUtils.isEmpty(msgVerifyCode)){
-            throw new NotRuleException("couponActivity.msgVerifyCode");
-        }
-        if(StringUtils.isEmpty(msgVerifyId)){
-            throw new NotRuleException("couponActivity.msgVerifyId");
-        }
-        Boolean aBoolean = SmsUtil.verifySms(getUpdateAccountParam(phoneNumber,msgVerifyCode,msgVerifyId),verifySmsUrl);
-        Result result = new Result();
-        if(aBoolean){
-            result.setResult("success");
-            result.setStatus(1);
-        }else{
-            result.setResult("fail");
-            result.setStatus(0);
-        }
-        return aBoolean;
-    }
-
-    /**
-     * 获取Token
+     * 获取Token（包含验证验证码码合法性（公司内部）、生成token、更新token等）
      * @param request
      * @param phoneNumber
      * @param regFrom
@@ -152,13 +136,19 @@ public class ObuActivityController {
             throw new NotRuleException("couponActivity.msgVerifyId");
         }
 
-        if (!SmsUtil.verifySms(getUpdateAccountParam(phoneNumber,msgVerifyCode,msgVerifyId),verifySmsUrl))
+        if (!SmsUtil.verifySms(getUpdateAccountParam(phoneNumber,msgVerifyCode,msgVerifyId),verifySmsUrl)) {
             throw new NotRuleException("msgInvalid.code");
-
-        ObuToken obuToken = obuTokenService.getToken(phoneNumber);
-        if (null == obuToken) {
-            throw new NotRuleException("no_oauth");
         }
+        //生成/更新token
+        ObuToken obuToken = obuTokenService.findByPhoneNumber(phoneNumber);
+        if(ObjectUtils.isEmpty(obuToken)){
+            obuToken = new ObuToken();
+            obuToken.setTokenId(UUIDUtils.getUUID());
+            obuToken.setPhoneNumber(phoneNumber);
+        }
+        logger.info("createToken:"+obuToken.getTokenId());
+        obuToken = obuTokenService.createObuToken(obuToken);
+
         ObuAccount account = obuAccountRepository.findByPhoneNumber(phoneNumber);
         if (null == account) {
             obuAccountRepository.save(getObuAccount(phoneNumber,regFrom));
@@ -176,8 +166,48 @@ public class ObuActivityController {
         return  obuAccount;
     }
 
+
     /**
-     * 发送OBU
+     * 发送验证码(建行短信服务)
+     *
+     * @param infoCard
+     * @param phone
+     * @return
+     * @throws InvalidParameterException
+     * @throws NotRuleException
+     * @throws NotFoundException
+     * @throws ServiceUnavailableException
+     */
+    @PostMapping(value = "/sendAuthMsg", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity sendAuth(@RequestParam String infoCard, @RequestParam String phone, HttpServletRequest request)
+            throws NotRuleException {
+
+        MsgContent mc = new MsgContent();
+        mc.setKh(infoCard);
+        if(!StringUtils.isEmpty(phone)){
+            phone = phone.substring(7,11);
+        }
+        mc.setSjh(phone);
+        String msgParam = StringFormatUtils.bean2JsonStr(mc);
+        //发送短息
+        SendVerifyCodeMsgResult sendVerifyCodeMsgResult = ServiceManager.smsService.sendSms(msgParam);
+        //判断返回结果
+        if (sendVerifyCodeMsgResult != null && sendVerifyCodeMsgResult.getStatus().equals("success")) {
+            CCBAuthParam ccbAuthParam = new CCBAuthParam();
+            List<SendVerifyCodeEntity> sendVerifyCodeEntityList = sendVerifyCodeMsgResult.getResults();
+            ccbAuthParam.setXh(sendVerifyCodeEntityList.get(0).getXh());
+            ccbAuthParam.setKh(sendVerifyCodeEntityList.get(0).getKh());
+            logger.info(new StringBuilder("实名认证建行验证码发送：infoCard-->").append(infoCard).append("phone-->").append(phone).toString());
+            return new ResponseEntity(ccbAuthParam, HttpStatus.OK);
+        } else {
+            logger.info(new StringBuilder("发送失败01：infoCard-->").append(infoCard).append("phone-->").append(phone).toString());
+            logger.error(new StringBuilder("发送失败02,").append(sendVerifyCodeMsgResult.getErrorMessage()).append(infoCard).append("_").append(phone).toString());
+            throw new NotRuleException(sendVerifyCodeMsgResult.getErrorMessage());
+        }
+    }
+
+    /**
+     * 发送OBU（生成obu、验证短信合法性（建行）等）
      * @param request
      * @param driverLicense
      * @param phoneNumber
@@ -186,7 +216,9 @@ public class ObuActivityController {
      * @throws NotFoundException
      */
     @RequestMapping(value = "check", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    public ObuInfo checkObu(HttpServletRequest request, String driverLicense,
+    public ObuInfo checkObu(HttpServletRequest request,
+                            String driverLicense,
+                            String infoCard,
                             String phoneNumber,
                             String msgVerifyCode,
                             String msgVerifyId) throws NotRuleException, NotFoundException{
@@ -202,6 +234,9 @@ public class ObuActivityController {
         if(StringUtils.isEmpty(driverLicense)){
             throw new NotRuleException("obu.driverLicense");
         }
+        if(StringUtils.isEmpty(infoCard)){
+            throw new NotRuleException("obu.infoCard");
+        }
         if(StringUtils.isEmpty(phoneNumber)){
             throw new NotRuleException("obu.phoneNumber");
         }
@@ -212,17 +247,38 @@ public class ObuActivityController {
             throw new NotRuleException("couponActivity.msgVerifyId");
         }
 
-        if (!SmsUtil.verifySms(getUpdateAccountParam(phoneNumber,msgVerifyCode,msgVerifyId),verifySmsUrl))
-            throw new NotRuleException("msgInvalid.code");
+        //设置短息
+        MsgContent mc = new MsgContent();
+        mc.setKh(infoCard);
+        mc.setXh(msgVerifyId);
+        mc.setYzm(msgVerifyCode);
+        //调用验证验证码接口
+        String msgParam = StringFormatUtils.bean2JsonStr(mc);
+        AuthVerifyCodeMsgResult authVerifyCodeMsgResult = ServiceManager.smsService.authSms(msgParam);
+        if (!authVerifyCodeMsgResult.getStatus().equals("success")) {
+            logger.error(new StringBuilder("验证码验证失败,").append(authVerifyCodeMsgResult.getErrorMessage()).append("_")
+                    .append(phoneNumber).append("_")
+                    .append(msgVerifyCode).append("_").append(infoCard).toString());
+            throw new NotRuleException("INVALID_VERIFY");
+        }
+        List<AuthVerifyCodeEntity> authVerifyCodeEntityList = authVerifyCodeMsgResult.getResults();
+        //判读是否得到驾驶证号码
+        if (StringUtils.isEmpty(authVerifyCodeEntityList.get(0).getSfzhm())) {
+            logger.error(new StringBuilder("银行卡账号不正确请检查数据").append(phoneNumber).append("_").append(msgVerifyCode).append("_").append(infoCard).toString());
+            throw new NotRuleException("CardNoOrMobile");
+        }
+
+//        if (!SmsUtil.verifySms(getUpdateAccountParam(phoneNumber,msgVerifyCode,msgVerifyId),verifySmsUrl))
+//            throw new NotRuleException("msgInvalid.code");
 
         ObuConfig obuConfig = obuConfigRepository.findByType(obuType);
         long count = obuRepository.countByType(obuType);//1:赠送  count:赠送总量
 
-        if(count > obuConfig.getLimitNum() || count == 0){
+        if(count > obuConfig.getLimitNum() || obuConfig.getLimitNum() == 0){
             throw new NotFoundException("obu.isLimit");
         }
 
-        ObuWhiteList obuWhiteList = obuWhiteListRepository.checkWhiteList(phoneNumber, driverLicense, 0, new Date(), new Date());
+        ObuWhiteList obuWhiteList = obuWhiteListRepository.checkWhiteList(phoneNumber, 0, new Date(), new Date());
 
         if(ObjectUtils.isEmpty(obuWhiteList)){
             throw new NotFoundException("obu.notWhiteLists");
@@ -327,4 +383,28 @@ public class ObuActivityController {
         return updateAccountParam;
     }
 
+    /**
+     *
+     * @param request
+     * @return
+     * @throws NotFoundException
+     * @throws NotRuleException
+     */
+    @RequestMapping(value = "getRandomCode", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+    public ResponseEntity  getRandomCode(HttpServletRequest request) throws NotFoundException, NotRuleException{
+        logger.info("获取图片验证码");
+        ResponseEntity resp = SmsUtil.getRandomCode(getRandomCodeImageUrl);
+        return resp;
+    }
+
+    /**
+     * 1、验证图片验证码
+     * 2、发送短信
+     */
+    @RequestMapping(value = "smsImageSend", method = RequestMethod.POST, produces = "application/json;charset=utf-8")
+    public ResponseEntity  smsImageSend(@RequestBody SendSmsRequest sendSmsRequest) throws NotFoundException, NotRuleException{
+        logger.info("验证图片验证码，并发短息");
+        ResponseEntity resp = SmsUtil.verifyImageSmsUrl(verifyImageSmsUrl,sendSmsRequest);
+        return resp;
+    }
 }

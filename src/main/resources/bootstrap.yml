@@ -1,17 +1,11 @@
 spring:
   application:
     name: winstar-cbc-api
-#  cloud:
-#      config:
-#        uri: http://winstar:db1ab002-1fba-476d-a421-22113355@47.92.66.177:19100/
-#        profile: dev
-#        name: item
-
 info:
   app:
-    name: @project.artifactId@
-    description: @project.description@
-    version: @project.version@
+    name: '@project.artifactId@'
+    description: '@project.description@'
+    version: '@project.version@'
     author: zhanglin
     telphone: 13474003282
     email: 172810573@qq.com

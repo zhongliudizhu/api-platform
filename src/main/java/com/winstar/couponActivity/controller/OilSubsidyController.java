@@ -17,12 +17,16 @@ import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.obu.utils.SmsUtil;
 import com.winstar.order.utils.DateUtil;
+import com.winstar.order.utils.StringFormatUtils;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.repository.ActivityRepository;
 import com.winstar.user.entity.Account;
+import com.winstar.user.param.MsgContent;
 import com.winstar.user.param.UpdateAccountParam;
 import com.winstar.user.service.AccountService;
 import com.winstar.user.utils.ServiceManager;
+import com.winstar.user.vo.AuthVerifyCodeEntity;
+import com.winstar.user.vo.AuthVerifyCodeMsgResult;
 import com.winstar.utils.WsdUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,19 +110,20 @@ public class OilSubsidyController {
         return  activity;
     }
 
-    @RequestMapping(value = "sendSMS", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    public ResponseEntity sendSMS(HttpServletRequest request, String phoneNumber) throws NotFoundException, NotRuleException{
-        ResponseEntity resp = SmsUtil.sendSms(phoneNumber,sendSmsUrl);
-
-        return resp;
-    }
 
     @RequestMapping(value = "/giveCoupons", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Activity giveCoupons(HttpServletRequest request, String driverLicense, String phoneNumber, String msgVerifyCode, String msgVerifyId)
+    public Activity giveCoupons(HttpServletRequest request,
+                                String driverLicense,
+                                String phoneNumber,
+                                String msgVerifyCode,
+                                String msgVerifyId,
+                                String infoCard)
        throws NotRuleException, NotFoundException ,InnerServerException{
         Object accountId = request.getAttribute("accountId");
         Account account = accountService.findById(accountId.toString());
         logger.info("openid:"+account.getOpenid()+"-----百万加油补贴活动【发券】-----");
+        logger.info("driverLicense:"+driverLicense+"|phoneNumber:"+phoneNumber
+                +"|msgVerifyCode:"+msgVerifyCode+"|msgVerifyId:"+msgVerifyId);
 
         if(StringUtils.isEmpty(driverLicense)){
             throw new NotRuleException("couponActivity.driverLicense");
@@ -132,18 +137,31 @@ public class OilSubsidyController {
         if(StringUtils.isEmpty(msgVerifyId)){
             throw new NotRuleException("couponActivity.msgVerifyId");
         }
+        //设置短息
+        MsgContent mc = new MsgContent();
+        mc.setKh(infoCard);
+        mc.setXh(msgVerifyId);
+        mc.setYzm(msgVerifyCode);
+        //调用验证验证码接口
+        String msgParam = StringFormatUtils.bean2JsonStr(mc);
+        AuthVerifyCodeMsgResult authVerifyCodeMsgResult = ServiceManager.smsService.authSms(msgParam);
+        if (!authVerifyCodeMsgResult.getStatus().equals("success")) {
+            logger.error(new StringBuilder("验证码验证失败,").append(authVerifyCodeMsgResult.getErrorMessage()).append("_")
+                    .append(phoneNumber).append("_")
+                    .append(msgVerifyCode).append("_").append(infoCard).toString());
+            throw new NotRuleException("INVALID_VERIFY");
+        }
+        List<AuthVerifyCodeEntity> authVerifyCodeEntityList = authVerifyCodeMsgResult.getResults();
+        //判读是否得到驾驶证号码
+        if (StringUtils.isEmpty(authVerifyCodeEntityList.get(0).getSfzhm())) {
+            logger.error(new StringBuilder("银行卡账号不正确请检查数据").append(phoneNumber).append("_").append(msgVerifyCode).append("_").append(infoCard).toString());
+            throw new NotRuleException("CardNoOrMobile");
+        }
 
-        UpdateAccountParam updateAccountParam =new UpdateAccountParam();
-        updateAccountParam.setMobile(phoneNumber);
-        updateAccountParam.setMsgVerifyCode(msgVerifyCode);
-        updateAccountParam.setMsgVerifyId(msgVerifyId);
-
-        if (!SmsUtil.verifySms(updateAccountParam,verifySmsUrl))
-            throw new NotRuleException("msgInvalid.code");
 
         Activity activity = getActivityInfo();
 
-        WhiteList whiteList = whiteListRepository.checkWhiteList(driverLicense, phoneNumber, 0);
+        WhiteList whiteList = whiteListRepository.checkWhiteList(phoneNumber, 0);
         if(ObjectUtils.isEmpty(whiteList)){
             throw new NotFoundException("couponActivity.notWhiteLists");
         }
