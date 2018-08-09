@@ -246,6 +246,15 @@ public class MyOilCouponController {
         logger.info(oilCoupon.getPan());
         Result activeResult = activateOilCoupon(oilCoupon.getPan(),oilCoupon.getPanAmt());
         if(WsdUtils.isNotEmpty(activeResult) && activeResult.getCode().equals("SUCCESS")){
+            MyOilCoupon moc = myOilCouponRepository.findOne(id);
+            if (WsdUtils.isNotEmpty(moc.getPan())) {
+                logger.info("已经分配过券码，直接返回，券码：" + moc.getPan());
+                Map<String, Object> map = Maps.newHashMap();
+                String pan = AESUtil.decrypt(moc.getPan(), AESUtil.dekey);
+                map.put("result", AESUtil.encrypt(pan, AESUtil.key));
+                saveSearchLog(accountId, WsdUtils.getIpAddress(request), moc.getPan(), moc.getOrderId());
+                return map;
+            }
             updateService.updateOilCoupon(myOilCoupon,oilCoupon);
         }
         Map<String,Object> map = Maps.newHashMap();
