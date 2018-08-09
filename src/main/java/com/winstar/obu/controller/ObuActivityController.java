@@ -221,7 +221,7 @@ public class ObuActivityController {
                             String infoCard,
                             String phoneNumber,
                             String msgVerifyCode,
-                            String msgVerifyId) throws NotRuleException, NotFoundException{
+                            String msgVerifyId) throws NotRuleException, NotFoundException, ParseException {
         String tokenId = request.getHeader("obu_token_id");
         logger.info("check:"+tokenId);
         if(StringUtils.isEmpty(tokenId)){
@@ -278,7 +278,7 @@ public class ObuActivityController {
             throw new NotFoundException("obu.isLimit");
         }
 
-        ObuWhiteList obuWhiteList = obuWhiteListRepository.checkWhiteList(phoneNumber, 0, new Date(), new Date());
+        ObuWhiteList obuWhiteList = obuWhiteListRepository.checkWhiteList(phoneNumber, 0, DateUtil.getNowDay(), DateUtil.getNowDay());
 
         if(ObjectUtils.isEmpty(obuWhiteList)){
             throw new NotFoundException("obu.notWhiteLists");

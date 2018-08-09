@@ -1,5 +1,6 @@
 package com.winstar.order.utils;
 
+import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -870,5 +871,9 @@ public class DateUtil {
         return date1;
     }
 
+    public static  Date getNowDay() throws ParseException {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        return  df.parse(df.format(new Date()));
+    }
 
 }  
