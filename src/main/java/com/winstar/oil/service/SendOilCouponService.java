@@ -6,11 +6,13 @@ import com.winstar.coupon.service.CouponService;
 import com.winstar.coupon.service.CouponTemplateService;
 import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
+import com.winstar.exception.NotRuleException;
 import com.winstar.oil.entity.MyOilCoupon;
 import com.winstar.oil.repository.MyOilCouponRepository;
 import com.winstar.oil.utils.PriceAndNum;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.service.OilOrderService;
+import com.winstar.redis.RedisTools;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
 import com.winstar.utils.WsdUtils;
@@ -48,9 +50,18 @@ public class SendOilCouponService {
     @Autowired
     OilOrderService orderService;
 
+    @Autowired
+    RedisTools redisTools;
+
     @Synchronized
     public ResponseEntity checkCard(String orderNumber) throws Exception{
         logger.info(orderNumber + "，执行油卡发送操作。。。");
+        if(redisTools.exists(orderNumber)){
+            logger.info("60秒之内不执行同一订单的发券操作！订单号：" + orderNumber);
+            //String message = "60秒之内不执行同一订单的发券操作！";
+            throw new NotRuleException("oilCoupon.loading");
+        }
+        redisTools.set(orderNumber, orderNumber, 60L);
         long beginTime = System.currentTimeMillis();
         logger.info("执行发券开始时间：" + beginTime);
         OilOrder oilOrder = orderService.getOneOrder(orderNumber);
