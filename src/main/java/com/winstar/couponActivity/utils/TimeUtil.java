@@ -20,13 +20,30 @@ import java.util.GregorianCalendar;
 public class TimeUtil {
 
 
-     public static Date getStringToDate(String time) throws ParseException {
-         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-         Date date = sdf.parse(time);
-         return date;
-     }
+    public static Date getStringToDate(String time) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        Date date = sdf.parse(time);
+        return date;
+    }
 
-
+    /**
+     * 获取七天后的时间
+     * @param currentTime：yyyy-MM-dd
+     * @return yyyy-MM-dd HH:mm:ss
+     */
+    public static Date getSenverDay(String currentTime){
+        Date d=new Date();
+        Date data=null;
+        SimpleDateFormat formatMonth=new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat formatHour=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String validBeginAt=formatMonth.format(new Date(d.getTime()+ (long)6 * 24 * 60 * 60 * 1000))+" 23:59:59";
+        try {
+            data=formatHour.parse(validBeginAt);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return data;
+    }
     /**
      * 计算2个日期之间相差的  相差多少年月日
      * 比如：2011-02-02 到  2017-03-02 相差 6年，1个月，0天
@@ -51,7 +68,20 @@ public class TimeUtil {
         DecimalFormat df = new DecimalFormat("######0.0");
         return df.format(year + month / 12);
     }
-
+    /**
+     * 计算2个日期差得到判断
+     * @param currentTime
+     * @param endTime
+     * @return
+     */
+    public static Boolean  dayComparePrecise2(Date currentTime,Date endTime){
+        long ts1=endTime.getTime()-currentTime.getTime();
+        if(ts1>0) {
+            return true;
+        }else {
+            return false;
+        }
+    }
     public static Date getMonthStart(){
         //规定返回日期格式
         SimpleDateFormat sf=new SimpleDateFormat("yyyy-MM-dd");
@@ -196,14 +226,28 @@ public class TimeUtil {
     }
 
     /**
-     * 获取当前时间
+     * 获取当前时间String:yyyy-MM-dd
      *
      * @return
      */
     public static String getCurrentDateTime() {
         return DEFAULT_DATETIME_FORMATTER.format(LocalDateTime.now());
     }
-
+    /**
+     * 获取当前时间Date格式:Date格式yyyy-MM-dd HH:mm:ss
+     *
+     * @return
+     */
+    public static Date getCurrentDateTime2() {
+        Date data=null;
+        SimpleDateFormat formatHour=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            data=formatHour.parse(TimeFormat.LONG_DATE_PATTERN_LINE.formatter.format(LocalDateTime.now()));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return data;
+    }
     /**
      * 获取当前时间
      *
