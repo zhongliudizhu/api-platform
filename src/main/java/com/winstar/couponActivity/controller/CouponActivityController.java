@@ -2,6 +2,8 @@ package com.winstar.couponActivity.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
+import com.winstar.carLifeMall.repository.CarLifeOrdersRepository;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
@@ -37,7 +39,9 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -74,9 +78,13 @@ public class CouponActivityController {
     @Autowired
     VehicleValueRepository vehicleValueRepository;
     @Autowired
+    CarLifeOrdersRepository carLifeOrdersRepository;
+    @Autowired
     QueryLogRepository queryLogRepository;
     @Autowired
     SaleVehicleRecordRepository saleVehicleRecordRepository;
+    @Autowired
+    NewUserActivityRepository newUserActivityRepository;
     @Autowired
     RestTemplate restTemplate;
     @Autowired
@@ -111,7 +119,93 @@ public class CouponActivityController {
         }
         return localCars;
     }
+    /**
+     * 新用户专享活动(8.5折购买100元油券)
+     * @param request
+     * @return
+     * @throws NotFoundException
+     */
+    @RequestMapping(value = "newAccountActivity",method = RequestMethod.POST,produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public Map<String,Object> newAccountActivity(HttpServletRequest request) throws NotFoundException,NotRuleException{
+        String accountId = request.getAttribute("accountId").toString();
+        Map<String,Object> activityMap = Maps.newHashMap();
+        NewUserActivity user=new NewUserActivity();
+        Date currentTime=TimeUtil.getCurrentDateTime2();
+        Date validEndAt=TimeUtil.getSenverDay(TimeUtil.getCurrentDateTime());
+        NewUserActivity users=newUserActivityRepository.findByAccountId(accountId);
+        //判断用户是否参与新用户活动
+        Boolean isPart=myCouponRepository.findByAccountIdAndActivityId(accountId,"666").size()>0;
+        //判断当前用户在活动表中是否存在
+        if(!StringUtils.isEmpty(users)){
+            activityMap.put("ac_time",users.getValidEndAt());
+            //判断当前用户活动是否过期
+            if(TimeUtil.dayComparePrecise2(currentTime,users.getValidEndAt())){
+                if(isPart){
+                    users.setAcStatus(2);
+                    activityMap.put("ac_state","2");//已经参与过活动
+                }else {
+                    users.setAcStatus(0);
+                    activityMap.put("ac_state","0");//已经参与了活动而且活动没有过期，没有参与
+                }
+            }else{
+                //过期就更新状态
+                users.setAcStatus(1);
+                activityMap.put("ac_state","1");//您参与的活动已过期
+            }
+            newUserActivityRepository.save(users);
+        }else {
+            if(myCouponRepository.findByAccountId(accountId).size()==0||carLifeOrdersRepository.countByAccountIdAndIsAvailable(accountId,0)==0){
+                user.setAccountId(accountId);
+                user.setCreatedAt(currentTime);//创建时间：当前时间
+                user.setValidEndAt(validEndAt);//结束时间：7天后的24点
+                user.setAcStatus(0);//活动状态正常
+                newUserActivityRepository.save(user);
+                activityMap.put("ac_time",validEndAt);
+                activityMap.put("ac_state","0");//参与活动成功，弹窗成功
+            }else{
+                activityMap.put("ac_state","3");//用户没有资格
+            }
+        }
+        return  activityMap;
+    }
 
+    /**
+     * 新用户活动校验接口
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "newAccountActivityValidate",method = RequestMethod.POST,produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public Map<String,Object> newAccountActivityValidate(HttpServletRequest request)throws NotFoundException,NotRuleException{
+        String accountId = request.getAttribute("accountId").toString();
+        Map<String,Object> activityMap = Maps.newHashMap();
+        Date currentTime=TimeUtil.getCurrentDateTime2();
+        Date validEndAt=TimeUtil.getSenverDay(TimeUtil.getCurrentDateTime());
+        NewUserActivity users=newUserActivityRepository.findByAccountId(accountId);
+        //判断用户是否参与新用户活动
+        Boolean isPart=myCouponRepository.findByAccountIdAndActivityId(accountId,"666").size()>0;
+        if(!StringUtils.isEmpty(users)) {
+            //判断当前用户活动是否过期或失效
+            if (!TimeUtil.dayComparePrecise2(currentTime, users.getValidEndAt()) || users.getAcStatus().equals("1")) {
+                if(isPart){
+                    activityMap.put("validate_state", "2");
+                }else {
+                    activityMap.put("validate_state", "0");
+                }
+            } else {
+                activityMap.put("validate_state", "1");
+            }
+        }else {
+            if(myCouponRepository.findByAccountId(accountId).size()>0||carLifeOrdersRepository.countByAccountIdAndIsAvailable(accountId,0)>0){
+                activityMap.put("ac_time",validEndAt);
+                activityMap.put("ac_state","0");//参与活动成功，弹窗成功
+            }else{
+                activityMap.put("ac_state","3");//用户没有资格
+            }
+        }
+        return activityMap;
+    }
     /**
      * 参加手心活动
      * @param request
