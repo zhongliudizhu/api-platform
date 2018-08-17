@@ -191,8 +191,9 @@ public class CouponActivityController {
         Boolean isPart=myCouponRepository.findByAccountIdAndActivityId(accountId,"666").size()>0;
         long orderCount=oilOrderRepository.countValidOrderByActivityIdAndCreateTimeAndAccountId("666",accountId);
         if(!StringUtils.isEmpty(users)) {
+            activityMap.put("ac_time",users.getValidEndAt());
             //判断当前用户活动是否过期或失效
-            if (!TimeUtil.dayComparePrecise2(currentTime, users.getValidEndAt()) || users.getAcStatus().equals("1")) {
+            if (TimeUtil.dayComparePrecise2(currentTime,users.getValidEndAt())) {
                 if(isPart||orderCount>0){
                     activityMap.put("validate_state", "2");
                 }else {
@@ -202,7 +203,7 @@ public class CouponActivityController {
                 activityMap.put("validate_state", "1");
             }
         }else {
-            if(myCouponRepository.findByAccountId(accountId).size()>0||carLifeOrdersRepository.countByAccountIdAndIsAvailable(accountId,0)>0){
+            if(myCouponRepository.findByAccountId(accountId).size()==0||carLifeOrdersRepository.countByAccountIdAndIsAvailable(accountId,0)==0){
                 activityMap.put("ac_time",validEndAt);
                 activityMap.put("ac_state","0");//参与活动成功，弹窗成功
             }else{
