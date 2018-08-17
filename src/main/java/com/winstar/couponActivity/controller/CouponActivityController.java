@@ -18,6 +18,7 @@ import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 
+import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.repository.ActivityRepository;
@@ -86,6 +87,8 @@ public class CouponActivityController {
     @Autowired
     NewUserActivityRepository newUserActivityRepository;
     @Autowired
+    OilOrderRepository oilOrderRepository;
+    @Autowired
     RestTemplate restTemplate;
     @Autowired
     ObjectMapper objectMapper;
@@ -136,12 +139,13 @@ public class CouponActivityController {
         NewUserActivity users=newUserActivityRepository.findByAccountId(accountId);
         //判断用户是否参与新用户活动
         Boolean isPart=myCouponRepository.findByAccountIdAndActivityId(accountId,"666").size()>0;
+        long orderCount=oilOrderRepository.countValidOrderByActivityIdAndCreateTimeAndAccountId("666",accountId);
         //判断当前用户在活动表中是否存在
         if(!StringUtils.isEmpty(users)){
             activityMap.put("ac_time",users.getValidEndAt());
             //判断当前用户活动是否过期
             if(TimeUtil.dayComparePrecise2(currentTime,users.getValidEndAt())){
-                if(isPart){
+                if(isPart||orderCount>0){
                     users.setAcStatus(2);
                     activityMap.put("ac_state","2");//已经参与过活动
                 }else {
@@ -185,10 +189,11 @@ public class CouponActivityController {
         NewUserActivity users=newUserActivityRepository.findByAccountId(accountId);
         //判断用户是否参与新用户活动
         Boolean isPart=myCouponRepository.findByAccountIdAndActivityId(accountId,"666").size()>0;
+        long orderCount=oilOrderRepository.countValidOrderByActivityIdAndCreateTimeAndAccountId("666",accountId);
         if(!StringUtils.isEmpty(users)) {
             //判断当前用户活动是否过期或失效
             if (!TimeUtil.dayComparePrecise2(currentTime, users.getValidEndAt()) || users.getAcStatus().equals("1")) {
-                if(isPart){
+                if(isPart||orderCount>0){
                     activityMap.put("validate_state", "2");
                 }else {
                     activityMap.put("validate_state", "0");
