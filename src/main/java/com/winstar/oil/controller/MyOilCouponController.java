@@ -42,7 +42,6 @@ import ws.object.SvcInfo;
 import ws.result.Result;
 
 import javax.servlet.http.HttpServletRequest;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -242,11 +241,9 @@ public class MyOilCouponController {
             String pan = AESUtil.decrypt(myOilCoupon.getPan(),AESUtil.dekey);
             map.put("result", AESUtil.encrypt(pan,AESUtil.key));
             saveSearchLog(accountId,WsdUtils.getIpAddress(request),myOilCoupon.getPan(),myOilCoupon.getOrderId());
-            activateOilCoupon(myOilCoupon, myOilCoupon.getPan(),myOilCoupon.getPanAmt());
+            activateOilCoupon(myOilCoupon.getPan(),myOilCoupon.getPanAmt());
             return map;
         }
-        /*String sortStr = "[{property:'createTime',direction:'asc'}]";
-        Pageable pageable = WebUitl.buildPageRequest(0, 150, sortStr);*/
         long beginTime = System.currentTimeMillis();
         List<OilCoupon> oilCoupons = oilCouponRepository.findRandomOilCoupons(myOilCoupon.getPanAmt());
         if(WsdUtils.isEmpty(oilCoupons) || oilCoupons.size() == 0){
@@ -255,7 +252,7 @@ public class MyOilCouponController {
         }
         OilCoupon oilCoupon = oilCoupons.get(new Random().nextInt(oilCoupons.size()));
         logger.info(oilCoupon.getPan());
-        Result activeResult = activateOilCoupon(myOilCoupon, oilCoupon.getPan(),oilCoupon.getPanAmt());
+        Result activeResult = activateOilCoupon(oilCoupon.getPan(),oilCoupon.getPanAmt());
         if(WsdUtils.isNotEmpty(activeResult) && activeResult.getCode().equals("SUCCESS")){
             MyOilCoupon moc = myOilCouponRepository.findOne(id);
             if (WsdUtils.isNotEmpty(moc.getPan())) {
@@ -307,10 +304,10 @@ public class MyOilCouponController {
         if(WsdUtils.isEmpty(myOilCoupon.getPan())){
             throw new NotRuleException("oilCoupon.not_found");
         }
-        return new ResponseEntity<>(activateOilCoupon(myOilCoupon, myOilCoupon.getPan(), myOilCoupon.getPanAmt()), HttpStatus.OK);
+        return new ResponseEntity<>(activateOilCoupon(myOilCoupon.getPan(), myOilCoupon.getPanAmt()), HttpStatus.OK);
     }
 
-    private Result activateOilCoupon(MyOilCoupon myOilCoupon, String pan, Double panAmt) throws Exception {
+    private Result activateOilCoupon(String pan, Double panAmt) throws Exception {
         Result result = new Result();
         String panText = AESUtil.decrypt(pan,AESUtil.dekey);
         logger.info("激活的券码：" + pan + "，明文：" + panText);
@@ -336,12 +333,6 @@ public class MyOilCouponController {
             Date useDate = null;
             if(WsdUtils.isNotEmpty(svcInfo.getTxnDate().getValue()) && WsdUtils.isNotEmpty(svcInfo.getTxnTime().getValue())){
                 useDate = DateUtils.parseDate(svcInfo.getTxnDate().getValue() + svcInfo.getTxnTime().getValue(), "yyyyMMddHHmmss");
-            }
-            if(WsdUtils.isNotEmpty(svcInfo.getTid().getValue())){
-                myOilCoupon.setTId(svcInfo.getTid().getValue());
-                myOilCoupon.setUseState("1");
-                myOilCoupon.setUseDate(WsdUtils.isEmpty(useDate) ? null : new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(useDate));
-                myOilCouponRepository.save(myOilCoupon);
             }
             saveLookingUsedCoupon(pan,"0",useDate,beginTime,endTime,svcInfo);
             result.setCode("FAIL");
