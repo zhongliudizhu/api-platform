@@ -159,7 +159,10 @@ public class CouponActivityController {
             }
             newUserActivityRepository.save(users);
         }else {
-            if(myCouponRepository.findByAccountId(accountId).size()==0||carLifeOrdersRepository.countByAccountIdAndIsAvailable(accountId,0)==0){
+            List<MyCoupon>  myCoupons=myCouponRepository.findByAccountId(accountId);
+            if(myCouponRepository.findByAccountId(accountId).size()>0||carLifeOrdersRepository.countByAccountIdAndIsAvailable(accountId,0)>0){
+                activityMap.put("ac_state","3");//用户没有资格
+            }else{
                 user.setAccountId(accountId);
                 user.setCreatedAt(currentTime);//创建时间：当前时间
                 user.setValidEndAt(validEndAt);//结束时间：7天后的24点
@@ -167,8 +170,6 @@ public class CouponActivityController {
                 newUserActivityRepository.save(user);
                 activityMap.put("ac_time",validEndAt);
                 activityMap.put("ac_state","0");//参与活动成功，弹窗成功
-            }else{
-                activityMap.put("ac_state","3");//用户没有资格
             }
         }
         return  activityMap;
@@ -203,11 +204,11 @@ public class CouponActivityController {
                 activityMap.put("validate_state", "1");
             }
         }else {
-            if(myCouponRepository.findByAccountId(accountId).size()==0||carLifeOrdersRepository.countByAccountIdAndIsAvailable(accountId,0)==0){
+            if(myCouponRepository.findByAccountId(accountId).size()>0||carLifeOrdersRepository.countByAccountIdAndIsAvailable(accountId,0)>0){
+                activityMap.put("ac_state","3");//用户没有资格
+            }else{
                 activityMap.put("ac_time",validEndAt);
                 activityMap.put("ac_state","0");//参与活动成功，弹窗成功
-            }else{
-                activityMap.put("ac_state","3");//用户没有资格
             }
         }
         return activityMap;
