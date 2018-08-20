@@ -64,7 +64,9 @@ public class OilOrderNewUserController {
     @ResponseBody
     public ResponseEntity addOrder(@RequestParam String itemId
             , @RequestParam String activityId
+            , @RequestParam(required = false, defaultValue = "") String couponId
             , HttpServletRequest request) throws NotFoundException, NotRuleException, InvalidParameterException {
+        logger.error("优惠券id，couponId：" + couponId);
         String accountId = accountService.getAccountId(request);
         String serialNumber = OilOrderUtil.getSerialNumber();
         long startTime = System.currentTimeMillis();
@@ -93,8 +95,7 @@ public class OilOrderNewUserController {
             throw new NotRuleException("soldOut.order");
         }
         if (activity.getType() == ActivityIdEnum.ACTIVITY_ID_666.getActivity()) {
-            //String canBuy = OilOrderUtil.judgeActivity2(accountId, activityId);
-           long canBuy =orderRepository.countValidOrderByActivityIdAndCreateTimeAndAccountId(accountId,activityId);
+           long canBuy =orderRepository.countValidOrderByActivityIdAndCreateTimeAndAccountId(activityId,accountId);
             if (canBuy>0) {
                 logger.error("新手活动期间只能买一次");
                 throw new NotRuleException("oneMonthOnce.order");

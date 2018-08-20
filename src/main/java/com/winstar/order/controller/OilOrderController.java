@@ -176,7 +176,8 @@ public class OilOrderController {
         }
         if (activity.getType() == ActivityIdEnum.ACTIVITY_ID_103.getActivity()
                 || activity.getType() == ActivityIdEnum.ACTIVITY_ID_104.getActivity()
-                || activity.getType() == ActivityIdEnum.ACTIVITY_ID_3.getActivity()) {
+                || activity.getType() == ActivityIdEnum.ACTIVITY_ID_3.getActivity()
+                ||activity.getType() == ActivityIdEnum.ACTIVITY_ID_666.getActivity()) {
             if (StringUtils.isEmpty(couponId)) {
                 throw new NotRuleException("notAbility.order");
             }
