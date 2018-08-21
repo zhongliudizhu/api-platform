@@ -64,5 +64,6 @@ public interface OilOrderRepository extends JpaRepository<OilOrder, String> {
     @Query(value = "select count(0) from cbc_oil_order o where o.is_available='0' and o.activity_id=?1 and o.create_time  like concat('%',  SUBSTR(SYSDATE()  FROM 1 FOR 10),'%')   and o.account_id=?2", nativeQuery = true)
     long countValidOrderByActivityIdAndCreateTimeAndAccountId(String activityId, String accountId);
 
-    long countByStatusAndAccountIdAndIsAvailable(Integer status, String accountId, String isAvailable);
+    @Query(value = "SELECT count(0) FROM cbc_oil_order o WHERE o.is_available = '0'AND o.pay_status='1'AND o.account_id =?1", nativeQuery = true)
+    long countByStatusAndAccountIdAndIsAvailable(String accountId);
 }
