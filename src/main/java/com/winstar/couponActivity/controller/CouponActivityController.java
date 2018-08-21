@@ -159,8 +159,7 @@ public class CouponActivityController {
             }
             newUserActivityRepository.save(users);
         }else {
-            List<MyCoupon>  myCoupons=myCouponRepository.findByAccountId(accountId);
-            if(myCouponRepository.findByAccountId(accountId).size()>0||carLifeOrdersRepository.countByAccountIdAndIsAvailable(accountId,0)>0){
+            if(oilOrderRepository.countByStatusAndAccountIdAndIsAvailable(accountId)>0||carLifeOrdersRepository.countByAccountIdAndIsAvailable(accountId,0)>0){
                 activityMap.put("ac_state","3");//用户没有资格
             }else{
                 user.setAccountId(accountId);
@@ -204,7 +203,7 @@ public class CouponActivityController {
                 activityMap.put("validate_state", "1");
             }
         }else {
-            if(myCouponRepository.findByAccountId(accountId).size()>0||carLifeOrdersRepository.countByAccountIdAndIsAvailable(accountId,0)>0){
+            if(oilOrderRepository.countByStatusAndAccountIdAndIsAvailable(accountId)>0||carLifeOrdersRepository.countByAccountIdAndIsAvailable(accountId,0)>0){
                 activityMap.put("ac_state","3");//用户没有资格
             }else{
                 activityMap.put("ac_time",validEndAt);
