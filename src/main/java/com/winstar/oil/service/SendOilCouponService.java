@@ -53,7 +53,6 @@ public class SendOilCouponService {
     @Autowired
     RedisTools redisTools;
 
-    @Synchronized
     public ResponseEntity checkCard(String orderNumber) throws Exception{
         logger.info(orderNumber + "，执行油卡发送操作。。。");
         if(redisTools.exists(orderNumber)){
@@ -64,7 +63,7 @@ public class SendOilCouponService {
         redisTools.set(orderNumber, orderNumber, 60L);
         long beginTime = System.currentTimeMillis();
         logger.info("执行发券开始时间：" + beginTime);
-        OilOrder oilOrder = orderService.getOneOrder(orderNumber);
+        OilOrder oilOrder = orderService.getOrder(orderNumber);
         String shopId = oilOrder.getItemId();
         String accountId = oilOrder.getAccountId();
         logger.info("orderId:" + orderNumber + "，shopId:" + shopId + "，accountId:" + accountId);

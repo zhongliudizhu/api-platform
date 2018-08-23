@@ -1,7 +1,5 @@
 package com.winstar.order.service.impl;
 
-import com.winstar.cashier.construction.utils.Arith;
-import com.winstar.coupon.service.CouponService;
 import com.winstar.exception.NotFoundException;
 import com.winstar.order.entity.FlowOrder;
 import com.winstar.order.entity.OilOrder;
@@ -9,7 +7,6 @@ import com.winstar.order.repository.FlowOrderRepository;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.service.OilOrderService;
 import com.winstar.order.utils.Constant;
-import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.FlowOrderUtil;
 import com.winstar.order.vo.FlowResult;
 import com.winstar.order.vo.PayInfoVo;
@@ -23,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author shoo on 2017/12/14 9:54.
@@ -42,7 +38,7 @@ public class OilOrderServiceImpl implements OilOrderService {
     @Value("${info.flowUrl}")
     private String flowUrl;
     @Override
-    public String updateOrderCashier(PayInfoVo payInfo) throws NotFoundException {
+    public String updateOrderCashier(PayInfoVo payInfo) {
         Date time = new Date();
         Integer payStatus = payInfo.getPayState();
         if (payStatus != 0 && payStatus != 1 ) {
@@ -51,14 +47,13 @@ public class OilOrderServiceImpl implements OilOrderService {
         String serialNumber = payInfo.getOrderSerialNumber();
         if(serialNumber.contains("wxyj")){
             OilOrder oilOrder = oilOrderRepository.findBySerialNumber(serialNumber);
-            if(ObjectUtils.isEmpty(oilOrder)||oilOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)){
+            if(ObjectUtils.isEmpty(oilOrder)){
                 return "2";
             }
             if(oilOrder.getItemId().equals(Constant.ONE_BUY_ITEMID)){
                 oneMoneyCouponRecordService.changeStatus(oilOrder.getAccountId());
             }
             oilOrder.setBankSerialNo(payInfo.getBankSerialNumber());
-            oilOrder.setPayPrice(Arith.div(payInfo.getPayPrice(),100));//分转换元
             oilOrder.setPayTime(payInfo.getPayTime());
             oilOrder.setPayType(payInfo.getPayType());
             oilOrder.setPayStatus(payInfo.getPayState());
@@ -73,11 +68,10 @@ public class OilOrderServiceImpl implements OilOrderService {
 
         }else {
             FlowOrder flowOrder = flowOrderRepository.findBySerialNumber(serialNumber);
-            if(ObjectUtils.isEmpty(flowOrder)||flowOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)){
+            if(ObjectUtils.isEmpty(flowOrder)){
                 return "2";
             }
             flowOrder.setBankSerialNo(payInfo.getBankSerialNumber());
-            flowOrder.setPayPrice(Arith.div(payInfo.getPayPrice(),100));//分转换元
             flowOrder.setPayTime(payInfo.getPayTime());
             flowOrder.setPayType(payInfo.getPayType());
             flowOrder.setPayStatus(payInfo.getPayState());//支付成功
@@ -128,7 +122,20 @@ public class OilOrderServiceImpl implements OilOrderService {
     }
 
     @Override
-    public List<OilOrder> getOrderByAccountAndActivityId(String accountId, String activityId) {
-        return oilOrderRepository.findByAccountIdAndActivityId(accountId,activityId, DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
+    public OilOrder getOrder(String serialNumber) {
+        OilOrder oilOrder = new OilOrder();
+        if(serialNumber.contains("wxyj")){
+            oilOrder = oilOrderRepository.findBySerialNumber(serialNumber);
+            if(ObjectUtils.isEmpty(oilOrder)){
+                return null;
+            }
+        }else {
+            FlowOrder flowOrder = flowOrderRepository.findBySerialNumber(serialNumber);
+            if(ObjectUtils.isEmpty(flowOrder)){
+                return null;
+            }
+            BeanUtils.copyProperties(flowOrder,oilOrder);
+        }
+        return oilOrder;
     }
 }

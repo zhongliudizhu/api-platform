@@ -14,13 +14,13 @@ public interface OilOrderService {
      /*
      * 付款成功更新订单（张林调用）
      * */
-     public String updateOrderCashier(PayInfoVo payInfo) throws NotFoundException;
+     String updateOrderCashier(PayInfoVo payInfo);
      /*
      * 根据订单序列号查询订单
      * */
-     public OilOrder getOneOrder(String serialNumber) throws NotFoundException;
+     OilOrder getOneOrder(String serialNumber) throws NotFoundException;
      /*
-     * 查询用户活动订单
+     * 根据订单序列号查询订单（不过滤关闭订单）
      * */
-     public List<OilOrder> getOrderByAccountAndActivityId(String accountId, String activityId);
+     OilOrder getOrder(String serialNumber);
 }

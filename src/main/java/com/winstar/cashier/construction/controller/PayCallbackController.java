@@ -1,6 +1,5 @@
 package com.winstar.cashier.construction.controller;
 
-import com.winstar.cashier.comm.EnumType;
 import com.winstar.cashier.construction.utils.AppUtils;
 import com.winstar.cashier.construction.utils.DateUtil;
 import com.winstar.cashier.construction.utils.PayConfPC;
@@ -9,17 +8,16 @@ import com.winstar.cashier.entity.PayLog;
 import com.winstar.cashier.entity.PayOrder;
 import com.winstar.cashier.repository.PayLogRepository;
 import com.winstar.cashier.repository.PayOrderRepository;
+import com.winstar.event.ModifyOrderEvent;
+import com.winstar.event.SendOilCouponEvent;
 import com.winstar.exception.NotFoundException;
-import com.winstar.oil.service.SendOilCouponService;
-import com.winstar.order.service.OilOrderService;
-import com.winstar.order.vo.PayInfoVo;
 import com.winstar.utils.WsdUtils;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -47,13 +45,10 @@ public class PayCallbackController {
     @Autowired
     PayOrderRepository payOrderRepository;
 
-    @Autowired
-    private OilOrderService orderService;
-
-    @Autowired
-    private SendOilCouponService sendOilCouponService;
-
     private static Boolean profilesActive;
+
+    @Autowired
+    private ApplicationContext context;
 
     public static void setProfilesActive(Boolean profilesActive) {
         PayCallbackController.profilesActive = profilesActive;
@@ -110,27 +105,12 @@ public class PayCallbackController {
                 savePayLog(respMap,"ERROR","订单支付失败",request);
             }
             //通知订单那边是否支付成功 ------>>>  回调
-            modifyOrder(payOrder,respMap);
-            //通知油卡发送
-            if(payOrder.getOrderOwner().equals("1") && "1".equals(MapUtils.getString(respMap, "state"))){
-                logger.info("开始通知油卡的发送。。。");
-                sendOilCouponService.checkCard(payOrder.getOrderNumber());
-            }
+            context.publishEvent(new ModifyOrderEvent(this, payOrder));
+            //发券
+            context.publishEvent(new SendOilCouponEvent(this, payOrder));
         }else{
             savePayLog(respMap,"ERROR","订单已对账！",request);
         }
-    }
-
-    @Async
-    private void modifyOrder(PayOrder payOrder,Map<String,String> respMap) throws NotFoundException {
-        PayInfoVo payInfoVo = new PayInfoVo();
-        payInfoVo.setOrderSerialNumber(payOrder.getOrderNumber());
-        payInfoVo.setBankSerialNumber(MapUtils.getString(respMap, "transaction_id"));
-        payInfoVo.setPayPrice(MapUtils.getDouble(respMap, "total_fee"));
-        payInfoVo.setPayState(MapUtils.getString(respMap,"result_code").equalsIgnoreCase("SUCCESS") ? EnumType.PAY_STATE_SUCCESS.value() : EnumType.PAY_STATE_FAIL.value());
-        payInfoVo.setPayType(payOrder.getPayWay());
-        payInfoVo.setPayTime(DateUtil.parseTime(MapUtils.getString(respMap, "time_end")));
-        orderService.updateOrderCashier(payInfoVo);
     }
 
 }

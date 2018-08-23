@@ -43,7 +43,7 @@ public class CarLifeOrdersService {
      * @return
      * @throws NotFoundException
      */
-    public String updateCarLifeOrderCashier(PayInfoVo payInfo) throws NotFoundException {
+    public String updateCarLifeOrderCashier(PayInfoVo payInfo) {
         Date time = new Date();
         Integer payStatus = payInfo.getPayState();
         if (payStatus != 0 && payStatus != 1) {
