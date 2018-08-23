@@ -99,8 +99,8 @@ public class SendOilCouponService {
         }
         Map<String,String> resultMap = send(shopInfo,accountId,orderNumber);
         long endTime = System.currentTimeMillis();
-        logger.info("执行发券结束时间：" + endTime);
-        logger.info("发券消耗时间：" + (endTime - beginTime) + "ms");
+        logger.info(orderNumber + "，执行发券结束时间：" + endTime);
+        logger.info(orderNumber + "，发券消耗时间：" + (endTime - beginTime) + "ms");
         return new ResponseEntity<>(resultMap,HttpStatus.OK);
     }
 
@@ -184,7 +184,7 @@ public class SendOilCouponService {
             }
         }
         myOilCouponRepository.save(myOilCoupons);
-        logger.info("油卡发卡成功！");
+        logger.info(orderId + "油卡发卡成功！");
         map.put("status","OK");
         return map;
     }
