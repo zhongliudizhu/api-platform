@@ -187,13 +187,12 @@ public class CouponActivityController {
         Date validEndAt=TimeUtil.getSenverDay(TimeUtil.getCurrentDateTime());
         NewUserActivity users=newUserActivityRepository.findByAccountId(accountId);
         //判断用户是否参与新用户活动
-        Boolean isPart=myCouponRepository.findByAccountIdAndActivityId(accountId,"666").size()>0;
-        long orderCount=oilOrderRepository.countValidOrderByActivityIdAndCreateTimeAndAccountId("666",accountId);
+        long orderCount=oilOrderRepository.countValidOrderByActivityIdAndAccountId("666",accountId);
         if(!StringUtils.isEmpty(users)) {
             activityMap.put("ac_time",users.getValidEndAt());
             //判断当前用户活动是否过期或失效
             if (TimeUtil.dayComparePrecise2(currentTime,users.getValidEndAt())) {
-                if(isPart||orderCount>0){
+                if(orderCount>0){
                     activityMap.put("validate_state", "2");
                 }else {
                     activityMap.put("validate_state", "0");
