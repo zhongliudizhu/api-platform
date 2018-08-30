@@ -95,7 +95,7 @@ public class OilOrderNewUserController {
             throw new NotRuleException("soldOut.order");
         }
         if (activity.getType() == ActivityIdEnum.ACTIVITY_ID_666.getActivity()) {
-           long canBuy =orderRepository.countValidOrderByActivityIdAndCreateTimeAndAccountId(activityId,accountId);
+           long canBuy =orderRepository.countValidOrderByActivityIdAndAccountId(activityId,accountId);
             if (canBuy>0) {
                 logger.error("新手活动期间只能买一次");
                 throw new NotRuleException("oneMonthOnce.order");
