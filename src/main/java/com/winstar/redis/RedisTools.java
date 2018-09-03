@@ -234,7 +234,7 @@ public class RedisTools {
     public boolean setIfAbsent(final String key, long times){
         boolean result = redisTemplate.opsForValue().setIfAbsent(key,key);
         if(result){
-            redisTemplate.opsForValue().getOperations().expire(key, 60, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().getOperations().expire(key, times, TimeUnit.SECONDS);
         }
         return result;
     }
