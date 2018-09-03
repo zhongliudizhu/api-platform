@@ -1,6 +1,7 @@
 package com.winstar.oil.controller;
 
 import com.google.common.collect.Maps;
+import com.winstar.ActiveOilCoupon;
 import com.winstar.cashier.comm.EnumType;
 import com.winstar.cashier.entity.PayOrder;
 import com.winstar.cashier.repository.PayOrderRepository;
@@ -17,7 +18,6 @@ import com.winstar.oil.repository.OilCouponRepository;
 import com.winstar.oil.repository.OilCouponSearchLogRepository;
 import com.winstar.oil.service.OilCouponUpdateService;
 import com.winstar.oil.service.SendOilCouponService;
-import com.winstar.oil.utils.RequestSvcInfoUtils;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.redis.RedisTools;
@@ -30,6 +30,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -37,8 +38,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import ws.object.ObjectFactory;
-import ws.object.SvcInfo;
 import ws.result.Result;
 
 import javax.servlet.http.HttpServletRequest;
@@ -86,7 +85,8 @@ public class MyOilCouponController {
     @Autowired
     RedisTools redisTools;
 
-    private final static ObjectFactory objectFactory = new ObjectFactory();
+    @Value("${info.cardUrl}")
+    private String oilSendUrl;
 
     @RequestMapping(value = "/sendOilCoupon",method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -251,8 +251,14 @@ public class MyOilCouponController {
             throw new NotRuleException("oilCoupon.null");
         }
         OilCoupon oilCoupon = oilCoupons.get(new Random().nextInt(oilCoupons.size()));
-        logger.info(oilCoupon.getPan());
-        Result activeResult = activateOilCoupon(oilCoupon.getPan(),oilCoupon.getPanAmt());
+        if(!redisTools.setIfAbsent(oilCoupon.getPan())){
+            oilCoupon = getOilCoupon(oilCoupons);
+        }
+        if(ObjectUtils.isEmpty(oilCoupon)){
+            logger.info("库存不足，分券失败！");
+            throw new NotRuleException("oilCoupon.sale_over");
+        }
+        Result activeResult = activateOilCoupon(oilCoupon.getPan(), oilCoupon.getPanAmt());
         if(WsdUtils.isNotEmpty(activeResult) && activeResult.getCode().equals("SUCCESS")){
             MyOilCoupon moc = myOilCouponRepository.findOne(id);
             if (WsdUtils.isNotEmpty(moc.getPan())) {
@@ -275,6 +281,16 @@ public class MyOilCouponController {
         map.put("result", AESUtil.encrypt(AESUtil.decrypt(myOilCoupon.getPan(),AESUtil.dekey),AESUtil.key));
         saveSearchLog(accountId,WsdUtils.getIpAddress(request),myOilCoupon.getPan(),myOilCoupon.getOrderId());
         return map;
+    }
+
+    private OilCoupon getOilCoupon(List<OilCoupon> oilCoupons){
+        for(OilCoupon oilCoupon : oilCoupons){
+            if(redisTools.setIfAbsent(oilCoupon.getPan())){
+                return oilCoupon;
+            }
+            logger.info(oilCoupon.getPan() + "油券正在进行分配，不能分配给其他用户");
+        }
+        return null;
     }
 
     @Async
@@ -309,32 +325,20 @@ public class MyOilCouponController {
 
     private Result activateOilCoupon(String pan, Double panAmt) throws Exception {
         Result result = new Result();
-        String panText = AESUtil.decrypt(pan,AESUtil.dekey);
-        logger.info("激活的券码：" + pan + "，明文：" + panText);
+        String panText = AESUtil.decrypt(pan, AESUtil.dekey);
         long beginTime = System.currentTimeMillis();
-        SvcInfo req = new SvcInfo();
-        req.setTxnId(objectFactory.createSvcInfoTxnId("activate"));
-        req.setAccGrp(objectFactory.createSvcInfoAccGrp("activate"));
-        req.setYwy(objectFactory.createSvcInfoYwy("wsdyjx"));
-        req.setAuthNo(objectFactory.createSvcInfoAuthNo("w7raSRr3M33CyEN2hdwKWAjZKHX3kSjd"));
-        req.setPan(objectFactory.createSvcInfoPan(panText));
-        req.setBalAmt(objectFactory.createSvcInfoBalAmt(panAmt + ""));
-        SvcInfo svcInfo = RequestSvcInfoUtils.getSvcInfo(req);
-        logger.info("rc:" + svcInfo.getRc().getValue() + "，rcDetail:" + svcInfo.getRcDetail().getValue());
+        Map<String, String> map = ActiveOilCoupon.active(oilSendUrl, panText, panAmt + "");
+        logger.info("激活的券码：" + pan + "，明文：" + panText + "，rc:" + MapUtils.getString(map, "rc") + "，rcDetail:" + MapUtils.getString(map, "rcDetail"));
         long endTime = System.currentTimeMillis();
         logger.info("激活消耗时间：" + (endTime - beginTime) + "ms");
-        if(svcInfo.getRc().getValue().equals("00")){
+        if(MapUtils.getString(map, "rc").equals("00")){
             logger.info("激活成功！");
-            saveLookingUsedCoupon(pan,"1",null,beginTime,endTime,svcInfo);
+            saveLookingUsedCoupon(pan,"1",beginTime,endTime,map);
             result.setCode("SUCCESS");
             result.setFailMessage("激活成功！");
         }else{
             logger.info("激活失败！");
-            Date useDate = null;
-            if(WsdUtils.isNotEmpty(svcInfo.getTxnDate().getValue()) && WsdUtils.isNotEmpty(svcInfo.getTxnTime().getValue())){
-                useDate = DateUtils.parseDate(svcInfo.getTxnDate().getValue() + svcInfo.getTxnTime().getValue(), "yyyyMMddHHmmss");
-            }
-            saveLookingUsedCoupon(pan,"0",useDate,beginTime,endTime,svcInfo);
+            saveLookingUsedCoupon(pan,"0",beginTime,endTime,map);
             result.setCode("FAIL");
             result.setFailMessage("激活失败！");
         }
@@ -342,19 +346,23 @@ public class MyOilCouponController {
     }
 
     @Async
-    private void saveLookingUsedCoupon(String pan,String activateState, Date useDate, long beginTime, long endTime, SvcInfo svcInfo) throws Exception {
+    private void saveLookingUsedCoupon(String pan,String activateState, long beginTime, long endTime, Map<String, String> map) throws Exception {
+        Date useDate = null;
+        if (WsdUtils.isNotEmpty(MapUtils.getString(map, "txnDate")) && WsdUtils.isNotEmpty(MapUtils.getString(map, "txnTime"))) {
+            useDate = DateUtils.parseDate(MapUtils.getString(map, "txnDate") + MapUtils.getString(map, "txnTime"), "yyyyMMddHHmmss");
+        }
         LookingUsedCoupon lookingUsedCoupon = new LookingUsedCoupon();
         lookingUsedCoupon.setPan(pan);
         lookingUsedCoupon.setPanText(AESUtil.decrypt(pan,AESUtil.dekey));
         lookingUsedCoupon.setLookDate(new Date());
         lookingUsedCoupon.setUseDate(useDate);
-        lookingUsedCoupon.setTId(svcInfo.getTid().getValue());
+        lookingUsedCoupon.setTId(MapUtils.getString(map, "tid"));
         lookingUsedCoupon.setActivateState(activateState);
         lookingUsedCoupon.setBeginTime(beginTime);
         lookingUsedCoupon.setEndTime(endTime);
         lookingUsedCoupon.setTimeConsuming(endTime - beginTime);
-        lookingUsedCoupon.setRc(svcInfo.getRc().getValue());
-        lookingUsedCoupon.setRcDetail(svcInfo.getRcDetail().getValue());
+        lookingUsedCoupon.setRc(MapUtils.getString(map, "rc"));
+        lookingUsedCoupon.setRcDetail(MapUtils.getString(map, "rcDetail"));
         lookingUsedCouponRepository.save(lookingUsedCoupon);
     }
 
