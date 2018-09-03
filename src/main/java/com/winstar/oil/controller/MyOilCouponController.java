@@ -214,12 +214,11 @@ public class MyOilCouponController {
         if(WsdUtils.isEmpty(accountId)){
             throw new MissingParameterException("accountId");
         }
-        if(redisTools.exists(id)){
+        if(!redisTools.setIfAbsent(id, 10)){
             logger.info("点击过于频繁，请稍后再试！操作Id:" + id);
             //String message = "正在加载油券，请勿重复操作！";
             throw new NotRuleException("oilCoupon.loading");
         }
-        redisTools.set(id, id, 10L);
         logger.info("时间：" + System.currentTimeMillis() + "，执行的查询id：" + id);
         MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
         if(WsdUtils.isEmpty(myOilCoupon)){
@@ -251,7 +250,7 @@ public class MyOilCouponController {
             throw new NotRuleException("oilCoupon.null");
         }
         OilCoupon oilCoupon = oilCoupons.get(new Random().nextInt(oilCoupons.size()));
-        if(!redisTools.setIfAbsent(oilCoupon.getPan())){
+        if(!redisTools.setIfAbsent(oilCoupon.getPan(), 60)){
             oilCoupon = getOilCoupon(oilCoupons);
         }
         if(ObjectUtils.isEmpty(oilCoupon)){
@@ -285,7 +284,7 @@ public class MyOilCouponController {
 
     private OilCoupon getOilCoupon(List<OilCoupon> oilCoupons){
         for(OilCoupon oilCoupon : oilCoupons){
-            if(redisTools.setIfAbsent(oilCoupon.getPan())){
+            if(redisTools.setIfAbsent(oilCoupon.getPan(), 60)){
                 return oilCoupon;
             }
             logger.info(oilCoupon.getPan() + "油券正在进行分配，不能分配给其他用户");

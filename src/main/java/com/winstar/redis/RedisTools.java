@@ -231,7 +231,7 @@ public class RedisTools {
     /**
      * 是否能把键值放到换缓存中，能放入则同时设置有效时间
      */
-    public boolean setIfAbsent(final String key){
+    public boolean setIfAbsent(final String key, long times){
         boolean result = redisTemplate.opsForValue().setIfAbsent(key,key);
         if(result){
             redisTemplate.opsForValue().getOperations().expire(key, 60, TimeUnit.SECONDS);
