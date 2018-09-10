@@ -41,6 +41,9 @@ public class VerificationCardController {
     @Value("${info.cardUrl}")
     private String oilSendUrl;
 
+    @Value("${info.cardUrl_new}")
+    private String oilSendNewUrl;
+
     @RequestMapping(value = "",method = RequestMethod.GET)
     public ResponseEntity checkCard(@RequestParam String pan) throws Exception{
         logger.info("电子券使用进行核销。。。");
@@ -52,6 +55,9 @@ public class VerificationCardController {
             result.setCode("NOT_FOUND");
             result.setFailMessage(pan + "油券不存在！");
             return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+        }
+        if(pan.length() == 20){
+            oilSendUrl = oilSendNewUrl;
         }
         Map<String, String> map = SearchOilCoupon.verification(oilSendUrl, pan);
         logger.info("rc:" + MapUtils.getString(map, "rc"));

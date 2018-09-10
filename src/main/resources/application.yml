@@ -43,6 +43,7 @@ spring:
 
 info:
   cardUrl: https://wanglt.easy-pass.cn/webservice/services/SvcService
+  cardUrl_new: http://47.93.102.243:8080/shellCoupons/services/SvcService
   profilesActive: false
   flowUrl: http://192.168.118.7:2300/api/v1/flow/order
   amount: 100
@@ -111,6 +112,7 @@ endpoints:
 
 info:
   cardUrl: https://coupons.easy-pass.cn/shellCoupons/services/SvcService
+  cardUrl_new: http://47.93.102.243:8080/shellCoupons/services/SvcService
   profilesActive: true
   flowUrl: http://api.sxwinstar.net/flow/api/v1/flow/order
   amount: 100
