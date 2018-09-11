@@ -56,10 +56,7 @@ public class VerificationCardController {
             result.setFailMessage(pan + "油券不存在！");
             return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
         }
-        if(pan.length() == 20){
-            oilSendUrl = oilSendNewUrl;
-        }
-        Map<String, String> map = SearchOilCoupon.verification(oilSendUrl, pan);
+        Map<String, String> map = SearchOilCoupon.verification(pan.length() == 20 ? oilSendNewUrl : oilSendUrl, pan);
         logger.info("rc:" + MapUtils.getString(map, "rc"));
         if(MapUtils.getString(map, "rc").equals("00") || MapUtils.getString(map, "rc").equals("43")){ //00代表成功，43代表已核销
             if("1".equals(MapUtils.getString(map, "cardStatus"))){ //卡状态 0代表正常，1代表已使用，2代表其他

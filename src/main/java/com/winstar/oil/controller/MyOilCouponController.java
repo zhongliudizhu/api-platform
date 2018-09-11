@@ -328,11 +328,8 @@ public class MyOilCouponController {
     private Result activateOilCoupon(String pan, Double panAmt) throws Exception {
         Result result = new Result();
         String panText = AESUtil.decrypt(pan, AESUtil.dekey);
-        if(panText.length() == 20){
-            oilSendUrl = oilSendNewUrl;
-        }
         long beginTime = System.currentTimeMillis();
-        Map<String, String> map = ActiveOilCoupon.active(oilSendUrl, panText, panAmt + "");
+        Map<String, String> map = ActiveOilCoupon.active(panText.length() == 20 ? oilSendNewUrl : oilSendUrl, panText, panAmt + "");
         logger.info("激活的券码：" + pan + "，明文：" + panText + "，rc:" + MapUtils.getString(map, "rc") + "，rcDetail:" + MapUtils.getString(map, "rcDetail"));
         long endTime = System.currentTimeMillis();
         logger.info("激活消耗时间：" + (endTime - beginTime) + "ms");
