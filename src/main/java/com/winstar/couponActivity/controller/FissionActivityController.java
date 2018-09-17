@@ -16,6 +16,7 @@ import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.repository.ActivityRepository;
 import com.winstar.user.entity.Account;
+import com.winstar.user.repository.AccessTokenRepository;
 import com.winstar.user.service.AccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,9 @@ public class FissionActivityController {
     InviteUserService inviteUserService;
     @Autowired
     CouponActivityTypeRepository couponActivityTypeRepository;
+
+    @Autowired
+    AccessTokenRepository accessTokenRepository;
 
     private Integer FissionType=667;
 
@@ -125,16 +129,31 @@ public class FissionActivityController {
         Map<String,Object> activityMap = Maps.newHashMap();
         String accountId = request.getAttribute("accountId").toString();
         //1.判断用户是否在优驾行消费过,判断用户是否领取过优惠券,是否有20元或30元优惠券（未使用或已使用）
-        if(oilOrderRepository.countByStatusAndAccountIdAndIsAvailable(accountId)>0||carLifeOrdersRepository.countByAccountIdAndIsAvailable(accountId,0)>0||myCouponRepository.findByAccountIdAndActivityId(accountId,FissionType.toString()).size()>0){
+        if(oilOrderRepository.countByStatusAndAccountIdAndIsAvailable(accountId)>0||carLifeOrdersRepository.countByAccountIdAndIsAvailable(accountId,0)>0){
             activityMap.put("ac_state","0");
             logger.info("用户不符合邀请规则！！！");
         }else{
-            Account account=accountService.findById(accountId);
-            //2.是否绑定交安卡
-            if (StringUtils.isEmpty(account.getAuthInfoCard())){
-                activityMap.put("ac_state","1");//未绑定交安卡
+            List<MyCoupon> myCoupons=myCouponRepository.findByAccountIdAndActivityId2(accountId,FissionType.toString(),new Date());
+            if(myCoupons.size()>0){
+                MyCoupon minMyCoupon=null;
+                for (MyCoupon myCoupon:myCoupons){
+                    if (StringUtils.isEmpty(minMyCoupon)){
+                        minMyCoupon=myCoupon;
+                    }
+                    if(myCoupon.getAmount()<minMyCoupon.getAmount()){
+                        minMyCoupon=myCoupon;
+                    }
+                }
+                activityMap.put("ac_state","3");
+                activityMap.put("myCoupon",minMyCoupon);
             }else{
-                activityMap.put("ac_state","2");//绑定了交安卡
+                Account account=accountService.findById(accountId);
+                //2.是否绑定交安卡
+                if (StringUtils.isEmpty(account.getAuthInfoCard())){
+                    activityMap.put("ac_state","1");//未绑定交安卡
+                }else{
+                    activityMap.put("ac_state","2");//绑定了交安卡
+                }
             }
         }
         return activityMap;
@@ -148,12 +167,14 @@ public class FissionActivityController {
     @RequestMapping(value = "receiverMycoupon",method = RequestMethod.POST,produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public Map<String,Object> receiverMycoupon(HttpServletRequest request,String inviteUserId,String couponSum)throws NotFoundException,NotRuleException{
+
         if(StringUtils.isEmpty(inviteUserId)){
             throw new NotFoundException("param.is.null");
         }
         if(StringUtils.isEmpty(couponSum)){
             throw new NotFoundException("param.is.null");
         }
+        String userId=accessTokenRepository.findByTokenId(inviteUserId).getAccountId();
         Map<String,Object> activityMap = Maps.newHashMap();
         String accountId = request.getAttribute("accountId").toString();
         InviteTableLog inviteTableLog;
@@ -162,23 +183,23 @@ public class FissionActivityController {
         if (Double.parseDouble(couponSum)>30.0){
             throw new NotRuleException("data.is.illegal");
         }
-        if(inviteTableLogRepository.findByAccountIdAndInviteType(inviteUserId,1).size()>50){
+        if(inviteTableLogRepository.findByAccountIdAndInviteType(userId,1).size()>50){
             activityMap.put("ac_state","0");
             logger.info("用户已达到邀请上限！！！");
         }else{
-            if(myCouponRepository.findByAccountIdAndActivityId(accountId,FissionType.toString()).size()>0){
+            if(myCouponRepository.findByAccountIdAndActivityId2(accountId,FissionType.toString(),new Date()).size()>0){
                 activityMap.put("ac_state","1");
                 logger.info("已领取过优惠券！！！");
             }else{
                 Date validEndAt=TimeUtil.getNextMonth();
                 myCoupon=couponService.sendCoupon_freedom(accountId,FissionType.toString(),Double.parseDouble(couponSum),validEndAt,300.0,couponSum+"元优惠券","裂变"+couponSum+"元优惠券");
                 logger.info(accountId+"领取"+couponSum+"元优惠券"+myCoupon.getId());
-                inviteTableLog=new InviteTableLog(UUID.randomUUID().toString(),accountId,0,inviteUserId,1,null,TimeUtil.getCurrentDateTime2(),1);
+                inviteTableLog=new InviteTableLog(UUID.randomUUID().toString(),userId,0,accountId,1,null,TimeUtil.getCurrentDateTime2(),1);
                 inviteTableLogList.add(inviteTableLog);
-                logger.info(inviteUserId+"邀请"+accountId+"领取优惠券！！");
-                InviteTableLog inviteTableLogSecond=inviteTableLogRepository.findByInvitedUserAndInviteType(inviteUserId,1);
-                if (!StringUtils.isEmpty(inviteTableLog)){
-                    inviteTableLog=new InviteTableLog(UUID.randomUUID().toString(),inviteTableLogSecond.getAccountId(),1,inviteUserId,1,null,TimeUtil.getCurrentDateTime2(),1);
+                logger.info(userId+"邀请"+accountId+"领取优惠券！！");
+                InviteTableLog inviteTableLogSecond=inviteTableLogRepository.findByInvitedUserAndInviteType(userId,1);
+                if (!StringUtils.isEmpty(inviteTableLogSecond)){
+                    inviteTableLog=new InviteTableLog(UUID.randomUUID().toString(),inviteTableLogSecond.getAccountId(),1,userId,1,null,TimeUtil.getCurrentDateTime2(),1);
                     inviteTableLogList.add(inviteTableLog);
                     logger.info(inviteTableLog.getAccountId()+"间接邀请了"+accountId);
                 }

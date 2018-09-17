@@ -97,7 +97,8 @@ public class OilOrderUtil {
         }else if(activityType == ActivityIdEnum.ACTIVITY_ID_101.getActivity()
                 ||activityType == ActivityIdEnum.ACTIVITY_ID_103.getActivity()
                 ||activityType == ActivityIdEnum.ACTIVITY_ID_104.getActivity()
-                ||activityType == ActivityIdEnum.ACTIVITY_ID_666.getActivity()){
+                ||activityType == ActivityIdEnum.ACTIVITY_ID_666.getActivity()
+                ||activityType == ActivityIdEnum.ACTIVITY_ID_667.getActivity()){
             order.setPayPrice(Arith.sub(goods.getSaledPrice(),order.getDiscountAmount()));
             order.setCouponTempletId(goods.getCouponTempletId());
         }
