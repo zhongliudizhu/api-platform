@@ -242,7 +242,7 @@ public class CouponService {
      * @param money     金额
      * @return MyCoupon
      */
-    public List<MyCoupon> findMyUsableCoupon(String accountId, Double money) {
+    public List<MyCoupon> findMyUsableCoupon(String accountId, Double money,Integer type) {
 //        List<MyCoupon> list=myCouponRepository.findByAccountIdAndStatusAndUseRuleLessThanEqual(accountId, 0, money);
 //        for(MyCoupon coupon:list){
 //            Date now = new Date();
@@ -259,14 +259,21 @@ public class CouponService {
 //                list.remove(coupon);
 //            }
 //        }
-//        List<MyCoupon> list = new LinkedList<>();
+//      List<MyCoupon> list = new LinkedList<>();
+        List<MyCoupon> list = new LinkedList<>();
         List<String> types = new LinkedList<>();
         types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_3.getActivity()));
         types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_101.getActivity()));
         types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_103.getActivity()));
         types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_104.getActivity()));
         types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_105.getActivity()));
-        List<MyCoupon> list = myCouponRepository.findMyUsableCoupon(accountId,0,money, new Date(),types);
+        types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_667.getActivity()));
+        if(type==ActivityIdEnum.ACTIVITY_ID_667.getActivity()){
+            list =myCouponRepository.findFassionMyUsableCoupon(accountId,0,money, new Date(),type.toString());
+        }else {
+            list = myCouponRepository.findMyUsableCoupon(accountId,0,money, new Date(),types);
+        }
+
         return list;
     }
 

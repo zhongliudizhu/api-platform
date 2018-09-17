@@ -37,4 +37,13 @@ public interface MyCouponRepository extends JpaRepository<MyCoupon,String> ,JpaS
             "and f.activityId not in ?5")
     List<MyCoupon> findMyUsableCoupon(String accountId,Integer status,Double rules,Date nowTime,List<String > activity);
 
+    @Query("from MyCoupon t where t.accountId=?1 and t.activityId=?2 and  t.status<>2")
+    List<MyCoupon> findByAccountIdAndActivityId(String accountId,String activity);
+
+    @Query("select f from MyCoupon f where f.accountId=?1 " +
+            "and f.status = ?2 " +
+            "and f.useRule <= ?3 " +
+            "and f.validEndAt >= ?4 " +
+            "and f.activityId=?5")
+    List<MyCoupon> findFassionMyUsableCoupon(String accountId, int i, Double money, Date date, String type);
 }

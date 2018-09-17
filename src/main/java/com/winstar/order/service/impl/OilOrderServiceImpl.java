@@ -1,5 +1,14 @@
 package com.winstar.order.service.impl;
 
+import com.winstar.coupon.entity.MyCoupon;
+import com.winstar.coupon.repository.MyCouponRepository;
+import com.winstar.couponActivity.entity.InviteTableLog;
+import com.winstar.couponActivity.entity.MileageObtainLog;
+import com.winstar.couponActivity.repository.InviteTableLogRepository;
+import com.winstar.couponActivity.repository.MileageObtainLogRepository;
+import com.winstar.couponActivity.utils.ActivityIdEnum;
+import com.winstar.couponActivity.utils.TimeUtil;
+import com.winstar.couponActivity.utils.UtilConstants;
 import com.winstar.exception.NotFoundException;
 import com.winstar.order.entity.FlowOrder;
 import com.winstar.order.entity.OilOrder;
@@ -18,8 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author shoo on 2017/12/14 9:54.
@@ -35,6 +47,12 @@ public class OilOrderServiceImpl implements OilOrderService {
     private FlowOrderRepository flowOrderRepository;
     @Autowired
     private OneMoneyCouponRecordService oneMoneyCouponRecordService;
+    @Autowired
+    private InviteTableLogRepository inviteTableLogRepository;
+    @Autowired
+    MileageObtainLogRepository mileageObtainLogRepository;
+    @Autowired
+    MyCouponRepository myCouponRepository;
     @Value("${info.flowUrl}")
     private String flowUrl;
     @Override
@@ -53,6 +71,8 @@ public class OilOrderServiceImpl implements OilOrderService {
             if(oilOrder.getItemId().equals(Constant.ONE_BUY_ITEMID)){
                 oneMoneyCouponRecordService.changeStatus(oilOrder.getAccountId());
             }
+            //裂变活动订单回调
+            fassionCallBack(oilOrder);
             oilOrder.setBankSerialNo(payInfo.getBankSerialNumber());
             oilOrder.setPayTime(payInfo.getPayTime());
             oilOrder.setPayType(payInfo.getPayType());
@@ -137,5 +157,41 @@ public class OilOrderServiceImpl implements OilOrderService {
             BeanUtils.copyProperties(flowOrder,oilOrder);
         }
         return oilOrder;
+    }
+
+    /**
+     * 裂变活动回调方法
+     * @param oilOrder
+     */
+    public void fassionCallBack(OilOrder oilOrder){
+        if(Integer.parseInt(oilOrder.getActivityId())==ActivityIdEnum.ACTIVITY_ID_667.getActivity()&&!StringUtils.isEmpty(oilOrder.getCouponId())&&inviteTableLogRepository.findByInvitedUserAndStateAndInvtiteState(oilOrder.getAccountId(),1,1).size()>0){
+            if(Integer.parseInt(myCouponRepository.findOne(oilOrder.getCouponId()).getActivityId())==ActivityIdEnum.ACTIVITY_ID_667.getActivity()){
+                List<InviteTableLog>  inviteList=inviteTableLogRepository.findByInvitedUserAndState(oilOrder.getAccountId(),1);
+                MileageObtainLog mileageObtainLog;
+                Double mileageSum=10.0;
+                Integer optainType=2;
+                //使用优惠券赠送里程
+                mileageObtainLog=new MileageObtainLog(UUID.randomUUID().toString(),oilOrder.getAccountId(),UtilConstants.FissionActivityConstants.COUPON_MILEAFE,optainType,TimeUtil.getCurrentDateTime2(),1);
+                mileageObtainLogRepository.save(mileageObtainLog);
+                if (inviteList.size()>0){
+                    //邀请人和被邀请人里程赠送，以及邀请状态和时间的更新
+                    for (int i=0;i<inviteList.size();i++){
+                        String inviteUsreid=inviteList.get(i).getAccountId();
+                        if(inviteList.get(i).getInviteType()==0){
+                            mileageSum=UtilConstants.FissionActivityConstants.DIRECT_INVTIE_MILEAFE;
+                            optainType=1;
+                        }else{
+                            mileageSum=UtilConstants.FissionActivityConstants.INDIRECT_INVTIE_MILEAFE;
+                            optainType=0;
+                        }
+                        inviteList.get(i).setInvtiteState(0);
+                        inviteList.get(i).setUpdateTime(TimeUtil.getCurrentDateTime2());
+                        inviteTableLogRepository.save(inviteList.get(i));
+                        mileageObtainLog=new MileageObtainLog(UUID.randomUUID().toString(),inviteUsreid,mileageSum,optainType,TimeUtil.getCurrentDateTime2(),1);
+                        mileageObtainLogRepository.save(mileageObtainLog);
+                    }
+                }
+            }
+        }
     }
 }

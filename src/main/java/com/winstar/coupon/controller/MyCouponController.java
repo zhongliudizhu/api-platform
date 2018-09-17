@@ -199,7 +199,7 @@ public class MyCouponController {
         Double money = goods.getPrice();
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
-        List<MyCoupon> list = couponService.findMyUsableCoupon(accountId, money);
+        List<MyCoupon> list = couponService.findMyUsableCoupon(accountId, money,goods.getType());
         if (list.size() == 0) throw new NotFoundException("mycoupon");
         return list;
     }

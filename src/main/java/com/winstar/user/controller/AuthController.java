@@ -1,9 +1,11 @@
 package com.winstar.user.controller;
 
+import com.google.common.collect.Maps;
 import com.winstar.exception.InvalidParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.exception.ServiceUnavailableException;
+import com.winstar.obu.utils.SmsUtil;
 import com.winstar.order.utils.StringFormatUtils;
 import com.winstar.user.entity.Account;
 import com.winstar.user.param.CCBAuthParam;
@@ -19,6 +21,7 @@ import com.winstar.user.vo.SendVerifyCodeMsgResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.ws.Service;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static com.winstar.user.utils.ServiceManager.accountService;
 
@@ -43,7 +47,30 @@ import static com.winstar.user.utils.ServiceManager.accountService;
 @RequestMapping("/api/v1/cbc/auth")
 public class AuthController {
     static Logger logger = LoggerFactory.getLogger(AuthController.class);
-
+    @Value("${send_sms_url}")
+    String sendSmsUrl;
+    /**
+     * 校验手机号码是否绑定
+     *
+     * @return
+     * @throws InvalidParameterException, NotRuleException
+     */
+    @PostMapping("/validateMobile")
+    public Map<String,Object> validateMobile(HttpServletRequest request) throws NotRuleException {
+        Map<String,Object> activityMap = Maps.newHashMap();
+        String accountId = accountService.getAccountId(request);
+        Account account = ServiceManager.accountRepository.findOne(accountId);
+        if (StringUtils.isEmpty(account)){
+            activityMap.put("ac_state","0");
+        }else{
+            if (StringUtils.isEmpty(account.getMobile())){
+                activityMap.put("ac_state","0");
+            }else {
+                activityMap.put("ac_state","1");
+            }
+        }
+        return activityMap;
+    }
     /**
      * 补全手机号码
      *
@@ -52,15 +79,20 @@ public class AuthController {
      * @throws InvalidParameterException, NotRuleException
      */
     @PostMapping("/updateMobile")
-    public Account updateMobile(@RequestBody UpdateAccountParam updateAccountParam, HttpServletRequest request) throws InvalidParameterException, NotRuleException {
-        String accountId = accountService.getAccountId(request);
-        if (null == updateAccountParam || StringUtils.isEmpty(updateAccountParam.getMobile())) {
-            throw new InvalidParameterException("updateAccountParam");
+    public Account updateMobile(@RequestBody UpdateAccountParam updateAccountParam, HttpServletRequest request) throws InvalidParameterException, NotRuleException,NotFoundException {
+        if (!ServiceManager.smsService.verifySms(updateAccountParam)){
+            logger.info("验证码错误！！");
+            throw new NotRuleException("code.is.error");
         }
-
-        if (!ServiceManager.smsService.verifySms(updateAccountParam))
-            throw new NotRuleException("msgInvalid.user");
-
+        if(!accountService.checkBindMobileUnique(updateAccountParam.getMobile())){
+            logger.info("该手机号已被绑定！！");
+            throw new  NotRuleException("phone.had.bind");
+        }
+        if (null == updateAccountParam || StringUtils.isEmpty(updateAccountParam.getMobile())) {
+            logger.info("参数不合法！！！");
+            throw new NotFoundException("param.is.null");
+        }
+        String accountId = accountService.getAccountId(request);
         Account account = ServiceManager.accountRepository.findOne(accountId);
         account.setMobile(updateAccountParam.getMobile());
         account.setUpdateTime(new Date());
@@ -79,6 +111,7 @@ public class AuthController {
     public SimpleResult isBindMobile(HttpServletRequest request) throws NotRuleException {
         return accountService.checkBindMobile(request);
     }
+
 
     /**
      * 校验是否认证过

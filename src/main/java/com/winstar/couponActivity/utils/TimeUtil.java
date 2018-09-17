@@ -147,7 +147,6 @@ public class TimeUtil {
      */
     public static Date getNextMonth(){
         LocalDateTime localDateTime =LocalDateTime.now();
-        System.out.println(localDateTime);
         LocalDateTime nextMonthDateTime =localDateTime.plusMonths(1);
         ZoneId zone = ZoneId.systemDefault();
         Instant instant = nextMonthDateTime.atZone(zone).toInstant();

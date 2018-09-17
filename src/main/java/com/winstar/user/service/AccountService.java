@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -99,6 +100,17 @@ public class AccountService {
         if (StringUtils.isEmpty(account.getMobile())) return new SimpleResult("YES");
         return new SimpleResult("NO");
     }
+
+    public Boolean checkBindMobileUnique(String phone) throws NotRuleException {
+
+        List<Account> account = ServiceManager.accountRepository.findByMobile(phone);
+        if(account.size()>0){
+            return false;
+        }else {
+            return true;
+        }
+    }
+
 
     /**
      * 获取优驾行用户请求token
