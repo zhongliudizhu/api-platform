@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -168,11 +169,13 @@ public class OilOrderServiceImpl implements OilOrderService {
             if(Integer.parseInt(myCouponRepository.findOne(oilOrder.getCouponId()).getActivityId())==ActivityIdEnum.ACTIVITY_ID_667.getActivity()){
                 List<InviteTableLog>  inviteList=inviteTableLogRepository.findByInvitedUserAndState(oilOrder.getAccountId(),1);
                 MileageObtainLog mileageObtainLog;
+                List<MileageObtainLog> mileageObtainLogList=new ArrayList<MileageObtainLog>();
                 Double mileageSum=10.0;
                 Integer optainType=2;
                 //使用优惠券赠送里程
                 mileageObtainLog=new MileageObtainLog(UUID.randomUUID().toString(),oilOrder.getAccountId(),UtilConstants.FissionActivityConstants.COUPON_MILEAFE,optainType,TimeUtil.getCurrentDateTime2(),1);
-                mileageObtainLogRepository.save(mileageObtainLog);
+                mileageObtainLogList.add(mileageObtainLog);
+                logger.info(oilOrder.getAccountId()+":使用优惠券获得10里程！");
                 if (inviteList.size()>0){
                     //邀请人和被邀请人里程赠送，以及邀请状态和时间的更新
                     for (int i=0;i<inviteList.size();i++){
@@ -180,17 +183,20 @@ public class OilOrderServiceImpl implements OilOrderService {
                         if(inviteList.get(i).getInviteType()==0){
                             mileageSum=UtilConstants.FissionActivityConstants.DIRECT_INVTIE_MILEAFE;
                             optainType=1;
+                            logger.info(inviteList.get(i).getAccountId()+":直接邀请成功！获得10里程！");
                         }else{
                             mileageSum=UtilConstants.FissionActivityConstants.INDIRECT_INVTIE_MILEAFE;
                             optainType=0;
+                            logger.info(inviteList.get(i).getAccountId()+":直接邀请成功！获得5里程！");
                         }
                         inviteList.get(i).setInvtiteState(0);
                         inviteList.get(i).setUpdateTime(TimeUtil.getCurrentDateTime2());
-                        inviteTableLogRepository.save(inviteList.get(i));
                         mileageObtainLog=new MileageObtainLog(UUID.randomUUID().toString(),inviteUsreid,mileageSum,optainType,TimeUtil.getCurrentDateTime2(),1);
-                        mileageObtainLogRepository.save(mileageObtainLog);
+                        mileageObtainLogList.add(mileageObtainLog);
                     }
                 }
+                inviteTableLogRepository.save(inviteList);
+                mileageObtainLogRepository.save(mileageObtainLogList);
             }
         }
     }

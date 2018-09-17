@@ -27,9 +27,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * CouponActivityController
@@ -158,8 +156,8 @@ public class FissionActivityController {
         }
         Map<String,Object> activityMap = Maps.newHashMap();
         String accountId = request.getAttribute("accountId").toString();
-        InviteTableLog inviteTableLog1=new InviteTableLog();
-        InviteTableLog inviteTableLog2=new InviteTableLog();
+        InviteTableLog inviteTableLog;
+        List<InviteTableLog> inviteTableLogList=new ArrayList<InviteTableLog>();
         MyCoupon myCoupon;
         if (Double.parseDouble(couponSum)>30.0){
             throw new NotRuleException("data.is.illegal");
@@ -175,25 +173,16 @@ public class FissionActivityController {
                 Date validEndAt=TimeUtil.getNextMonth();
                 myCoupon=couponService.sendCoupon_freedom(accountId,FissionType.toString(),Double.parseDouble(couponSum),validEndAt,300.0,couponSum+"元优惠券","裂变"+couponSum+"元优惠券");
                 logger.info(accountId+"领取"+couponSum+"元优惠券"+myCoupon.getId());
-                inviteTableLog1.setAccountId(inviteUserId);
-                inviteTableLog1.setCreateTime(TimeUtil.getCurrentDateTime2());
-                inviteTableLog1.setInvitedUser(accountId);
-                inviteTableLog1.setInviteType(0);
-                inviteTableLog1.setInvtiteState(1);
-                inviteTableLog1.setState(1);
-                inviteTableLogRepository.save(inviteTableLog1);
+                inviteTableLog=new InviteTableLog(UUID.randomUUID().toString(),accountId,0,inviteUserId,1,null,TimeUtil.getCurrentDateTime2(),1);
+                inviteTableLogList.add(inviteTableLog);
                 logger.info(inviteUserId+"邀请"+accountId+"领取优惠券！！");
-                InviteTableLog inviteTableLog=inviteTableLogRepository.findByInvitedUserAndInviteType(inviteUserId,1);
+                InviteTableLog inviteTableLogSecond=inviteTableLogRepository.findByInvitedUserAndInviteType(inviteUserId,1);
                 if (!StringUtils.isEmpty(inviteTableLog)){
-                    inviteTableLog2.setAccountId(inviteTableLog.getAccountId());
-                    inviteTableLog2.setCreateTime(TimeUtil.getCurrentDateTime2());
-                    inviteTableLog2.setInvitedUser(accountId);
-                    inviteTableLog2.setInviteType(1);
-                    inviteTableLog2.setInvtiteState(1);
-                    inviteTableLog1.setState(1);
-                    inviteTableLogRepository.save(inviteTableLog2);
+                    inviteTableLog=new InviteTableLog(UUID.randomUUID().toString(),inviteTableLogSecond.getAccountId(),1,inviteUserId,1,null,TimeUtil.getCurrentDateTime2(),1);
+                    inviteTableLogList.add(inviteTableLog);
                     logger.info(inviteTableLog.getAccountId()+"间接邀请了"+accountId);
                 }
+                inviteTableLogRepository.save(inviteTableLogList);
                 activityMap.put("myCoupon",myCoupon);
                 activityMap.put("ac_state","2");
             }
