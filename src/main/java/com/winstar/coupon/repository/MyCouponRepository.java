@@ -41,6 +41,7 @@ public interface MyCouponRepository extends JpaRepository<MyCoupon,String> ,JpaS
     List<MyCoupon> findByAccountIdAndActivityId(String accountId,String activity);
     @Query("from MyCoupon t where t.accountId=?1 and t.activityId=?2 and t.validEndAt >=?3 and  t.status<>2")
     List<MyCoupon> findByAccountIdAndActivityId2(String accountId,String activity,Date currentTime);
+
     @Query("select f from MyCoupon f where f.accountId=?1 " +
             "and f.status = ?2 " +
             "and f.useRule <= ?3 " +

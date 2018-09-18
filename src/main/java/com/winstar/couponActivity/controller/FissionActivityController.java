@@ -197,9 +197,9 @@ public class FissionActivityController {
                 inviteTableLog=new InviteTableLog(UUID.randomUUID().toString(),userId,0,accountId,1,null,TimeUtil.getCurrentDateTime2(),1);
                 inviteTableLogList.add(inviteTableLog);
                 logger.info(userId+"邀请"+accountId+"领取优惠券！！");
-                InviteTableLog inviteTableLogSecond=inviteTableLogRepository.findByInvitedUserAndInviteType(userId,1);
+                InviteTableLog inviteTableLogSecond=inviteTableLogRepository.findByInvitedUserAndInviteType(userId,0);
                 if (!StringUtils.isEmpty(inviteTableLogSecond)){
-                    inviteTableLog=new InviteTableLog(UUID.randomUUID().toString(),inviteTableLogSecond.getAccountId(),1,userId,1,null,TimeUtil.getCurrentDateTime2(),1);
+                    inviteTableLog=new InviteTableLog(UUID.randomUUID().toString(),inviteTableLogSecond.getAccountId(),1,accountId,1,null,TimeUtil.getCurrentDateTime2(),1);
                     inviteTableLogList.add(inviteTableLog);
                     logger.info(inviteTableLog.getAccountId()+"间接邀请了"+accountId);
                 }
