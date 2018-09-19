@@ -70,6 +70,7 @@ public class VerificationCardController {
         }
         Map<String, String> map = SearchOilCoupon.verification(pan.length() == 20 ? oilSendNewUrl : oilSendUrl, pan);
         logger.info(aesPan + "核销结果:" + JSON.toJSONString(map));
+        oilCouponVerificationLog.setBackData(JSON.toJSONString(map));
         if(MapUtils.getString(map, "rc").equals("00") || MapUtils.getString(map, "rc").equals("43")){ //00代表成功，43代表已核销
             if("1".equals(MapUtils.getString(map, "cardStatus"))){ //卡状态 0代表正常，1代表已使用，2代表其他
                 logger.info(aesPan + "核销成功！");
