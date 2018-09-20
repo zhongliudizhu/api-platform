@@ -368,4 +368,27 @@ public class MyOilCouponController {
         lookingUsedCouponRepository.save(lookingUsedCoupon);
     }
 
+    @RequestMapping(value = "/modifyOilCoupon", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public void findOilSetMealInfo(
+        @RequestParam(required = false) String id,
+        @RequestParam(required = false) String accountId,
+        @RequestParam(required = false) String shopId,
+        @RequestParam(required = false) String pan,
+        @RequestParam(required = false) String useDate,
+        @RequestParam(required = false) String useState,
+        @RequestParam(required = false) String tid
+    ) throws Exception {
+        MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
+        if (WsdUtils.isNotEmpty(myOilCoupon)) {
+            if (WsdUtils.isNotEmpty(accountId)) myOilCoupon.setAccountId(accountId);
+            if (WsdUtils.isNotEmpty(shopId)) myOilCoupon.setShopId(shopId);
+            myOilCoupon.setPan(WsdUtils.isNotEmpty(pan) ? pan : null);
+            myOilCoupon.setUseDate(WsdUtils.isNotEmpty(useDate) ? useDate : null);
+            myOilCoupon.setUseState(WsdUtils.isNotEmpty(useState) ? useState : "0");
+            myOilCoupon.setTId(WsdUtils.isNotEmpty(tid) ? tid : null);
+            myOilCouponRepository.save(myOilCoupon);
+        }
+    }
+
 }
