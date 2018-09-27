@@ -192,7 +192,7 @@ public class FissionActivityController {
                 logger.info("已领取过优惠券！！！");
             }else{
                 Date validEndAt=TimeUtil.getNextMonth();
-                myCoupon=couponService.sendCoupon_freedom(accountId,FissionType.toString(),Double.parseDouble(couponSum),validEndAt,300.0,couponSum+"元优惠券","裂变"+couponSum+"元优惠券");
+                myCoupon=couponService.sendCoupon_freedom(accountId,FissionType.toString(),Double.parseDouble(couponSum),validEndAt,200.0,couponSum+"元优惠券","裂变"+couponSum+"元优惠券");
                 logger.info(accountId+"领取"+couponSum+"元优惠券"+myCoupon.getId());
                 inviteTableLog=new InviteTableLog(UUID.randomUUID().toString(),userId,0,accountId,1,null,TimeUtil.getCurrentDateTime2(),1);
                 inviteTableLogList.add(inviteTableLog);

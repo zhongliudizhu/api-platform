@@ -360,14 +360,15 @@ public class CouponActivityController {
         if(StringUtils.isEmpty(phoneNumber)){
             throw new NotRuleException("couponActivity.phoneNumber");
         }
-        //匹配车辆
+       /* //匹配车辆
         if(CouponActivityUtil.compareCars(plateNumber, driverLicense,restTemplate,getSixInOneCarsUrl,objectMapper)){
             logger.info("openid:"+account.getOpenid()+"-----二期开始发券[couponActivity.notMatchCars]");
             throw new NotRuleException("couponActivity.notMatchCars");
-        }
+        }*/
         //白名单验证 依次验证
-         List<WhiteList> whiteLists = whiteListRepository.findByPhoneNumberAndDriverLicenseLikeAndIsGetAndTime(phoneNumber,driverLicense.substring(10,18),0,TimeUtil.getMonth());
-//
+        // List<WhiteList> whiteLists = whiteListRepository.findByPhoneNumberAndDriverLicenseLikeAndIsGetAndTime(phoneNumber,driverLicense.substring(10,18),0,TimeUtil.getMonth());
+        List<WhiteList> whiteLists = whiteListRepository.findByPhoneNumberAndDriverLicenseLikeAndIsGetAndTime2(phoneNumber,driverLicense.substring(10,18),0);
+
         if(ObjectUtils.isEmpty(whiteLists)){
             logger.info("openid:"+account.getOpenid()+"-----二期开始发券[couponActivity.notWhiteLists]");
             throw new NotRuleException("couponActivity.notWhiteLists");

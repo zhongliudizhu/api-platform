@@ -3,7 +3,9 @@ package com.winstar.coupon.controller;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
+import com.winstar.couponActivity.utils.ActivityIdEnum;
 import com.winstar.exception.*;
+import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.GoodsRepository;
@@ -25,10 +27,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 名称： MyCouponController
@@ -51,6 +51,8 @@ public class MyCouponController {
 
     @Autowired
     GoodsRepository goodsRepository;
+    @Autowired
+    OilOrderRepository oilOrderRepository;
 
     /**
      * 我的优惠券列表
@@ -74,7 +76,7 @@ public class MyCouponController {
             @RequestParam(defaultValue = "1") Integer pageNumber,
             @RequestParam(defaultValue = "10000") Integer pageSize
     ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
-
+        List<MyCoupon> list = new LinkedList<>();
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
         if (StringUtils.isEmpty(accountId))  throw new NotRuleException("accountId");
@@ -100,8 +102,14 @@ public class MyCouponController {
             }
         }, pageable);
         if (page.getContent().size() == 0) throw new NotFoundException("mycoupon");
+        page.getContent().stream().forEach(bean -> {
+            if (30.0 == bean.getAmount()&&oilOrderRepository.countByStatusAndAccountIdAndIsAvailable(accountId)>0&&Integer.parseInt(bean.getActivityId())==ActivityIdEnum.ACTIVITY_ID_667.getActivity()){
+               bean.setUseRule(300.0);
+            }
+            list.add(bean);
+        });
 
-        return page.getContent();
+        return list;
     }
 
     @RequestMapping(value = "/queryType", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -113,7 +121,7 @@ public class MyCouponController {
             @RequestParam(defaultValue = "1") Integer pageNumber,
             @RequestParam(defaultValue = "10000") Integer pageSize
     ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
-
+        List<MyCoupon> list = new LinkedList<>();
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
 
@@ -138,8 +146,13 @@ public class MyCouponController {
             }
         }, pageable);
         if (page.getContent().size() == 0) throw new NotFoundException("mycoupon");
-
-        return page.getContent();
+        page.getContent().stream().forEach(bean -> {
+            if (30.0 == bean.getAmount()&&oilOrderRepository.countByStatusAndAccountIdAndIsAvailable(accountId)>0&&Integer.parseInt(bean.getActivityId())==ActivityIdEnum.ACTIVITY_ID_667.getActivity()){
+                bean.setUseRule(300.0);
+            }
+            list.add(bean);
+        });
+        return list;
     }
 
     /**
@@ -199,7 +212,7 @@ public class MyCouponController {
         Double money = goods.getPrice();
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
-        List<MyCoupon> list = couponService.findMyUsableCoupon(accountId, money,goods.getType());
+        List<MyCoupon> list = couponService.findMyUsableCoupon(accountId, money,goods);
         if (list.size() == 0) throw new NotFoundException("mycoupon");
         return list;
     }
