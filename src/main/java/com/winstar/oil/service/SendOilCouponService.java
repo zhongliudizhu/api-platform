@@ -182,6 +182,7 @@ public class SendOilCouponService {
                 myOilCoupons.add(myOilCoupon);
             }
         }
+        logger.info(orderId + "订单对应的商品id：" + goods.getId() + ",商品详情：" + goods.getCouponDetail() + ", 集合条数：" + myOilCoupons.size());
         myOilCouponRepository.save(myOilCoupons);
         logger.info(orderId + "油卡发卡成功！");
         map.put("status","OK");
