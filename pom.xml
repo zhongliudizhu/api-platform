@@ -176,12 +176,6 @@
             <artifactId>winstar-oil-common-lts</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
-        <!-- winstar-job-core -->
-        <dependency>
-            <groupId>com.winstar</groupId>
-            <artifactId>winstar-job-core</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
     </dependencies>
 
     <dependencyManagement>
