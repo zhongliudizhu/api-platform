@@ -367,7 +367,7 @@ public class ObuActivityController {
      */
     @RequestMapping(value = "getSwitch", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     public ObuConfig getSwitch(HttpServletRequest request) throws NotFoundException, NotRuleException{
-        ObuConfig obuConfig = obuConfigRepository.findByType(1);
+        ObuConfig obuConfig = obuConfigRepository.findByType(2);
         if(ObjectUtils.isEmpty(obuConfig)){
              obuConfig = new ObuConfig();
              obuConfig.setLimitNum(0);
