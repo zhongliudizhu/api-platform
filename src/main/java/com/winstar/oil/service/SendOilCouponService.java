@@ -108,9 +108,13 @@ public class SendOilCouponService {
      * 手动发券
      * @throws Exception
      */
-    @Synchronized
     public ResponseEntity handlerSendOilCoupon(String orderNumber, String shopId, String accountId) throws Exception{
         logger.info(orderNumber + "，手动执行油卡发送操作。。。");
+        if(redisTools.exists(orderNumber)){
+            logger.info("60秒之内不执行同一订单的发券操作！订单号：" + orderNumber);
+            throw new NotRuleException("oilCoupon.loading");
+        }
+        redisTools.set(orderNumber, orderNumber, 60L);
         long beginTime = System.currentTimeMillis();
         logger.info("手动执行发券开始时间：" + beginTime);
         logger.info("orderId:" + orderNumber + "，shopId:" + shopId + "，accountId:" + accountId);
