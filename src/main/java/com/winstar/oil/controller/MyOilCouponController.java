@@ -131,6 +131,8 @@ public class MyOilCouponController {
                     myOilCouponList.add(myOilCoupon);
                 }
                 myOilCouponRepository.save(myOilCouponList);
+                resultMap.put("status","OK");
+                resultMap.put("result", "该订单已修复！");
             }else{
                 resultMap.put("status","FAIL");
                 resultMap.put("result", "该订单已发券！");
