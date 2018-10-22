@@ -415,6 +415,7 @@ public class MyOilCouponController {
 
     @RequestMapping(value = "/deleteOilCoupon", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
+    @CrossOrigin
     public void deleteOilCoupon(
         @RequestParam String id
     ) throws Exception {
