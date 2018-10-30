@@ -1,5 +1,8 @@
 server:
   port: ${{SERVER_PORT}:20001}
+  tomcat:
+       uri-encoding: UTF-8
+  context-path: /cbc-api
 
 management:
   port: ${{MANAGEMENT_PORT}:20002}
@@ -11,17 +14,6 @@ endpoints:
     sensitive: true
     enabled: true
 
-eureka:
-  instance:
-    instance-id: ${spring.cloud.client.ipAddress}:${server.port}
-    hostname: ${spring.cloud.client.ipAddress}
-
-  client:
-    serviceUrl:
-      defaultZone:  http://winstar:123456@192.168.118.101:19000/eureka/
-    fetch-registry: true
-    register-with-eureka: true
-
 spring:
   datasource:
     url: jdbc:mysql://192.168.118.8:23306/winstar-cbc-platform?characterEncoding=utf-8
@@ -32,24 +24,53 @@ spring:
     hikari:
       max-lifetime: 1900000
       maximum-pool-size: 10
+  redis:
+    database: 7
+    host: 192.168.118.111
+    port: 6379
+    password:
+    pool.max-active: 1000
+    pool.max-wait: -1
+    pool.max-idle: 8
+    pool.min-idle: 0
+    timeout: 10000
+
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: false
+    show-sql: true
   profiles: default
 
 info:
-  sendUrl: http://192.168.118.28:8080/api/v1/push/text
-  cardUrl: http://124.89.119.82:18070/webservice/services/SvcService
-  getAccountIdByPhoneUrl: http://WINSTAR-USER-API/api/user/account/loginBy
-  #如果没有用户会自动注册
-  getAccountIdByPhoneH5: http://WINSTAR-USER-API/api/user/account/loginH5
-  getAccountIdByPhoneVerify: 24b6e946d4594661a58bd235fe639544
+  cardUrl: https://wanglt.easy-pass.cn/webservice/services/SvcService
+  cardUrl_new: http://ticket.api.muiyou.com/shellCoupons/services/SvcService
   profilesActive: false
-  searchLimit: 5
-  getMsgContentUrl: http://WINSTAR-COMMUNITY-API/api/v1/community/noauth/message/query?key=recieveOilCoupon
+  flowUrl: http://192.168.118.7:2300/api/v1/flow/order
+  amount: 100
+  getTokenInfoUrl: http://winstar.api.sxeccellentdriving.com/winstar-api/api/user/account/{userId}/{type}/getTokenInfo
+  getLocalCarsUrl: http://winstar.api.sxeccellentdriving.com/winstar-api/api/user/vehicle/getUserVehicleWechat
+  getSixInOneCarsUrl: http://mobile.sxwinstar.net/wechat_access/api/v1/platenumbers/certificateNumberTypeSearch?certificateNumber={certificateNumber}&&certificateType={certificateType}
   sendMsgUrl: http://sms.sxjiashi.com:8080/api/v2/smsSend/sendNotice
+  checkBindLicense: https://mobile.sxwinstar.net/wechat_access/api/user/auth/checkBindLicense
+  authDriverLicense: https://mobile.sxwinstar.net/wechat_access/api/user/auth/auth
+#建行信息卡校验
+bank:
+  sms:
+    sendVerifyCodeUrl:  ${{SEND_VERIFY_CODE}:http://113.140.28.230:5080/AuthPlatform/rest/auth/sendAuth}
+    checkVerifyCodeUrl: ${{CHECK_VERIFY_CODE}:http://113.140.28.230:5080/AuthPlatform/rest/auth/auth}
+    user: ${{BBC_SMS_USER}:test}
+    pwd:  ${{BBC_SMS_PWD}:test}
 
+#万盛达验证码验证
+verify_sms_url: http://sms.sxjiashi.com:8080/api/v2/smsSend/{id}/id/{verifyCode}/verifyCode/{phoneNumber}/phoneNumber
+#发送验证码
+send_sms_url: http://sms.sxjiashi.com:8080/api/v2/smsSend/{phoneNumber}/phoneNumber/1/types/
+#获取图片验证码
+get_random_image_code: http://sms.sxjiashi.com:8080/api/v4/smsSend/getRandomCode
+#验证图片验证码
+send_sms_image_url: http://sms.sxjiashi.com:8080/api/v4/smsSend/send
+
+activity_id_fission: 3d15c8ca-83e4-11e8-80dd-9457a5545c84
 ---
 spring:
   datasource:
@@ -60,7 +81,17 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       max-lifetime: 1900000
-      maximum-pool-size: 500
+      maximum-pool-size: 1000
+  redis:
+    database: 7
+    host: 10.0.20.165
+    port: 6379
+    password:
+    pool.max-active: -1
+    pool.max-wait: -1
+    pool.max-idle: 8
+    pool.min-idle: 0
+    timeout: 10000
   jpa:
     hibernate:
       ddl-auto: none
@@ -79,25 +110,33 @@ endpoints:
   shutdown:
     sensitive: true
 
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: ${{EUREKA_SERVER_LIST}:http://winstar:123456@10.0.20.85:9090/eureka/,http://winstar:123456@10.0.20.86:9090/eureka/}
-    fetch-registry: true
-    register-with-eureka: true
-  instance:
-    instance-id: ${spring.cloud.client.ipAddress}:${server.port}
-    hostname: ${spring.cloud.client.ipAddress}
-
-
 info:
-  sendUrl: http://10.0.20.144:8080/api/v1/push/text
-  cardUrl: http://124.89.119.82:8070/webserviceCoupons/services/SvcService
-  getAccountIdByPhoneUrl: http://WINSTAR-USER-API/api/user/account/loginBy
-  getAccountIdByPhoneVerify: 24b6e946d4594661a58bd235fe639544
-  #如果没有用户会自动注册
-  getAccountIdByPhoneH5: http://WINSTAR-USER-API/api/user/account/loginH5
+  cardUrl: https://coupons.easy-pass.cn/shellCoupons/services/SvcService
+  cardUrl_new: http://ticket.api.muiyou.com/shellCoupons/services/SvcService
   profilesActive: true
-  searchLimit: 5
-  getMsgContentUrl: http://WINSTAR-COMMUNITY-API/api/v1/community/noauth/message/query?key=recieveOilCoupon
-  sendMsgUrl: http://sms.sxjiashi.com:8080/api/v2/smsSend/sendNotice
+  flowUrl: http://api.sxwinstar.net/flow/api/v1/flow/order
+  amount: 100
+  getTokenInfoUrl: http://mobile.sxwinstar.net/wechat_access/api/user/account/{userId}/{type}/getTokenInfo
+  getLocalCarsUrl: http://mobile.sxwinstar.net/wechat_access/api/user/vehicle/getUserVehicleWechat
+  getSixInOneCarsUrl: http://mobile.sxwinstar.net/wechat_access/api/v1/platenumbers/certificateNumberTypeSearch?certificateNumber={certificateNumber}&&certificateType={certificateType}
+  sendMsgUrl: http://sms.sxjiashi.com:8030/api/v2/smsSend/sendNotice
+  checkBindLicense: https://mobile.sxwinstar.net/wechat_access/api/user/auth/checkBindLicense
+  authDriverLicense: https://mobile.sxwinstar.net/wechat_access/api/user/auth/auth
+#建行信息卡校验
+bank:
+  sms:
+    sendVerifyCodeUrl:  ${{SEND_VERIFY_CODE}:http://113.140.28.230:5080/AuthPlatform/rest/auth/sendAuth}
+    checkVerifyCodeUrl: ${{CHECK_VERIFY_CODE}:http://113.140.28.230:5080/AuthPlatform/rest/auth/auth}
+    user: ${{BBC_SMS_USER}:test}
+    pwd:  ${{BBC_SMS_PWD}:test}
+
+#万盛达验证码验证
+verify_sms_url: http://sms.sxjiashi.com:8030/api/v2/smsSend/{id}/id/{verifyCode}/verifyCode/{phoneNumber}/phoneNumber
+#发送验证码
+send_sms_url: http://sms.sxjiashi.com:8030/api/v2/smsSend/{phoneNumber}/phoneNumber/1/types/
+#获取图片验证码
+get_random_image_code: http://sms.sxjiashi.com:8030/api/v4/smsSend/getRandomCode
+#验证图片验证码
+send_sms_image_url: http://sms.sxjiashi.com:8030/api/v4/smsSend/send
+
+activity_id_fission: 3d15c8ca-83e4-11e8-80dd-9457a5545c84

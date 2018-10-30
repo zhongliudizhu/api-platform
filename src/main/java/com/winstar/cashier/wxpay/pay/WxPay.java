@@ -69,7 +69,7 @@ public class WxPay {
             wxPayParams.setTimeStamp(timeStamp + "");
             wxPayParams.setSign(getSignStr(map,timeStamp,nonce_str,config.getSignKey(),MapUtils.getString(payMap,"subPayWay")));
             wxPayParams.setSignType(data.getSign_type());
-            wxPayParams.setPartnerid(config.getMchId());
+            wxPayParams.setPartnerid(data.getMch_id());
             wxPayParams.setAppid(data.getAppid());
             wxPayParams.setWeb_url(MapUtils.getString(map,"mweb_url"));
             logger.info("返回参数：" + JSON.toJSONString(wxPayParams));
@@ -131,10 +131,10 @@ public class WxPay {
         String subPayWay = MapUtils.getString(payMap,"subPayWay");
         if(subPayWay.equals(EnumType.PAY_WAY_WEIXIN_PUBLIC_NUMBER.valueStr())){
             logger.info("获取公众号支付请求参数");
-            data.setAppid(config.getAppId());
+            data.setAppid(profilesActive ? config.getAppId() : config.getAppId_test());
             data.setTrade_type(trade_type_JSAPI);
             data.setOpenid(MapUtils.getString(payMap,"openId"));
-            data.setMch_id(config.getMchId_wechat());
+            data.setMch_id(profilesActive ? config.getMchId_wechat() : config.getMchId_wechat_test());
             data.setSpbill_create_ip(WsdUtils.getIpAddress(request));
         }else if(subPayWay.equals(EnumType.PAY_WAY_WEIXIN_APP.valueStr())){
             logger.info("获取App支付请求参数");
@@ -147,7 +147,7 @@ public class WxPay {
             data.setAppid(config.getAppId_little());
             data.setTrade_type(trade_type_JSAPI);
             data.setOpenid(MapUtils.getString(payMap,"loginCode"));
-            data.setMch_id(config.getMchId_wechat());
+            data.setMch_id(profilesActive ? config.getMchId_wechat() : config.getMchId_wechat_test());
             data.setSpbill_create_ip(WsdUtils.getIpAddress(request));
         }else if(subPayWay.equals(EnumType.PAY_WAY_WEIXIN_H5.valueStr())){
             logger.info("获取微信H5支付请求参数");
@@ -195,10 +195,10 @@ public class WxPay {
         PayReqData data = new PayReqData();
         if(EnumType.PAY_WAY_WEIXIN_X.valueStr().equals(subPayWay)){
             data.setAppid(config.getAppId_little());
-            data.setMch_id(config.getMchId_wechat());
+            data.setMch_id(profilesActive ? config.getMchId_wechat() : config.getMchId_wechat_test());
         }else if(EnumType.PAY_WAY_WEIXIN_PUBLIC_NUMBER.valueStr().equals(subPayWay)){
-            data.setAppid(config.getAppId());
-            data.setMch_id(config.getMchId_wechat());
+            data.setAppid(profilesActive ? config.getAppId() : config.getAppId_test());
+            data.setMch_id(profilesActive ? config.getMchId_wechat() : config.getMchId_wechat_test());
         }else if(EnumType.PAY_WAY_WEIXIN_APP.valueStr().equals(subPayWay) || EnumType.PAY_WAY_WEIXIN_H5.valueStr().equals(subPayWay)){
             data.setAppid(config.getAppId_app());
             data.setMch_id(config.getMchId());

@@ -24,6 +24,16 @@
     </parent>
 
     <dependencies>
+        <!--redis-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <!---->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-eureka</artifactId>
@@ -56,10 +66,6 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-config-client</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
@@ -70,6 +76,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.htmlunit</groupId>
+            <artifactId>htmlunit-core-js</artifactId>
+            <version>2.23</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.htmlunit</groupId>
+            <artifactId>htmlunit</artifactId>
+            <version>2.25</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -150,6 +166,16 @@
             <artifactId>netpay</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>1.4.10</version>
+        </dependency>
+        <dependency>
+            <groupId>com.winstar</groupId>
+            <artifactId>winstar-oil-common-lts</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
@@ -213,7 +239,7 @@
                 <artifactId>docker-maven-plugin</artifactId>
                 <version>0.4.10</version>
                 <configuration>
-                    <imageName>${docker.image.prefix}/${project.artifactId}:${git.commit.id.abbrev}</imageName>
+                    <imageName>${docker.image.prefix}/${project.artifactId}</imageName>
                     <dockerDirectory>src/main/docker</dockerDirectory>
                     <resources>
                         <resource>
@@ -256,23 +282,44 @@
             </plugin>
         </plugins>
     </build>
+    <!--<repositories>-->
+        <!--<repository>-->
+            <!--<snapshots>-->
+                <!--<enabled>true</enabled>-->
+            <!--</snapshots>-->
+            <!--<id>mvnsearch-repository</id>-->
+            <!--<name>Maven Repository Manager running on mvnsearch</name>-->
+            <!--<url>http://nexus.mvnsearch.org:8080/content/groups/public/</url-->
 
-    <repositories>
-        <repository>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <id>public</id>
-            <name>Public Repositories</name>
-            <url>http://192.168.118.199:8081/nexus/content/groups/public/</url>
-        </repository>
-    </repositories>
+            <!--&gt;-->
+        <!--</repository>-->
+    <!--</repositories>-->
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>public</id>
-            <name>Public Repositories</name>
-            <url>http://192.168.118.199:8081/nexus/content/groups/public/</url>
-        </pluginRepository>
-    </pluginRepositories>
+    <!--<pluginRepositories>-->
+        <!--<pluginRepository>-->
+            <!--<id>mvnsearch-repository</id>-->
+            <!--<name>Maven Repository Manager running on mvnsearch</name>-->
+            <!--<url>http://nexus.mvnsearch.org:8080/content/groups/public/</url-->
+
+            <!--&gt;-->
+        <!--</pluginRepository>-->
+    <!--</pluginRepositories>-->
+    <!--<repositories>-->
+        <!--<repository>-->
+            <!--<snapshots>-->
+                <!--<enabled>true</enabled>-->
+            <!--</snapshots>-->
+            <!--<id>public</id>-->
+            <!--<name>Public Repositories</name>-->
+            <!--<url>http://192.168.118.199:8081/nexus/content/groups/public/</url>-->
+        <!--</repository>-->
+    <!--</repositories>-->
+
+    <!--<pluginRepositories>-->
+        <!--<pluginRepository>-->
+            <!--<id>public</id>-->
+            <!--<name>Public Repositories</name>-->
+            <!--<url>http://192.168.118.199:8081/nexus/content/groups/public/</url>-->
+        <!--</pluginRepository>-->
+    <!--</pluginRepositories>-->
 </project>

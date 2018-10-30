@@ -1,6 +1,5 @@
 package com.winstar.cashier.wxpay.controller;
 
-import com.google.common.collect.Maps;
 import com.winstar.cashier.comm.EnumType;
 import com.winstar.cashier.construction.utils.DateUtil;
 import com.winstar.cashier.entity.PayLog;
@@ -11,15 +10,14 @@ import com.winstar.cashier.wxpay.common.Signature;
 import com.winstar.cashier.wxpay.common.XMLParser;
 import com.winstar.cashier.wxpay.config.WsdWechatConfig;
 import com.winstar.cashier.wxpay.pay.WxPay;
-import com.winstar.oil.service.SendOilCouponService;
-import com.winstar.order.entity.OilOrder;
-import com.winstar.order.service.OilOrderService;
-import com.winstar.order.vo.PayInfoVo;
+import com.winstar.event.ModifyOrderEvent;
+import com.winstar.event.SendOilCouponEvent;
 import com.winstar.utils.WsdUtils;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,10 +46,7 @@ public class NotifyController {
     private PayLogRepository payLogService;
 
     @Autowired
-    private OilOrderService orderService;
-
-    @Autowired
-    private SendOilCouponService sendOilCouponService;
+    private ApplicationContext context;
 
     @RequestMapping(value = "",method = RequestMethod.POST)
     public void notify(
@@ -140,7 +135,7 @@ public class NotifyController {
      */
     private String modifyOrder(PayOrder payOrder,Map<String, Object> respMap,HttpServletRequest request){
         try{
-
+            long beginTime = System.currentTimeMillis();
             if(WsdUtils.isNotEmpty(payOrder) && payOrder.getState().equals(EnumType.PAY_STATE_SUCCESS.valueStr())){
                 return "0000";
             }
@@ -151,18 +146,12 @@ public class NotifyController {
                 payOrderService.save(payOrder);
                 logger.info("订单支付成功...");
                 savePayLog(respMap,"OK","订单支付成功",request);
+                long endTime = System.currentTimeMillis();
+                logger.info("修改支付订单消耗时间：" + (endTime - beginTime) + "ms，支付订单号：" + payOrder.getPayOrderNumber() + "，订单号：" + payOrder.getOrderNumber());
                 //通知订单那边是否支付成功 ------>>>  回调
-                modifyOrder(payOrder,respMap);
-                //通知油卡发送
-                if(payOrder.getOrderOwner().equals("1") && respMap.get("result_code").toString().equalsIgnoreCase("SUCCESS")){
-                    Map<String,String> map = Maps.newHashMap();
-                    map.put("orderId",payOrder.getOrderNumber());
-                    OilOrder oilOrder = orderService.getOneOrder(payOrder.getOrderNumber());
-                    map.put("shopId",WsdUtils.isEmpty(oilOrder) ? null : oilOrder.getItemId());
-                    map.put("accountId",WsdUtils.isEmpty(oilOrder) ? null : oilOrder.getAccountId());
-                    logger.info("开始通知油卡的发送。。。");
-                    sendOilCouponService.checkCard(map);
-                }
+                context.publishEvent(new ModifyOrderEvent(this, payOrder));
+                //发券
+                context.publishEvent(new SendOilCouponEvent(this, payOrder));
             }else{
                 savePayLog(respMap,"ERROR","查询订单不存在",request);
             }
@@ -170,17 +159,6 @@ public class NotifyController {
             return "0002";
         }
         return "0000";
-    }
-
-    private void modifyOrder(PayOrder payOrder,Map<String,Object> respMap){
-        PayInfoVo payInfoVo = new PayInfoVo();
-        payInfoVo.setOrderSerialNumber(payOrder.getOrderNumber());
-        payInfoVo.setBankSerialNumber(MapUtils.getString(respMap, "transaction_id"));
-        payInfoVo.setPayPrice(MapUtils.getDouble(respMap, "total_fee"));
-        payInfoVo.setPayState(MapUtils.getString(respMap,"result_code").equalsIgnoreCase("SUCCESS") ? EnumType.PAY_STATE_SUCCESS.value() : EnumType.PAY_STATE_FAIL.value());
-        payInfoVo.setPayTime(DateUtil.parseTime(MapUtils.getString(respMap, "time_end")));
-        payInfoVo.setPayType(payOrder.getPayWay());
-        orderService.updateOrderCashier(payInfoVo);
     }
 
 }

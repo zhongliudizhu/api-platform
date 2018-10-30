@@ -1,6 +1,5 @@
 package com.winstar.invoice.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +11,7 @@ import java.util.Date;
 
 /**
  * @author shoo on 2017/10/23 14:01.
- *  发票
+ * 发票
  */
 @Getter
 @Setter
@@ -29,43 +28,66 @@ public class Invoice {
     @GeneratedValue(generator = "idGenerator")
     @Column(length = 50)
     private String id;
-    /*
-    * 类型 0 个人  1 公司
-    * */
+    /**
+     * 用户Id
+     */
+    @Column(length = 50)
+    private String accountId;
+
+    /**
+     * 发票金额
+     */
+    private Double price;
+
+    /**
+     * 类型 1 ：个人 2：单位
+     */
     private Integer type;
-    /*
-    *姓名
-    * */
+
+    /**
+     * 姓名
+     */
     @Column(length = 50)
-    private String personName;
-    /*
-    * 身份证号
-    * */
+    private String name;
+
+    /**
+     * 油品种类
+     */
     @Column(length = 50)
-    private String identNumber;
-    /*
-    * 手机号
-    * */
-    @Column(length = 50)
-    private String phoneNo;
-    /*
-    * 电子邮箱
-    * */
-    @Column(length = 50)
+    private String oilType;
+
+    /**
+     * 邮箱
+     */
+    @Column(length = 30)
     private String email;
-    /*
-    * 公司名称
-    * */
-    @Column(length = 50)
+    /**
+     * 手机
+     */
+    @Column(length = 80)
+    private String phone;
+    /**
+     * 公司
+     */
+    @Column(length = 80)
     private String companyName;
+    /**
+     * 纳税人识别号
+     */
+    @Column(length = 80)
+    private String taxpayerNumber;
+    /**
+     * 审请时间
+     */
+    private Date createDate;
+    /**
+     * 开票时间
+     */
+    private Date updateDate;
+
     /*
-    * 纳税人识别号
-    * */
-    @Column(length = 50)
-    private String registrationNo;
-    /*
-    * 公司地址
-    * */
+  * 公司地址
+  * */
     @Column(length = 200)
     private String companyAddress;
     /*
@@ -83,44 +105,19 @@ public class Invoice {
     * */
     @Column(length = 50)
     private String bankAccount;
-    /*
-    *  0 待开票  1 开票完成  2 信息变更 3 申请重开 4 已拒绝 5 已重开
-    * */
+
+    /**
+     * 开票状态 0 待开 1 已开 2开票中 3失败
+     */
     private Integer status;
-    /*
-    * 创建时间
-    * */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    private Date createTime;
-    /*
-    * 开票时间
-    * */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    private Date invoiceTime;
 
     /*
-    * 修改时间
-    * */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    private Date updateTime;
-    /*
-    * 订单序列号
-    * */
+       * 操作人
+       * */
     @Column(length = 50)
-    private String orderSerialNo;
-    /*
-    * 订单金额
-    * */
-    private Double payPrice;
+    private String doPerson;
 
-    /*
-    * 油券总值
-    * */
-    private Double oilTotalValue;
-    /*
-    * 是否删除  0 否  1 已删除
-    * */
-    @Column(length = 10)
-    private String isDel;
+    @Column(length = 150)
+    private String invoiceUrl;
 
 }

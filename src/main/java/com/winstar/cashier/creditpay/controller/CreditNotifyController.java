@@ -1,6 +1,5 @@
 package com.winstar.cashier.creditpay.controller;
 
-import com.google.common.collect.Maps;
 import com.winstar.cashier.comm.EnumType;
 import com.winstar.cashier.construction.utils.RequestUtils;
 import com.winstar.cashier.creditpay.config.CreditConfig;
@@ -11,7 +10,6 @@ import com.winstar.cashier.repository.PayLogRepository;
 import com.winstar.cashier.repository.PayOrderRepository;
 import com.winstar.exception.NotFoundException;
 import com.winstar.oil.service.SendOilCouponService;
-import com.winstar.order.entity.OilOrder;
 import com.winstar.order.service.OilOrderService;
 import com.winstar.order.vo.PayInfoVo;
 import com.winstar.utils.WsdUtils;
@@ -19,6 +17,7 @@ import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -99,22 +98,13 @@ public class CreditNotifyController {
             }
             //通知订单那边是否支付成功 ------>>>  回调
             modifyOrder(payOrder,respMap);
-            //通知油卡发送
-            if(payOrder.getOrderOwner().equals("1") && "Y".equals(MapUtils.getString(respMap, "SUCCESS"))){
-                Map<String,String> map = Maps.newHashMap();
-                logger.info("开始通知油卡的发送。。。");
-                map.put("orderId",payOrder.getOrderNumber());
-                OilOrder oilOrder = orderService.getOneOrder(payOrder.getOrderNumber());
-                map.put("shopId",WsdUtils.isEmpty(oilOrder) ? null : oilOrder.getItemId());
-                map.put("accountId",WsdUtils.isEmpty(oilOrder) ? null : oilOrder.getAccountId());
-                sendOilCouponService.checkCard(map);
-            }
         }else{
             savePayLog(respMap,"ERROR","订单已对账！",request);
         }
     }
 
-    private void modifyOrder(PayOrder payOrder,Map<String,String> respMap){
+    @Async
+    private void modifyOrder(PayOrder payOrder,Map<String,String> respMap) throws Exception {
         PayInfoVo payInfoVo = new PayInfoVo();
         payInfoVo.setOrderSerialNumber(payOrder.getOrderNumber());
         payInfoVo.setBankSerialNumber(MapUtils.getString(respMap, "qid"));
@@ -123,6 +113,10 @@ public class CreditNotifyController {
         payInfoVo.setPayType(payOrder.getPayWay());
         payInfoVo.setPayTime(new Date());
         orderService.updateOrderCashier(payInfoVo);
+        if(payOrder.getOrderOwner().equals("1") && "Y".equals(MapUtils.getString(respMap, "SUCCESS"))){
+            logger.info("开始通知油卡的发送。。。");
+            sendOilCouponService.checkCard(payOrder.getOrderNumber());
+        }
     }
 
 }

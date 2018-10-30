@@ -1,10 +1,34 @@
 package com.winstar.order.utils;
 
+import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class DateUtil {
+
+    public static Date getInputDate(String input){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime ldt = LocalDateTime.parse(input, formatter);
+
+        ZoneId zoneId = ZoneId.systemDefault();
+        ZonedDateTime zdt = ldt.atZone(zoneId);
+        Date date = Date.from(zdt.toInstant());
+
+        return date;
+    }
+    /**
+     * 获取半个小时以后的时间
+     */
+    public static Date getTime30(){
+        Calendar beforeTime = Calendar.getInstance();
+        beforeTime.add(Calendar.MINUTE, +30);// 30分钟之后的时间
+        return beforeTime.getTime();
+    }
 
     /**
      * 获取当天开始时间
@@ -33,6 +57,12 @@ public class DateUtil {
         currentDate.set(Calendar.MINUTE, 0);
         currentDate.set(Calendar.SECOND, 0);
         return (Date)currentDate.getTime().clone();
+    }
+
+    public static String getCurrentYear(){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+        Date date = new Date();
+        return sdf.format(date);
     }
 
     /**
@@ -76,6 +106,22 @@ public class DateUtil {
         currentDate.set(Calendar.SECOND, 59);
         return (Date)currentDate.getTime().clone();
     }
+    /**
+     * 获取下一個月结束时间
+     * @return date
+     */
+    public static Date getNextMonthEnd() {
+        Calendar currentDate = new GregorianCalendar();
+        int year = currentDate.get(Calendar.YEAR);
+        currentDate.add(Calendar.MONTH,1);
+        currentDate.set(Calendar.DAY_OF_MONTH,currentDate.getActualMaximum(Calendar.DAY_OF_MONTH));
+        currentDate.set(Calendar.HOUR_OF_DAY, 23);
+        currentDate.set(Calendar.MINUTE, 59);
+        currentDate.set(Calendar.SECOND, 59);
+
+        return (Date)currentDate.getTime().clone();
+    }
+
 
     /**
      * 获取当天23：30：00
@@ -118,6 +164,8 @@ public class DateUtil {
         currentDate.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
         return (Date)currentDate.getTime().clone();
     }
+
+
     /**
      * 获取现在时间
      *
@@ -191,7 +239,7 @@ public class DateUtil {
      * @param amount 数值
      * @return 计算后日期
      */
-    private static Date addInteger(Date date, int dateType, int amount) {
+    public static Date addInteger(Date date, int dateType, int amount) {
         Date myDate = null;
         if (date != null) {
             Calendar calendar = Calendar.getInstance();
@@ -207,7 +255,7 @@ public class DateUtil {
      * @param timestamps 时间long集合
      * @return 日期
      */
-    private static Date getAccurateDate(List<Long> timestamps) {
+    public static Date getAccurateDate(List<Long> timestamps) {
         Date date = null;
         long timestamp = 0;
         Map<Long, long[]> map = new HashMap<Long, long[]>();
@@ -763,6 +811,27 @@ public class DateUtil {
     }
 
     /**
+     * 获取日期的星期。失败返回null。
+     * @param date 日期
+     * @return 星期
+     */
+    /**
+     * 获取当前日期是星期几<br>
+     *
+     * @param dt
+     * @return 当前日期是星期几
+     */
+    public static String getWeekOfDate(Date dt) {
+        String[] weekDays = {"7", "1", "2", "3", "4", "5", "6"};
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(dt);
+        int w = cal.get(Calendar.DAY_OF_WEEK) - 1;
+        if (w < 0)
+            w = 0;
+        return weekDays[w];
+    }
+
+    /**
      * 获取两个日期相差的天数
      * @param date 日期字符串
      * @param otherDate 另一个日期字符串
@@ -802,10 +871,9 @@ public class DateUtil {
         return date1;
     }
 
-    /*public static void main(String[] args) {
-        //System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-
-        //System.out.println();
-    }*/
+    public static  Date getNowDay() throws ParseException {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        return  df.parse(df.format(new Date()));
+    }
 
 }  

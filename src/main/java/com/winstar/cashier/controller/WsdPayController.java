@@ -2,6 +2,8 @@ package com.winstar.cashier.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
+import com.winstar.carLifeMall.entity.CarLifeOrders;
+import com.winstar.carLifeMall.service.CarLifeOrdersService;
 import com.winstar.cashier.comm.EnumType;
 import com.winstar.cashier.construction.sample.PayMoney;
 import com.winstar.cashier.creditpay.pay.CreditPay;
@@ -55,6 +57,9 @@ public class WsdPayController {
     @Autowired
     private OilOrderService orderService;
 
+    @Autowired
+    private CarLifeOrdersService carLifeOrdersService;
+
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ResponseEntity payOrderUrl(
         @RequestBody Map map,
@@ -66,9 +71,31 @@ public class WsdPayController {
         String bankCode = MapUtils.getString(payMap,"bankCode");
         String applyUrl = MapUtils.getString(payMap,"applyUrl");
         String ip = MapUtils.getString(payMap,"ip");
-        OilOrder oilOrder = orderService.getOneOrder(orderNumber);
-        if(WsdUtils.isEmpty(oilOrder)){
-            throw new NotFoundException("orderNumber");
+        String orderOwner = MapUtils.getString(payMap, "orderOwner");
+        long beginTime = System.currentTimeMillis();
+        Double payPrice;
+        if(orderOwner.equals(EnumType.PAY_SHOPNAME_CARSERVICE.value() + "")){
+            CarLifeOrders carLifeOrders = carLifeOrdersService.getCarLifeOrdersBySerialNo(orderNumber);
+            if(WsdUtils.isEmpty(carLifeOrders)){
+                logger.info(orderNumber + "，汽车服务订单不存在！");
+                throw new NotFoundException("orderNumber");
+            }
+            if(carLifeOrders.getIsAvailable().equals("1")){
+                logger.info(orderNumber + "，汽车服务订单已失效！");
+                throw new NotFoundException("orderNumber");
+            }
+            payPrice = carLifeOrders.getPayPrice();
+        }else{
+            OilOrder oilOrder = orderService.getOneOrder(orderNumber);
+            if(WsdUtils.isEmpty(oilOrder)){
+                logger.info(orderNumber + "，油卡服务订单不存在！");
+                throw new NotFoundException("orderNumber");
+            }
+            if(oilOrder.getIsAvailable().equals("1")){
+                logger.info(orderNumber + "，油卡服务订单已失效！");
+                throw new NotFoundException("orderNumber");
+            }
+            payPrice = oilOrder.getPayPrice();
         }
         //判断订单是否是否支付成功过
         List<PayOrder> orders = payOrderService.findByOrderNumberAndState(orderNumber, EnumType.PAY_STATE_SUCCESS.valueStr());
@@ -79,7 +106,7 @@ public class WsdPayController {
             throw new InvalidParameterException("orderNumber已支付");
         }
         //查询订单对象、订单金额，裁决状态，订单来源，回调订单地址
-        payMap.put("orderAmount",oilOrder.getPayPrice());
+        payMap.put("orderAmount",payPrice);
         if(bankCode.equals(EnumType.PAY_BANKCODE_UNIONPAY.valueStr())){
             return null;
         }else if(bankCode.equals(EnumType.PAY_BANKCODE_ALIPAY.valueStr())){
@@ -89,7 +116,15 @@ public class WsdPayController {
         }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION.valueStr())){
             return PayMoney.pay(payMap,request,payOrderService,payLogService);
         }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr())){
-            return CreditPay.pay(payMap,request,payOrderService,payLogService);
+            ResponseEntity entity = CreditPay.pay(payMap,request,payOrderService,payLogService);
+            long endTime = System.currentTimeMillis();
+            logger.info("信用卡整体消耗时间：" + (endTime - beginTime) + "ms");
+            return entity;
+        }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr())){
+            ResponseEntity entity = CreditPay.pay(payMap,request,payOrderService,payLogService);
+            long endTime = System.currentTimeMillis();
+            logger.info("储蓄卡整体消耗时间：" + (endTime - beginTime) + "ms");
+            return entity;
         }
         return null;
     }
@@ -125,7 +160,8 @@ public class WsdPayController {
                 && !bankCode.equals(EnumType.PAY_BANKCODE_UNIONPAY.valueStr())
                 && !bankCode.equals(EnumType.PAY_BANKCODE_ALIPAY.valueStr())
                 && !bankCode.equals(EnumType.PAY_BANKCODE_WECHAT.valueStr())
-                && !bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr())){
+                && !bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr())
+                && !bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr())){
             logger.info("bankCode 参数不合法!");
             PayLog log = new PayLog(orderNumber,"",ip,applyUrl,"","ERROR","支付方式不合法!");
             payLogService.save(log);
@@ -203,9 +239,12 @@ public class WsdPayController {
         }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION.valueStr())){
             payMap.put("payWay", EnumType.PAY_WAY_CONSTRUCTION.value());
             subBankCode = WsdUtils.isEmpty(subBankCode) ? EnumType.PAY_WAY_CONSTRUCTION.valueStr() : subBankCode;
-        }else{
+        }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr())){
             payMap.put("payWay", EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr());
             subBankCode = WsdUtils.isEmpty(subBankCode) ? EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr() : subBankCode;
+        }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr())){
+            payMap.put("payWay", EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr());
+            subBankCode = WsdUtils.isEmpty(subBankCode) ? EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr() : subBankCode;
         }
         return subBankCode;
     }
@@ -224,6 +263,9 @@ public class WsdPayController {
             case "4":
                 payMap.put("payOrderName", EnumType.PAY_SHOPNAME_VALIDATECAR.valueStr());
                 break;
+            case "5":
+                payMap.put("payOrderName", EnumType.PAY_SHOPNAME_CARSERVICE.valueStr());
+                break;
         }
     }
 
@@ -231,8 +273,8 @@ public class WsdPayController {
         if(subBankCode.equals(EnumType.PAY_WAY_WEIXIN_PUBLIC_NUMBER.valueStr())){
             Account account = accountService.findById(accountId);
             logger.info("微信公众号支付openId:" + (WsdUtils.isEmpty(account) ? null : account.getOpenid()));
-            //payMap.put("openId",WsdUtils.isEmpty(account) ? null : account.getOpenid());
-            payMap.put("openId","olQf5t8qj6zXhs4Idms7RfbNa5ek");
+            payMap.put("openId",WsdUtils.isEmpty(account) ? null : account.getOpenid());
+            //payMap.put("openId","olQf5t8qj6zXhs4Idms7RfbNa5ek");
         }
     }
 

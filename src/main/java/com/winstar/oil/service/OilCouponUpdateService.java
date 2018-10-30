@@ -25,20 +25,13 @@ public class OilCouponUpdateService {
     OilCouponRepository oilCouponRepository;
 
     @Transactional
-    public boolean updateOilCoupon(MyOilCoupon myOilCoupon, OilCoupon oilCoupon){
-        try{
-            if(WsdUtils.isNotEmpty(oilCoupon)){
-                oilCoupon.setOilState("1");
-                oilCoupon.setDistributionTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-                oilCouponRepository.save(oilCoupon);
-            }
-            if(WsdUtils.isNotEmpty(myOilCoupon)){
-                myOilCoupon.setPan(oilCoupon.getPan());
-                myOilCouponRepository.save(myOilCoupon);
-            }
-            return true;
-        }catch (Exception e){
-            return false;
+    public void updateOilCoupon(MyOilCoupon myOilCoupon, OilCoupon oilCoupon){
+        if(WsdUtils.isNotEmpty(oilCoupon) && WsdUtils.isNotEmpty(myOilCoupon)){
+            oilCoupon.setOilState("1");
+            oilCoupon.setDistributionTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+            oilCouponRepository.save(oilCoupon);
+            myOilCoupon.setPan(oilCoupon.getPan());
+            myOilCouponRepository.save(myOilCoupon);
         }
     }
 

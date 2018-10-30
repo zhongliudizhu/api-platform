@@ -1,6 +1,8 @@
 package com.winstar.oil.repository;
 
 import com.winstar.oil.entity.MyOilCoupon;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -20,7 +22,8 @@ public interface MyOilCouponRepository extends JpaSpecificationExecutor<MyOilCou
                     "sum(CASE WHEN use_state = '0' THEN 1 ELSE 0 END) as '剩余劵数'," +
                     "sum(CASE WHEN use_state = '0' THEN t.pan_amt ELSE 0 END) as '剩余金额'," +
                     "t.shop_price '总价',t.order_id as '订单号'," +
-                    "t.send_state as '赠送状态' " +
+                    "t.send_state as '赠送状态'," +
+                    "t.create_time " +
                     "from cbc_my_oil_coupon t " +
                     "where t.account_id=?1 " +
                     "GROUP BY t.order_id " +
@@ -33,5 +36,7 @@ public interface MyOilCouponRepository extends JpaSpecificationExecutor<MyOilCou
     MyOilCoupon findByPan(String pan);
 
     List<MyOilCoupon> findByOrderIdOrderByUseStateAsc(String orderId);
+
+    Page<MyOilCoupon> findByAccountIdAndUseStateAndIdNotIn(String accountId, String useState, List<String> ids, Pageable pageable);
 
 }

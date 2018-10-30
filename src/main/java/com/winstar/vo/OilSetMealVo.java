@@ -14,6 +14,7 @@ public class OilSetMealVo {
     private Double surplusPrice;//余额
     private int totalNumber;//总张数
     private Double totalPrice;//总价
+    private String createTime;
 
     public String getOrderId() {
         return orderId;
@@ -69,5 +70,13 @@ public class OilSetMealVo {
 
     public void setTotalPrice(Double totalPrice) {
         this.totalPrice = totalPrice;
+    }
+
+    public String getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(String createTime) {
+        this.createTime = createTime;
     }
 }

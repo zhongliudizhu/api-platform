@@ -1,157 +1,246 @@
 package com.winstar.invoice.controller;
 
-import com.winstar.exception.MissingParameterException;
-import com.winstar.exception.NotFoundException;
-import com.winstar.exception.NotRuleException;
+import com.winstar.exception.*;
 import com.winstar.invoice.entity.Invoice;
+import com.winstar.invoice.entity.InvoiceItem;
+import com.winstar.invoice.entity.InvoiceStockSwitch;
+import com.winstar.invoice.repository.InvoiceItemRepository;
 import com.winstar.invoice.repository.InvoiceRepository;
-import com.winstar.invoice.utils.InvoiceUtil;
+import com.winstar.invoice.repository.InvoiceStockSwitchRepository;
+import com.winstar.oil.entity.MyOilCoupon;
+import com.winstar.oil.service.MyOilCouponService;
 import com.winstar.order.entity.OilOrder;
-import com.winstar.order.repository.OilOrderRepository;
+import com.winstar.order.service.OilOrderService;
+import com.winstar.user.service.AccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.ObjectUtils;
+import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author shoo on 2017/10/23 15:16.
- *  发票
+ * 发票
  */
 @RestController
 @RequestMapping("/api/v1/orders/invoice")
 public class InvoiceController {
     public static final Logger logger = LoggerFactory.getLogger(InvoiceController.class);
     @Autowired
-    private InvoiceRepository invoiceRepository;
+    InvoiceRepository invoiceRepository;
+
     @Autowired
-    private OilOrderRepository oilOrderRepository;
+    MyOilCouponService myOilCouponService;
 
-    /*
-    * 保存发票信息
-    * */
-    @RequestMapping(method = RequestMethod.POST,produces = "application/json;charset=utf-8")
-    public ResponseEntity saveInvoice(@RequestBody Invoice invoice, HttpServletRequest request, @RequestParam String orderSerialNo)
-            throws MissingParameterException, NotFoundException, NotRuleException {
+    @Autowired
+    AccountService accountService;
 
-        if(StringUtils.isEmpty(orderSerialNo)){
-            throw new MissingParameterException("orderSerialNo.invoice");
-        }
+    @Autowired
+    InvoiceItemRepository invoiceItemRepository;
+    @Autowired
+    OilOrderService oilOrderService;
+    @Autowired
+    InvoiceStockSwitchRepository invoiceStockSwitchRepository;
 
-        Invoice origin = invoiceRepository.findByOrderSerialNo(orderSerialNo);
-        if(!ObjectUtils.isEmpty(origin)){
-            throw new NotRuleException("alreadyExist.invoice");
-        }
-
-        String paramStr = InvoiceUtil.judgeParas(invoice);
-        if(!paramStr.equals("ok")){
-            throw new MissingParameterException(paramStr+".invoice");
-        }
-
-        OilOrder oilOrder = oilOrderRepository.findBySerialNumber(orderSerialNo);
-        if(ObjectUtils.isEmpty(oilOrder)){
-            throw new NotFoundException("oilOrder.invoice");
-        }
-        if(oilOrder.getPayStatus()!=1){
-                throw new NotRuleException("notPay.invoice");
-        }
-        invoice = InvoiceUtil.initInvoice(invoice,oilOrder);
-        invoice = invoiceRepository.save(invoice);
-        return  new ResponseEntity(invoice, HttpStatus.OK);
-    }
-
-    /*
-    * 查询发票
-    * */
-    @RequestMapping(method = RequestMethod.GET,produces = "application/json;charset=utf-8")
-    public ResponseEntity getOne(@RequestParam String orderSerialNo)
-            throws MissingParameterException, NotFoundException, NotRuleException {
-
-        if(StringUtils.isEmpty(orderSerialNo)){
-            throw new MissingParameterException("orderSerialNo.invoice");
-        }
-
-        Invoice origin = invoiceRepository.findByOrderSerialNo(orderSerialNo);
-        if(ObjectUtils.isEmpty(origin)){
-            throw new NotFoundException("invoice.invoice");
-        }
-        return  new ResponseEntity(origin, HttpStatus.OK);
-    }
-
-    /***
-     *修改发票信息
+    /**
+     * 校验可用发票库存
+     *
+     * @return
      */
-    @RequestMapping(value = "" ,method = RequestMethod.PUT,produces = "application/json;charset=utf-8")
-    public ResponseEntity updateInvoice(@RequestBody Invoice invoice, HttpServletRequest request, @RequestParam String orderSerialNo)
-            throws MissingParameterException, NotFoundException, NotRuleException {
-
-        if(StringUtils.isEmpty(orderSerialNo)){
-            throw new MissingParameterException("orderSerialNo.invoice");
-        }
-        Invoice origin = invoiceRepository.findByOrderSerialNo(orderSerialNo);
-        if(ObjectUtils.isEmpty(origin)){
-           throw new NotFoundException("invoice.invoice");
-        }
-        if(origin.getStatus()!= 0){
-            throw new NotRuleException("cannotEdit.invoice");
-        }
-        BeanUtils.copyProperties(invoice,origin,new String[]{"id","oilTotalValue","payPrice","orderSerialNo","createTime","status"});
-        String paramStr = InvoiceUtil.judgeParas(invoice);
-        if(!paramStr.equals("ok")){
-            throw new MissingParameterException(paramStr+".invoice");
-        }
-        origin.setUpdateTime(new Date());
-        origin.setIsDel("0");
-        invoice = invoiceRepository.save(origin);
-        return  new ResponseEntity(invoice, HttpStatus.OK);
+    @GetMapping("checkStock")
+    public InvoiceStockSwitch checkStock() throws NotRuleException {
+        return checkInvoiceStock();
     }
 
-    /***
-     *重开发票
+    private InvoiceStockSwitch checkInvoiceStock() throws NotRuleException {
+        InvoiceStockSwitch invoiceStockSwitch = invoiceStockSwitchRepository.findByType(InvoiceStockSwitch.STATUS_ON);
+        if (null == invoiceStockSwitch)
+            throw new NotRuleException("noStock.makeInvoice");
+        return invoiceStockSwitch;
+    }
+
+    /**
+     * 未开发票的油卷
+     *
+     * @return
+     * @throws MissingParameterException
+     * @throws InvalidParameterException
+     * @throws NotRuleException
+     * @throws NotFoundException
+     * @throws ServiceUnavailableException
      */
-    @RequestMapping(value = "/reInvoice" ,method = RequestMethod.PUT,produces = "application/json;charset=utf-8")
-    public ResponseEntity reInvoice(@RequestBody Invoice invoice, HttpServletRequest request, @RequestParam String orderSerialNo)
-            throws MissingParameterException, NotFoundException, NotRuleException {
+    @RequestMapping(value = "/query", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public List<MyOilCoupon> query(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") Integer nextPage,
+            @RequestParam(defaultValue = "5") Integer pageSize
+    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
+            ServiceUnavailableException {
+        String accountId = accountService.getAccountId(request);
+        if (StringUtils.isEmpty(accountId)) throw new NotFoundException("MyOilCoupon");
+        List<InvoiceItem> invoices = invoiceItemRepository.findByAccountId(accountId);
+        List<String> ids = new ArrayList<>();
+        if (invoices.size() > 0) {
+            for (InvoiceItem invoice : invoices) {
+                ids.add(invoice.getOilId());
+            }
+        } else {
+            ids.add("");
+        }
+        Sort sort = new Sort(Sort.Direction.DESC, "useDate");
+        Pageable pageable = new PageRequest(nextPage, pageSize, sort);
 
-        if(StringUtils.isEmpty(orderSerialNo)){
-            throw new MissingParameterException("orderSerialNo.invoice");
-        }
-        Invoice origin = invoiceRepository.findByOrderSerialNo(orderSerialNo);
-        if(ObjectUtils.isEmpty(origin)){
-            throw new NotFoundException("invoice.invoice");
-        }
-        if(origin.getStatus()!=1){
-            throw new NotRuleException("notFinish.invoice");
-        }
-        if(invoice.getType()!=origin.getType()){
-            throw new NotRuleException("typeCannotEdit.invoice");
-        }
-        String paramStr = InvoiceUtil.judgeParas(invoice);
-        if(!paramStr.equals("ok")){
-            throw new MissingParameterException(paramStr+".invoice");
-        }
-        if(!StringUtils.isEmpty(invoice.getPersonName())&&!invoice.getPersonName().equals(origin.getPersonName())){
-            throw new NotRuleException("personNameCannotEdit.invoice");
-        }
-        //备份原始发票:即设置为已删除
-        Invoice newInvoice = new Invoice();
-        BeanUtils.copyProperties(origin,newInvoice,new String[]{"id"});
-        newInvoice.setIsDel("1");
-        invoiceRepository.save(newInvoice);
+        Date now = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(now);
+        calendar.add(Calendar.DATE, -3);//三天前
+        Date endTime = calendar.getTime();
 
-        BeanUtils.copyProperties(invoice,origin,new String[]{"id","oilTotalValue","payPrice","orderSerialNo","createTime"});
-        origin.setUpdateTime(new Date());
-        origin.setStatus(3);//申请重开
-        origin.setIsDel("0");
-        invoice = invoiceRepository.save(origin);
-        return  new ResponseEntity(invoice, HttpStatus.OK);
+        calendar.setTime(now);
+        calendar.add(Calendar.MONTH, -3);//三月前
+        Date startTime = calendar.getTime();
+
+        Page<MyOilCoupon> page = myOilCouponService.findUsedCoupon(accountId, startTime, endTime, ids, pageable);
+//        Page<MyOilCoupon> page = myOilCouponService.findUsedCoupon(accountId,ids, pageable);
+        List<MyOilCoupon> list = page.getContent();
+
+        if (list.size() == 0) throw new NotFoundException("MyOilCoupon");
+        for (MyOilCoupon coupon : list) {
+            coupon = this.reckon(coupon, coupon.getOrderId());
+        }
+
+        return list;
+    }
+
+    public MyOilCoupon reckon(MyOilCoupon myOilCoupon, String orderId) throws NotFoundException {
+        List<MyOilCoupon> oils = myOilCouponService.findByOrderId(orderId);
+        Integer num = oils.size();
+        OilOrder order = oilOrderService.getOneOrder(orderId);
+        BigDecimal payprice = new BigDecimal(order.getPayPrice());
+        BigDecimal p = new BigDecimal(num);
+        BigDecimal payPrice = payprice.divide(p, 2, BigDecimal.ROUND_HALF_UP);
+        myOilCoupon.setPayPrice(payPrice.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+
+        return myOilCoupon;
+    }
+
+    /**
+     * 审请开票
+     */
+    @RequestMapping(value = "/makeInvoice", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public Invoice makeInvoice(
+            HttpServletRequest request,
+            String[] ids, Integer type, String name, String oilType, String email, String phone, String companyName,
+            String
+                    taxpayerNumber, String companyAddress, String telephone, String depositBank, String bankAccount
+    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
+            ServiceUnavailableException {
+        checkInvoiceStock();
+
+        String accountId = accountService.getAccountId(request);
+        if (StringUtils.isEmpty(accountId)) throw new NotFoundException("MyOilCoupon");
+        if (type == null) throw new MissingParameterException("type");
+        if (ids == null) throw new MissingParameterException("ids");
+        if (ids.length == 0) throw new MissingParameterException("ids");
+        if (oilType == null) throw new MissingParameterException("oilType");
+        if (email == null) throw new MissingParameterException("email");
+        if (phone == null) throw new MissingParameterException("phone");
+        Invoice invoice = new Invoice();
+        if (type == 1) {
+            if (name == null) throw new MissingParameterException("name");
+            invoice.setName(name);
+        }
+
+        if (type == 2) {
+            if (companyName == null) throw new MissingParameterException("companyName");
+            if (taxpayerNumber == null) throw new MissingParameterException("taxpayerNumber");
+            invoice.setCompanyName(companyName);
+            invoice.setTaxpayerNumber(taxpayerNumber);
+        }
+        BigDecimal price = new BigDecimal(0.00);
+        for (String id : ids) {
+            InvoiceItem item = invoiceItemRepository.findByOilId(id);
+            if (item != null) throw new NotRuleException("this [" + id + "] has been drawn");
+            MyOilCoupon myOilCoupon = myOilCouponService.findOne(id);
+            if (myOilCoupon == null) throw new NotFoundException(id);
+            myOilCoupon = this.reckon(myOilCoupon, myOilCoupon.getOrderId());
+            BigDecimal p = new BigDecimal(myOilCoupon.getPayPrice());
+            price = price.add(p);
+        }
+        invoice.setPrice(price.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+        invoice.setAccountId(accountId);
+        invoice.setType(type);
+        invoice.setOilType(oilType);
+        invoice.setEmail(email);
+        invoice.setPhone(phone);
+        invoice.setStatus(0);
+        invoice.setCreateDate(new Date());
+        if (!StringUtils.isEmpty(telephone)) invoice.setTelephone(telephone);
+        if (!StringUtils.isEmpty(companyAddress)) invoice.setCompanyAddress(companyAddress);
+        if (!StringUtils.isEmpty(depositBank)) invoice.setDepositBank(depositBank);
+        if (!StringUtils.isEmpty(bankAccount)) invoice.setBankAccount(bankAccount);
+
+        Invoice in = invoiceRepository.save(invoice);
+        for (String id : ids) {
+            MyOilCoupon myOilCoupon = myOilCouponService.findOne(id);
+            InvoiceItem item = new InvoiceItem();
+            item.setInvoiceId(in.getId());
+            item.setAccountId(accountId);
+            item.setOilId(id);
+            BigDecimal p = new BigDecimal(myOilCoupon.getPayPrice());
+            item.setSalePrice(p.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            invoiceItemRepository.save(item);
+        }
+
+        return in;
+
+    }
+
+    /**
+     * 查询我开票历史
+     *
+     * @param request
+     * @param nextPage
+     * @param pageSize
+     * @return
+     * @throws MissingParameterException
+     * @throws InvalidParameterException
+     * @throws NotRuleException
+     * @throws NotFoundException
+     * @throws ServiceUnavailableException
+     */
+    @RequestMapping(value = "/history", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public List<Invoice> history(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") Integer nextPage,
+            @RequestParam(defaultValue = "5") Integer pageSize
+    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
+            ServiceUnavailableException {
+        String accountId = accountService.getAccountId(request);
+
+        Sort sort = new Sort(Sort.Direction.DESC, "createDate");
+        Pageable pageable = new PageRequest(nextPage, pageSize, sort);
+
+        Page<Invoice> page = invoiceRepository.findByAccountId(accountId, pageable);
+        if (page.getContent().size() == 0) throw new NotFoundException("Invoice");
+
+        return page.getContent();
     }
 
 }

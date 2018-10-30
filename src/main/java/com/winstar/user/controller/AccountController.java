@@ -1,6 +1,6 @@
 package com.winstar.user.controller;
 
-import com.winstar.exception.NotRuleException;
+import com.winstar.exception.*;
 import com.winstar.user.entity.AccessToken;
 import com.winstar.user.entity.Account;
 import com.winstar.user.param.AccountParam;
@@ -8,12 +8,12 @@ import com.winstar.user.utils.ServiceManager;
 import com.winstar.user.utils.SimpleResult;
 import com.winstar.user.utils.UUIDUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
-
 
 /**
  * @author laohu
@@ -29,7 +29,7 @@ public class AccountController {
      * @return AccessToken AccessToken
      * @throws NotRuleException NotRuleException
      */
-    @PostMapping(value = "/getToken", produces = "application/json")
+    @PostMapping(value = "/getToken", produces = MediaType.APPLICATION_JSON_VALUE)
     public AccessToken getToken(@RequestBody AccountParam accountParam) throws NotRuleException {
         checkGetTokenRule(accountParam);
         Account account = ServiceManager.accountRepository.findByOpenid(accountParam.getOpenid());
@@ -38,11 +38,11 @@ public class AccountController {
             return createAccessToken(accountSaved);
         }
         AccessToken accessToken = ServiceManager.accessTokenRepository.findByAccountId(account.getId());
-        if (null != accessToken) {
-            return updateAccessToken(accessToken);
-        } else {
+        if (null == accessToken) {
             return createAccessToken(account);
         }
+
+        return accessToken;
     }
 
     /**
@@ -52,7 +52,7 @@ public class AccountController {
      * @return AccessToken AccessToken
      * @throws NotRuleException NotRuleException
      */
-    @PostMapping(value = "/authToken", produces = "application/json")
+    @PostMapping(value = "/authToken", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity authToken(String tokenId) throws NotRuleException {
         if (StringUtils.isEmpty(tokenId))
             throw new NotRuleException("tokenId");
@@ -63,9 +63,6 @@ public class AccountController {
         }
         return new ResponseEntity<>(accessToken, HttpStatus.OK);
     }
-
-
-
 
     /**
      * 更新token信息

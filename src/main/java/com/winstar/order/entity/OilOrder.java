@@ -12,7 +12,7 @@ import java.util.Date;
 
 /**
  * @author shoo on 2017/7/6 16:13.
- *  -- 订单 --
+ *  -- 油券订单 --
  */
 @NoArgsConstructor
 @Setter

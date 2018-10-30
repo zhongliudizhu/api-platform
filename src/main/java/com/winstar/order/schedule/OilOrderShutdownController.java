@@ -2,7 +2,9 @@ package com.winstar.order.schedule;
 
 import com.winstar.coupon.service.CouponService;
 import com.winstar.exception.NotRuleException;
+import com.winstar.order.entity.FlowOrder;
 import com.winstar.order.entity.OilOrder;
+import com.winstar.order.repository.FlowOrderRepository;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.DateUtil;
 import org.slf4j.Logger;
@@ -34,6 +36,8 @@ public class OilOrderShutdownController {
     private OilOrderRepository oilOrderRepository;
     @Autowired
     private CouponService couponService;
+    @Autowired
+    private FlowOrderRepository flowOrderRepository;
 
 
     @Scheduled(cron = "0 0/30 * * * ?")
@@ -53,6 +57,25 @@ public class OilOrderShutdownController {
         }
         oilOrderRepository.save(orders);
         logger.info("关闭油券订单数量："+orders.size());
+    }
+
+    @Scheduled(cron = "0 0/30 * * * ?")
+    public void shutdownFlowOrder() throws NotRuleException {
+        Date end = DateUtil.addHour(DateUtil.getNowDate(),-1);
+        Date begin = DateUtil.addYear(end,-1);
+        //查出未付款未关闭的订单
+        List<FlowOrder> flowOrders = flowOrderRepository.findByIsAvailableAndStatusAndCreateTimeBetween("0", 1,begin,end);
+        for (FlowOrder flowOrder:flowOrders
+                ) {
+            flowOrder.setIsAvailable("1");
+            flowOrder.setUpdateTime(new Date());
+            if(!StringUtils.isEmpty(flowOrder.getCouponId())){
+                //1.返还优惠券
+                couponService.cancelMyCoupon(flowOrder.getCouponId());
+            }
+        }
+        flowOrderRepository.save(flowOrders);
+        logger.info("关闭流量订单数量："+flowOrders.size());
     }
 
 }

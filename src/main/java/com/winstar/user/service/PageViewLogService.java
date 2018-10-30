@@ -6,6 +6,7 @@ import com.winstar.user.repository.PageViewLogRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -41,5 +42,16 @@ public class PageViewLogService {
         pageViewLog.setCreateTime(new Date());
         PageViewLog pageViewLogSaved = pageViewLogRepository.save(pageViewLog);
         return pageViewLogSaved;
+    }
+
+    /**
+     * 保存页面访问日志
+     *
+     * @param pageViewLog
+     * @return
+     */
+    @Async
+    public PageViewLog saveAsyncPageViewLog(PageViewLog pageViewLog) throws NotRuleException {
+        return savePageViewLog(pageViewLog);
     }
 }

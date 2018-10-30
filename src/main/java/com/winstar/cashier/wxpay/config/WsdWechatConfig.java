@@ -30,6 +30,11 @@ public class WsdWechatConfig {
     private String mchId_wechat = "1249655701";
 
     /**
+     * 微信公众号支付的商户号
+     */
+    private String mchId_wechat_test = "1504450061";
+
+    /**
      * 公众号Id
      */
     private String appId = "wxcf71d6832b8e3ebe";
@@ -38,6 +43,16 @@ public class WsdWechatConfig {
      * 公众号密钥
      */
     private String appSecret = "9401a98f94e021d3f006c3831f8d0e05";
+
+    /**
+     * 公众号Id
+     */
+    private String appId_test = "wx47a21bee64eb7a6c";
+
+    /**
+     * 公众号密钥
+     */
+    private String appSecret_test = "43dd74d136a23e8467e5866f4757a3ec";
 
     /**
      * 小程序Id
@@ -87,11 +102,11 @@ public class WsdWechatConfig {
     /**
      * 微信回调地址(测试)
      */
-    private String backUrl_test = "http://develop.sxeccellentdriving.com/api/v1/cbc/wxPay/notify";
+    private String backUrl_test = "http://wechat.sxeccellentdriving.com/cbc-api/api/v1/cbc/wxPay/notify";
 
     /**
      * 微信回调地址(正式)
      */
-    private String backUrl_prod = "https://mobile.sxwinstar.net/api/v1/cbc/wxPay/notify";
+    private String backUrl_prod = "https://mobile.sxwinstar.net/ccb-api/api/v1/cbc/wxPay/notify";
 
 }

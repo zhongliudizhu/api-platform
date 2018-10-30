@@ -1,11 +1,13 @@
 package com.winstar.cashier.creditpay.pay;
 
 import com.google.common.collect.Maps;
+import com.winstar.cashier.comm.EnumType;
 import com.winstar.cashier.construction.utils.AppUtils;
 import com.winstar.cashier.construction.utils.DateUtil;
 import com.winstar.cashier.construction.utils.PayConfPC;
 import com.winstar.cashier.construction.utils.PayUtils;
 import com.winstar.cashier.creditpay.config.CreditConfig;
+import com.winstar.cashier.creditpay.config.DebitConfig;
 import com.winstar.cashier.entity.PayLog;
 import com.winstar.cashier.entity.PayOrder;
 import com.winstar.cashier.repository.PayLogRepository;
@@ -41,6 +43,7 @@ public class CreditPay {
     private static final Logger logger = LoggerFactory.getLogger(CreditPay.class);
 
     public static ResponseEntity pay(Map<String,Object> payMap,HttpServletRequest request, PayOrderRepository payOrderRepository, PayLogRepository payLogRepository){
+        long beginTime = System.currentTimeMillis();
         PayOrder payOrder = new PayOrder();
         payOrder.setOrderNumber(MapUtils.getString(payMap,"orderNumber"));
         payOrder.setPayOrderNumber(DateUtil.currentTimeToSS() + WsdUtils.getRandomNumber(8));
@@ -63,22 +66,24 @@ public class CreditPay {
         payOrder.setOrderOwner(MapUtils.getString(payMap,"orderOwner"));
         payOrder.setSubPayWay(MapUtils.getString(payMap,"subPayWay"));
         payOrder = payOrderRepository.save(payOrder);
-        return payment(getReqMap(payOrder.getPayOrderNumber(),MapUtils.getString(payMap,"orderAmount")),MapUtils.getString(payMap,"orderNumber"),MapUtils.getString(payMap,"applyUrl"), payLogRepository);
+        long endTime = System.currentTimeMillis();
+        logger.info("生成支付订单消耗时间：" + (endTime - beginTime) + "ms");
+        return payment(getReqMap(payOrder.getPayOrderNumber(),MapUtils.getString(payMap,"orderAmount"),MapUtils.getString(payMap,"bankCode")),MapUtils.getString(payMap,"orderNumber"),MapUtils.getString(payMap,"applyUrl"), payLogRepository);
     }
 
-    private static Map<String, String> getReqMap(String orderId, String payment) {
+    private static Map<String, String> getReqMap(String orderId, String payment, String bankCode) {
         Map<String, String> reqMap = Maps.newHashMap();
-        reqMap.put("MERCHANTID", CreditConfig.merchantid);
-        reqMap.put("POSID", CreditConfig.posid);
-        reqMap.put("BRANCHID", CreditConfig.branchid);
+        reqMap.put("MERCHANTID", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.merchantid : DebitConfig.merchantid);
+        reqMap.put("POSID", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.posid : DebitConfig.posid);
+        reqMap.put("BRANCHID", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.branchid : DebitConfig.branchid);
         reqMap.put("ORDERID", orderId);
         reqMap.put("PAYMENT", payment);
-        reqMap.put("CURCODE", CreditConfig.curcode);
-        reqMap.put("TXCODE", CreditConfig.txcode);
+        reqMap.put("CURCODE", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.curcode : DebitConfig.curcode);
+        reqMap.put("TXCODE", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.txcode : DebitConfig.txcode);
         reqMap.put("REMARK1", "");
         reqMap.put("REMARK2", "");
         reqMap.put("TYPE", "1");
-        reqMap.put("PUB", CreditConfig.pubkey30);
+        reqMap.put("PUB", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.pubkey30 : DebitConfig.pubkey30);
         reqMap.put("GATEWAY", "");
         reqMap.put("CLIENTIP", profilesActive ? CreditConfig.clientIp_prod : CreditConfig.clientIp_test);
         reqMap.put("REGINFO", "");
@@ -95,6 +100,7 @@ public class CreditPay {
      * @return ResponseEntity
      */
     private static ResponseEntity payment(Map<String, String> reqMap, String orderNumber, String applyUrl, PayLogRepository payLogRepository){
+        long beginTime = System.currentTimeMillis();
         //定义接口参数
         StringBuilder formbuffer = new StringBuilder();
         String[] paramKeys = new String[]{
@@ -117,6 +123,8 @@ public class CreditPay {
         //返回Map集合数据
         Map<String,String> retmap = Maps.newHashMap();
         retmap.put("formStr", formbuffer.toString());
+        long endTime = System.currentTimeMillis();
+        logger.info("生成表单时间：" + (endTime - beginTime) + "ms");
         return new ResponseEntity<>(retmap, HttpStatus.OK);
     }
 

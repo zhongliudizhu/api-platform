@@ -5,6 +5,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
 
 /**
  * 名称： OilCouponRepository
@@ -15,5 +18,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public interface OilCouponRepository extends JpaSpecificationExecutor<OilCoupon>,JpaRepository<OilCoupon,String> {
 
     Page<OilCoupon> findByPanAmtAndOilState(Double panAmt, String oilState, Pageable pageable);
+
+    @Query(value = "select * from cbc_oil_coupon where pan_amt=?1 and oil_state=0 order by RAND() limit 50", nativeQuery = true)
+    List<OilCoupon> findRandomOilCoupons(Double panAmt);
 
 }
