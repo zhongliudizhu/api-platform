@@ -3,6 +3,7 @@ package com.winstar.oil.controller;
 import com.google.common.collect.Maps;
 import com.winstar.ActiveOilCoupon;
 import com.winstar.cashier.comm.EnumType;
+import com.winstar.cashier.construction.utils.Arith;
 import com.winstar.cashier.entity.PayOrder;
 import com.winstar.cashier.repository.PayOrderRepository;
 import com.winstar.exception.MissingParameterException;
@@ -112,9 +113,30 @@ public class MyOilCouponController {
             return new ResponseEntity<>(resultMap,HttpStatus.OK);
         }
         List<MyOilCoupon> myOilCoupons = myOilCouponRepository.findByOrderIdOrderByUseStateAsc(orderId);
-        if(WsdUtils.isNotEmpty(myOilCoupons) && orders.size() > 0){
-            resultMap.put("status","FAIL");
-            resultMap.put("result", "该订单已发券！");
+        if(WsdUtils.isNotEmpty(myOilCoupons) && myOilCoupons.size() > 0){
+            double number = myOilCoupons.get(0).getShopPrice()/100 - myOilCoupons.size();
+            if(number > 0){
+                MyOilCoupon mc = myOilCoupons.get(0);
+                List<MyOilCoupon> myOilCouponList = new ArrayList<>();
+                for (int i=0;i<number;i++){
+                    MyOilCoupon myOilCoupon = new MyOilCoupon();
+                    myOilCoupon.setAccountId(mc.getAccountId());
+                    myOilCoupon.setCreateTime(mc.getCreateTime());
+                    myOilCoupon.setOrderId(mc.getOrderId());
+                    myOilCoupon.setPanAmt(mc.getPanAmt());
+                    myOilCoupon.setSendState(mc.getSendState());
+                    myOilCoupon.setUseState("0");
+                    myOilCoupon.setShopId(mc.getShopId());
+                    myOilCoupon.setShopPrice(mc.getShopPrice());
+                    myOilCouponList.add(myOilCoupon);
+                }
+                myOilCouponRepository.save(myOilCouponList);
+                resultMap.put("status","OK");
+                resultMap.put("result", "该订单已修复！");
+            }else{
+                resultMap.put("status","FAIL");
+                resultMap.put("result", "该订单已发券！");
+            }
             return new ResponseEntity<>(resultMap,HttpStatus.OK);
         }
         //如果订单状态是未支付，则修改为支付成功状态
@@ -388,6 +410,18 @@ public class MyOilCouponController {
             myOilCoupon.setUseState(WsdUtils.isNotEmpty(useState) ? useState : "0");
             myOilCoupon.setTId(WsdUtils.isNotEmpty(tid) ? tid : null);
             myOilCouponRepository.save(myOilCoupon);
+        }
+    }
+
+    @RequestMapping(value = "/deleteOilCoupon", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    @CrossOrigin
+    public void deleteOilCoupon(
+        @RequestParam String id
+    ) throws Exception {
+        MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
+        if (WsdUtils.isNotEmpty(myOilCoupon)) {
+            myOilCouponRepository.delete(myOilCoupon);
         }
     }
 
