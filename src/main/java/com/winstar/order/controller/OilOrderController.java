@@ -2,7 +2,6 @@ package com.winstar.order.controller;
 
 import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
 import com.winstar.cashier.construction.utils.Arith;
-
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.couponActivity.utils.ActivityIdEnum;
@@ -17,7 +16,6 @@ import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
 import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
-import com.winstar.user.utils.ServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -150,9 +148,9 @@ public class OilOrderController {
                 logger.error("活动一商品，有未关闭订单");
                 throw new NotRuleException("haveNotPay.order");
             }
-            String canBuySeckill = OilOrderUtil.judgeActivity(accountId, "201");
+            String canBuySeckill = OilOrderUtil.judgeActivitySecKill(accountId, "201");
             if (canBuySeckill.equals("1")) {
-                logger.error("活动201，每用户一个月只能买一次");
+                logger.error("活动201，每用户一周只能买一次");
                 throw new NotRuleException("oneMonthOnce.order");
             } else if (canBuySeckill.equals("2")) {
                 logger.error("活动201，有未关闭订单");

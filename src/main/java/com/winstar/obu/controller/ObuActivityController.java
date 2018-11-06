@@ -1,24 +1,21 @@
 package com.winstar.obu.controller;
 
-import com.winstar.ClientErrorHandler;
-import com.winstar.couponActivity.entity.WhiteList;
-import com.winstar.couponActivity.utils.TimeUtil;
+import com.winstar.couponActivity.repository.WhiteListRepository;
 import com.winstar.exception.InvalidParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.exception.ServiceUnavailableException;
 import com.winstar.obu.entity.*;
-import com.winstar.obu.repository.*;
+import com.winstar.obu.repository.ObuAccountRepository;
+import com.winstar.obu.repository.ObuConfigRepository;
+import com.winstar.obu.repository.ObuRepository;
+import com.winstar.obu.repository.ObuWhiteListRepository;
 import com.winstar.obu.service.ObuDotService;
 import com.winstar.obu.service.ObuTokenService;
-import com.winstar.obu.utils.Result;
 import com.winstar.obu.utils.SendSmsRequest;
 import com.winstar.obu.utils.SmsUtil;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.StringFormatUtils;
-import com.winstar.user.entity.AccessToken;
-import com.winstar.user.entity.Account;
-import com.winstar.user.param.AccountParam;
 import com.winstar.user.param.CCBAuthParam;
 import com.winstar.user.param.MsgContent;
 import com.winstar.user.param.UpdateAccountParam;
@@ -31,25 +28,18 @@ import com.winstar.user.vo.SendVerifyCodeMsgResult;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.repository.cdi.Eager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static com.winstar.user.utils.ServiceManager.accountService;
 
 /**
  * ObuActivityController
@@ -76,6 +66,8 @@ public class ObuActivityController {
     ObuAccountRepository obuAccountRepository;
     @Autowired
     ObuTokenService obuTokenService;
+    @Autowired
+    WhiteListRepository whiteListRepository;
     @Value("${send_sms_url}")
     String sendSmsUrl;
     @Value("${verify_sms_url}")
@@ -168,7 +160,7 @@ public class ObuActivityController {
 
 
     /**
-     * 发送验证码(建行短信服务)
+     * OBU发送验证码(建行短信服务)
      *
      * @param infoCard
      * @param phone
@@ -179,9 +171,16 @@ public class ObuActivityController {
      * @throws ServiceUnavailableException
      */
     @PostMapping(value = "/sendAuthMsg", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity sendAuth(@RequestParam String infoCard, @RequestParam String phone, HttpServletRequest request)
+    public ResponseEntity sendAuth(@RequestParam String driverLicense, @RequestParam String phone,String infoCard,HttpServletRequest request)
             throws NotRuleException {
-
+        driverLicense="%"+driverLicense;
+        //OBU白名单
+        ObuWhiteList obuWhiteListcardNumber = obuWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
+        if(ObjectUtils.isEmpty(obuWhiteListcardNumber)){
+            throw new NotRuleException("obu.notWhiteLists");
+        }else {
+            infoCard = obuWhiteListcardNumber.getCardNumber();
+        }
         MsgContent mc = new MsgContent();
         mc.setKh(infoCard);
         if(!StringUtils.isEmpty(phone)){
@@ -218,7 +217,6 @@ public class ObuActivityController {
     @RequestMapping(value = "check", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     public ObuInfo checkObu(HttpServletRequest request,
                             String driverLicense,
-                            String infoCard,
                             String phoneNumber,
                             String msgVerifyCode,
                             String msgVerifyId) throws NotRuleException, NotFoundException, ParseException {
@@ -234,9 +232,6 @@ public class ObuActivityController {
         if(StringUtils.isEmpty(driverLicense)){
             throw new NotRuleException("obu.driverLicense");
         }
-        if(StringUtils.isEmpty(infoCard)){
-            throw new NotRuleException("obu.infoCard");
-        }
         if(StringUtils.isEmpty(phoneNumber)){
             throw new NotRuleException("obu.phoneNumber");
         }
@@ -245,6 +240,16 @@ public class ObuActivityController {
         }
         if(StringUtils.isEmpty(msgVerifyId)){
             throw new NotRuleException("couponActivity.msgVerifyId");
+        }
+        driverLicense="%"+driverLicense;
+       String infoCard ="";
+//        //根据身份证跟电话号码查询交安卡卡号
+
+        ObuWhiteList obuWhiteListcardNumber = obuWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber);
+        if(ObjectUtils.isEmpty(obuWhiteListcardNumber)){
+            throw new NotFoundException("obu.notWhiteLists");
+        }else {
+            infoCard = obuWhiteListcardNumber.getCardNumber();
         }
 
         //设置短息

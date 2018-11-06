@@ -19,4 +19,9 @@ import java.util.List;
 public interface ObuWhiteListRepository extends JpaRepository<ObuWhiteList,String>,JpaSpecificationExecutor<ObuWhiteList> {
     @Query("select o from ObuWhiteList o where o.phoneNumber = ?1  and o.isGet =?2 and o.timeStart <= ?3 and o.timeEnd >= ?4")
     ObuWhiteList checkWhiteList(String phoneNumber, Integer isGet ,Date timeStart, Date timeEnd);
+    @Query(value = "SELECT * FROM cbc_obu_white_list WHERE driver_license like ?1 AND phone_number=?2",nativeQuery = true)
+    ObuWhiteList findByDriverLicenseAndPhoneNumber(String driverLicense,String phone);
 }
+
+
+

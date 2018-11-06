@@ -49,5 +49,7 @@ public class WhiteList {
     private Integer isGet;//0:未领取 1：已领取
 
     private String createTime;
+//交安卡卡号
+    private String cardNumber;
 
 }

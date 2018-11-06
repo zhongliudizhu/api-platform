@@ -29,8 +29,13 @@ public interface WhiteListRepository extends JpaRepository<WhiteList,String>,Jpa
 
     @Query("select o from WhiteList o where o.phoneNumber = ?1 and o.isGet =?2 and o.type = 105")
     WhiteList checkWhiteList(String phoneNumber,Integer isGet);
+    @Query("select o from WhiteList o where o.phoneNumber = ?1 and o.type = 105")
+    WhiteList checkIfWhiteList(String phoneNumber);
 
-   //List<WhiteList> findByDriverLicenseAndPhoneNumberAndTypeNotAndTimeAndIsGet(String driverLicense, String phoneNumber, Integer type, String time,Integer isGet);
+
+    //List<WhiteList> findByDriverLicenseAndPhoneNumberAndTypeNotAndTimeAndIsGet(String driverLicense, String phoneNumber, Integer type, String time,Integer isGet);
+    @Query(value = "select * from cbc_white_list where driver_license like ?1 and phone_number=?2",nativeQuery = true)
+    WhiteList findByDriverLicenseAndPhoneNumber(String driverLicense,String phone);
 
     WhiteList findByAccountIdAndTypeAndTime(String accountId, Integer type, String time);
 }

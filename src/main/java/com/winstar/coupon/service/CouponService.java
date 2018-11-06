@@ -30,7 +30,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 ;
 
@@ -167,6 +166,49 @@ public class CouponService {
             coupon.setValidEndAt(date);
         }
         coupon.setShowStatus(0);
+        coupon.setStatus(0);
+        coupon.setUseRule(useRule);
+        coupon.setName(name);
+        coupon.setDescription(description);
+        MyCoupon myCoupon = myCouponRepository.save(coupon);
+        logger.info("----前端调用发优惠券----结束: " + myCoupon.toString());
+        return myCoupon;
+    }
+
+    /**
+     * 建行前端发送优惠券
+     *
+     * @param accountId  用户ID
+     * @param amount 金额
+     * @param validEndAt    到期时间  不传则默认当月最后一天
+     * @param useRule    使用规则 满多少使用 0.0
+     * @return MyCoupon
+     */
+    @Transactional
+    public MyCoupon cbcsendCoupon_freedom(String accountId, String activityId,
+                                       @RequestParam(defaultValue = "5") Double amount,
+                                       Date validEndAt,
+                                       @RequestParam(defaultValue = "0.0") Double useRule,
+                                       @RequestParam(defaultValue = "前端调用发券") String name,
+                                       @RequestParam(defaultValue = "前端调用发券") String description
+    ) {
+
+        MyCoupon coupon = new MyCoupon();
+        coupon.setActivityId(activityId);
+        coupon.setCreatedAt(new Date());
+        coupon.setAccountId(accountId);
+        coupon.setAmount(amount);
+        coupon.setValidBeginAt(new Date());
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd ");
+        Date date=DateUtil.StringToDate(format.format(calendar.getTime()) +"23:59:59");
+        if(validEndAt!=null){
+            coupon.setValidEndAt(validEndAt);
+        }else{
+            coupon.setValidEndAt(date);
+        }
+        coupon.setShowStatus(1);
         coupon.setStatus(0);
         coupon.setUseRule(useRule);
         coupon.setName(name);
