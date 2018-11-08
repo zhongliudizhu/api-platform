@@ -124,15 +124,15 @@ public class OilOrderSecKillController {
                 logger.error("活动201，有未关闭订单");
                 throw new NotRuleException("haveNotPay.order");
             }
-
-            String canBuy86 = OilOrderUtil.judgeActivitySecKill(accountId, "1");
-            if (canBuy86.equals("1")) {
-                logger.error("活动1已参加，201无法购买");
-                throw new NotRuleException("oneMonthOnce.order");
-            } else if (canBuy86.equals("2")) {
-                logger.error("活动1，有未关闭订单");
-                throw new NotRuleException("haveNotPay.order");
-            }
+//
+//            String canBuy86 = OilOrderUtil.judgeActivity(accountId, "1");
+//            if (canBuy86.equals("1")) {
+//                logger.error("活动1已参加，201无法购买");
+//                throw new NotRuleException("oneMonthOnce.order");
+//            } else if (canBuy86.equals("2")) {
+//                logger.error("活动1，有未关闭订单");
+//                throw new NotRuleException("haveNotPay.order");
+//            }
         }
         if (activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_202.getActivity()))) {
             String canBuy = OilOrderUtil.judgeActivitySecKill(accountId, activityId);
