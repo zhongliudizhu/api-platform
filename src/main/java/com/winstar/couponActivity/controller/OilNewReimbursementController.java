@@ -101,7 +101,7 @@ public class OilNewReimbursementController {
                                 String msgVerifyId)
             throws NotRuleException, NotFoundException ,InnerServerException {
         Object accountId = request.getAttribute("accountId");
-        Account account = accountService.findById(accountId.toString());
+        Account account = accountService.findOne(accountId.toString());
         logger.info("openid:"+account.getOpenid()+"-----新办约定还款账【发券】-----");
         logger.info("driverLicense:"+driverLicense+"|phoneNumber:"+phoneNumber
                 +"|msgVerifyCode:"+msgVerifyCode+"|msgVerifyId:"+msgVerifyId);

@@ -1,6 +1,5 @@
 package com.winstar.couponActivity.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.winstar.carLifeMall.repository.CarLifeOrdersRepository;
@@ -12,7 +11,6 @@ import com.winstar.couponActivity.entity.*;
 import com.winstar.couponActivity.repository.*;
 import com.winstar.couponActivity.utils.*;
 import com.winstar.couponActivity.vo.QueryLogParam;
-import com.winstar.couponActivity.vo.SaleVehicleRecordParam;
 import com.winstar.couponActivity.vo.VerifyResult;
 import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
@@ -31,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -39,10 +36,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -109,7 +102,7 @@ public class CouponActivityController {
     @ResponseStatus(HttpStatus.OK)
     public List<String> findCars(HttpServletRequest request) throws NotFoundException{
         Object accountId = request.getAttribute("accountId");
-        Account account = accountService.findById(accountId.toString());
+        Account account = accountService.findOne(accountId.toString());
         logger.info("openid:"+account.getOpenid());
         String token =  CouponActivityUtil.reqAccount(account.getOpenid(),"1",restTemplate,getTokenInfoUrl,objectMapper);//获取优驾行Token
         if(StringUtils.isEmpty(token)){
@@ -351,7 +344,7 @@ public class CouponActivityController {
     ) throws NotRuleException, NotFoundException {
         long startTime = new Date().getTime();
         Object accountId = request.getAttribute("accountId");
-        Account account = accountService.findById(accountId.toString());
+        Account account = accountService.findOne(accountId.toString());
         logger.info("openid:"+account.getOpenid()+"-----二期开始发券-----");
 
         if(StringUtils.isEmpty(driverLicense)){

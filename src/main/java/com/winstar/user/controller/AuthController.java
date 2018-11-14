@@ -7,6 +7,7 @@ import com.winstar.exception.NotRuleException;
 import com.winstar.exception.ServiceUnavailableException;
 import com.winstar.obu.utils.SmsUtil;
 import com.winstar.order.utils.StringFormatUtils;
+import com.winstar.redis.RedisTools;
 import com.winstar.user.entity.Account;
 import com.winstar.user.param.CCBAuthParam;
 import com.winstar.user.param.MsgContent;
@@ -59,7 +60,7 @@ public class AuthController {
     public Map<String,Object> validateMobile(HttpServletRequest request) throws NotRuleException {
         Map<String,Object> activityMap = Maps.newHashMap();
         String accountId = accountService.getAccountId(request);
-        Account account = ServiceManager.accountRepository.findOne(accountId);
+        Account account = ServiceManager.accountService.findOne(accountId);
         if (StringUtils.isEmpty(account)){
             activityMap.put("ac_state","0");
         }else{
@@ -93,10 +94,11 @@ public class AuthController {
             throw new NotFoundException("param.is.null");
         }
         String accountId = accountService.getAccountId(request);
-        Account account = ServiceManager.accountRepository.findOne(accountId);
+        Account account = ServiceManager.accountService.findOne(accountId);
         account.setMobile(updateAccountParam.getMobile());
         account.setUpdateTime(new Date());
 
+        ServiceManager.redisTools.remove(ServiceManager.REDIS_KEY_FIND_ACCOUNT_BY_ID+accountId);
         return ServiceManager.accountRepository.save(account);
     }
 
@@ -122,7 +124,7 @@ public class AuthController {
     @GetMapping("/checkIsAuth")
     public SimpleResult checkAuth(HttpServletRequest request) throws NotRuleException {
         String accountId = accountService.getAccountId(request);
-        Account account = ServiceManager.accountRepository.findOne(accountId);
+        Account account = ServiceManager.accountService.findOne(accountId);
         if (null == account || StringUtils.isEmpty(account.getAuthInfoCard())) {
             return new SimpleResult("NO");
         }
@@ -177,7 +179,7 @@ public class AuthController {
     public Account authAccount(@RequestBody MsgContent msgContent, HttpServletRequest request) throws NotRuleException {
         String accountId = accountService.getAccountId(request);
 
-        Account account = ServiceManager.accountRepository.findOne(accountId);
+        Account account = ServiceManager.accountService.findOne(accountId);
         if (null != account && !StringUtils.isEmpty(account.getAuthInfoCard()) && !StringUtils.isEmpty(account.getAuthMobile())) {
             return account;
         }
@@ -212,7 +214,7 @@ public class AuthController {
         account.setAuthTime(new Date());
         account.setAuthDriverLicense(driverLicense);
         Account accountSaved = ServiceManager.accountRepository.save(account);
-
+        ServiceManager.redisTools.remove(ServiceManager.REDIS_KEY_FIND_ACCOUNT_BY_ID+accountId);
         return accountSaved;
     }
 }

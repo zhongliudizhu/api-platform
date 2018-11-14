@@ -48,7 +48,7 @@ public class LoveActivityController {
     public ResponseEntity giveCoupon( HttpServletRequest request ) throws NotFoundException, NotRuleException {
 
         String accountId = accountService.getAccountId(request);
-        Account account = accountService.findById(accountId);
+        Account account = accountService.findOne(accountId);
         List<CouponLog> couponLogs = couponLogRepository.findByAccountId(accountId);
         String result = "0";
         if(couponLogs.size()<=0){

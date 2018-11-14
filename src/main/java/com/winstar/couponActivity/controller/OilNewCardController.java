@@ -107,7 +107,7 @@ public class OilNewCardController {
                                 String msgVerifyId)
             throws NotRuleException, NotFoundException ,InnerServerException {
         Object accountId = request.getAttribute("accountId");
-        Account account = accountService.findById(accountId.toString());
+        Account account = accountService.findOne(accountId.toString());
         logger.info("openid:"+account.getOpenid()+"-----办新卡8折【发券】-----");
         logger.info("driverLicense:"+driverLicense+"|phoneNumber:"+phoneNumber
                 +"|msgVerifyCode:"+msgVerifyCode+"|msgVerifyId:"+msgVerifyId);

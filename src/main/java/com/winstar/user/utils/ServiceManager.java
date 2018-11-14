@@ -6,19 +6,19 @@ import com.winstar.carLifeMall.service.CategoryService;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.order.repository.FlowOrderRepository;
 import com.winstar.order.repository.OilOrderRepository;
+import com.winstar.redis.RedisTools;
 import com.winstar.user.repository.AccessTokenRepository;
 import com.winstar.user.repository.AccountRepository;
 import com.winstar.user.repository.OneMoneyCouponRecordRepository;
 import com.winstar.user.repository.PageViewLogRepository;
-import com.winstar.user.service.AccountService;
-import com.winstar.user.service.OneMoneyCouponRecordService;
-import com.winstar.user.service.PageViewLogService;
-import com.winstar.user.service.SmsService;
+import com.winstar.user.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ServiceManager {
+
+    public static String REDIS_KEY_FIND_ACCOUNT_BY_ID = "com.winstar.user.service.AccountServicefindOne";
 
     public static AccessTokenRepository accessTokenRepository;
     public static AccountRepository accountRepository;
@@ -39,6 +39,23 @@ public class ServiceManager {
     public static OrdersItemsRepository ordersItemsRepository;
     public static CouponService couponService;
     public static CarLifeOrdersService carLifeOrdersService;
+    public static AccessTokenService accessTokenService;
+    public static RedisTools redisTools;
+
+    @Autowired
+    public void setRedisTools(RedisTools redisTools) {
+        ServiceManager.redisTools = redisTools;
+    }
+
+    @Autowired
+    public void setCarLifeOrdersRepository(CarLifeOrdersRepository carLifeOrdersRepository) {
+        ServiceManager.carLifeOrdersRepository = carLifeOrdersRepository;
+    }
+
+    @Autowired
+    public void setAccessTokenService(AccessTokenService accessTokenService) {
+        ServiceManager.accessTokenService = accessTokenService;
+    }
 
     @Autowired
     public void setCarLifeOrdersService(CarLifeOrdersService carLifeOrdersService) {

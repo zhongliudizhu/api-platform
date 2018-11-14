@@ -62,8 +62,6 @@ public class OneMoneyCouponRecordTest {
 
     @Autowired
     WhiteListRepository whiteListRepository;
-
-
     @Test
     public void test(){
         MsgContent mc = new MsgContent();

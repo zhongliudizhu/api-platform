@@ -1,6 +1,5 @@
 package com.winstar.couponActivity.service;
 
-import com.google.common.collect.Maps;
 import com.winstar.couponActivity.entity.InviteTableList;
 import com.winstar.couponActivity.entity.InviteTableLog;
 import com.winstar.couponActivity.entity.MileageObtainLog;
@@ -8,22 +7,12 @@ import com.winstar.couponActivity.repository.InviteTableLogRepository;
 import com.winstar.couponActivity.repository.MileageObtainLogRepository;
 import com.winstar.couponActivity.utils.UtilConstants;
 import com.winstar.exception.NotFoundException;
-import com.winstar.oil.entity.MyOilCoupon;
-import com.winstar.oil.repository.MyOilCouponRepository;
 import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 /**
@@ -67,7 +56,7 @@ public class InviteUserService {
         }
         if (inviteTableLogs.size()>0) {
             for (int j = 0; j < inviteTableLogs.size(); j++) {
-                account = accountService.findById(inviteTableLogs.get(j).getInvitedUser());
+                account = accountService.findOne(inviteTableLogs.get(j).getInvitedUser());
                 if (inviteTableLogs.get(j).getInviteType() == 0) {
                     inviteTableList = new InviteTableList("邀请" + account.getNickName(), UtilConstants.FissionActivityConstants.DIRECT_INVTIE_MILEAFE.toString(), inviteTableLogs.get(j).getUpdateTime());
                     inviteList.add(inviteTableList);

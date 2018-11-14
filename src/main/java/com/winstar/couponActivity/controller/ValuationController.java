@@ -313,7 +313,7 @@ public class ValuationController {
         if (StringUtils.isEmpty(valuationParam.getRegisterTime())) {
             throw new MissingParameterException("valuations.getRegisterTime");
         }
-        AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(valuationParam.getAccountId());
+        AccessToken accessToken = ServiceManager.accessTokenService.findByTokenId(valuationParam.getAccountId());
         if(ObjectUtils.isEmpty(accessToken)){
             throw new MissingParameterException("valuations.notAccountId");
         }
@@ -350,7 +350,7 @@ public class ValuationController {
         if (StringUtils.isEmpty(accountId)) {
             throw new MissingParameterException("isSaleVehicle.token_id");
         }
-        AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(accountId);
+        AccessToken accessToken = ServiceManager.accessTokenService.findByTokenId(accountId);
         if(ObjectUtils.isEmpty(accessToken)){
             throw new MissingParameterException("isSaleVehicle.notAccountId");
         }
@@ -374,7 +374,7 @@ public class ValuationController {
     @RequestMapping(value = "getVehicleInfo", method = RequestMethod.GET ,produces = MediaType.APPLICATION_JSON_VALUE)
     public String getVehicleInfo(HttpServletRequest request,String plateNumber,String plateNumberType,String  accountId )throws NotFoundException, MissingParameterException{
         logger.info("获取汽车详情");
-        AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(accountId);
+        AccessToken accessToken = ServiceManager.accessTokenService.findByTokenId(accountId);
         if(ObjectUtils.isEmpty(accessToken)){
             throw new MissingParameterException("getVehicleInfo.notAccountId");
         }

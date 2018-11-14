@@ -76,7 +76,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(tokenId);
+        AccessToken accessToken = ServiceManager.accessTokenService.findByTokenId(tokenId);
         if (checkAccount(response, accessToken)) {
 
             logger.info("url:"+request.getRequestURI());
@@ -90,7 +90,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     private boolean checkAccount(HttpServletResponse response, AccessToken accessToken) throws ServiceUnavailableException,NotRuleException {
 
-        if (null == accessToken || null == ServiceManager.accountRepository.findOne(accessToken.getAccountId())) {
+        if (null == accessToken || null == ServiceManager.accountService.findOne(accessToken.getAccountId())) {
 
             unauthorized(response);
             return true;

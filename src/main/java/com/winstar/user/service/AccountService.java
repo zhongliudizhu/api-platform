@@ -10,6 +10,7 @@ import com.winstar.user.utils.SimpleResult;
 import com.winstar.user.vo.WinstarAccessToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -34,12 +35,19 @@ public class AccountService {
     @Value("${info.authDriverLicense}")
     String authDriverLicenseUrl;
 
+
+    @Cacheable(value = "findAccountByAccountIdCbc", keyGenerator = "tkKeyGenerator")
+    public Account findOne(String accountId) {
+        return ServiceManager.accountRepository.findOne(accountId);
+    }
+
     /**
      * 根据openid获取用户accountId 如果没有用户，注册用户
      *
      * @param openid openid
      * @return accountId
      */
+    @Cacheable(value = "findAccountByAccountIdAndOpenidCbc", keyGenerator = "tkKeyGenerator")
     public String findAccountIdByOpenid(String openid) {
         Account account = ServiceManager.accountRepository.findByOpenid(openid);
         if (null == account) {
@@ -67,20 +75,6 @@ public class AccountService {
     }
 
     /**
-     * 根据id 获取账号信息
-     *
-     * @param accountId accountId
-     * @return Account
-     * @throws NotFoundException NotFoundException
-     */
-    public Account findById(String accountId) throws NotFoundException {
-        Account account = ServiceManager.accountRepository.findOne(accountId);
-        if (null == account)
-            throw new NotFoundException("account");
-        return account;
-    }
-
-    /**
      * 从head中获取accountId
      *
      * @param request request
@@ -96,7 +90,7 @@ public class AccountService {
     public SimpleResult checkBindMobile(HttpServletRequest request) throws NotRuleException {
         String accountId = ServiceManager.accountService.getAccountId(request);
 
-        Account account = ServiceManager.accountRepository.findOne(accountId);
+        Account account = ServiceManager.accountService.findOne(accountId);
         if (StringUtils.isEmpty(account.getMobile())) return new SimpleResult("YES");
         return new SimpleResult("NO");
     }
@@ -104,9 +98,9 @@ public class AccountService {
     public Boolean checkBindMobileUnique(String phone) throws NotRuleException {
 
         List<Account> account = ServiceManager.accountRepository.findByMobile(phone);
-        if(account.size()>0){
+        if (account.size() > 0) {
             return false;
-        }else {
+        } else {
             return true;
         }
     }

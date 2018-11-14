@@ -69,7 +69,7 @@ public class OilOrderController {
             , @RequestParam(required = false, defaultValue = "") String couponId
             , HttpServletRequest request) throws NotFoundException, NotRuleException, InvalidParameterException {
         String accountId = accountService.getAccountId(request);
-        Account account = accountService.findById(accountId);
+        Account account = accountService.findOne(accountId);
         String serialNumber = OilOrderUtil.getSerialNumber();
         long startTime = System.currentTimeMillis();
         //2.根据商品id 查询商品

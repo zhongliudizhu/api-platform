@@ -37,7 +37,7 @@ public class AccountController {
             Account accountSaved = ServiceManager.accountService.createAccount(accountParam);
             return createAccessToken(accountSaved);
         }
-        AccessToken accessToken = ServiceManager.accessTokenRepository.findByAccountId(account.getId());
+        AccessToken accessToken = ServiceManager.accessTokenService.findByAccountId(account.getId());
         if (null == accessToken) {
             return createAccessToken(account);
         }
@@ -57,7 +57,7 @@ public class AccountController {
         if (StringUtils.isEmpty(tokenId))
             throw new NotRuleException("tokenId");
 
-        AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(tokenId);
+        AccessToken accessToken = ServiceManager.accessTokenService.findByTokenId(tokenId);
         if (null == accessToken) {
             return new ResponseEntity<>(new SimpleResult("未授权"), HttpStatus.UNAUTHORIZED);
         }
