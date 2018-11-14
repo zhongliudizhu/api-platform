@@ -77,10 +77,9 @@ public class AuthController {
      *
      * @param updateAccountParam updateAccountParam
      * @return
-     * @throws InvalidParameterException, NotRuleException
      */
     @PostMapping("/updateMobile")
-    public Account updateMobile(@RequestBody UpdateAccountParam updateAccountParam, HttpServletRequest request) throws InvalidParameterException, NotRuleException,NotFoundException {
+    public Account updateMobile(@RequestBody UpdateAccountParam updateAccountParam, HttpServletRequest request) throws NotRuleException,NotFoundException {
         if (!ServiceManager.smsService.verifySms(updateAccountParam)){
             logger.info("验证码错误！！");
             throw new NotRuleException("code.is.error");

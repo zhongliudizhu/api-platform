@@ -62,11 +62,8 @@ public class MyCouponController {
      * @param pageNumber 默认 1
      * @param pageSize   默认 5
      * @return List<MyCoupon>
-     * @throws MissingParameterException
-     * @throws InvalidParameterException
      * @throws NotRuleException
      * @throws NotFoundException
-     * @throws ServiceUnavailableException
      */
     @RequestMapping(value = "/query", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -75,7 +72,7 @@ public class MyCouponController {
             Integer status,
             @RequestParam(defaultValue = "1") Integer pageNumber,
             @RequestParam(defaultValue = "10000") Integer pageSize
-    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
+    ) throws NotRuleException, NotFoundException {
         List<MyCoupon> list = new LinkedList<>();
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
@@ -120,7 +117,7 @@ public class MyCouponController {
             String activityId,
             @RequestParam(defaultValue = "1") Integer pageNumber,
             @RequestParam(defaultValue = "10000") Integer pageSize
-    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
+    ) throws NotRuleException, NotFoundException {
         List<MyCoupon> list = new LinkedList<>();
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
@@ -168,7 +165,7 @@ public class MyCouponController {
             HttpServletRequest request,
             String activityId,
             String goodsId
-    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
+    ) throws NotRuleException {
         String accountId = accountService.getAccountId(request);
         MyCoupon myCoupon = couponService.sendCoupon(accountId, activityId, goodsId);
         return myCoupon;
@@ -179,7 +176,7 @@ public class MyCouponController {
      */
     @RequestMapping(value = "/giveCoupon", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public MyCoupon sendCoupon_freedom(@RequestParam String openId) throws  ServiceUnavailableException {
+    public MyCoupon sendCoupon_freedom(@RequestParam String openId) {
         String accountId = accountService.findAccountIdByOpenid(openId);
         String couponName = "X1-" + WsdUtils.getRandomNumber(8);
         Date time = DateUtil.addInteger(new Date(), Calendar.MONTH,1);
@@ -193,10 +190,8 @@ public class MyCouponController {
      * @param goodsId   商品id
      * @return List<MyCoupon>
      * @throws MissingParameterException
-     * @throws InvalidParameterException
      * @throws NotRuleException
      * @throws NotFoundException
-     * @throws ServiceUnavailableException
      */
     @RequestMapping(value = "/findMyUsableCoupon", method = RequestMethod.GET, produces = MediaType
             .APPLICATION_JSON_VALUE)
@@ -204,8 +199,7 @@ public class MyCouponController {
     public List<MyCoupon> findMyUsableCoupon(
             HttpServletRequest request,
             String goodsId
-    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
-            ServiceUnavailableException {
+    ) throws MissingParameterException, NotRuleException, NotFoundException {
         if (StringUtils.isEmpty(goodsId)) throw new MissingParameterException("goodsId");
         Goods goods = goodsRepository.findOne(goodsId);
         if (goods == null) throw new NotFoundException("this goods is NotFound");
@@ -233,8 +227,7 @@ public class MyCouponController {
             @RequestParam(defaultValue = "0.0") Double useRule,
             @RequestParam(defaultValue = "前端调用发券") String name,
             @RequestParam(defaultValue = "前端调用发券") String description
-    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
-            ServiceUnavailableException {
+    ) throws MissingParameterException, NotFoundException {
         if(openId==null) throw  new MissingParameterException("openId");
         if(validEndAt==null) throw  new MissingParameterException("validEndAt");
         String accountId = accountService.findAccountIdByOpenid(openId);

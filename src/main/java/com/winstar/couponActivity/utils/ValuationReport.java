@@ -30,14 +30,14 @@ public class ValuationReport {
 
 
     //获取汽车未来价格趋势（按月份）
-    public static String getCarHistoricalPrice(String modelId,String zone,String regDate,String mile,RestTemplate restTemplate) throws Exception {
+    public static String getCarHistoricalPrice(String modelId,String zone,String regDate,String mile,RestTemplate restTemplate) {
 
         String getCarHistoricalPrice = "";
         String url="https://api.che300.com/service/common/eval?oper=getMonthResidualTrend&modelId="+modelId+"&zone="+zone+"&regDate="+regDate+"&mile="+mile+"&token=27e73d6efa5df6544ab4e3fe714e957a";
         Map<String ,Object> urlVariables = new HashMap<String ,Object>();
         ResponseEntity<String> StringBody = RequestServerUtil.getRequest(restTemplate,url,urlVariables);
         if(StringBody.getStatusCode().value()==200){
-            getCarHistoricalPrice = StringBody.getBody().toString();
+            getCarHistoricalPrice = StringBody.getBody();
         }
         return   getCarHistoricalPrice;
     }
@@ -51,7 +51,7 @@ public class ValuationReport {
         Map<String ,Object> urlVariables = new HashMap<String ,Object>();
         ResponseEntity<String> StringBody = RequestServerUtil.getRequest(restTemplate,url,urlVariables);
         if(StringBody.getStatusCode().value()==200){
-            getCarFuturePrice = StringBody.getBody().toString();
+            getCarFuturePrice = StringBody.getBody();
         }
         return   getCarFuturePrice;
     }
@@ -66,7 +66,7 @@ public class ValuationReport {
         Map<String ,Object> urlVariables = new HashMap<String ,Object>();
         ResponseEntity<String> StringBody = RequestServerUtil.getRequest(restTemplate,url,urlVariables);
         if(StringBody.getStatusCode().value()==200){
-            getCarFuturePrice = StringBody.getBody().toString();
+            getCarFuturePrice = StringBody.getBody();
         }
         return   getCarFuturePrice;
     }
@@ -80,7 +80,7 @@ public class ValuationReport {
         Map<String ,Object> urlVariables = new HashMap<String ,Object>();
         ResponseEntity<String> StringBody = RequestServerUtil.getRequest(restTemplate,url,urlVariables);
         if(StringBody.getStatusCode().value()==200){
-            getUsedCarPrice = StringBody.getBody().toString();
+            getUsedCarPrice = StringBody.getBody();
         }
         return   getUsedCarPrice;
     }

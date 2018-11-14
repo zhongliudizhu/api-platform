@@ -141,7 +141,7 @@ public class OilOrderUtil {
      * @return 油券详情字符串
      */
     private static String getOilDetail(Goods goods){
-        StringBuilder sb = new StringBuilder("");
+        StringBuilder sb = new StringBuilder();
         List<OilDetailVo> oils = StringFormatUtils.jsonStr2List(goods.getCouponDetail(),OilDetailVo.class);
         for (OilDetailVo vo:oils
                 ) {
@@ -249,10 +249,7 @@ public class OilOrderUtil {
     * 判断时间是否在 7:00——24:00
     * */
     private static boolean judgeTime(Date time){
-        if(time.after(DateUtil.getDayHour(7)) && time.before( DateUtil.getDayEnd() )){
-            return true;
-        }
-        return false;
+        return time.after(DateUtil.getDayHour(7)) && time.before(DateUtil.getDayEnd());
     }
 
 
@@ -261,10 +258,7 @@ public class OilOrderUtil {
     * */
     public static boolean judgeOneDay(String itemId,Integer amount){
         List<OilOrder> oilOrders =  ServiceManager.oilOrderRepository.findByIsAvailableAndItemIdAndCreateTime(Constant.IS_NORMAL_NORMAL,itemId,DateUtil.getDayBegin(),DateUtil.getDayEnd());
-        if(oilOrders.size()>amount){
-            return false;
-        }
-        return true;
+        return oilOrders.size() <= amount;
     }
 
     /*

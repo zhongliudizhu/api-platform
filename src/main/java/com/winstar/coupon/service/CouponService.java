@@ -31,8 +31,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-;
-
 /**
  * 名称： CouponService
  * 作者： sky

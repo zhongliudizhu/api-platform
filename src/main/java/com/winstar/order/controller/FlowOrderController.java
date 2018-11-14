@@ -144,7 +144,7 @@ public class FlowOrderController {
     */
     @GetMapping(value = "/{serialNumber}/serialNumber", produces = "application/json;charset=utf-8")
     @ResponseBody
-    public ResponseEntity getOrders(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
+    public ResponseEntity getOrders(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotFoundException {
         if(StringUtils.isEmpty(serialNumber)){
             throw new MissingParameterException("serialNumber.flowOrder");
         }
@@ -162,7 +162,7 @@ public class FlowOrderController {
     @GetMapping(value = "/{status}/status", produces = "application/json;charset=utf-8")
     @ResponseBody
     public ResponseEntity getOrdersByAccountId(@PathVariable String status, HttpServletRequest request)
-            throws NotFoundException, ServiceUnavailableException, NotRuleException, MissingParameterException {
+            throws NotFoundException, NotRuleException, MissingParameterException {
         String accountId = accountService.getAccountId(request);
         if(StringUtils.isEmpty(accountId)){
             throw new NotFoundException("accountId.flowOrder");

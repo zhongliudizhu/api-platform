@@ -95,14 +95,10 @@ public class AccountService {
         return new SimpleResult("NO");
     }
 
-    public Boolean checkBindMobileUnique(String phone) throws NotRuleException {
+    public Boolean checkBindMobileUnique(String phone) {
 
         List<Account> account = ServiceManager.accountRepository.findByMobile(phone);
-        if (account.size() > 0) {
-            return false;
-        } else {
-            return true;
-        }
+        return account.size() <= 0;
     }
 
 
@@ -117,7 +113,7 @@ public class AccountService {
 
         ResponseEntity<String> result = restTemplate.exchange(getTokenInfoUrl, HttpMethod.GET, responseEntity, String.class, urlVariables);
         if (result.getStatusCode().is2xxSuccessful()) {
-            WinstarAccessToken winstarAccessToken = JSON.parseObject(result.getBody().toString(), WinstarAccessToken.class);
+            WinstarAccessToken winstarAccessToken = JSON.parseObject(result.getBody(), WinstarAccessToken.class);
             if (null != winstarAccessToken)
                 return winstarAccessToken.getToken();
         }

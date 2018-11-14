@@ -13,7 +13,7 @@ import java.io.IOException;
  */
 public class ClientErrorHandler implements ResponseErrorHandler {
     @Override
-    public boolean hasError(ClientHttpResponse clientHttpResponse) throws IOException {
+    public boolean hasError(ClientHttpResponse clientHttpResponse) {
         return true;
     }
 

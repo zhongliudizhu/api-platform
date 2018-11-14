@@ -88,7 +88,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         return true;
     }
 
-    private boolean checkAccount(HttpServletResponse response, AccessToken accessToken) throws ServiceUnavailableException,NotRuleException {
+    private boolean checkAccount(HttpServletResponse response, AccessToken accessToken) throws ServiceUnavailableException {
 
         if (null == accessToken || null == ServiceManager.accountService.findOne(accessToken.getAccountId())) {
 
@@ -98,7 +98,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         return false;
     }
 
-    private void unauthorized(HttpServletResponse response) throws ServiceUnavailableException,NotRuleException {
+    private void unauthorized(HttpServletResponse response) throws ServiceUnavailableException {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         Map<String, Object> map = new HashMap<>();
         map.put("code","user.isNot.unauthorized.NotRule");
@@ -122,12 +122,12 @@ public class AuthInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object o, ModelAndView modelAndView) throws Exception {
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object o, ModelAndView modelAndView) {
 
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object o, Exception e) throws Exception {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object o, Exception e) {
 
     }
 }

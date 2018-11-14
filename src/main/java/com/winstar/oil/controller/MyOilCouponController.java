@@ -221,7 +221,7 @@ public class MyOilCouponController {
     /**
      *  返回结果中不需要的字段值置空
      */
-    private List<MyOilCoupon> getResult(List<MyOilCoupon> myOilCoupons) throws Exception{
+    private List<MyOilCoupon> getResult(List<MyOilCoupon> myOilCoupons) {
         for(MyOilCoupon myOilCoupon : myOilCoupons){
             myOilCoupon.setShopId(null);
             myOilCoupon.setPan(null);
@@ -400,7 +400,7 @@ public class MyOilCouponController {
         @RequestParam(required = false) String useDate,
         @RequestParam(required = false) String useState,
         @RequestParam(required = false) String tid
-    ) throws Exception {
+    ) {
         MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
         if (WsdUtils.isNotEmpty(myOilCoupon)) {
             if (WsdUtils.isNotEmpty(accountId)) myOilCoupon.setAccountId(accountId);
@@ -418,7 +418,7 @@ public class MyOilCouponController {
     @CrossOrigin
     public void deleteOilCoupon(
         @RequestParam String id
-    ) throws Exception {
+    ) {
         MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
         if (WsdUtils.isNotEmpty(myOilCoupon)) {
             myOilCouponRepository.delete(myOilCoupon);

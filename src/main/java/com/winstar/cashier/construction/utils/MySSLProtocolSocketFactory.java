@@ -50,28 +50,26 @@ public class MySSLProtocolSocketFactory implements ProtocolSocketFactory {
 	}
 
 	public Socket createSocket(Socket socket, String host, int port,
-			boolean autoClose) throws IOException, UnknownHostException {
+			boolean autoClose) throws IOException {
 		return getSSLContext().getSocketFactory().createSocket(socket, host,
 				port, autoClose);
 	}
 
 	@Override
-	public Socket createSocket(String host, int port) throws IOException,
-			UnknownHostException {
+	public Socket createSocket(String host, int port) throws IOException {
 		return getSSLContext().getSocketFactory().createSocket(host, port);
 	}
 
 	@Override
 	public Socket createSocket(String host, int port, InetAddress clientHost,
-			int clientPort) throws IOException, UnknownHostException {
+			int clientPort) throws IOException {
 		return getSSLContext().getSocketFactory().createSocket(host, port,
 				clientHost, clientPort);
 	}
 
 	@Override
 	public Socket createSocket(String host, int port, InetAddress localAddress,
-			int localPort, HttpConnectionParams params) throws IOException,
-			UnknownHostException, ConnectTimeoutException {
+			int localPort, HttpConnectionParams params) throws IOException {
 		if (params == null) {
 			throw new IllegalArgumentException("Parameters may not be null");
 		}
@@ -95,13 +93,11 @@ public class MySSLProtocolSocketFactory implements ProtocolSocketFactory {
 	private static class TrustAnyTrustManager implements X509TrustManager {
 
 		@Override
-		public void checkClientTrusted(X509Certificate[] chain, String authType)
-				throws CertificateException {
+		public void checkClientTrusted(X509Certificate[] chain, String authType) {
 		}
 
 		@Override
-		public void checkServerTrusted(X509Certificate[] chain, String authType)
-				throws CertificateException {
+		public void checkServerTrusted(X509Certificate[] chain, String authType) {
 		}
 
 		@Override

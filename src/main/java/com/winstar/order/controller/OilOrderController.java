@@ -67,7 +67,7 @@ public class OilOrderController {
     public ResponseEntity addOrder(@RequestParam String itemId
             , @RequestParam String activityId
             , @RequestParam(required = false, defaultValue = "") String couponId
-            , HttpServletRequest request) throws NotFoundException, NotRuleException, InvalidParameterException {
+            , HttpServletRequest request) throws NotFoundException, NotRuleException {
         String accountId = accountService.getAccountId(request);
         Account account = accountService.findOne(accountId);
         String serialNumber = OilOrderUtil.getSerialNumber();
@@ -242,7 +242,7 @@ public class OilOrderController {
      */
     @GetMapping(value = "/{serialNumber}/serialNumber", produces = "application/json;charset=utf-8")
     @ResponseBody
-    public ResponseEntity getOrders(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
+    public ResponseEntity getOrders(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotFoundException {
         if (StringUtils.isEmpty(serialNumber)) {
             throw new MissingParameterException("serialNumber.order");
         }
@@ -260,7 +260,7 @@ public class OilOrderController {
     @GetMapping(value = "/{status}/status", produces = "application/json;charset=utf-8")
     @ResponseBody
     public ResponseEntity getOrdersByAccountId(@PathVariable String status, HttpServletRequest request)
-            throws NotFoundException, ServiceUnavailableException, NotRuleException, MissingParameterException {
+            throws NotFoundException, NotRuleException, MissingParameterException {
         String accountId = accountService.getAccountId(request);
         if (StringUtils.isEmpty(accountId)) {
             throw new NotFoundException("accountId.oilOrder");

@@ -76,11 +76,7 @@ public class TimeUtil {
      */
     public static Boolean  dayComparePrecise2(Date currentTime,Date endTime){
         long ts1=endTime.getTime()-currentTime.getTime();
-        if(ts1>0) {
-            return true;
-        }else {
-            return false;
-        }
+        return ts1 > 0;
     }
     public static Date getMonthStart(){
         //规定返回日期格式
@@ -103,7 +99,7 @@ public class TimeUtil {
         //获取Calendar
         Calendar calendar = Calendar.getInstance();
         //设置日期为本月最大日期
-        calendar.set(Calendar.DATE, calendar.getActualMaximum(calendar.DATE));
+        calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
         //设置日期格式
         SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
         Date dayLast = null;
@@ -136,7 +132,7 @@ public class TimeUtil {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM");
         return formatter.parse(input);
     }
-    public static String getDateYearMonth(Date input) throws ParseException {
+    public static String getDateYearMonth(Date input) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM");
         return formatter.format(input);
     }

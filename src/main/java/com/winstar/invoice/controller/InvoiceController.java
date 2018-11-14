@@ -76,11 +76,8 @@ public class InvoiceController {
      * 未开发票的油卷
      *
      * @return
-     * @throws MissingParameterException
-     * @throws InvalidParameterException
      * @throws NotRuleException
      * @throws NotFoundException
-     * @throws ServiceUnavailableException
      */
     @RequestMapping(value = "/query", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -88,8 +85,7 @@ public class InvoiceController {
             HttpServletRequest request,
             @RequestParam(defaultValue = "0") Integer nextPage,
             @RequestParam(defaultValue = "5") Integer pageSize
-    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
-            ServiceUnavailableException {
+    ) throws NotRuleException, NotFoundException {
         String accountId = accountService.getAccountId(request);
         if (StringUtils.isEmpty(accountId)) throw new NotFoundException("MyOilCoupon");
         List<InvoiceItem> invoices = invoiceItemRepository.findByAccountId(accountId);
@@ -148,8 +144,7 @@ public class InvoiceController {
             String[] ids, Integer type, String name, String oilType, String email, String phone, String companyName,
             String
                     taxpayerNumber, String companyAddress, String telephone, String depositBank, String bankAccount
-    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
-            ServiceUnavailableException {
+    ) throws MissingParameterException, NotRuleException, NotFoundException {
         checkInvoiceStock();
 
         String accountId = accountService.getAccountId(request);
@@ -218,11 +213,8 @@ public class InvoiceController {
      * @param nextPage
      * @param pageSize
      * @return
-     * @throws MissingParameterException
-     * @throws InvalidParameterException
      * @throws NotRuleException
      * @throws NotFoundException
-     * @throws ServiceUnavailableException
      */
     @RequestMapping(value = "/history", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -230,8 +222,7 @@ public class InvoiceController {
             HttpServletRequest request,
             @RequestParam(defaultValue = "0") Integer nextPage,
             @RequestParam(defaultValue = "5") Integer pageSize
-    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException,
-            ServiceUnavailableException {
+    ) throws NotRuleException, NotFoundException {
         String accountId = accountService.getAccountId(request);
 
         Sort sort = new Sort(Sort.Direction.DESC, "createDate");

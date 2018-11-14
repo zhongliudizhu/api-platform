@@ -59,7 +59,7 @@ public class CouponActivityUtil {
         urlVariables.put("type", type);
         ResponseEntity<String> tokenBody = RequestServerUtil.getRequest(restTemplate,getTokenInfoUrl, urlVariables);
         if(tokenBody.getStatusCode().value()==200){
-            String accountContent = tokenBody.getBody().toString();
+            String accountContent = tokenBody.getBody();
             JsonNode tokenNodeContentNode = null;
             try {
                 tokenNodeContentNode = objectMapper.readTree(accountContent);
@@ -86,14 +86,14 @@ public class CouponActivityUtil {
         ResponseEntity<String> responseCars = RequestServerUtil.getRequestToken(restTemplate,getLocalCarsUrl,reqOrderMap,token);
         try {
             if(responseCars.getStatusCode().value()==200){
-                String carsContent = responseCars.getBody().toString();
+                String carsContent = responseCars.getBody();
                 JsonNode carsContentNode = objectMapper.readTree(carsContent);
                 JsonNode carNode = carsContentNode.path("objData");
                 Iterator<JsonNode> iterator = carNode.elements();
                 while (iterator.hasNext()) {
                     JsonNode result = iterator.next();
                     JsonNode resultNode = objectMapper.readTree(result.toString());
-                    carVos.add(resultNode.path("plateNumber").textValue().toString());
+                    carVos.add(resultNode.path("plateNumber").textValue());
                 }
             }
         } catch (Exception e) {
@@ -120,13 +120,13 @@ public class CouponActivityUtil {
         try {
             ResponseEntity<String> responseCars = RequestServerUtil.getRequestFromToken(restTemplate,getSixInOneCarsUrl,reqOrderMap,token_id);
             if(responseCars.getStatusCode().value()==200){
-                String carsContent = responseCars.getBody().toString();
+                String carsContent = responseCars.getBody();
                 JsonNode carsContentNode  = objectMapper.readTree(carsContent);
                 Iterator<JsonNode> iterator = carsContentNode.elements();
                 while (iterator.hasNext()) {
                     JsonNode result = iterator.next();
                     JsonNode resultNode = objectMapper.readTree(result.toString());
-                    carVos.add(resultNode.path("number").textValue().toString());
+                    carVos.add(resultNode.path("number").textValue());
                 }
             }
         } catch (IOException e) {
@@ -150,7 +150,7 @@ public class CouponActivityUtil {
         String carInfo = null;
             ResponseEntity<String> responseCars = RequestServerUtil.getRequestFromToken(restTemplate,getCarInfoUrl,reqMap,token_id);
             if(responseCars.getStatusCode().value()==200){
-                carInfo = responseCars.getBody().toString();
+                carInfo = responseCars.getBody();
             }else{
                 return null;
             }

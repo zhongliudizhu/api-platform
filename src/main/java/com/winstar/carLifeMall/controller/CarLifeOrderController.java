@@ -179,7 +179,7 @@ public class CarLifeOrderController {
      * 查询单个订单-根据序列号
      */
     @GetMapping(value = "get/{serialNumber}/serialNumber", produces = "application/json;charset=utf-8")
-    public ResponseEntity getOrders(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
+    public ResponseEntity getOrders(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotFoundException {
         if (StringUtils.isEmpty(serialNumber)) {
             throw new MissingParameterException("serialNumber.carLifeOrders");
         }
@@ -220,7 +220,7 @@ public class CarLifeOrderController {
      */
     @GetMapping(value = "list/{status}/status")
     public ResponseEntity getOrdersByAccountId(@PathVariable Integer status, HttpServletRequest request)
-            throws NotFoundException, ServiceUnavailableException, NotRuleException, MissingParameterException {
+            throws NotFoundException, NotRuleException, MissingParameterException {
         String accountId = ServiceManager.accountService.getAccountId(request);
         if (StringUtils.isEmpty(status)) {
             throw new MissingParameterException("status.carLifeOrders");

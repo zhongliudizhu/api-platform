@@ -34,8 +34,7 @@ public class OneMoneyCouponRecordService {
     public boolean checkBuyAuth(String accountId) {
         String date = new SimpleDateFormat("yyyy-MM").format(new Date());
         int count = oneMoneyCouponRecordRepository.countByAccountIdAndStatusAndCreateTimeLike(accountId, STATUS_UNUSED, date + "%");
-        if (count > 0) return true;
-        return false;
+        return count > 0;
     }
 
     /**

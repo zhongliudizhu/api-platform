@@ -83,12 +83,11 @@ public class ObuActivityController {
      *  短信服务（公司内部）-发送短信
      * @param request
      * @return
-     * @throws NotFoundException
      */
     @RequestMapping(value = "sendSMS", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     public ResponseEntity  sendSMS(HttpServletRequest request,
                                   @RequestParam String phoneNumber,
-                                  @RequestParam(defaultValue = "0")String type) throws NotFoundException, NotRuleException{
+                                  @RequestParam(defaultValue = "0")String type) {
         ResponseEntity resp = SmsUtil.sendSms(phoneNumber,sendSmsUrl);
 
         if(type.equals("0")){
@@ -350,7 +349,7 @@ public class ObuActivityController {
         String tokenId = request.getHeader("obu_token_id");
         if(StringUtils.isEmpty(tokenId)){
             throw new NotRuleException("no_oauth");
-        };
+        }
         logger.info("myObu:"+tokenId);
         ObuToken obuToken = obuTokenService.findByTokenId(tokenId);
         if(ObjectUtils.isEmpty(obuToken)){
@@ -367,11 +366,9 @@ public class ObuActivityController {
      * 获取活动开关
      * @param request
      * @return
-     * @throws NotFoundException
-     * @throws NotRuleException
      */
     @RequestMapping(value = "getSwitch", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    public ObuConfig getSwitch(HttpServletRequest request) throws NotFoundException, NotRuleException{
+    public ObuConfig getSwitch(HttpServletRequest request) {
         ObuConfig obuConfig = obuConfigRepository.findByType(2);
         if(ObjectUtils.isEmpty(obuConfig)){
              obuConfig = new ObuConfig();
@@ -392,11 +389,9 @@ public class ObuActivityController {
      *
      * @param request
      * @return
-     * @throws NotFoundException
-     * @throws NotRuleException
      */
     @RequestMapping(value = "getRandomCode", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    public ResponseEntity  getRandomCode(HttpServletRequest request) throws NotFoundException, NotRuleException{
+    public ResponseEntity  getRandomCode(HttpServletRequest request) {
         logger.info("获取图片验证码");
         ResponseEntity resp = SmsUtil.getRandomCode(getRandomCodeImageUrl);
         return resp;
@@ -407,7 +402,7 @@ public class ObuActivityController {
      * 2、发送短信
      */
     @RequestMapping(value = "smsImageSend", method = RequestMethod.POST, produces = "application/json;charset=utf-8")
-    public ResponseEntity  smsImageSend(@RequestBody SendSmsRequest sendSmsRequest) throws NotFoundException, NotRuleException{
+    public ResponseEntity  smsImageSend(@RequestBody SendSmsRequest sendSmsRequest) {
         logger.info("验证图片验证码，并发短息");
         ResponseEntity resp = SmsUtil.verifyImageSmsUrl(verifyImageSmsUrl,sendSmsRequest);
         return resp;

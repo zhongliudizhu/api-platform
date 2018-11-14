@@ -65,17 +65,15 @@ public class GoodsController {
      * @param activityId 活动ID
      * @return
      * @throws MissingParameterException
-     * @throws InvalidParameterException
      * @throws NotRuleException
      * @throws NotFoundException
-     * @throws ServiceUnavailableException
      */
     @RequestMapping(value = "/query", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<Goods> query(
             HttpServletRequest request,
             String activityId
-    ) throws MissingParameterException, InvalidParameterException, NotRuleException, NotFoundException, ServiceUnavailableException {
+    ) throws MissingParameterException, NotRuleException, NotFoundException {
         logger.info("查询商品列表，activityId=" + activityId);
         if (StringUtils.isEmpty(activityId)) throw new MissingParameterException("activityId");
         String accountId = accountService.getAccountId(request);
@@ -105,7 +103,7 @@ public class GoodsController {
             logger.info(array.toString());
             if(!b || !checkTime()){
                 for(int i=0;i<array.size();i++){
-                    if(array.getString(i).toString().equals(GoodId)){
+                    if(array.getString(i).equals(GoodId)){
                         array.remove(i);
                     }
                 }
@@ -124,10 +122,7 @@ public class GoodsController {
      */
     public static boolean checkTime(){
         int hour = DateUtil.getHour(new Date());
-        if(HOUR_BEGIN<=hour && hour<=HOUR_END){
-            return  true;
-        }
-        return  false;
+        return HOUR_BEGIN <= hour && hour <= HOUR_END;
     }
 
 }

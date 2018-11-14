@@ -209,9 +209,7 @@ public class WxPay {
         String str = PayService.queryRequest(data);
         Map<String,Object> map = XMLParser.getMapFromXML(str);
         if(WsdUtils.isNotEmpty(map.get("return_code")) && map.get("return_code").equals("SUCCESS")){
-            if(WsdUtils.isNotEmpty(map.get("return_msg")) && map.get("return_msg").equals("OK")){
-                return true;
-            }
+            return WsdUtils.isNotEmpty(map.get("return_msg")) && map.get("return_msg").equals("OK");
         }
         return false;
     }

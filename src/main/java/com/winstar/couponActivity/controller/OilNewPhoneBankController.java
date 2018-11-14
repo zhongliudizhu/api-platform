@@ -79,7 +79,7 @@ public class OilNewPhoneBankController {
      */
     @RequestMapping(value = "sevenfind",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public Activity getActivity(HttpServletRequest request) throws NotFoundException {
+    public Activity getActivity(HttpServletRequest request) {
         Object accountId = request.getAttribute("accountId");
         Activity activity = new Activity();
         activity.setName("新开通手机银行购--第四季度活动");
@@ -99,7 +99,7 @@ public class OilNewPhoneBankController {
                                 String phoneNumber,
                                 String msgVerifyCode,
                                 String msgVerifyId)
-            throws NotRuleException, NotFoundException ,InnerServerException {
+            throws NotRuleException, NotFoundException {
         Object accountId = request.getAttribute("accountId");
         Account account = accountService.findOne(accountId.toString());
         logger.info("openid:"+account.getOpenid()+"-----新开通手机银行【发券】-----");
@@ -216,11 +216,11 @@ public class OilNewPhoneBankController {
 
             String couponName = "C3"+"-" + WsdUtils.getRandomNumber(8);
             couponService.cbcsendCoupon_freedom(
-                    accountId.toString(),"107",couponActivity.getAmount(),DateUtil.getNextMonthEnd(),couponActivity.getUseRule(), couponName, couponActivity.getName());
+                    accountId,"107",couponActivity.getAmount(),DateUtil.getNextMonthEnd(),couponActivity.getUseRule(), couponName, couponActivity.getName());
             //回填白名单  2、记录发送时间
             logger.info("accountId:"+accountId+"|回填白名单");
             whiteList.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
-            whiteList.setAccountId(accountId.toString());
+            whiteList.setAccountId(accountId);
             whiteList.setIsGet(1);
             sevenWhiteListRepository.save(whiteList);
         }

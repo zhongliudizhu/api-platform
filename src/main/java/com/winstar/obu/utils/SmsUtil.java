@@ -46,10 +46,7 @@ public class SmsUtil {
 
         ResponseEntity resp = restTemplate.getForEntity(verifySmsUrl, String.class, urlVariables);
         logger.debug("校验验证码"+resp.getBody().toString());
-        if (resp.getStatusCode().is2xxSuccessful()) {
-            return true;
-        }
-        return false;
+        return resp.getStatusCode().is2xxSuccessful();
     }
 
     public static ResponseEntity getRandomCode(String getRandomCodeUrl) {

@@ -32,9 +32,8 @@ public class InviteUserService {
      * 获取该用户的里程获取列表
      * @param accountId
      * @return
-     * @throws NotFoundException
      */
-    public List<InviteTableList> getInviteList(String accountId)throws NotFoundException {
+    public List<InviteTableList> getInviteList(String accountId) {
         if (StringUtils.isEmpty(accountId)){
             new NotFoundException("用户id为空！！！");
         }

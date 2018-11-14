@@ -95,7 +95,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
   profiles: prod
 
 server:

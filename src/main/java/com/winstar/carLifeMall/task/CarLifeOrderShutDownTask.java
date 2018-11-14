@@ -28,10 +28,9 @@ public class CarLifeOrderShutDownTask {
     /**
      * 关闭汽车生活订单
      *
-     * @throws NotRuleException
      */
     @Scheduled(cron = "0 0/30 * * * ?")
-    public void shutdownCarLifeOrder() throws NotRuleException {
+    public void shutdownCarLifeOrder() {
         Date end = DateUtil.addMinute(DateUtil.getNowDate(),-30);
         Date begin = DateUtil.addYear(end,-1);
         //查出未付款未关闭的订单

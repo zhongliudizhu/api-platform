@@ -207,19 +207,18 @@ public class OilOrderSecKillController {
      * @param activityId
      * @return
      * @throws NotRuleException
-     * @throws NotFoundException
      */
     @RequestMapping(value = "/getCareCoupons", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public Map<String, String> getCareCoupons(
             HttpServletRequest request,
             @RequestParam String activityId,
-            @RequestParam(defaultValue = "0.0") Double salePrice) throws NotRuleException, NotFoundException {
+            @RequestParam(defaultValue = "0.0") Double salePrice) throws NotRuleException {
         String accountId = accountService.getAccountId(request);
         if (StringUtils.isEmpty(activityId) || StringUtils.isEmpty(salePrice)) {
             throw new NotRuleException("getCareCoupons.params");
         }
-        List<CareJuanList> careJuanList = careJuanListRepository.findByAccountIdandJoinTypeAndTypeAndTime(accountId.toString(), DateUtil.getWeekBegin(), DateUtil.getWeekEnd());
+        List<CareJuanList> careJuanList = careJuanListRepository.findByAccountIdandJoinTypeAndTypeAndTime(accountId, DateUtil.getWeekBegin(), DateUtil.getWeekEnd());
         Map<String, String> map = new HashMap<>();
         if (!ObjectUtils.isEmpty(careJuanList)) {
             map.put("result", "0");
