@@ -119,13 +119,13 @@ public class OilNewPhoneBankController {
             throw new NotRuleException("couponActivity.msgVerifyId");
         }
         String infoCard ="";
-        driverLicense="%"+driverLicense;
+
         //根据身份证跟电话号码查询交安卡卡号
-        SevenWhiteList sevenWhiteList = sevenWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber);
+        String sevenWhiteList = sevenWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber);
         if(ObjectUtils.isEmpty(sevenWhiteList)){
             throw new NotFoundException("couponActivity.notWhiteLists");
         }else {
-            infoCard = sevenWhiteList.getCardNumber();
+            infoCard = sevenWhiteList;
         }
         //设置短息
         MsgContent mc = new MsgContent();
@@ -155,7 +155,7 @@ public class OilNewPhoneBankController {
         //判断是否参加了105白名单
         WhiteList fiveWhiteList = whiteListRepository.checkWhiteList(phoneNumber, 0);
         //判断是否领取107优惠券
-        SevenWhiteList whiteList = sevenWhiteListRepository.checkWhiteLists(phoneNumber, 0);
+        SevenWhiteList whiteList = sevenWhiteListRepository.findByPhoneNumberAndIsGetAndType(phoneNumber,0,107);
         if(ObjectUtils.isEmpty(ifWhitList)){
         if(ObjectUtils.isEmpty(whiteList)){
             logger.info("电话号码:"+phoneNumber+"已认证过107活动");
@@ -239,13 +239,13 @@ public class OilNewPhoneBankController {
     @PostMapping(value = "/cbcSevenSendAuthMsg", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity sendAuth(@RequestParam String driverLicense, @RequestParam String phone, String infoCard, HttpServletRequest request)
             throws NotRuleException {
-        driverLicense="%"+driverLicense;
         //107白名单
-        SevenWhiteList sevenWhiteList = sevenWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
+        String sevenWhiteList = sevenWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
         if(ObjectUtils.isEmpty(sevenWhiteList)){
+            logger.info("身份证"+driverLicense+"电话号码"+phone+"用户不在107白名单");
             throw new NotRuleException("WhiteLists.notWhiteLists");
         }else {
-            infoCard = sevenWhiteList.getCardNumber();
+            infoCard = sevenWhiteList;
         }
         MsgContent mc = new MsgContent();
         mc.setKh(infoCard);

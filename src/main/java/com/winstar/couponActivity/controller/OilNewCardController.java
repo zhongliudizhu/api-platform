@@ -125,13 +125,12 @@ public class OilNewCardController {
             throw new NotRuleException("couponActivity.msgVerifyId");
         }
         String infoCard ="";
-        driverLicense="%"+driverLicense;
         //根据身份证跟电话号码查询交安卡卡号
-        SixWhiteList sixWhiteList = sixWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber);
+        String sixWhiteList = sixWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber);
         if(ObjectUtils.isEmpty(sixWhiteList)){
             throw new NotFoundException("couponActivity.notWhiteLists");
         }else {
-            infoCard = sixWhiteList.getCardNumber();
+            infoCard = sixWhiteList;
         }
         //设置短息
         MsgContent mc = new MsgContent();
@@ -161,7 +160,7 @@ public class OilNewCardController {
         //判断是否领取105优惠券
         WhiteList whiteList = whiteListRepository.checkWhiteList(phoneNumber, 0);
         //判断是否领取106活动优惠券
-        SixWhiteList whiteLists = sixWhiteListRepository.checkWhiteLists(phoneNumber,0);
+        SixWhiteList whiteLists = sixWhiteListRepository.findByPhoneNumberAndIsGetAndType(phoneNumber,0,106);
         if(ObjectUtils.isEmpty(ifwhitList)) {
            if(ObjectUtils.isEmpty(whiteLists)){
                logger.info("电话号码:"+phoneNumber+"已认证过106活动");
@@ -244,13 +243,13 @@ public class OilNewCardController {
     @PostMapping(value = "/cbcSixSendAuthMsg", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity sendAuth(@RequestParam String driverLicense, @RequestParam String phone, String infoCard, HttpServletRequest request)
             throws NotRuleException {
-        driverLicense="%"+driverLicense;
         //106白名单
-        SixWhiteList sixWhiteList = sixWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
+        String sixWhiteList = sixWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
         if(ObjectUtils.isEmpty(sixWhiteList)){
+            logger.info("身份证"+driverLicense+"电话号码"+phone+"用户不在106白名单");
             throw new NotRuleException("WhiteLists.notWhiteLists");
         }else {
-            infoCard = sixWhiteList.getCardNumber();
+            infoCard = sixWhiteList;
         }
         MsgContent mc = new MsgContent();
         mc.setKh(infoCard);

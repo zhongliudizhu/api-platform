@@ -133,14 +133,13 @@ public class OilSubsidyController {
         if(StringUtils.isEmpty(msgVerifyId)){
             throw new NotRuleException("couponActivity.msgVerifyId");
         }
-        driverLicense="%"+driverLicense;
         String infoCard ="";
         //根据身份证跟电话号码查询交安卡卡号
-        WhiteList whiteListcardNumber = whiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber);
+        String whiteListcardNumber = whiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber);
         if(ObjectUtils.isEmpty(whiteListcardNumber)){
             throw new NotFoundException("couponActivity.notWhiteLists");
         }else {
-            infoCard = whiteListcardNumber.getCardNumber();
+            infoCard = whiteListcardNumber;
         }
         //设置短息
         MsgContent mc = new MsgContent();
@@ -166,19 +165,19 @@ public class OilSubsidyController {
 
         Activity activity = getActivityInfo();
         //判断该用户是否存在106白名单
-        SixWhiteList ifSixWhiteList = sixWhiteListRepository.checkSixIfWhiteLists(phoneNumber);
+        SixWhiteList ifSixWhiteList = sixWhiteListRepository.findByPhoneNumberAndType(phoneNumber,106);
         //判断该用是否存在107白名单
-        SevenWhiteList ifSevenWhiteList = sevenWhiteListRepository.checkSevenIfWhiteLists(phoneNumber);
+        SevenWhiteList ifSevenWhiteList = sevenWhiteListRepository.findByPhoneNumberAndType(phoneNumber,107);
         //判断该用户是否在108白名单
-        EightWhiteList ifEightWhiteList = eightWhiteListRepository.checkEightIfWhiteLists(phoneNumber);
+        EightWhiteList ifEightWhiteList = eightWhiteListRepository.findByPhoneNumberAndType(phoneNumber,108);
         //判断是否领取105活动优惠券
         WhiteList whiteList = whiteListRepository.checkWhiteList(phoneNumber, 0);
         //判断是否领取106活动优惠券
-        SixWhiteList sixWhiteList = sixWhiteListRepository.checkWhiteLists(phoneNumber,0);
+        SixWhiteList sixWhiteList = sixWhiteListRepository.findByPhoneNumberAndIsGetAndType(phoneNumber,0,106);
         //判断是否领取107活动优惠券
-        SevenWhiteList sevenWhiteList = sevenWhiteListRepository.checkWhiteLists(phoneNumber, 0);
+        SevenWhiteList sevenWhiteList = sevenWhiteListRepository.findByPhoneNumberAndIsGetAndType(phoneNumber,0,107);
         //判断是否领取108活动优惠券
-        EightWhiteList eightWhiteList = eightWhiteListRepository.checkWhiteLists(phoneNumber, 0);
+        EightWhiteList eightWhiteList = eightWhiteListRepository.findByPhoneNumberAndIsGetAndType(phoneNumber,0,108);
         if (ObjectUtils.isEmpty(ifSixWhiteList)&&ObjectUtils.isEmpty(ifSevenWhiteList)&&ObjectUtils.isEmpty(ifEightWhiteList)){
             if(ObjectUtils.isEmpty(whiteList)){
                 logger.info("电话号码:"+phoneNumber+"已认证过105活动");
@@ -244,13 +243,13 @@ public class OilSubsidyController {
     @PostMapping(value = "/cbcSendAuthMsg", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity sendAuth(@RequestParam String driverLicense, @RequestParam String phone,String infoCard, HttpServletRequest request)
             throws NotRuleException {
-        driverLicense="%"+driverLicense;
         //105白名单
-        WhiteList whiteListcardNumber = whiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
+        String whiteListcardNumber = whiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
         if(ObjectUtils.isEmpty(whiteListcardNumber)){
+            logger.info("身份证"+driverLicense+"电话号码"+phone+"用户不在105白名单");
             throw new NotRuleException("WhiteLists.notWhiteLists");
         }else {
-            infoCard = whiteListcardNumber.getCardNumber();
+            infoCard = whiteListcardNumber;
         }
         MsgContent mc = new MsgContent();
         mc.setKh(infoCard);

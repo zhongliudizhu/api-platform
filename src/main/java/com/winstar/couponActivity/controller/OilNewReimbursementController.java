@@ -119,13 +119,12 @@ public class OilNewReimbursementController {
             throw new NotRuleException("couponActivity.msgVerifyId");
         }
         String infoCard ="";
-        driverLicense="%"+driverLicense;
         //根据身份证跟电话号码查询交安卡卡号
-        EightWhiteList eightWhiteList = eightWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber);
+        String eightWhiteList = eightWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber);
         if(ObjectUtils.isEmpty(eightWhiteList)){
             throw new NotFoundException("couponActivity.notWhiteLists");
         }else {
-            infoCard = eightWhiteList.getCardNumber();
+            infoCard = eightWhiteList;
         }
         //设置短息
         MsgContent mc = new MsgContent();
@@ -155,7 +154,7 @@ public class OilNewReimbursementController {
         //判断是否参加了105白名单
         WhiteList fiveWhiteList = whiteListRepository.checkWhiteList(phoneNumber, 0);
         //判断是否领取108优惠券
-        EightWhiteList whiteList = eightWhiteListRepository.checkWhiteLists(phoneNumber, 0);
+        EightWhiteList whiteList = eightWhiteListRepository.findByPhoneNumberAndIsGetAndType(phoneNumber,0,108);
         if(ObjectUtils.isEmpty(ifWhitList)){
             if(ObjectUtils.isEmpty(whiteList)){
                 logger.info("电话号码:"+phoneNumber+"已认证过108活动");
@@ -239,13 +238,13 @@ public class OilNewReimbursementController {
     @PostMapping(value = "/cbcEightSendAuthMsg", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity sendAuth(@RequestParam String driverLicense, @RequestParam String phone, String infoCard, HttpServletRequest request)
             throws NotRuleException {
-        driverLicense="%"+driverLicense;
         //108白名单
-        EightWhiteList eightWhiteList = eightWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
+        String eightWhiteList = eightWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
         if(ObjectUtils.isEmpty(eightWhiteList)){
+            logger.info("身份证"+driverLicense+"电话号码"+phone+"用户不在108白名单");
             throw new NotRuleException("WhiteLists.notWhiteLists");
         }else {
-            infoCard = eightWhiteList.getCardNumber();
+            infoCard = eightWhiteList;
         }
         MsgContent mc = new MsgContent();
         mc.setKh(infoCard);
