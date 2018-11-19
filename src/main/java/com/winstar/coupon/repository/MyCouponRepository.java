@@ -18,7 +18,7 @@ public interface MyCouponRepository extends JpaRepository<MyCoupon,String> ,JpaS
 
     List<MyCoupon> findByAccountId(String accountId);
 
-    List<MyCoupon> findByAccountIdAndStatusAndUseRuleLessThanEqual(String accountId,Integer status,Double rules);
+//    List<MyCoupon> findByAccountIdAndStatusAndUseRuleLessThanEqual(String accountId,Integer status,Double rules);
 
     List<MyCoupon> findByAccountIdAndActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(Object accountId, String activityId, Date startMonth, Date endMonth);
 
@@ -26,9 +26,9 @@ public interface MyCouponRepository extends JpaRepository<MyCoupon,String> ,JpaS
 
     List<MyCoupon> findByAccountIdAndActivityId(Object accountId, String activityId);
 
-    List<MyCoupon> findByActivityId(String activityId);
+//    List<MyCoupon> findByActivityId(String activityId);
 
-    List<MyCoupon> findByActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(String activityId, Date startMonth, Date endMonth);
+//    List<MyCoupon> findByActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(String activityId, Date startMonth, Date endMonth);
 
     @Query("select f from MyCoupon f where f.accountId=?1 " +
             "and f.status = ?2 " +

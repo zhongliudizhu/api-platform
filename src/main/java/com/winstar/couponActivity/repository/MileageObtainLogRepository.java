@@ -21,7 +21,7 @@ public interface MileageObtainLogRepository extends JpaRepository<MileageObtainL
      * @param accountId
      * @return
      */
-    @Query("SELECT SUM(t.mileageNum) FROM MileageObtainLog  t WHERE t.accountId=?1 AND state='1'GROUP BY t.accountId")
+    @Query("SELECT SUM(t.mileageNum) FROM MileageObtainLog  t WHERE t.accountId=?1 AND state='1'")
     String sumConsumerMileage(String accountId);
 
     /**
@@ -50,6 +50,6 @@ public interface MileageObtainLogRepository extends JpaRepository<MileageObtainL
      * @param accountId
      * @return
      */
-    @Query("SELECT SUM(t.mileageNum) FROM MileageObtainLog  t WHERE t.accountId=?1 AND t.optainType=?2 AND state='1' GROUP BY t.accountId")
+    @Query("SELECT SUM(t.mileageNum) FROM MileageObtainLog  t WHERE t.accountId=?1 AND t.optainType=?2 AND state='1'")
     String sumConsumerMileageByType(String accountId, Integer type);
 }

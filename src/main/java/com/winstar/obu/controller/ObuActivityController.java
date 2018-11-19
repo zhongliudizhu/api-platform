@@ -172,13 +172,12 @@ public class ObuActivityController {
     @PostMapping(value = "/sendAuthMsg", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity sendAuth(@RequestParam String driverLicense, @RequestParam String phone,String infoCard,HttpServletRequest request)
             throws NotRuleException {
-        driverLicense="%"+driverLicense;
         //OBU白名单
-        ObuWhiteList obuWhiteListcardNumber = obuWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
+        String obuWhiteListcardNumber = obuWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
         if(ObjectUtils.isEmpty(obuWhiteListcardNumber)){
             throw new NotRuleException("obu.notWhiteLists");
         }else {
-            infoCard = obuWhiteListcardNumber.getCardNumber();
+            infoCard = obuWhiteListcardNumber;
         }
         MsgContent mc = new MsgContent();
         mc.setKh(infoCard);
@@ -240,15 +239,13 @@ public class ObuActivityController {
         if(StringUtils.isEmpty(msgVerifyId)){
             throw new NotRuleException("couponActivity.msgVerifyId");
         }
-        driverLicense="%"+driverLicense;
        String infoCard ="";
-//        //根据身份证跟电话号码查询交安卡卡号
-
-        ObuWhiteList obuWhiteListcardNumber = obuWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber);
+        //根据身份证跟电话号码查询交安卡卡号
+        String obuWhiteListcardNumber = obuWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber);
         if(ObjectUtils.isEmpty(obuWhiteListcardNumber)){
             throw new NotFoundException("obu.notWhiteLists");
         }else {
-            infoCard = obuWhiteListcardNumber.getCardNumber();
+            infoCard = obuWhiteListcardNumber;
         }
 
         //设置短息
