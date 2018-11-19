@@ -1,54 +1,25 @@
 package com.PageViewLog;
 
 import com.winstar.Application;
-import com.winstar.couponActivity.entity.WhiteList;
+import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
 import com.winstar.couponActivity.repository.WhiteListRepository;
-import com.winstar.couponActivity.utils.ActivityIdEnum;
-import com.winstar.couponActivity.utils.TimeUtil;
-import com.winstar.exception.InnerServerException;
-import com.winstar.exception.NotFoundException;
-import com.winstar.exception.NotRuleException;
-import com.winstar.obu.entity.ObuConfig;
-import com.winstar.obu.entity.ObuInfo;
-import com.winstar.obu.entity.ObuToken;
-import com.winstar.obu.entity.ObuWhiteList;
-import com.winstar.obu.repository.ObuAccountRepository;
-import com.winstar.obu.repository.ObuConfigRepository;
-import com.winstar.obu.repository.ObuRepository;
-import com.winstar.obu.repository.ObuWhiteListRepository;
-import com.winstar.obu.service.ObuDotService;
-import com.winstar.obu.service.ObuTokenService;
-import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.StringFormatUtils;
-import com.winstar.redis.RedisTools;
-import com.winstar.shop.entity.Activity;
 import com.winstar.user.param.CCBAuthParam;
 import com.winstar.user.param.MsgContent;
-import com.winstar.user.service.OneMoneyCouponRecordService;
-
 import com.winstar.user.utils.ServiceManager;
-import com.winstar.user.utils.UUIDUtils;
 import com.winstar.user.vo.AuthVerifyCodeEntity;
 import com.winstar.user.vo.AuthVerifyCodeMsgResult;
 import com.winstar.user.vo.SendVerifyCodeEntity;
 import com.winstar.user.vo.SendVerifyCodeMsgResult;
-import lombok.extern.java.Log;
 import lombok.extern.log4j.Log4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -62,14 +33,18 @@ public class OneMoneyCouponRecordTest {
 
     @Autowired
     WhiteListRepository whiteListRepository;
+
+    @Autowired
+    EarlyAndEveningMarketConfigService earlyAndEveningMarketConfigService;
+
     @Test
-    public void test(){
+    public void test() {
         MsgContent mc = new MsgContent();
         String phone = "15929369883";
-        String infoCard ="6259655764046666";
+        String infoCard = "6259655764046666";
         mc.setKh("6259655764046666");
-        if(!StringUtils.isEmpty(phone)){
-            phone = phone.substring(7,11);
+        if (!StringUtils.isEmpty(phone)) {
+            phone = phone.substring(7, 11);
         }
         mc.setSjh(phone);
         String msgParam = StringFormatUtils.bean2JsonStr(mc);
@@ -83,7 +58,7 @@ public class OneMoneyCouponRecordTest {
             ccbAuthParam.setXh(sendVerifyCodeEntityList.get(0).getXh());
             ccbAuthParam.setKh(sendVerifyCodeEntityList.get(0).getKh());
             log.info(new StringBuilder("实名认证建行验证码发送：infoCard-->").append(infoCard).append("phone-->").append(phone).toString());
-            log.info("序号："+sendVerifyCodeEntityList.get(0).getXh());
+            log.info("序号：" + sendVerifyCodeEntityList.get(0).getXh());
 
         } else {
             log.info(new StringBuilder("发送失败01：infoCard-->").append(infoCard).append("phone-->").append(phone).toString());
@@ -93,11 +68,18 @@ public class OneMoneyCouponRecordTest {
 
     }
 
+//    @Test
+//    public void testEarly() {
+//        EarlyAndEveningMarketConfig earlyAndEveningMarketConfig = new EarlyAndEveningMarketConfig();
+//        earlyAndEveningMarketConfig.setMarketStartTime(0);
+//        earlyAndEveningMarketConfig.setMarketEndTime(24);
+//        earlyAndEveningMarketConfigService.checkTime(earlyAndEveningMarketConfig, new Date());
+//    }
 
     @Test
-    public void test1(){
+    public void test1() {
         String phoneNumber = "15929369883";
-        String infoCard ="6259655764046666";
+        String infoCard = "6259655764046666";
         String msgVerifyId = "072718332900004";
         String msgVerifyCode = "264463";
         MsgContent mc = new MsgContent();
@@ -111,7 +93,7 @@ public class OneMoneyCouponRecordTest {
             log.error(new StringBuilder("验证码验证失败,").append(authVerifyCodeMsgResult.getErrorMessage()).append("_")
                     .append(phoneNumber).append("_")
                     .append(msgVerifyCode).append("_").append(infoCard).toString());
-             System.out.println("INVALID_VERIFY");
+            System.out.println("INVALID_VERIFY");
         }
         List<AuthVerifyCodeEntity> authVerifyCodeEntityList = authVerifyCodeMsgResult.getResults();
         //判读是否得到驾驶证号码
