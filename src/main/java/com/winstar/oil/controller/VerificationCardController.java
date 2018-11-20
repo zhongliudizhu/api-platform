@@ -102,7 +102,7 @@ public class VerificationCardController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    private void updateOilCoupon(MyOilCoupon myOilCoupon,String useState,String useDate,String tId) throws Exception{
+    private void updateOilCoupon(MyOilCoupon myOilCoupon,String useState,String useDate,String tId) {
         if(WsdUtils.isNotEmpty(myOilCoupon)){
             myOilCoupon.setUseState(useState);
             myOilCoupon.setUseDate(useDate);

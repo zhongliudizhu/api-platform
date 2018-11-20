@@ -2,7 +2,6 @@ package com.winstar.order.controller;
 
 import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
 import com.winstar.cashier.construction.utils.Arith;
-
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.couponActivity.utils.ActivityIdEnum;
@@ -17,7 +16,6 @@ import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
 import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
-import com.winstar.user.utils.ServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,9 +67,9 @@ public class OilOrderController {
     public ResponseEntity addOrder(@RequestParam String itemId
             , @RequestParam String activityId
             , @RequestParam(required = false, defaultValue = "") String couponId
-            , HttpServletRequest request) throws NotFoundException, NotRuleException, InvalidParameterException {
+            , HttpServletRequest request) throws NotFoundException, NotRuleException {
         String accountId = accountService.getAccountId(request);
-        Account account = accountService.findById(accountId);
+        Account account = accountService.findOne(accountId);
         String serialNumber = OilOrderUtil.getSerialNumber();
         long startTime = System.currentTimeMillis();
         //2.根据商品id 查询商品
@@ -150,14 +148,14 @@ public class OilOrderController {
                 logger.error("活动一商品，有未关闭订单");
                 throw new NotRuleException("haveNotPay.order");
             }
-            String canBuySeckill = OilOrderUtil.judgeActivity(accountId, "201");
-            if (canBuySeckill.equals("1")) {
-                logger.error("活动201，每用户一个月只能买一次");
-                throw new NotRuleException("oneMonthOnce.order");
-            } else if (canBuySeckill.equals("2")) {
-                logger.error("活动201，有未关闭订单");
-                throw new NotRuleException("haveNotPay.order");
-            }
+//            String canBuySeckill = OilOrderUtil.judgeActivitySecKill(accountId, "201");
+//            if (canBuySeckill.equals("1")) {
+//                logger.error("活动201，每用户一周只能买一次");
+//                throw new NotRuleException("oneMonthOnce.order");
+//            } else if (canBuySeckill.equals("2")) {
+//                logger.error("活动201，有未关闭订单");
+//                throw new NotRuleException("haveNotPay.order");
+//            }
         }
         //验证特价商品有没有资格
         if (activity.getType() == ActivityIdEnum.ACTIVITY_ID_101.getActivity()
@@ -244,7 +242,7 @@ public class OilOrderController {
      */
     @GetMapping(value = "/{serialNumber}/serialNumber", produces = "application/json;charset=utf-8")
     @ResponseBody
-    public ResponseEntity getOrders(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotRuleException, NotFoundException {
+    public ResponseEntity getOrders(@PathVariable String serialNumber, HttpServletRequest request) throws MissingParameterException, NotFoundException {
         if (StringUtils.isEmpty(serialNumber)) {
             throw new MissingParameterException("serialNumber.order");
         }
@@ -262,7 +260,7 @@ public class OilOrderController {
     @GetMapping(value = "/{status}/status", produces = "application/json;charset=utf-8")
     @ResponseBody
     public ResponseEntity getOrdersByAccountId(@PathVariable String status, HttpServletRequest request)
-            throws NotFoundException, ServiceUnavailableException, NotRuleException, MissingParameterException {
+            throws NotFoundException, NotRuleException, MissingParameterException {
         String accountId = accountService.getAccountId(request);
         if (StringUtils.isEmpty(accountId)) {
             throw new NotFoundException("accountId.oilOrder");

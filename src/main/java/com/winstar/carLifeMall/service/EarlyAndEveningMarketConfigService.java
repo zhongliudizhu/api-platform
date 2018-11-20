@@ -45,9 +45,7 @@ public class EarlyAndEveningMarketConfigService {
 
         Date curDate = new Date();
         String week = DateUtil.getWeekOfDate(curDate);
-        if (!checkWeekIsOk(earlyAndEveningMarketConfig, week) || !checkTime(earlyAndEveningMarketConfig, curDate))
-            return false;
-        return true;
+        return checkWeekIsOk(earlyAndEveningMarketConfig, week) && checkTime(earlyAndEveningMarketConfig, curDate);
     }
 
     private boolean checkWeekIsOk(EarlyAndEveningMarketConfig earlyAndEveningMarketConfig, String week) {
@@ -64,10 +62,7 @@ public class EarlyAndEveningMarketConfigService {
         calendarEnd.setTime(curDate);
         calendarEnd.set(DateUtil.getYear(curDate), DateUtil.getMonth(curDate), DateUtil.getDay(curDate), earlyAndEveningMarketConfig.getMarketEndTime(), 0, 0);
 
-        if (curDate.getTime()> calendarStart.getTimeInMillis() && curDate.getTime()<calendarEnd.getTimeInMillis()) {
-            return true;
-        }
-        return false;
+        return curDate.getTime() > calendarStart.getTimeInMillis() && curDate.getTime() < calendarEnd.getTimeInMillis();
     }
 
     private Calendar getCalendarHours(EarlyAndEveningMarketConfig earlyAndEveningMarketConfig, Date curDate) {

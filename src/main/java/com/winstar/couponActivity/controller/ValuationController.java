@@ -8,7 +8,6 @@ import com.winstar.couponActivity.repository.SaleVehicleRecordRepository;
 import com.winstar.couponActivity.repository.VehicleInfoRepository;
 import com.winstar.couponActivity.repository.VehicleValueRepository;
 import com.winstar.couponActivity.utils.CouponActivityUtil;
-import com.winstar.couponActivity.utils.GrabUtils;
 import com.winstar.couponActivity.utils.ParamJsonUtil;
 import com.winstar.couponActivity.utils.ValuationReport;
 import com.winstar.couponActivity.vo.SaleVehicleRecordParam;
@@ -17,10 +16,8 @@ import com.winstar.couponActivity.vo.VehicleDetail;
 import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
-import com.winstar.order.utils.DateUtil;
 import com.winstar.user.entity.AccessToken;
 import com.winstar.user.utils.ServiceManager;
-import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +65,7 @@ public class ValuationController {
      */
     @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public VehicleValue valuation(@RequestBody ValuationParam valuationParam) throws NotFoundException, MissingParameterException {
+    public VehicleValue valuation(@RequestBody ValuationParam valuationParam) throws MissingParameterException {
         if (ObjectUtils.isEmpty(valuationParam)) {
             throw new MissingParameterException("valuationParam.valuations");
         }
@@ -182,14 +179,13 @@ public class ValuationController {
      * @param plateNumber
      * @param engineNumber
      * @return
-     * @throws NotFoundException
      * @throws MissingParameterException
      * @throws NotRuleException
      */
     @RequestMapping(value = "getVehicleDetail", method = RequestMethod.GET ,produces = MediaType.APPLICATION_JSON_VALUE)
     public VehicleDetail getVehicleDetail(HttpServletRequest request,
                                           String modelId, String plateNumber, String engineNumber
-                                          )throws NotFoundException, MissingParameterException,NotRuleException{
+                                          )throws MissingParameterException,NotRuleException{
 
         if (ObjectUtils.isEmpty(modelId)) {
             throw new MissingParameterException("valuations.modelId");
@@ -280,11 +276,10 @@ public class ValuationController {
      * @param request
      * @param valuationParam
      * @return
-     * @throws NotFoundException
      * @throws MissingParameterException
      */
     @RequestMapping(value = "saleVehicle", method = RequestMethod.POST ,produces = MediaType.APPLICATION_JSON_VALUE)
-    public SaleVehicleRecord SaveSaleVehicle(HttpServletRequest request,@RequestBody SaleVehicleRecordParam valuationParam)throws NotFoundException, MissingParameterException{
+    public SaleVehicleRecord SaveSaleVehicle(HttpServletRequest request,@RequestBody SaleVehicleRecordParam valuationParam)throws MissingParameterException{
         logger.info("预售爱车");
         if (ObjectUtils.isEmpty(valuationParam)) {
             throw new MissingParameterException("SaleVehicleRecordParam.valuations");
@@ -313,7 +308,7 @@ public class ValuationController {
         if (StringUtils.isEmpty(valuationParam.getRegisterTime())) {
             throw new MissingParameterException("valuations.getRegisterTime");
         }
-        AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(valuationParam.getAccountId());
+        AccessToken accessToken = ServiceManager.accessTokenService.findByTokenId(valuationParam.getAccountId());
         if(ObjectUtils.isEmpty(accessToken)){
             throw new MissingParameterException("valuations.notAccountId");
         }
@@ -339,18 +334,17 @@ public class ValuationController {
      * 判断是否已经预售爱车
      * @param request
      * @return
-     * @throws NotFoundException
      * @throws MissingParameterException
      */
     @RequestMapping(value = "isSaleVehicle", method = RequestMethod.GET ,produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String,String> isSaleVehicle(HttpServletRequest request,String  accountId)throws NotFoundException, MissingParameterException{
+    public Map<String,String> isSaleVehicle(HttpServletRequest request,String  accountId)throws MissingParameterException{
         logger.info("判断是否已经预售爱车");
         Object accountId_test = request.getAttribute("accountId");
         logger.error("---------test--------- :"+accountId_test);
         if (StringUtils.isEmpty(accountId)) {
             throw new MissingParameterException("isSaleVehicle.token_id");
         }
-        AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(accountId);
+        AccessToken accessToken = ServiceManager.accessTokenService.findByTokenId(accountId);
         if(ObjectUtils.isEmpty(accessToken)){
             throw new MissingParameterException("isSaleVehicle.notAccountId");
         }
@@ -374,7 +368,7 @@ public class ValuationController {
     @RequestMapping(value = "getVehicleInfo", method = RequestMethod.GET ,produces = MediaType.APPLICATION_JSON_VALUE)
     public String getVehicleInfo(HttpServletRequest request,String plateNumber,String plateNumberType,String  accountId )throws NotFoundException, MissingParameterException{
         logger.info("获取汽车详情");
-        AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(accountId);
+        AccessToken accessToken = ServiceManager.accessTokenService.findByTokenId(accountId);
         if(ObjectUtils.isEmpty(accessToken)){
             throw new MissingParameterException("getVehicleInfo.notAccountId");
         }

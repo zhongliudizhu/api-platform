@@ -1,6 +1,5 @@
 package com.winstar.couponActivity.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.winstar.carLifeMall.repository.CarLifeOrdersRepository;
@@ -12,7 +11,6 @@ import com.winstar.couponActivity.entity.*;
 import com.winstar.couponActivity.repository.*;
 import com.winstar.couponActivity.utils.*;
 import com.winstar.couponActivity.vo.QueryLogParam;
-import com.winstar.couponActivity.vo.SaleVehicleRecordParam;
 import com.winstar.couponActivity.vo.VerifyResult;
 import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
@@ -31,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -39,10 +36,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -109,7 +102,7 @@ public class CouponActivityController {
     @ResponseStatus(HttpStatus.OK)
     public List<String> findCars(HttpServletRequest request) throws NotFoundException{
         Object accountId = request.getAttribute("accountId");
-        Account account = accountService.findById(accountId.toString());
+        Account account = accountService.findOne(accountId.toString());
         logger.info("openid:"+account.getOpenid());
         String token =  CouponActivityUtil.reqAccount(account.getOpenid(),"1",restTemplate,getTokenInfoUrl,objectMapper);//获取优驾行Token
         if(StringUtils.isEmpty(token)){
@@ -126,11 +119,10 @@ public class CouponActivityController {
      * 新用户专享活动(8.5折购买100元油券)
      * @param request
      * @return
-     * @throws NotFoundException
      */
     @RequestMapping(value = "newAccountActivity",method = RequestMethod.POST,produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public Map<String,Object> newAccountActivity(HttpServletRequest request) throws NotFoundException,NotRuleException{
+    public Map<String,Object> newAccountActivity(HttpServletRequest request) {
         String accountId = request.getAttribute("accountId").toString();
         Map<String,Object> activityMap = Maps.newHashMap();
         NewUserActivity user=new NewUserActivity();
@@ -180,7 +172,7 @@ public class CouponActivityController {
      */
     @RequestMapping(value = "newAccountActivityValidate",method = RequestMethod.POST,produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public Map<String,Object> newAccountActivityValidate(HttpServletRequest request)throws NotFoundException,NotRuleException{
+    public Map<String,Object> newAccountActivityValidate(HttpServletRequest request) {
         String accountId = request.getAttribute("accountId").toString();
         Map<String,Object> activityMap = Maps.newHashMap();
         Date currentTime=TimeUtil.getCurrentDateTime2();
@@ -214,11 +206,10 @@ public class CouponActivityController {
      * 参加手心活动
      * @param request
      * @return
-     * @throws NotFoundException
      */
     @RequestMapping(value = "joinActivity2",method = RequestMethod.POST,produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public JoinList joinActivity2(HttpServletRequest request, String plateNumber) throws NotFoundException,NotRuleException{
+    public JoinList joinActivity2(HttpServletRequest request, String plateNumber) throws NotRuleException{
         Object accountId = request.getAttribute("accountId");
         if(StringUtils.isEmpty(plateNumber)){
             throw new NotRuleException("joinActivity2.plateNumber");
@@ -250,7 +241,7 @@ public class CouponActivityController {
      */
     @RequestMapping(value = "joinVerify",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public JoinList JoinVerify(HttpServletRequest request) throws NotFoundException,NotRuleException{
+    public JoinList JoinVerify(HttpServletRequest request) throws NotFoundException {
         Object accountId = request.getAttribute("accountId");
 
         JoinList joinList = joinListRepository.findByAccountIdAndCreateTime(accountId.toString(),DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
@@ -342,16 +333,15 @@ public class CouponActivityController {
      * @param phoneNumber
      * @return
      * @throws NotRuleException
-     * @throws NotFoundException
      */
     @RequestMapping(value = "/giveCoupons", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<VerifyResult>   giveCoupons(
             HttpServletRequest request, String driverLicense, String phoneNumber, String plateNumber
-    ) throws NotRuleException, NotFoundException {
+    ) throws NotRuleException {
         long startTime = new Date().getTime();
         Object accountId = request.getAttribute("accountId");
-        Account account = accountService.findById(accountId.toString());
+        Account account = accountService.findOne(accountId.toString());
         logger.info("openid:"+account.getOpenid()+"-----二期开始发券-----");
 
         if(StringUtils.isEmpty(driverLicense)){
@@ -507,14 +497,12 @@ public class CouponActivityController {
      * @param phoneNumber
      * @param plateNumber
      * @return
-     * @throws NotRuleException
-     * @throws NotFoundException
      */
     @RequestMapping(value = "/getCareCoupons", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public boolean  getCareCoupons(
             HttpServletRequest request, String name, String phoneNumber, String plateNumber
-    ) throws NotRuleException, NotFoundException {
+    ) {
         Object accountId = request.getAttribute("accountId");
         boolean flag = false;
         List<CareJuanList>  getCareJuanList = careJuanListRepository.findByAccountId(accountId.toString());
@@ -533,13 +521,12 @@ public class CouponActivityController {
      * @param request
      * @return
      * @throws NotRuleException
-     * @throws NotFoundException
      */
     @RequestMapping(value = "/giveLoveCarCoupons", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public LoveCarLog  giveLoveCarCoupons(
             HttpServletRequest request
-    ) throws NotRuleException, NotFoundException {
+    ) throws NotRuleException {
         Object accountId = request.getAttribute("accountId");
         logger.info("accountId:"+accountId+"-----爱车10元优惠券-----");
         List<LoveCarLog>  loveCarLogs= loveCarRepository.findByAccountId(accountId.toString());
@@ -561,14 +548,12 @@ public class CouponActivityController {
      *  是否已经领取爱车大礼包优惠券
      * @param request
      * @return
-     * @throws NotRuleException
-     * @throws NotFoundException
      */
     @RequestMapping(value = "/getLoveCarCoupons", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public boolean  getCareCoupons(
             HttpServletRequest request
-    ) throws NotRuleException, NotFoundException {
+    ) {
         Object accountId = request.getAttribute("accountId");
         boolean flag = false;
         List<LoveCarLog>  loveCarLogs= loveCarRepository.findByAccountId(accountId.toString());
@@ -617,11 +602,10 @@ public class CouponActivityController {
      * @param request
      * @param queryLogParam
      * @return
-     * @throws NotFoundException
      * @throws MissingParameterException
      */
     @RequestMapping(value = "queryLog", method = RequestMethod.POST ,produces = MediaType.APPLICATION_JSON_VALUE)
-    public QueryLog queryLog(HttpServletRequest request,@RequestBody QueryLogParam queryLogParam)throws NotFoundException, MissingParameterException {
+    public QueryLog queryLog(HttpServletRequest request,@RequestBody QueryLogParam queryLogParam)throws MissingParameterException {
         Object accountId = request.getAttribute("accountId");
 
         if (ObjectUtils.isEmpty(queryLogParam)) {

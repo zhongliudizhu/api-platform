@@ -41,7 +41,7 @@ public class OilOrderShutdownController {
 
 
     @Scheduled(cron = "0 0/30 * * * ?")
-    public void shutdownOilOrder() throws NotRuleException {
+    public void shutdownOilOrder() {
         Date end = DateUtil.addMinute(DateUtil.getNowDate(),-30);
         Date begin = DateUtil.addYear(end,-1);
         //查出未付款未关闭的订单
@@ -60,7 +60,7 @@ public class OilOrderShutdownController {
     }
 
     @Scheduled(cron = "0 0/30 * * * ?")
-    public void shutdownFlowOrder() throws NotRuleException {
+    public void shutdownFlowOrder() {
         Date end = DateUtil.addHour(DateUtil.getNowDate(),-1);
         Date begin = DateUtil.addYear(end,-1);
         //查出未付款未关闭的订单

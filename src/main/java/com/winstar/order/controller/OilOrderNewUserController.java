@@ -65,7 +65,7 @@ public class OilOrderNewUserController {
     public ResponseEntity addOrder(@RequestParam String itemId
             , @RequestParam String activityId
             , @RequestParam(required = false, defaultValue = "") String couponId
-            , HttpServletRequest request) throws NotFoundException, NotRuleException, InvalidParameterException {
+            , HttpServletRequest request) throws NotFoundException, NotRuleException {
         logger.error("优惠券id，couponId：" + couponId);
         String accountId = accountService.getAccountId(request);
         String serialNumber = OilOrderUtil.getSerialNumber();

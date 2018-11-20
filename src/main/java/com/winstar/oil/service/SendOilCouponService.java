@@ -158,7 +158,7 @@ public class SendOilCouponService {
      * 发卡
      */
     @Transactional
-    private Map<String,String> send(Goods goods,String accountId,String orderId) throws Exception{
+    private Map<String,String> send(Goods goods,String accountId,String orderId) {
         Map<String,String> map = Maps.newHashMap();
         if(WsdUtils.isEmpty(goods)){
             logger.info("无此商品！");

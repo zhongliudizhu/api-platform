@@ -1,6 +1,5 @@
 package com.winstar.interceptors;
 
-import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.exception.ServiceUnavailableException;
 import com.winstar.user.entity.AccessToken;
@@ -11,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -46,15 +44,16 @@ public class AuthInterceptor implements HandlerInterceptor {
         excludeUrls.add("/api/v1/cbc/valuations");
         excludeUrls.add("/api/v1/cbc/time/nowTime");
 
-        excludeUrls.add("/cbc-api/error");
-        excludeUrls.add("/cbc-api/api/v1/cbc/OneMoneyCouponRecord/save");
-        excludeUrls.add("/cbc-api/api/v1/cbc/payCallback");
-        excludeUrls.add("/cbc-api/api/v1/cbc/wxPay/notify");
-        excludeUrls.add("/cbc-api/api/v1/cbc/creditPay/notify");
-        excludeUrls.add("/cbc-api/api/v1/orders/invoice/callBack");
-        excludeUrls.add("/cbc-api/api/v1/cbc/mycoupon/giveCoupon");
-        excludeUrls.add("/cbc-api/api/v1/cbc/valuations");
-        excludeUrls.add("/cbc-api/api/v1/cbc/time/nowTime");
+
+        excludeUrls.add("/ccb-api/error");
+        excludeUrls.add("/ccb-api/api/v1/cbc/OneMoneyCouponRecord/save");
+        excludeUrls.add("/ccb-api/api/v1/cbc/payCallback");
+        excludeUrls.add("/ccb-api/api/v1/cbc/wxPay/notify");
+        excludeUrls.add("/ccb-api/api/v1/cbc/creditPay/notify");
+        excludeUrls.add("/ccb-api/api/v1/orders/invoice/callBack");
+        excludeUrls.add("/ccb-api/api/v1/cbc/mycoupon/giveCoupon");
+        excludeUrls.add("/ccb-api/api/v1/cbc/valuations");
+        excludeUrls.add("/ccb-api/api/v1/cbc/time/nowTime");
     }
 
     @Override
@@ -77,7 +76,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        AccessToken accessToken = ServiceManager.accessTokenRepository.findByTokenId(tokenId);
+        AccessToken accessToken = ServiceManager.accessTokenService.findByTokenId(tokenId);
         if (checkAccount(response, accessToken)) {
 
             logger.info("url:"+request.getRequestURI());
@@ -89,9 +88,9 @@ public class AuthInterceptor implements HandlerInterceptor {
         return true;
     }
 
-    private boolean checkAccount(HttpServletResponse response, AccessToken accessToken) throws ServiceUnavailableException,NotRuleException {
+    private boolean checkAccount(HttpServletResponse response, AccessToken accessToken) throws ServiceUnavailableException {
 
-        if (null == accessToken || null == ServiceManager.accountRepository.findOne(accessToken.getAccountId())) {
+        if (null == accessToken || null == ServiceManager.accountService.findOne(accessToken.getAccountId())) {
 
             unauthorized(response);
             return true;
@@ -99,7 +98,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         return false;
     }
 
-    private void unauthorized(HttpServletResponse response) throws ServiceUnavailableException,NotRuleException {
+    private void unauthorized(HttpServletResponse response) throws ServiceUnavailableException {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         Map<String, Object> map = new HashMap<>();
         map.put("code","user.isNot.unauthorized.NotRule");
@@ -123,12 +122,12 @@ public class AuthInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object o, ModelAndView modelAndView) throws Exception {
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object o, ModelAndView modelAndView) {
 
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object o, Exception e) throws Exception {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object o, Exception e) {
 
     }
 }

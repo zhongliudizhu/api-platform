@@ -2,7 +2,7 @@ server:
   port: ${{SERVER_PORT}:20001}
   tomcat:
        uri-encoding: UTF-8
-  context-path: /cbc-api
+  context-path: /ccb-api
 
 management:
   port: ${{MANAGEMENT_PORT}:20002}

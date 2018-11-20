@@ -3,8 +3,14 @@ package com.winstar.couponActivity.controller;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
-import com.winstar.couponActivity.entity.*;
-import com.winstar.couponActivity.repository.*;
+import com.winstar.couponActivity.entity.CouponActivity;
+import com.winstar.couponActivity.entity.OilSubsidyVerifyLog;
+import com.winstar.couponActivity.entity.SevenWhiteList;
+import com.winstar.couponActivity.entity.WhiteList;
+import com.winstar.couponActivity.repository.CouponActivityRepository;
+import com.winstar.couponActivity.repository.OilSubsidyVerifyLogRepository;
+import com.winstar.couponActivity.repository.SevenWhiteListRepository;
+import com.winstar.couponActivity.repository.WhiteListRepository;
 import com.winstar.couponActivity.utils.ActivityIdEnum;
 import com.winstar.couponActivity.utils.TimeUtil;
 import com.winstar.exception.*;
@@ -40,18 +46,12 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * OilSubsidyController
- * 百万加油补贴--第三季度活动
- *
- * @author: Big BB
- * @create 2018-06-21 16:59
- * @DESCRIPTION:
- **/
+ * Created by qyc on 2018/10/25.
+ */
 @RestController
-@RequestMapping("/api/v1/cbc/oilSubsidy")
-public class OilSubsidyController {
+@RequestMapping("/api/v1/cbc/oilNewPhoneBank")
+public class OilNewPhoneBankController {
     public static final Logger logger = LoggerFactory.getLogger(OilSubsidyController.class);
-
     @Autowired
     private AccountService accountService;
     @Autowired
@@ -59,46 +59,33 @@ public class OilSubsidyController {
     @Autowired
     ActivityRepository activityRepository;
     @Autowired
-    WhiteListRepository whiteListRepository;
-    @Autowired
-    SixWhiteListRepository sixWhiteListRepository;
-    @Autowired
     SevenWhiteListRepository sevenWhiteListRepository;
     @Autowired
-    EightWhiteListRepository eightWhiteListRepository;
+    WhiteListRepository whiteListRepository;
     @Autowired
     OilSubsidyVerifyLogRepository oilSubsidyVerifyLogRepository;
     @Autowired
     MyCouponRepository myCouponRepository;
     @Autowired
     private CouponService couponService;
-
     @Value("${send_sms_url}")
     String sendSmsUrl;
     @Value("${verify_sms_url}")
     String verifySmsUrl;
-
-
     /**
      * 活动以及活动状态查询
      * @param request
      * @return
      */
-    @RequestMapping(value = "find",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "sevenfind",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public Activity getActivity(HttpServletRequest request) {
         Object accountId = request.getAttribute("accountId");
         Activity activity = new Activity();
-        activity.setName("百万加油补贴--第三季度活动");
-        activity.setType(105);
+        activity.setName("新开通手机银行购--第四季度活动");
+        activity.setType(107);
 
-//        OilSubsidyVerifyLog oilSubsidyVerifyLog = oilSubsidyVerifyLogRepository.findByAccountId(accountId.toString());
-//        if(!ObjectUtils.isEmpty(oilSubsidyVerifyLog)){
-//           activity.setIsVerify(1); //0 :未验证  1：已验证
-//        }else{
-//            activity.setIsVerify(0);
-//        }
-        List<MyCoupon> myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(105),0, DateUtil.getInputDate("2018-07-01 00:00:01"), DateUtil.getInputDate("2019-01-31 23:59:59"));//0: 未使用
+        List<MyCoupon> myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(107),0, DateUtil.getInputDate("2018-07-01 00:00:01"), DateUtil.getInputDate("2018-12-31 23:59:59"));//0: 未使用
         if(!ObjectUtils.isEmpty(myCoupons)){
             activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
         }else{
@@ -106,18 +93,16 @@ public class OilSubsidyController {
         }
         return  activity;
     }
-
-
-    @RequestMapping(value = "/giveCoupons", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/sevengiveCoupons", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public Activity giveCoupons(HttpServletRequest request,
                                 String driverLicense,
                                 String phoneNumber,
                                 String msgVerifyCode,
                                 String msgVerifyId)
-       throws NotRuleException, NotFoundException {
+            throws NotRuleException, NotFoundException {
         Object accountId = request.getAttribute("accountId");
         Account account = accountService.findOne(accountId.toString());
-        logger.info("openid:"+account.getOpenid()+"-----百万加油补贴活动【发券】-----");
+        logger.info("openid:"+account.getOpenid()+"-----新开通手机银行【发券】-----");
         logger.info("driverLicense:"+driverLicense+"|phoneNumber:"+phoneNumber
                 +"|msgVerifyCode:"+msgVerifyCode+"|msgVerifyId:"+msgVerifyId);
 
@@ -134,12 +119,13 @@ public class OilSubsidyController {
             throw new NotRuleException("couponActivity.msgVerifyId");
         }
         String infoCard ="";
+
         //根据身份证跟电话号码查询交安卡卡号
-        String whiteListcardNumber = whiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber);
-        if(ObjectUtils.isEmpty(whiteListcardNumber)){
+        String sevenWhiteList = sevenWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber);
+        if(ObjectUtils.isEmpty(sevenWhiteList)){
             throw new NotFoundException("couponActivity.notWhiteLists");
         }else {
-            infoCard = whiteListcardNumber;
+            infoCard = sevenWhiteList;
         }
         //设置短息
         MsgContent mc = new MsgContent();
@@ -164,36 +150,23 @@ public class OilSubsidyController {
 
 
         Activity activity = getActivityInfo();
-        //判断该用户是否存在106白名单
-        SixWhiteList ifSixWhiteList = sixWhiteListRepository.findByPhoneNumberAndType(phoneNumber,106);
-        //判断该用是否存在107白名单
-        SevenWhiteList ifSevenWhiteList = sevenWhiteListRepository.findByPhoneNumberAndType(phoneNumber,107);
-        //判断该用户是否在108白名单
-        EightWhiteList ifEightWhiteList = eightWhiteListRepository.findByPhoneNumberAndType(phoneNumber,108);
-        //判断是否领取105活动优惠券
-        WhiteList whiteList = whiteListRepository.checkWhiteList(phoneNumber, 0);
-        //判断是否领取106活动优惠券
-        SixWhiteList sixWhiteList = sixWhiteListRepository.findByPhoneNumberAndIsGetAndType(phoneNumber,0,106);
-        //判断是否领取107活动优惠券
-        SevenWhiteList sevenWhiteList = sevenWhiteListRepository.findByPhoneNumberAndIsGetAndType(phoneNumber,0,107);
-        //判断是否领取108活动优惠券
-        EightWhiteList eightWhiteList = eightWhiteListRepository.findByPhoneNumberAndIsGetAndType(phoneNumber,0,108);
-        if (ObjectUtils.isEmpty(ifSixWhiteList)&&ObjectUtils.isEmpty(ifSevenWhiteList)&&ObjectUtils.isEmpty(ifEightWhiteList)){
-            if(ObjectUtils.isEmpty(whiteList)){
-                logger.info("电话号码:"+phoneNumber+"已认证过105活动");
-                throw new NotFoundException("couponActivity.notWhiteLists");
+        //判断该用户是否存在在105白名单
+        WhiteList ifWhitList= whiteListRepository.checkIfWhiteList(phoneNumber);
+        //判断是否参加了105白名单
+        WhiteList fiveWhiteList = whiteListRepository.checkWhiteList(phoneNumber, 0);
+        //判断是否领取107优惠券
+        SevenWhiteList whiteList = sevenWhiteListRepository.findByPhoneNumberAndIsGetAndType(phoneNumber,0,107);
+        if(ObjectUtils.isEmpty(ifWhitList)){
+        if(ObjectUtils.isEmpty(whiteList)){
+            logger.info("电话号码:"+phoneNumber+"已认证过107活动");
+            throw new NotFoundException("couponActivity.notWhiteLists");
             }
         }else {
-            if(ObjectUtils.isEmpty(whiteList)||ObjectUtils.isEmpty(sixWhiteList)||ObjectUtils.isEmpty(sevenWhiteList)||ObjectUtils.isEmpty(eightWhiteList)){
-                logger.info("电话号码:"+phoneNumber+"已认证过105活动或者106活动或者107活动或者108活动");
+            if(ObjectUtils.isEmpty(whiteList)||ObjectUtils.isEmpty(fiveWhiteList)){
+                logger.info("电话号码:"+phoneNumber+"已认证过105活动或者107活动");
                 throw new NotFoundException("couponActivity.notWhiteLists");
             }
         }
-
-//        else{
-//            activity.setIsVerify(1);//已验证
-//            saveOilSubsidyVerifyLog(accountId.toString());//记录验证日志
-//        }
 
         String nowMonth = TimeUtil.getMonth();
         try {
@@ -223,11 +196,34 @@ public class OilSubsidyController {
 
     public Activity getActivityInfo(){
         Activity activity = new Activity();
-        activity.setName("百万加油补贴--第三季度活动");
-        activity.setType(ActivityIdEnum.ACTIVITY_ID_105.getActivity());
+        activity.setName("新开通手机银行--第四季度活动");
+        activity.setType(ActivityIdEnum.ACTIVITY_ID_107.getActivity());
         activity.setIsVerify(0);
         activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_0.getActivity());
         return  activity;
+    }
+
+    /**
+     * 异步发卷
+     * @param accountId
+     * @param whiteList
+     */
+    @Async
+    public void giveCouponInfo(String accountId, SevenWhiteList whiteList){
+        List<MyCoupon> coupons = myCouponRepository.findByAccountIdAndActivityId(accountId, "107");
+        if(ObjectUtils.isEmpty(coupons)){
+            CouponActivity couponActivity = couponActivityRepository.findOne("107");
+
+            String couponName = "C3"+"-" + WsdUtils.getRandomNumber(8);
+            couponService.cbcsendCoupon_freedom(
+                    accountId,"107",couponActivity.getAmount(),DateUtil.getNextMonthEnd(),couponActivity.getUseRule(), couponName, couponActivity.getName());
+            //回填白名单  2、记录发送时间
+            logger.info("accountId:"+accountId+"|回填白名单");
+            whiteList.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
+            whiteList.setAccountId(accountId);
+            whiteList.setIsGet(1);
+            sevenWhiteListRepository.save(whiteList);
+        }
     }
     /**
      * cbc发送验证码(建行短信服务)
@@ -240,16 +236,16 @@ public class OilSubsidyController {
      * @throws NotFoundException
      * @throws ServiceUnavailableException
      */
-    @PostMapping(value = "/cbcSendAuthMsg", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity sendAuth(@RequestParam String driverLicense, @RequestParam String phone,String infoCard, HttpServletRequest request)
+    @PostMapping(value = "/cbcSevenSendAuthMsg", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity sendAuth(@RequestParam String driverLicense, @RequestParam String phone, String infoCard, HttpServletRequest request)
             throws NotRuleException {
-        //105白名单
-        String whiteListcardNumber = whiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
-        if(ObjectUtils.isEmpty(whiteListcardNumber)){
-            logger.info("身份证"+driverLicense+"电话号码"+phone+"用户不在105白名单");
+        //107白名单
+        String sevenWhiteList = sevenWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
+        if(ObjectUtils.isEmpty(sevenWhiteList)){
+            logger.info("身份证"+driverLicense+"电话号码"+phone+"用户不在107白名单");
             throw new NotRuleException("WhiteLists.notWhiteLists");
         }else {
-            infoCard = whiteListcardNumber;
+            infoCard = sevenWhiteList;
         }
         MsgContent mc = new MsgContent();
         mc.setKh(infoCard);
@@ -272,29 +268,6 @@ public class OilSubsidyController {
             logger.info(new StringBuilder("发送失败01：infoCard-->").append(infoCard).append("phone-->").append(phone).toString());
             logger.error(new StringBuilder("发送失败02,").append(sendVerifyCodeMsgResult.getErrorMessage()).append(infoCard).append("_").append(phone).toString());
             throw new NotRuleException(sendVerifyCodeMsgResult.getErrorMessage());
-        }
-    }
-
-    /**
-     * 异步发卷
-     * @param accountId
-     * @param whiteList
-     */
-    @Async
-    public void giveCouponInfo(String accountId, WhiteList whiteList){
-        List<MyCoupon> coupons = myCouponRepository.findByAccountIdAndActivityId(accountId, "105");
-        if(ObjectUtils.isEmpty(coupons)){
-            CouponActivity couponActivity = couponActivityRepository.findOne("105");
-
-            String couponName = "C1"+"-" + WsdUtils.getRandomNumber(8);
-            couponService.sendCoupon_freedom(
-                    accountId,"105",couponActivity.getAmount(),DateUtil.getNextMonthEnd(),couponActivity.getUseRule(), couponName, couponActivity.getName());
-            //回填白名单  2、记录发送时间
-            logger.info("accountId:"+accountId+"|回填白名单");
-            whiteList.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
-            whiteList.setAccountId(accountId);
-            whiteList.setIsGet(1);
-            whiteListRepository.save(whiteList);
         }
     }
 }

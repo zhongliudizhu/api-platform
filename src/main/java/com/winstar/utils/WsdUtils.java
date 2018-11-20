@@ -29,11 +29,11 @@ public class WsdUtils {
         if (pObj == "")
             return true;
         if (pObj instanceof String) {
-            if (((String) pObj).trim().length() == 0) return true;
+            return ((String) pObj).trim().length() == 0;
         } else if (pObj instanceof Collection) {
-            if (((Collection) pObj).size() == 0) return true;
+            return ((Collection) pObj).size() == 0;
         } else if (pObj instanceof Map) {
-            if (((Map) pObj).size() == 0) return true;
+            return ((Map) pObj).size() == 0;
         }
         return false;
     }
@@ -50,11 +50,11 @@ public class WsdUtils {
         if (pObj == "")
             return false;
         if (pObj instanceof String) {
-            if (((String) pObj).trim().length() == 0) return false;
+            return ((String) pObj).trim().length() != 0;
         } else if (pObj instanceof Collection) {
-            if (((Collection) pObj).size() == 0) return false;
+            return ((Collection) pObj).size() != 0;
         } else if (pObj instanceof Map) {
-            if (((Map) pObj).size() == 0) return false;
+            return ((Map) pObj).size() != 0;
         }
         return true;
     }

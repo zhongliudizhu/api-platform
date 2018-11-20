@@ -18,6 +18,6 @@ public interface MileageConsumLogRepository extends JpaRepository<MileageConsumL
      * @param accountId
      * @return
      */
-    @Query("SELECT SUM(t.mileageNum) FROM MileageConsumLog t WHERE t.accountId =?1 AND t.state = '1'GROUP BY t.accountId")
+    @Query("SELECT SUM(t.mileageNum) FROM MileageConsumLog t WHERE t.accountId =?1 AND t.state = '1'")
     String sumConsumerMileage(String accountId);
 }

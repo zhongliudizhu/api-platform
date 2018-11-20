@@ -1,4 +1,4 @@
-package com.winstar.obu.entity;
+package com.winstar.couponActivity.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,22 +10,17 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.util.Date;
 
 /**
- * WhiteList
- *
- * @author: Big BB
- * @create 2018-03-16 14:10
- * @DESCRIPTION:
- **/
+ * Created by qyc on 2018/10/25.
+ */
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "cbc_obu_white_list")
-public class ObuWhiteList {
+@Table(name = "cbc_six_white_list")
+public class SixWhiteList {
     /**
      * 唯一标识
      */
@@ -38,17 +33,15 @@ public class ObuWhiteList {
 
     private String phoneNumber;
 
-    private String name;
+    private String time;
 
-    private Date timeStart;
-
-    private Date timeEnd;
-
-    private String etc;
+    private Integer type;
 
     private String coupon;
 
-    private Date sendTime;
+    private String sendTime;
+
+    private Integer sign;
 
     private String accountId;
 
@@ -57,5 +50,4 @@ public class ObuWhiteList {
     private String createTime;
     //交安卡卡号
     private String cardNumber;
-
 }

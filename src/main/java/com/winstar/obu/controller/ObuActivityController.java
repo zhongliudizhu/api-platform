@@ -1,24 +1,21 @@
 package com.winstar.obu.controller;
 
-import com.winstar.ClientErrorHandler;
-import com.winstar.couponActivity.entity.WhiteList;
-import com.winstar.couponActivity.utils.TimeUtil;
+import com.winstar.couponActivity.repository.WhiteListRepository;
 import com.winstar.exception.InvalidParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.exception.ServiceUnavailableException;
 import com.winstar.obu.entity.*;
-import com.winstar.obu.repository.*;
+import com.winstar.obu.repository.ObuAccountRepository;
+import com.winstar.obu.repository.ObuConfigRepository;
+import com.winstar.obu.repository.ObuRepository;
+import com.winstar.obu.repository.ObuWhiteListRepository;
 import com.winstar.obu.service.ObuDotService;
 import com.winstar.obu.service.ObuTokenService;
-import com.winstar.obu.utils.Result;
 import com.winstar.obu.utils.SendSmsRequest;
 import com.winstar.obu.utils.SmsUtil;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.StringFormatUtils;
-import com.winstar.user.entity.AccessToken;
-import com.winstar.user.entity.Account;
-import com.winstar.user.param.AccountParam;
 import com.winstar.user.param.CCBAuthParam;
 import com.winstar.user.param.MsgContent;
 import com.winstar.user.param.UpdateAccountParam;
@@ -31,25 +28,18 @@ import com.winstar.user.vo.SendVerifyCodeMsgResult;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.repository.cdi.Eager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static com.winstar.user.utils.ServiceManager.accountService;
 
 /**
  * ObuActivityController
@@ -76,6 +66,8 @@ public class ObuActivityController {
     ObuAccountRepository obuAccountRepository;
     @Autowired
     ObuTokenService obuTokenService;
+    @Autowired
+    WhiteListRepository whiteListRepository;
     @Value("${send_sms_url}")
     String sendSmsUrl;
     @Value("${verify_sms_url}")
@@ -91,12 +83,11 @@ public class ObuActivityController {
      *  短信服务（公司内部）-发送短信
      * @param request
      * @return
-     * @throws NotFoundException
      */
     @RequestMapping(value = "sendSMS", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     public ResponseEntity  sendSMS(HttpServletRequest request,
                                   @RequestParam String phoneNumber,
-                                  @RequestParam(defaultValue = "0")String type) throws NotFoundException, NotRuleException{
+                                  @RequestParam(defaultValue = "0")String type) {
         ResponseEntity resp = SmsUtil.sendSms(phoneNumber,sendSmsUrl);
 
         if(type.equals("0")){
@@ -168,7 +159,7 @@ public class ObuActivityController {
 
 
     /**
-     * 发送验证码(建行短信服务)
+     * OBU发送验证码(建行短信服务)
      *
      * @param infoCard
      * @param phone
@@ -179,9 +170,15 @@ public class ObuActivityController {
      * @throws ServiceUnavailableException
      */
     @PostMapping(value = "/sendAuthMsg", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity sendAuth(@RequestParam String infoCard, @RequestParam String phone, HttpServletRequest request)
+    public ResponseEntity sendAuth(@RequestParam String driverLicense, @RequestParam String phone,String infoCard,HttpServletRequest request)
             throws NotRuleException {
-
+        //OBU白名单
+        String obuWhiteListcardNumber = obuWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
+        if(ObjectUtils.isEmpty(obuWhiteListcardNumber)){
+            throw new NotRuleException("obu.notWhiteLists");
+        }else {
+            infoCard = obuWhiteListcardNumber;
+        }
         MsgContent mc = new MsgContent();
         mc.setKh(infoCard);
         if(!StringUtils.isEmpty(phone)){
@@ -218,7 +215,6 @@ public class ObuActivityController {
     @RequestMapping(value = "check", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
     public ObuInfo checkObu(HttpServletRequest request,
                             String driverLicense,
-                            String infoCard,
                             String phoneNumber,
                             String msgVerifyCode,
                             String msgVerifyId) throws NotRuleException, NotFoundException, ParseException {
@@ -234,9 +230,6 @@ public class ObuActivityController {
         if(StringUtils.isEmpty(driverLicense)){
             throw new NotRuleException("obu.driverLicense");
         }
-        if(StringUtils.isEmpty(infoCard)){
-            throw new NotRuleException("obu.infoCard");
-        }
         if(StringUtils.isEmpty(phoneNumber)){
             throw new NotRuleException("obu.phoneNumber");
         }
@@ -245,6 +238,14 @@ public class ObuActivityController {
         }
         if(StringUtils.isEmpty(msgVerifyId)){
             throw new NotRuleException("couponActivity.msgVerifyId");
+        }
+       String infoCard ="";
+        //根据身份证跟电话号码查询交安卡卡号
+        String obuWhiteListcardNumber = obuWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber);
+        if(ObjectUtils.isEmpty(obuWhiteListcardNumber)){
+            throw new NotFoundException("obu.notWhiteLists");
+        }else {
+            infoCard = obuWhiteListcardNumber;
         }
 
         //设置短息
@@ -345,7 +346,7 @@ public class ObuActivityController {
         String tokenId = request.getHeader("obu_token_id");
         if(StringUtils.isEmpty(tokenId)){
             throw new NotRuleException("no_oauth");
-        };
+        }
         logger.info("myObu:"+tokenId);
         ObuToken obuToken = obuTokenService.findByTokenId(tokenId);
         if(ObjectUtils.isEmpty(obuToken)){
@@ -362,11 +363,9 @@ public class ObuActivityController {
      * 获取活动开关
      * @param request
      * @return
-     * @throws NotFoundException
-     * @throws NotRuleException
      */
     @RequestMapping(value = "getSwitch", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    public ObuConfig getSwitch(HttpServletRequest request) throws NotFoundException, NotRuleException{
+    public ObuConfig getSwitch(HttpServletRequest request) {
         ObuConfig obuConfig = obuConfigRepository.findByType(2);
         if(ObjectUtils.isEmpty(obuConfig)){
              obuConfig = new ObuConfig();
@@ -387,11 +386,9 @@ public class ObuActivityController {
      *
      * @param request
      * @return
-     * @throws NotFoundException
-     * @throws NotRuleException
      */
     @RequestMapping(value = "getRandomCode", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
-    public ResponseEntity  getRandomCode(HttpServletRequest request) throws NotFoundException, NotRuleException{
+    public ResponseEntity  getRandomCode(HttpServletRequest request) {
         logger.info("获取图片验证码");
         ResponseEntity resp = SmsUtil.getRandomCode(getRandomCodeImageUrl);
         return resp;
@@ -402,7 +399,7 @@ public class ObuActivityController {
      * 2、发送短信
      */
     @RequestMapping(value = "smsImageSend", method = RequestMethod.POST, produces = "application/json;charset=utf-8")
-    public ResponseEntity  smsImageSend(@RequestBody SendSmsRequest sendSmsRequest) throws NotFoundException, NotRuleException{
+    public ResponseEntity  smsImageSend(@RequestBody SendSmsRequest sendSmsRequest) {
         logger.info("验证图片验证码，并发短息");
         ResponseEntity resp = SmsUtil.verifyImageSmsUrl(verifyImageSmsUrl,sendSmsRequest);
         return resp;

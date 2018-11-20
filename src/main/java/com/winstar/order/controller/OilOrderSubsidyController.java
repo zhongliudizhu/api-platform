@@ -4,9 +4,7 @@ import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
 import com.winstar.cashier.construction.utils.Arith;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.service.CouponService;
-import com.winstar.couponActivity.entity.CareJuanList;
 import com.winstar.couponActivity.repository.CareJuanListRepository;
-import com.winstar.couponActivity.utils.ActivityIdEnum;
 import com.winstar.exception.InvalidParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
@@ -18,24 +16,17 @@ import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
 import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
-import com.winstar.user.utils.ServiceManager;
-import net.sf.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author shoo on 2017/7/7 13:52.
@@ -73,9 +64,9 @@ public class OilOrderSubsidyController {
     public ResponseEntity addOrder(@RequestParam String itemId
             , @RequestParam String activityId
             , @RequestParam String couponId
-            , HttpServletRequest request) throws NotFoundException, NotRuleException, InvalidParameterException {
+            , HttpServletRequest request) throws NotFoundException, NotRuleException {
         String accountId = accountService.getAccountId(request);
-        Account account = accountService.findById(accountId);
+        Account account = accountService.findOne(accountId);
         String serialNumber = OilOrderUtil.getSerialNumber();
         long startTime = System.currentTimeMillis();
 

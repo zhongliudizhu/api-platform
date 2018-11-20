@@ -142,13 +142,8 @@ public class HttpsRequest implements IServiceRequest{
      * @param url    API地址
      * @param xmlObj 要提交的XML数据对象
      * @return API回包的实际数据
-     * @throws IOException
-     * @throws KeyStoreException
-     * @throws UnrecoverableKeyException
-     * @throws NoSuchAlgorithmException
-     * @throws KeyManagementException
      */
-    public String sendPostNoSSL(String url, Object xmlObj) throws IOException, KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyManagementException {
+    public String sendPostNoSSL(String url, Object xmlObj) {
     	httpClient = HttpClients.custom()
                 .build();
         //根据默认超时限制初始化requestConfig

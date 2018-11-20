@@ -45,10 +45,10 @@ public class LoveActivityController {
      * @return 0 or 1
      */
     @PostMapping(value = "/giveCoupon", produces = "application/json;charset=utf-8")
-    public ResponseEntity giveCoupon( HttpServletRequest request ) throws NotFoundException, NotRuleException {
+    public ResponseEntity giveCoupon( HttpServletRequest request ) throws NotRuleException {
 
         String accountId = accountService.getAccountId(request);
-        Account account = accountService.findById(accountId);
+        Account account = accountService.findOne(accountId);
         List<CouponLog> couponLogs = couponLogRepository.findByAccountId(accountId);
         String result = "0";
         if(couponLogs.size()<=0){
@@ -63,7 +63,7 @@ public class LoveActivityController {
      */
     @ResponseBody
     @GetMapping(value = "/insurance", produces = "application/json;charset=utf-8")
-    public ResponseEntity getInsurance( HttpServletRequest request ) throws NotFoundException, NotRuleException {
+    public ResponseEntity getInsurance( HttpServletRequest request ) throws NotRuleException {
         String accountId = accountService.getAccountId(request);
         List<Insurance> insurances = insuranceRepository.findByAccountId(accountId);
         if(insurances.size()>0){
@@ -92,7 +92,7 @@ public class LoveActivityController {
      * @return 保险
      */
     @PostMapping(value = "/insurance", produces = "application/json;charset=utf-8")
-    public ResponseEntity saveInsurance( HttpServletRequest request, @RequestBody Insurance insurance) throws MissingParameterException, NotRuleException, NotFoundException {
+    public ResponseEntity saveInsurance( HttpServletRequest request, @RequestBody Insurance insurance) throws MissingParameterException, NotRuleException {
         if( StringUtils.isEmpty(insurance.getPersonName()) || StringUtils.isEmpty(insurance.getIdentNumber()) || StringUtils.isEmpty(insurance.getEmail()) || StringUtils.isEmpty(insurance.getPhoneNumber())){
             throw new MissingParameterException("missPara.love");
         }

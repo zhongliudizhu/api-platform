@@ -58,10 +58,10 @@ public class MyOilCouponService {
                     list.add(cb.equal(root.<String>get("accountId"), accountId));
                 }
                 if (startTime!=null) {
-                    list.add(cb.greaterThan(root.<Date>get("useDate"), startTime));
+                    list.add(cb.greaterThan(root.get("useDate"), startTime));
                 }
                 if (endTime!=null) {
-                    list.add(cb.lessThan(root.<Date>get("useDate"), endTime));
+                    list.add(cb.lessThan(root.get("useDate"), endTime));
                 }
                 Predicate[] p = new Predicate[list.size()];
                 if(ids.size()>0){

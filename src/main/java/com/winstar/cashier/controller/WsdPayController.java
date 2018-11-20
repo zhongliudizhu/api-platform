@@ -129,7 +129,7 @@ public class WsdPayController {
         return null;
     }
 
-    private Map<String,Object> validator(HttpServletRequest request, Map map) throws MissingParameterException, InvalidParameterException, NotFoundException, NotRuleException {
+    private Map<String,Object> validator(HttpServletRequest request, Map map) throws MissingParameterException, InvalidParameterException, NotRuleException {
         Map<String,Object> payMap = Maps.newHashMap();
         String accountId = accountService.getAccountId(request);
         String orderNumber = MapUtils.getString(map,"orderNumber");
@@ -269,9 +269,9 @@ public class WsdPayController {
         }
     }
 
-    private void setOpenId(Map<String,Object> payMap,String subBankCode,String accountId) throws NotFoundException{
+    private void setOpenId(Map<String,Object> payMap,String subBankCode,String accountId) {
         if(subBankCode.equals(EnumType.PAY_WAY_WEIXIN_PUBLIC_NUMBER.valueStr())){
-            Account account = accountService.findById(accountId);
+            Account account = accountService.findOne(accountId);
             logger.info("微信公众号支付openId:" + (WsdUtils.isEmpty(account) ? null : account.getOpenid()));
             payMap.put("openId",WsdUtils.isEmpty(account) ? null : account.getOpenid());
             //payMap.put("openId","olQf5t8qj6zXhs4Idms7RfbNa5ek");

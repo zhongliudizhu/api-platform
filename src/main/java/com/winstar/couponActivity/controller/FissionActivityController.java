@@ -16,8 +16,8 @@ import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.repository.ActivityRepository;
 import com.winstar.user.entity.Account;
-import com.winstar.user.repository.AccessTokenRepository;
 import com.winstar.user.service.AccountService;
+import com.winstar.user.utils.ServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,9 +69,6 @@ public class FissionActivityController {
     @Autowired
     CouponActivityTypeRepository couponActivityTypeRepository;
 
-    @Autowired
-    AccessTokenRepository accessTokenRepository;
-
     private Integer FissionType=667;
 
     /**
@@ -121,11 +118,10 @@ public class FissionActivityController {
      * 用户领取优惠券校验
      * @param request
      * @return
-     * @throws NotFoundException
      */
     @RequestMapping(value = "receiverValidate",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public Map<String,Object> receiverValidate(HttpServletRequest request)throws NotFoundException{
+    public Map<String,Object> receiverValidate(HttpServletRequest request) {
         Map<String,Object> activityMap = Maps.newHashMap();
         String accountId = request.getAttribute("accountId").toString();
         //1.判断用户是否在优驾行消费过,判断用户是否领取过优惠券,是否有20元或30元优惠券（未使用或已使用）
@@ -147,7 +143,7 @@ public class FissionActivityController {
                 activityMap.put("ac_state","3");
                 activityMap.put("myCoupon",minMyCoupon);
             }else{
-                Account account=accountService.findById(accountId);
+                Account account=accountService.findOne(accountId);
                 //2.是否绑定交安卡
                 if (StringUtils.isEmpty(account.getAuthInfoCard())){
                     activityMap.put("ac_state","1");//未绑定交安卡
@@ -174,7 +170,7 @@ public class FissionActivityController {
         if(StringUtils.isEmpty(couponSum)){
             throw new NotFoundException("param.is.null");
         }
-        String userId=accessTokenRepository.findByTokenId(inviteUserId).getAccountId();
+        String userId=ServiceManager.accessTokenService.findByTokenId(inviteUserId).getAccountId();
         Map<String,Object> activityMap = Maps.newHashMap();
         String accountId = request.getAttribute("accountId").toString();
         InviteTableLog inviteTableLog;
@@ -329,7 +325,7 @@ public class FissionActivityController {
      */
     @RequestMapping(value = "getInviteList",method = RequestMethod.POST,produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public List<InviteTableList> getInviteList(HttpServletRequest request) throws NotFoundException {
+    public List<InviteTableList> getInviteList(HttpServletRequest request) {
         String accountId = request.getAttribute("accountId").toString();
         return inviteUserService.getInviteList(accountId);
     }
