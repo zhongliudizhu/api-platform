@@ -3,6 +3,7 @@ package com.winstar.weekendBrand.service;
 import com.alibaba.fastjson.JSON;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.exception.NotRuleException;
+import com.winstar.order.entity.OilOrder;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.user.utils.ServiceManager;
 import com.winstar.weekendBrand.entity.OrdersRedPackageInfo;
@@ -44,6 +45,12 @@ public class OrderRedPackageInfoService {
         ServiceManager.ordersRedPackageInfoRepository.save(ordersRedPackageInfoList);
 
         log.info("生成红包结束" + orderId);
+    }
+    @Async
+    public void generageOrdersRedPackageInfoByOrder(OilOrder oilOrder) {
+        if(oilOrder.getActivityId().equals(OrdersRedPackageInfo.ACTIVITY_ID_WEEKEND_BRAND)){
+            ServiceManager.orderRedPackageInfoService.generateOrderRedPackageInfoByOrderId(oilOrder.getId(), new BigDecimal(5));
+        }
     }
 
     /**
