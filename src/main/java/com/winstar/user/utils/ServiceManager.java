@@ -12,6 +12,8 @@ import com.winstar.user.repository.AccountRepository;
 import com.winstar.user.repository.OneMoneyCouponRecordRepository;
 import com.winstar.user.repository.PageViewLogRepository;
 import com.winstar.user.service.*;
+import com.winstar.weekendBrand.repository.OrdersRedPackageInfoRepository;
+import com.winstar.weekendBrand.service.OrderRedPackageInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +43,18 @@ public class ServiceManager {
     public static CarLifeOrdersService carLifeOrdersService;
     public static AccessTokenService accessTokenService;
     public static RedisTools redisTools;
+    public static OrdersRedPackageInfoRepository ordersRedPackageInfoRepository;
+    public static OrderRedPackageInfoService orderRedPackageInfoService;
+
+    @Autowired
+    public void setOrdersRedPackageInfoRepository(OrdersRedPackageInfoRepository ordersRedPackageInfoRepository) {
+        ServiceManager.ordersRedPackageInfoRepository = ordersRedPackageInfoRepository;
+    }
+
+    @Autowired
+    public void setOrderRedPackageInfoService(OrderRedPackageInfoService orderRedPackageInfoService) {
+        ServiceManager.orderRedPackageInfoService = orderRedPackageInfoService;
+    }
 
     @Autowired
     public void setRedisTools(RedisTools redisTools) {
