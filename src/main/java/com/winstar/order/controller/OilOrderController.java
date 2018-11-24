@@ -16,6 +16,7 @@ import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
 import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
+import com.winstar.user.utils.ServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,12 @@ public class OilOrderController {
         Account account = accountService.findOne(accountId);
         String serialNumber = OilOrderUtil.getSerialNumber();
         long startTime = System.currentTimeMillis();
+
+
+        ServiceManager.orderRedPackageInfoService.canBuy(accountId, activityId);
+        ServiceManager.orderRedPackageInfoService.checkActivityStatus(activityId);
+
+
         //2.根据商品id 查询商品
         Goods goods = shopService.findByGoodsId(itemId);
         logger.info("开始添加订单，goodsId：" + goods.getId());
@@ -175,7 +182,7 @@ public class OilOrderController {
         if (activity.getType() == ActivityIdEnum.ACTIVITY_ID_103.getActivity()
                 || activity.getType() == ActivityIdEnum.ACTIVITY_ID_104.getActivity()
                 || activity.getType() == ActivityIdEnum.ACTIVITY_ID_3.getActivity()
-                ||activity.getType() == ActivityIdEnum.ACTIVITY_ID_666.getActivity()) {
+                || activity.getType() == ActivityIdEnum.ACTIVITY_ID_666.getActivity()) {
             if (StringUtils.isEmpty(couponId)) {
                 throw new NotRuleException("notAbility.order");
             }

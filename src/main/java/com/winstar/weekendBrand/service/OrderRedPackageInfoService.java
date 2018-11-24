@@ -11,6 +11,7 @@ import com.winstar.weekendBrand.entity.OrdersRedPackageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -25,6 +26,34 @@ import java.util.*;
 @Service
 @Slf4j
 public class OrderRedPackageInfoService {
+
+
+    /**
+     * 检验重复购买
+     *
+     * @param accountId  accountId
+     * @param activityId activityId
+     * @return true
+     */
+    public void canBuy(String accountId, String activityId) throws NotRuleException {
+        if (OrdersRedPackageInfo.ACTIVITY_ID_WEEKEND_BRAND.equals(activityId) && ServiceManager.oilOrderRepository.countByAccountIdAndActivityId(accountId, activityId, DateUtil.getWeekBegin(), DateUtil.getWeekEnd()) > 0) {
+            throw new NotRuleException("justOnce.weekendBrand");
+        }
+    }
+
+    /**
+     * 校验活动状态
+     *
+     * @throws NotRuleException
+     */
+    public void checkActivityStatus(String activityId) throws NotRuleException {
+        int leftDays =ServiceManager.weekEndBrandService.calculateWeek(6, Integer.valueOf(DateUtil.getWeekOfDate(new Date())));
+        if (activityId.equals(OrdersRedPackageInfo.ACTIVITY_ID_WEEKEND_BRAND)
+                && 0 != leftDays
+                && !StringUtils.isEmpty(activityId))
+            throw new NotRuleException("illegalRequest");
+    }
+
 
     /**
      * 支付成功生成红包领券资格
