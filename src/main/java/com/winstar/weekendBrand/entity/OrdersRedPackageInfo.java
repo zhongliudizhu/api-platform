@@ -75,6 +75,12 @@ public class OrdersRedPackageInfo {
      */
     private Date expiredTime;
 
+    /**
+     * 优惠券信息-妈蛋的，发完后还得马上返回个实体
+     */
+    @Column(length = 255)
+    private String couponDetail;
+
     public OrdersRedPackageInfo init(String orderId, BigDecimal couponPrice) {
         this.setActivityId(ACTIVITY_ID_WEEKEND_BRAND);
         this.setCreateTime(new Date());

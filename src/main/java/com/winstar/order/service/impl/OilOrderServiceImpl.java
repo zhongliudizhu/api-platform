@@ -1,6 +1,5 @@
 package com.winstar.order.service.impl;
 
-import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.couponActivity.entity.InviteTableLog;
 import com.winstar.couponActivity.entity.MileageObtainLog;
@@ -21,7 +20,6 @@ import com.winstar.order.vo.FlowResult;
 import com.winstar.order.vo.PayInfoVo;
 import com.winstar.user.service.OneMoneyCouponRecordService;
 import com.winstar.user.utils.ServiceManager;
-import com.winstar.weekendBrand.entity.OrdersRedPackageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -31,7 +29,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -90,7 +87,7 @@ public class OilOrderServiceImpl implements OilOrderService {
             oilOrder.setUpdateTime(time);
             oilOrder.setFinishTime(time);
             oilOrderRepository.save(oilOrder);
-            ServiceManager.orderRedPackageInfoService.generageOrdersRedPackageInfoByOrder(oilOrder);
+            ServiceManager.orderRedPackageInfoService.generateOrdersRedPackageInfoByOrder(oilOrder);
         } else {
             FlowOrder flowOrder = flowOrderRepository.findBySerialNumber(serialNumber);
             if (ObjectUtils.isEmpty(flowOrder)) {

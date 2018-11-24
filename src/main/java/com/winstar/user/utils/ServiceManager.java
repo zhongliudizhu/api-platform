@@ -14,6 +14,7 @@ import com.winstar.user.repository.PageViewLogRepository;
 import com.winstar.user.service.*;
 import com.winstar.weekendBrand.repository.OrdersRedPackageInfoRepository;
 import com.winstar.weekendBrand.service.OrderRedPackageInfoService;
+import com.winstar.weekendBrand.service.WeekEndBrandService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
 public class ServiceManager {
 
     public static String REDIS_KEY_FIND_ACCOUNT_BY_ID = "com.winstar.user.service.AccountServicefindOne";
+    public static String REDIS_KEY_FIND_ACCOUNT_BY_OPENID = "com.winstar.user.service.findAccountIdByOpenid";
 
     public static AccessTokenRepository accessTokenRepository;
     public static AccountRepository accountRepository;
@@ -45,6 +47,12 @@ public class ServiceManager {
     public static RedisTools redisTools;
     public static OrdersRedPackageInfoRepository ordersRedPackageInfoRepository;
     public static OrderRedPackageInfoService orderRedPackageInfoService;
+    public static WeekEndBrandService weekEndBrandService;
+
+    @Autowired
+    public void setWeekEndBrandService(WeekEndBrandService weekEndBrandService) {
+        ServiceManager.weekEndBrandService = weekEndBrandService;
+    }
 
     @Autowired
     public void setOrdersRedPackageInfoRepository(OrdersRedPackageInfoRepository ordersRedPackageInfoRepository) {

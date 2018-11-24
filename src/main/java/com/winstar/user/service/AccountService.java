@@ -98,7 +98,7 @@ public class AccountService {
     public Boolean checkBindMobileUnique(String phone) {
 
         List<Account> account = ServiceManager.accountRepository.findByMobile(phone);
-        return account.size() <= 0;
+        return account.size() == 0;
     }
 
 

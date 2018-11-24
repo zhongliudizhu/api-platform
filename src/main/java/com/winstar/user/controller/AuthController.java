@@ -98,6 +98,7 @@ public class AuthController {
         account.setUpdateTime(new Date());
 
         ServiceManager.redisTools.remove(ServiceManager.REDIS_KEY_FIND_ACCOUNT_BY_ID+accountId);
+        ServiceManager.redisTools.remove(ServiceManager.REDIS_KEY_FIND_ACCOUNT_BY_OPENID + account.getOpenid());
         return ServiceManager.accountRepository.save(account);
     }
 
@@ -214,6 +215,7 @@ public class AuthController {
         account.setAuthDriverLicense(driverLicense);
         Account accountSaved = ServiceManager.accountRepository.save(account);
         ServiceManager.redisTools.remove(ServiceManager.REDIS_KEY_FIND_ACCOUNT_BY_ID+accountId);
+        ServiceManager.redisTools.remove(ServiceManager.REDIS_KEY_FIND_ACCOUNT_BY_OPENID+account.getOpenid());
         return accountSaved;
     }
 }

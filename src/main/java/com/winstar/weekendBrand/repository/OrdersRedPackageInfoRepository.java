@@ -7,8 +7,8 @@ import java.util.Date;
 import java.util.List;
 
 public interface OrdersRedPackageInfoRepository extends JpaRepository<OrdersRedPackageInfo, String> {
-    long countByReceiveAccountIdAndOrderId(String accoutId, String orderId);
+    List<OrdersRedPackageInfo> findByReceiveAccountIdAndOrderId(String accoutId, String orderId);
 
-    List<OrdersRedPackageInfo> findByReceiveStatusAndExpiredTimeAfter(Integer status, Date expiredTime);
+    List<OrdersRedPackageInfo> findByOrderIdAndReceiveStatusAndExpiredTimeAfter(String orderId, Integer status, Date expiredTime);
 }
 
