@@ -13,9 +13,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * 名称 OrderRedPackageInfoService
@@ -65,8 +63,12 @@ public class OrderRedPackageInfoService {
      */
     public Result receiveOrderRedPackage(String accountId, String orderId) throws NotRuleException {
         MyCoupon myCoupon = checkRepeatReceive(accountId, orderId);
-        if (null != myCoupon)
-            return Result.success("alreadyReceived", myCoupon);
+        Map map = new HashMap<>();
+        if (null != myCoupon){
+            map.put("receiveStatus","alreadyReceived");
+            map.put("myCoupon",myCoupon);
+            return Result.success(map);
+        }
 
         List<OrdersRedPackageInfo> validOrderRedPackageList = checkIsValid(orderId);
 
@@ -86,7 +88,10 @@ public class OrderRedPackageInfoService {
             }
         }
         log.info("领取成功" + JSON.toJSONString(myCoupon));
-        return Result.success("newReceived", myCoupon);
+
+        map.put("receiveStatus","newReceived");
+        map.put("myCoupon",myCoupon);
+        return Result.success(map);
     }
 
     /**

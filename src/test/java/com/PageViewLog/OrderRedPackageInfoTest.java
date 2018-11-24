@@ -35,17 +35,18 @@ import java.util.List;
 public class OrderRedPackageInfoTest {
 
     @Test
-    public void test1() throws NotRuleException {
-        ServiceManager.orderRedPackageInfoService.generateOrderRedPackageInfoByOrderId(String.valueOf(System.currentTimeMillis()), new BigDecimal(5));
+    public void testgenerateOrderRedPackageInfoByOrderId() {
+        for(int i=0;i<1000;i++)
+        ServiceManager.orderRedPackageInfoService.generateOrderRedPackageInfoByOrderId("order_id"+String.valueOf(i), new BigDecimal(5));
     }
 
     @Test
-    public void test2() throws NotRuleException {
-        ServiceManager.orderRedPackageInfoService.receiveOrderRedPackage("ceshiceshi", "1542709602311");
+    public void testReceiveRedPackage() throws NotRuleException {
+        ServiceManager.orderRedPackageInfoService.receiveOrderRedPackage("ceshiceshi", "8a808aef65e943b20165ea6ba18e192c");
     }
 
     @Test
-    public void test3() throws NotRuleException {
+    public void testReceiveRedPackageOver() {
         for (int i = 0; i < 100; i++)
             try {
                 ServiceManager.orderRedPackageInfoService.receiveOrderRedPackage(UUIDUtils.getUUID(), "1542709602311");
@@ -53,4 +54,5 @@ public class OrderRedPackageInfoTest {
                 log.error("领取失败", e);
             }
     }
+
 }

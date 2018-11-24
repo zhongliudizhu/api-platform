@@ -27,7 +27,7 @@ import static com.winstar.user.utils.ServiceManager.accountService;
 @RestController
 @RequestMapping("/api/v1/cbc/weekendBrand")
 @Slf4j
-public class WeekendBarndController {
+public class WeekendBrandController {
 
     /**
      * 获取活动状态

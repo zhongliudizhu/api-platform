@@ -91,7 +91,7 @@ public class AccountService {
         String accountId = ServiceManager.accountService.getAccountId(request);
 
         Account account = ServiceManager.accountService.findOne(accountId);
-        if (StringUtils.isEmpty(account.getMobile())) return new SimpleResult("YES");
+        if (!StringUtils.isEmpty(account.getMobile())) return new SimpleResult("YES");
         return new SimpleResult("NO");
     }
 
