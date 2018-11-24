@@ -47,11 +47,11 @@ public class OrderRedPackageInfoService {
      * @throws NotRuleException
      */
     public void checkActivityStatus(String activityId) throws NotRuleException {
-        int leftDays =ServiceManager.weekEndBrandService.calculateWeek(6, Integer.valueOf(DateUtil.getWeekOfDate(new Date())));
+        int leftDays = 0;//ServiceManager.weekEndBrandService.calculateWeek(6, Integer.valueOf(DateUtil.getWeekOfDate(new Date())));
         if (activityId.equals(OrdersRedPackageInfo.ACTIVITY_ID_WEEKEND_BRAND)
                 && 0 != leftDays
                 && !StringUtils.isEmpty(activityId))
-            throw new NotRuleException("illegalRequest");
+            throw new NotRuleException("weekendBrandActivityIsOver");
     }
 
 
@@ -63,7 +63,7 @@ public class OrderRedPackageInfoService {
      */
     public void generateOrderRedPackageInfoByOrderId(String orderId, BigDecimal couponPrice) {
         log.info("进入生成红包->" + orderId);
-        //todo 测试时关闭
+        //
        /* long count = ServiceManager.oilOrderRepository.countByIdAndActivityIdAndIsAvailableAndStatus(orderId, OrdersRedPackageInfo.ACTIVITY_ID_WEEKEND_BRAND, "0", 2);
         if (count == 0) return;*/
         log.info("开始生成红包开始" + orderId);
@@ -93,9 +93,9 @@ public class OrderRedPackageInfoService {
     public Result receiveOrderRedPackage(String accountId, String orderId) throws NotRuleException {
         MyCoupon myCoupon = checkRepeatReceive(accountId, orderId);
         Map map = new HashMap<>();
-        if (null != myCoupon){
-            map.put("receiveStatus","alreadyReceived");
-            map.put("myCoupon",myCoupon);
+        if (null != myCoupon) {
+            map.put("receiveStatus", "alreadyReceived");
+            map.put("myCoupon", myCoupon);
             return Result.success(map);
         }
 
@@ -112,14 +112,14 @@ public class OrderRedPackageInfoService {
                         "延长壳牌加油优惠券",
                         "延长壳牌加油优惠券,周末分享");
                 //更新机会状态
-                setOrderRedPackageInfoReceived(accountId, ordersRedPackageInfo,myCoupon);
+                setOrderRedPackageInfoReceived(accountId, ordersRedPackageInfo, myCoupon);
                 break;
             }
         }
         log.info("领取成功" + JSON.toJSONString(myCoupon));
 
-        map.put("receiveStatus","newReceived");
-        map.put("myCoupon",myCoupon);
+        map.put("receiveStatus", "newReceived");
+        map.put("myCoupon", myCoupon);
         return Result.success(map);
     }
 

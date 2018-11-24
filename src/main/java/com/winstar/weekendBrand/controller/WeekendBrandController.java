@@ -1,10 +1,8 @@
 package com.winstar.weekendBrand.controller;
 
-import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.exception.NotRuleException;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.user.entity.Account;
-import com.winstar.user.param.AccountParam;
 import com.winstar.user.utils.ServiceManager;
 import com.winstar.vo.Result;
 import com.winstar.weekendBrand.param.ReceiveRedPackageParam;
@@ -42,7 +40,7 @@ public class WeekendBrandController {
 
         Map<String, Object> map = new HashMap();
         map.put("time", new Date().getTime());
-        map.put("leftDays", leftDays);
+        map.put("differDay", leftDays);
         map.put("state", leftDays == 0);
         map.put("saturday", DateUtil.addDay(DateUtil.getWeekBegin(), leftDays == 6 ? 12 : 5).getTime());
 
@@ -63,11 +61,11 @@ public class WeekendBrandController {
             log.info("参数不合法！！！");
             throw new NotRuleException("paramNotAllowNull");
         }
-        //todo 测试时关闭
-       /* if (!ServiceManager.smsService.verifySms(receiveRedPackageParam.getUpdateAccountParam())) {
+        //
+        if (!ServiceManager.smsService.verifySms(receiveRedPackageParam.getUpdateAccountParam())) {
             log.info("验证码错误！！");
             throw new NotRuleException("verifyCodeIsError");
-        }*/
+        }
         Account account = ServiceManager.accountRepository.findOne(accountId);
 
         if (accountService.checkBindMobileUnique(receiveRedPackageParam.getMobile())) {
