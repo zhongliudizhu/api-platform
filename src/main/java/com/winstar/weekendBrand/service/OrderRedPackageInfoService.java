@@ -47,7 +47,8 @@ public class OrderRedPackageInfoService {
      * @throws NotRuleException
      */
     public void checkActivityStatus(String activityId) throws NotRuleException {
-        int leftDays = 0;//ServiceManager.weekEndBrandService.calculateWeek(6, Integer.valueOf(DateUtil.getWeekOfDate(new Date())));
+        //todox
+        int leftDays = ServiceManager.weekEndBrandService.calculateWeek(6, Integer.valueOf(DateUtil.getWeekOfDate(new Date())));
         if (activityId.equals(OrdersRedPackageInfo.ACTIVITY_ID_WEEKEND_BRAND)
                 && 0 != leftDays
                 && !StringUtils.isEmpty(activityId))
@@ -78,7 +79,7 @@ public class OrderRedPackageInfoService {
     @Async
     public void generateOrdersRedPackageInfoByOrder(OilOrder oilOrder) {
         if (oilOrder.getActivityId().equals(OrdersRedPackageInfo.ACTIVITY_ID_WEEKEND_BRAND)) {
-            ServiceManager.orderRedPackageInfoService.generateOrderRedPackageInfoByOrderId(oilOrder.getId(), new BigDecimal(5));
+            ServiceManager.orderRedPackageInfoService.generateOrderRedPackageInfoByOrderId(oilOrder.getSerialNumber(), new BigDecimal(5));
         }
     }
 

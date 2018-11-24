@@ -19,6 +19,8 @@ public class WeekEndBrandService {
      * @return 距离天数  ，如果当前，返回0
      */
     public int calculateWeek(int activityWeekDayDay, int curWeekDay) {
+        //todox 上线删除
+       /* if (true) return 0;*/
         if (activityWeekDayDay > curWeekDay)
             return activityWeekDayDay - curWeekDay;
         else if (activityWeekDayDay < curWeekDay)

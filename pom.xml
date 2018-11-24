@@ -176,12 +176,12 @@
             <artifactId>winstar-oil-common-lts</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
-        <!-- winstar-job-core -->
+ <!--       &lt;!&ndash; winstar-job-core &ndash;&gt;
         <dependency>
             <groupId>com.winstar</groupId>
             <artifactId>winstar-job-core</artifactId>
             <version>1.0.0-SNAPSHOT</version>
-        </dependency>
+        </dependency>-->
 
     </dependencies>
 

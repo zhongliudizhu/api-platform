@@ -74,10 +74,8 @@ public class OilOrderController {
         String serialNumber = OilOrderUtil.getSerialNumber();
         long startTime = System.currentTimeMillis();
 
-
         ServiceManager.orderRedPackageInfoService.canBuy(accountId, activityId);
-        ServiceManager.orderRedPackageInfoService.checkActivityStatus(activityId);
-
+       /* ServiceManager.orderRedPackageInfoService.checkActivityStatus(activityId);*/
 
         //2.根据商品id 查询商品
         Goods goods = shopService.findByGoodsId(itemId);
