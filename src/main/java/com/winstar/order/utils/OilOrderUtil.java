@@ -7,6 +7,7 @@ import com.winstar.order.entity.OilOrder;
 import com.winstar.order.vo.OilDetailVo;
 import com.winstar.shop.entity.Goods;
 import com.winstar.user.utils.ServiceManager;
+import com.winstar.weekendBrand.entity.OrdersRedPackageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,6 +102,8 @@ public class OilOrderUtil {
                 ||activityType == ActivityIdEnum.ACTIVITY_ID_667.getActivity()){
             order.setPayPrice(Arith.sub(goods.getSaledPrice(),order.getDiscountAmount()));
             order.setCouponTempletId(goods.getCouponTempletId());
+        }else if(OrdersRedPackageInfo.ACTIVITY_ID_WEEKEND_BRAND.equals(order.getActivityId())){
+            order.setPayPrice(Arith.mul(goods.getSaledPrice(),goods.getDisCount()));
         }
 
         order.setSalePrice(goods.getSaledPrice());
