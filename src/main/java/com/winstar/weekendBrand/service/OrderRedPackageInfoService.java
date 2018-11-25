@@ -79,7 +79,7 @@ public class OrderRedPackageInfoService {
     @Async
     public void generateOrdersRedPackageInfoByOrder(OilOrder oilOrder) {
         if (oilOrder.getActivityId().equals(OrdersRedPackageInfo.ACTIVITY_ID_WEEKEND_BRAND)) {
-            ServiceManager.orderRedPackageInfoService.generateOrderRedPackageInfoByOrderId(oilOrder.getSerialNumber(), new BigDecimal(5));
+            ServiceManager.orderRedPackageInfoService.generateOrderRedPackageInfoByOrderId(oilOrder.getId(), new BigDecimal(5));
         }
     }
 
