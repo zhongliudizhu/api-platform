@@ -3,6 +3,8 @@ package com.winstar.user.param;
 import lombok.*;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UpdateAccountParam {
     /**
      * mobile

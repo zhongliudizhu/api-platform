@@ -1,6 +1,5 @@
 package com.winstar.order.service.impl;
 
-import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.couponActivity.entity.InviteTableLog;
 import com.winstar.couponActivity.entity.MileageObtainLog;
@@ -20,6 +19,7 @@ import com.winstar.order.utils.FlowOrderUtil;
 import com.winstar.order.vo.FlowResult;
 import com.winstar.order.vo.PayInfoVo;
 import com.winstar.user.service.OneMoneyCouponRecordService;
+import com.winstar.user.utils.ServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -36,8 +36,8 @@ import java.util.UUID;
 
 /**
  * @author shoo on 2017/12/14 9:54.
- *   付款成功回调订单
- *  ！！！修改此类一定联系张林 ！！！
+ * 付款成功回调订单
+ * ！！！修改此类一定联系张林 ！！！
  */
 @Service
 public class OilOrderServiceImpl implements OilOrderService {
@@ -56,20 +56,21 @@ public class OilOrderServiceImpl implements OilOrderService {
     MyCouponRepository myCouponRepository;
     @Value("${info.flowUrl}")
     private String flowUrl;
+
     @Override
     public String updateOrderCashier(PayInfoVo payInfo) {
         Date time = new Date();
         Integer payStatus = payInfo.getPayState();
-        if (payStatus != 0 && payStatus != 1 ) {
+        if (payStatus != 0 && payStatus != 1) {
             return "1";
         }
         String serialNumber = payInfo.getOrderSerialNumber();
-        if(serialNumber.contains("wxyj")){
+        if (serialNumber.contains("wxyj")) {
             OilOrder oilOrder = oilOrderRepository.findBySerialNumber(serialNumber);
-            if(ObjectUtils.isEmpty(oilOrder)){
+            if (ObjectUtils.isEmpty(oilOrder)) {
                 return "2";
             }
-            if(oilOrder.getItemId().equals(Constant.ONE_BUY_ITEMID)){
+            if (oilOrder.getItemId().equals(Constant.ONE_BUY_ITEMID)) {
                 oneMoneyCouponRecordService.changeStatus(oilOrder.getAccountId());
             }
             //裂变活动订单回调
@@ -86,22 +87,22 @@ public class OilOrderServiceImpl implements OilOrderService {
             oilOrder.setUpdateTime(time);
             oilOrder.setFinishTime(time);
             oilOrderRepository.save(oilOrder);
-
-        }else {
+            ServiceManager.orderRedPackageInfoService.generateOrdersRedPackageInfoByOrder(oilOrder);
+        } else {
             FlowOrder flowOrder = flowOrderRepository.findBySerialNumber(serialNumber);
-            if(ObjectUtils.isEmpty(flowOrder)){
+            if (ObjectUtils.isEmpty(flowOrder)) {
                 return "2";
             }
             flowOrder.setBankSerialNo(payInfo.getBankSerialNumber());
             flowOrder.setPayTime(payInfo.getPayTime());
             flowOrder.setPayType(payInfo.getPayType());
             flowOrder.setPayStatus(payInfo.getPayState());//支付成功
-            FlowResult flowResult = FlowOrderUtil.chargeFlow(flowOrder.getPhoneNo(),"M","1024","N","30",flowUrl);
+            FlowResult flowResult = FlowOrderUtil.chargeFlow(flowOrder.getPhoneNo(), "M", "1024", "N", "30", flowUrl);
 
-            if(ObjectUtils.isEmpty(flowResult)||flowResult.getOrderStatus().equals("SubmitFail")){
+            if (ObjectUtils.isEmpty(flowResult) || flowResult.getOrderStatus().equals("SubmitFail")) {
                 flowOrder.setSendStatus(4);//发货失败
                 flowOrder.setStatus(3);//已完成
-            }else{
+            } else {
                 flowOrder.setSendStatus(3);//发货成功
                 flowOrder.setStatus(3);//已完成
             }
@@ -123,20 +124,21 @@ public class OilOrderServiceImpl implements OilOrderService {
         return "ok";
     }
 
+
     @Override
     public OilOrder getOneOrder(String serialNumber) throws NotFoundException {
         OilOrder oilOrder = new OilOrder();
-        if(serialNumber.contains("wxyj")){
+        if (serialNumber.contains("wxyj")) {
             oilOrder = oilOrderRepository.findBySerialNumber(serialNumber);
-            if(ObjectUtils.isEmpty(oilOrder)||oilOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)){
+            if (ObjectUtils.isEmpty(oilOrder) || oilOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)) {
                 throw new NotFoundException("oilOrder.order");
             }
-        }else {
+        } else {
             FlowOrder flowOrder = flowOrderRepository.findBySerialNumber(serialNumber);
-            if(ObjectUtils.isEmpty(flowOrder)||flowOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)){
+            if (ObjectUtils.isEmpty(flowOrder) || flowOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)) {
                 throw new NotFoundException("flowOrder.order");
             }
-            BeanUtils.copyProperties(flowOrder,oilOrder);
+            BeanUtils.copyProperties(flowOrder, oilOrder);
         }
 
         return oilOrder;
@@ -145,53 +147,54 @@ public class OilOrderServiceImpl implements OilOrderService {
     @Override
     public OilOrder getOrder(String serialNumber) {
         OilOrder oilOrder = new OilOrder();
-        if(serialNumber.contains("wxyj")){
+        if (serialNumber.contains("wxyj")) {
             oilOrder = oilOrderRepository.findBySerialNumber(serialNumber);
-            if(ObjectUtils.isEmpty(oilOrder)){
+            if (ObjectUtils.isEmpty(oilOrder)) {
                 return null;
             }
-        }else {
+        } else {
             FlowOrder flowOrder = flowOrderRepository.findBySerialNumber(serialNumber);
-            if(ObjectUtils.isEmpty(flowOrder)){
+            if (ObjectUtils.isEmpty(flowOrder)) {
                 return null;
             }
-            BeanUtils.copyProperties(flowOrder,oilOrder);
+            BeanUtils.copyProperties(flowOrder, oilOrder);
         }
         return oilOrder;
     }
 
     /**
      * 裂变活动回调方法
+     *
      * @param oilOrder
      */
-    public void fassionCallBack(OilOrder oilOrder){
-        if(Integer.parseInt(oilOrder.getActivityId())==ActivityIdEnum.ACTIVITY_ID_667.getActivity()&&!StringUtils.isEmpty(oilOrder.getCouponId())&&inviteTableLogRepository.findByInvitedUserAndStateAndInvtiteState(oilOrder.getAccountId(),1,1).size()>0){
-            if(Integer.parseInt(myCouponRepository.findOne(oilOrder.getCouponId()).getActivityId())==ActivityIdEnum.ACTIVITY_ID_667.getActivity()){
-                List<InviteTableLog>  inviteList=inviteTableLogRepository.findByInvitedUserAndState(oilOrder.getAccountId(),1);
+    public void fassionCallBack(OilOrder oilOrder) {
+        if (Integer.parseInt(oilOrder.getActivityId()) == ActivityIdEnum.ACTIVITY_ID_667.getActivity() && !StringUtils.isEmpty(oilOrder.getCouponId()) && inviteTableLogRepository.findByInvitedUserAndStateAndInvtiteState(oilOrder.getAccountId(), 1, 1).size() > 0) {
+            if (Integer.parseInt(myCouponRepository.findOne(oilOrder.getCouponId()).getActivityId()) == ActivityIdEnum.ACTIVITY_ID_667.getActivity()) {
+                List<InviteTableLog> inviteList = inviteTableLogRepository.findByInvitedUserAndState(oilOrder.getAccountId(), 1);
                 MileageObtainLog mileageObtainLog;
-                List<MileageObtainLog> mileageObtainLogList=new ArrayList<MileageObtainLog>();
-                Double mileageSum=10.0;
-                Integer optainType=2;
+                List<MileageObtainLog> mileageObtainLogList = new ArrayList<MileageObtainLog>();
+                Double mileageSum = 10.0;
+                Integer optainType = 2;
                 //使用优惠券赠送里程
-                mileageObtainLog=new MileageObtainLog(UUID.randomUUID().toString(),oilOrder.getAccountId(),UtilConstants.FissionActivityConstants.COUPON_MILEAFE,optainType,TimeUtil.getCurrentDateTime2(),1);
+                mileageObtainLog = new MileageObtainLog(UUID.randomUUID().toString(), oilOrder.getAccountId(), UtilConstants.FissionActivityConstants.COUPON_MILEAFE, optainType, TimeUtil.getCurrentDateTime2(), 1);
                 mileageObtainLogList.add(mileageObtainLog);
-                logger.info(oilOrder.getAccountId()+":使用优惠券获得10里程！");
-                if (inviteList.size()>0){
+                logger.info(oilOrder.getAccountId() + ":使用优惠券获得10里程！");
+                if (inviteList.size() > 0) {
                     //邀请人和被邀请人里程赠送，以及邀请状态和时间的更新
-                    for (int i=0;i<inviteList.size();i++){
-                        String inviteUsreid=inviteList.get(i).getAccountId();
-                        if(inviteList.get(i).getInviteType()==0){
-                            mileageSum=UtilConstants.FissionActivityConstants.DIRECT_INVTIE_MILEAFE;
-                            optainType=1;
-                            logger.info(inviteList.get(i).getAccountId()+":直接邀请成功！获得10里程！");
-                        }else{
-                            mileageSum=UtilConstants.FissionActivityConstants.INDIRECT_INVTIE_MILEAFE;
-                            optainType=0;
-                            logger.info(inviteList.get(i).getAccountId()+":直接邀请成功！获得5里程！");
+                    for (int i = 0; i < inviteList.size(); i++) {
+                        String inviteUsreid = inviteList.get(i).getAccountId();
+                        if (inviteList.get(i).getInviteType() == 0) {
+                            mileageSum = UtilConstants.FissionActivityConstants.DIRECT_INVTIE_MILEAFE;
+                            optainType = 1;
+                            logger.info(inviteList.get(i).getAccountId() + ":直接邀请成功！获得10里程！");
+                        } else {
+                            mileageSum = UtilConstants.FissionActivityConstants.INDIRECT_INVTIE_MILEAFE;
+                            optainType = 0;
+                            logger.info(inviteList.get(i).getAccountId() + ":直接邀请成功！获得5里程！");
                         }
                         inviteList.get(i).setInvtiteState(0);
                         inviteList.get(i).setUpdateTime(TimeUtil.getCurrentDateTime2());
-                        mileageObtainLog=new MileageObtainLog(UUID.randomUUID().toString(),inviteUsreid,mileageSum,optainType,TimeUtil.getCurrentDateTime2(),1);
+                        mileageObtainLog = new MileageObtainLog(UUID.randomUUID().toString(), inviteUsreid, mileageSum, optainType, TimeUtil.getCurrentDateTime2(), 1);
                         mileageObtainLogList.add(mileageObtainLog);
                     }
                 }

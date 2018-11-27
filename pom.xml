@@ -176,12 +176,12 @@
             <artifactId>winstar-oil-common-lts</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
-        <!-- winstar-job-core -->
-        <dependency>
-            <groupId>com.winstar</groupId>
-            <artifactId>winstar-job-core</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
+        <!--       &lt;!&ndash; winstar-job-core &ndash;&gt;
+               <dependency>
+                   <groupId>com.winstar</groupId>
+                   <artifactId>winstar-job-core</artifactId>
+                   <version>1.0.0-SNAPSHOT</version>
+               </dependency>-->
 
     </dependencies>
 
@@ -220,6 +220,13 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <executable>true</executable>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
 
@@ -290,43 +297,43 @@
         </plugins>
     </build>
     <!--<repositories>-->
-        <!--<repository>-->
-            <!--<snapshots>-->
-                <!--<enabled>true</enabled>-->
-            <!--</snapshots>-->
-            <!--<id>mvnsearch-repository</id>-->
-            <!--<name>Maven Repository Manager running on mvnsearch</name>-->
-            <!--<url>http://nexus.mvnsearch.org:8080/content/groups/public/</url-->
+    <!--<repository>-->
+    <!--<snapshots>-->
+    <!--<enabled>true</enabled>-->
+    <!--</snapshots>-->
+    <!--<id>mvnsearch-repository</id>-->
+    <!--<name>Maven Repository Manager running on mvnsearch</name>-->
+    <!--<url>http://nexus.mvnsearch.org:8080/content/groups/public/</url-->
 
-            <!--&gt;-->
-        <!--</repository>-->
+    <!--&gt;-->
+    <!--</repository>-->
     <!--</repositories>-->
 
     <!--<pluginRepositories>-->
-        <!--<pluginRepository>-->
-            <!--<id>mvnsearch-repository</id>-->
-            <!--<name>Maven Repository Manager running on mvnsearch</name>-->
-            <!--<url>http://nexus.mvnsearch.org:8080/content/groups/public/</url-->
+    <!--<pluginRepository>-->
+    <!--<id>mvnsearch-repository</id>-->
+    <!--<name>Maven Repository Manager running on mvnsearch</name>-->
+    <!--<url>http://nexus.mvnsearch.org:8080/content/groups/public/</url-->
 
-            <!--&gt;-->
-        <!--</pluginRepository>-->
+    <!--&gt;-->
+    <!--</pluginRepository>-->
     <!--</pluginRepositories>-->
     <!--<repositories>-->
-        <!--<repository>-->
-            <!--<snapshots>-->
-                <!--<enabled>true</enabled>-->
-            <!--</snapshots>-->
-            <!--<id>public</id>-->
-            <!--<name>Public Repositories</name>-->
-            <!--<url>http://192.168.118.199:8081/nexus/content/groups/public/</url>-->
-        <!--</repository>-->
+    <!--<repository>-->
+    <!--<snapshots>-->
+    <!--<enabled>true</enabled>-->
+    <!--</snapshots>-->
+    <!--<id>public</id>-->
+    <!--<name>Public Repositories</name>-->
+    <!--<url>http://192.168.118.199:8081/nexus/content/groups/public/</url>-->
+    <!--</repository>-->
     <!--</repositories>-->
 
     <!--<pluginRepositories>-->
-        <!--<pluginRepository>-->
-            <!--<id>public</id>-->
-            <!--<name>Public Repositories</name>-->
-            <!--<url>http://192.168.118.199:8081/nexus/content/groups/public/</url>-->
-        <!--</pluginRepository>-->
+    <!--<pluginRepository>-->
+    <!--<id>public</id>-->
+    <!--<name>Public Repositories</name>-->
+    <!--<url>http://192.168.118.199:8081/nexus/content/groups/public/</url>-->
+    <!--</pluginRepository>-->
     <!--</pluginRepositories>-->
 </project>

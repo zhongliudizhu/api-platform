@@ -135,7 +135,7 @@ public class OilSubsidyController {
         }
         String infoCard ="";
         //根据身份证跟电话号码查询交安卡卡号
-        String whiteListcardNumber = whiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber);
+        String whiteListcardNumber = whiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber,105);
         if(ObjectUtils.isEmpty(whiteListcardNumber)){
             throw new NotFoundException("couponActivity.notWhiteLists");
         }else {
@@ -244,7 +244,7 @@ public class OilSubsidyController {
     public ResponseEntity sendAuth(@RequestParam String driverLicense, @RequestParam String phone,String infoCard, HttpServletRequest request)
             throws NotRuleException {
         //105白名单
-        String whiteListcardNumber = whiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
+        String whiteListcardNumber = whiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone,105);
         if(ObjectUtils.isEmpty(whiteListcardNumber)){
             logger.info("身份证"+driverLicense+"电话号码"+phone+"用户不在105白名单");
             throw new NotRuleException("WhiteLists.notWhiteLists");

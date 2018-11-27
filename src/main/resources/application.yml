@@ -26,7 +26,7 @@ spring:
       maximum-pool-size: 10
   redis:
     database: 7
-    host: 192.168.118.111
+    host: 192.168.118.88
     port: 6379
     password:
     pool.max-active: 1000
