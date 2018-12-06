@@ -3,7 +3,6 @@ package com.winstar.oil.controller;
 import com.google.common.collect.Maps;
 import com.winstar.ActiveOilCoupon;
 import com.winstar.cashier.comm.EnumType;
-import com.winstar.cashier.construction.utils.Arith;
 import com.winstar.cashier.entity.PayOrder;
 import com.winstar.cashier.repository.PayOrderRepository;
 import com.winstar.exception.MissingParameterException;
@@ -91,6 +90,9 @@ public class MyOilCouponController {
 
     @Value("${info.cardUrl_new}")
     private String oilSendNewUrl;
+
+    @Value("${info.coupon_recover_switch}")
+    private boolean couponRecoverSwitch;
 
     @RequestMapping(value = "/sendOilCoupon",method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -235,6 +237,10 @@ public class MyOilCouponController {
         @PathVariable(name = "id") String id,
         HttpServletRequest request
     ) throws Exception {
+        if(couponRecoverSwitch){
+            logger.info("油券正在回收，请稍后！");
+            throw new NotRuleException("oilCoupon.null");
+        }
         String accountId = accountService.getAccountId(request);
         if(WsdUtils.isEmpty(accountId)){
             throw new MissingParameterException("accountId");
