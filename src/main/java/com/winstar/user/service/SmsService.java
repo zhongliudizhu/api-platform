@@ -7,6 +7,7 @@ import com.winstar.user.vo.SendVerifyCodeMsgResult;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -48,7 +49,7 @@ public class SmsService {
     public SendVerifyCodeMsgResult sendSms(String msgContent) {
         SendVerifyCodeMsgResult sendVerifyCodeMsgResult = null;
         try {
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = new RestTemplateBuilder().setConnectTimeout(10000).setReadTimeout(10000).build();
             String plainCreds = smsUser + ":" + smsPwd;
             byte[] plainCredsBytes = plainCreds.getBytes();
             byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
@@ -61,7 +62,7 @@ public class SmsService {
             headers.setContentType(type);
             headers.add("Accept", MediaType.APPLICATION_JSON.toString());
 
-            HttpEntity<String> formEntity = new HttpEntity<String>(msgContent, headers);
+            HttpEntity<String> formEntity = new HttpEntity<>(msgContent, headers);
             sendVerifyCodeMsgResult = restTemplate.postForObject(sendVerifyCodeUrl, formEntity, SendVerifyCodeMsgResult.class);
         } catch (RestClientException e) {
             logger.error(new StringBuilder("验证码发送失败-->").append(msgContent), e);
@@ -78,21 +79,23 @@ public class SmsService {
     public AuthVerifyCodeMsgResult authSms(String msgContent) {
 
         AuthVerifyCodeMsgResult authVerifyCodeMsgResult = null;
-
-        RestTemplate restTemplate = new RestTemplate();
-        String plainCreds = smsUser + ":" + smsPwd;
-        byte[] plainCredsBytes = plainCreds.getBytes();
-        byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
-        String base64Creds = new String(base64CredsBytes);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Basic " + base64Creds);
-        logger.info("base64Creds:"+base64Creds);
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        HttpEntity<String> formEntity = new HttpEntity<String>(msgContent, headers);
-        authVerifyCodeMsgResult = restTemplate.postForObject(checkVerifyCodeUrl, formEntity, AuthVerifyCodeMsgResult.class);
-
+        try{
+            RestTemplate restTemplate = new RestTemplateBuilder().setConnectTimeout(10000).setReadTimeout(10000).build();
+            String plainCreds = smsUser + ":" + smsPwd;
+            byte[] plainCredsBytes = plainCreds.getBytes();
+            byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
+            String base64Creds = new String(base64CredsBytes);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Basic " + base64Creds);
+            logger.info("base64Creds:"+base64Creds);
+            MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+            headers.setContentType(type);
+            headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+            HttpEntity<String> formEntity = new HttpEntity<>(msgContent, headers);
+            authVerifyCodeMsgResult = restTemplate.postForObject(checkVerifyCodeUrl, formEntity, AuthVerifyCodeMsgResult.class);
+        }catch (RestClientException e) {
+            logger.error(new StringBuilder("信息卡验证失败-->").append(msgContent), e);
+        }
         return authVerifyCodeMsgResult;
     }
 
@@ -109,7 +112,7 @@ public class SmsService {
         urlVariables.put("phoneNumber", updateAccountParam.getMobile());
         urlVariables.put("id", updateAccountParam.getMsgVerifyId());
         urlVariables.put("verifyCode", updateAccountParam.getMsgVerifyCode());
-        RestTemplate restTemplate = new RestTemplate();
+        RestTemplate restTemplate = new RestTemplateBuilder().setConnectTimeout(10000).setReadTimeout(10000).build();
         restTemplate.setErrorHandler(new ClientErrorHandler());
 
         ResponseEntity resp = restTemplate.getForEntity(verifySmsUrl, String.class, urlVariables);
