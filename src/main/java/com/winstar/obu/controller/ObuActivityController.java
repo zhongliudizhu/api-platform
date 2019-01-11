@@ -37,7 +37,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -304,8 +303,7 @@ public class ObuActivityController {
         obuInfo.setPhone(obuWhiteList.getPhoneNumber());
         String serialNum = DateUtil.getCurrentYear()+obuWhiteList.getEtc();
         obuInfo.setSerialNum(serialNum);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        obuInfo.setEndTime(simpleDateFormat.parse("2018-12-31"));
+        obuInfo.setEndTime(obuWhiteList.getTimeEnd());
         obuInfo.setType(obuType);//1:赠送
         obuInfo.setState("0");
         obuRepository.save(obuInfo);
