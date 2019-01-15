@@ -98,7 +98,7 @@ public class OilSubsidyController {
 //        }else{
 //            activity.setIsVerify(0);
 //        }
-        List<MyCoupon> myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(105),0, DateUtil.getInputDate("2018-07-01 00:00:01"), DateUtil.getInputDate("2019-01-31 23:59:59"));//0: 未使用
+        List<MyCoupon> myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(105),0, DateUtil.getInputDate("2018-07-01 00:00:01"), DateUtil.getInputDate("2019-12-31 23:59:59"));//0: 未使用
         if(!ObjectUtils.isEmpty(myCoupons)){
             activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
         }else{

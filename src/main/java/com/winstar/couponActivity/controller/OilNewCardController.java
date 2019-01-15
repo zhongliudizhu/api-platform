@@ -89,7 +89,7 @@ public class OilNewCardController {
         activity.setName("新办交安卡购--第四季度活动");
         activity.setType(106);
 
-        List<MyCoupon> myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(106),0, DateUtil.getInputDate("2018-07-01 00:00:01"), DateUtil.getInputDate("2018-12-31 23:59:59"));//0: 未使用
+        List<MyCoupon> myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(106),0, DateUtil.getInputDate("2018-07-01 00:00:01"), DateUtil.getInputDate("2019-12-31 23:59:59"));//0: 未使用
         if(!ObjectUtils.isEmpty(myCoupons)){
             activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
         }else{
