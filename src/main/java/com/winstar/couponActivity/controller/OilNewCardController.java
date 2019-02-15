@@ -78,24 +78,25 @@ public class OilNewCardController {
 
     /**
      * 活动以及活动状态查询
+     *
      * @param request
      * @return
      */
-    @RequestMapping(value = "find",method = RequestMethod.GET,produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "find", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public Activity getActivity(HttpServletRequest request) {
         Object accountId = request.getAttribute("accountId");
         Activity activity = new Activity();
-        activity.setName("新办交安卡购--第四季度活动");
+        activity.setName("新办交安卡购--8折优惠");
         activity.setType(106);
 
-        List<MyCoupon> myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(106),0, DateUtil.getInputDate("2018-07-01 00:00:01"), DateUtil.getInputDate("2019-12-31 23:59:59"));//0: 未使用
-        if(!ObjectUtils.isEmpty(myCoupons)){
+        List<MyCoupon> myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(106), 0, DateUtil.getInputDate("2018-07-01 00:00:01"), DateUtil.getInputDate("2019-12-31 23:59:59"));//0: 未使用
+        if (!ObjectUtils.isEmpty(myCoupons)) {
             activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
-        }else{
+        } else {
             activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_0.getActivity());
         }
-        return  activity;
+        return activity;
     }
 
 
@@ -108,28 +109,28 @@ public class OilNewCardController {
             throws NotRuleException, NotFoundException {
         Object accountId = request.getAttribute("accountId");
         Account account = accountService.findOne(accountId.toString());
-        logger.info("openid:"+account.getOpenid()+"-----办新卡8折【发券】-----");
-        logger.info("driverLicense:"+driverLicense+"|phoneNumber:"+phoneNumber
-                +"|msgVerifyCode:"+msgVerifyCode+"|msgVerifyId:"+msgVerifyId);
+        logger.info("openid:" + account.getOpenid() + "-----8折【发券】-----");
+        logger.info("driverLicense:" + driverLicense + "|phoneNumber:" + phoneNumber
+                + "|msgVerifyCode:" + msgVerifyCode + "|msgVerifyId:" + msgVerifyId);
 
-        if(StringUtils.isEmpty(driverLicense)){
+        if (StringUtils.isEmpty(driverLicense)) {
             throw new NotRuleException("couponActivity.driverLicense");
         }
-        if(StringUtils.isEmpty(phoneNumber)){
+        if (StringUtils.isEmpty(phoneNumber)) {
             throw new NotRuleException("couponActivity.phoneNumber");
         }
-        if(StringUtils.isEmpty(msgVerifyCode)){
+        if (StringUtils.isEmpty(msgVerifyCode)) {
             throw new NotRuleException("couponActivity.msgVerifyCode");
         }
-        if(StringUtils.isEmpty(msgVerifyId)){
+        if (StringUtils.isEmpty(msgVerifyId)) {
             throw new NotRuleException("couponActivity.msgVerifyId");
         }
-        String infoCard ="";
+        String infoCard = "";
         //根据身份证跟电话号码查询交安卡卡号
         String sixWhiteList = sixWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phoneNumber);
-        if(ObjectUtils.isEmpty(sixWhiteList)){
+        if (ObjectUtils.isEmpty(sixWhiteList)) {
             throw new NotFoundException("couponActivity.notWhiteLists");
-        }else {
+        } else {
             infoCard = sixWhiteList;
         }
         //设置短息
@@ -156,28 +157,28 @@ public class OilNewCardController {
 
         Activity activity = getActivityInfo();
         //判断该用户是否存在在105白名单
-        WhiteList ifwhitList= whiteListRepository.checkIfWhiteList(phoneNumber);
+        WhiteList ifwhitList = whiteListRepository.checkIfWhiteList(phoneNumber);
         //判断是否领取105优惠券
         WhiteList whiteList = whiteListRepository.checkWhiteList(phoneNumber, 0);
         //判断是否领取106活动优惠券
-        SixWhiteList whiteLists = sixWhiteListRepository.findByPhoneNumberAndIsGetAndType(phoneNumber,0,106);
-        if(ObjectUtils.isEmpty(ifwhitList)) {
-           if(ObjectUtils.isEmpty(whiteLists)){
-               logger.info("电话号码:"+phoneNumber+"已认证过106活动");
-               throw new NotFoundException("couponActivity.notWhiteLists");
-           }
-        }else {
+        SixWhiteList whiteLists = sixWhiteListRepository.findByPhoneNumberAndIsGetAndType(phoneNumber, 0, 106);
+        if (ObjectUtils.isEmpty(ifwhitList)) {
+            if (ObjectUtils.isEmpty(whiteLists)) {
+                logger.info("电话号码:" + phoneNumber + "已认证过106活动");
+                throw new NotFoundException("couponActivity.notWhiteLists");
+            }
+        } else {
             if (ObjectUtils.isEmpty(whiteLists) || ObjectUtils.isEmpty(whiteList)) {
-                logger.info("电话号码:"+phoneNumber+"已认证过105活动或者106活动");
+                logger.info("电话号码:" + phoneNumber + "已认证过105活动或者106活动");
                 throw new NotFoundException("couponActivity.notWhiteLists");
             }
         }
         String nowMonth = TimeUtil.getMonth();
         try {
-            if(whiteLists.getTime().equals(nowMonth)||TimeUtil.getCheckTimeNextMonth(whiteLists.getTime()).equals(nowMonth)){
+            if (whiteLists.getTime().equals(nowMonth) || TimeUtil.getCheckTimeNextMonth(whiteLists.getTime()).equals(nowMonth)) {
                 activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
-                giveCouponInfo(accountId.toString(),whiteLists);
-            }else{
+                giveCouponInfo(accountId.toString(), whiteLists);
+            } else {
                 throw new NotFoundException("couponActivity.notWhiteLists");
             }
         } catch (ParseException e) {
@@ -186,49 +187,54 @@ public class OilNewCardController {
 
         return activity;
     }
+
     /**
      * 异步保存验证日志
+     *
      * @param accountId
      */
     @Async
-    public void saveOilSubsidyVerifyLog(String accountId ){
+    public void saveOilSubsidyVerifyLog(String accountId) {
         OilSubsidyVerifyLog oilSubsidyVerifyLog = new OilSubsidyVerifyLog();
         oilSubsidyVerifyLog.setAccountId(accountId);
         oilSubsidyVerifyLog.setCreateTime(new Date());
         oilSubsidyVerifyLogRepository.save(oilSubsidyVerifyLog);
     }
 
-    public Activity getActivityInfo(){
+    public Activity getActivityInfo() {
         Activity activity = new Activity();
-        activity.setName("新办交安卡购--第四季度活动");
+        activity.setName("新办交安卡购--8折优惠");
         activity.setType(ActivityIdEnum.ACTIVITY_ID_106.getActivity());
         activity.setIsVerify(0);
         activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_0.getActivity());
-        return  activity;
+        return activity;
     }
 
     /**
      * 异步发卷
+     *
      * @param accountId
      * @param whiteList
      */
     @Async
-    public void giveCouponInfo(String accountId, SixWhiteList whiteList){
+    public void giveCouponInfo(String accountId, SixWhiteList whiteList) {
         List<MyCoupon> coupons = myCouponRepository.findByAccountIdAndActivityId(accountId, "106");
-        if(ObjectUtils.isEmpty(coupons)){
+        if (ObjectUtils.isEmpty(coupons)) {
             CouponActivity couponActivity = couponActivityRepository.findOne("106");
 
-            String couponName = "C2"+"-" + WsdUtils.getRandomNumber(8);
+            String couponName = "C2" + "-" + WsdUtils.getRandomNumber(8);
             couponService.cbcsendCoupon_freedom(
-                    accountId,"106",couponActivity.getAmount(),DateUtil.getNextMonthEnd(),couponActivity.getUseRule(), couponName, couponActivity.getName());
+                    accountId, "106", couponActivity.getAmount(), DateUtil.getNextMonthEnd(), couponActivity.getUseRule(), couponName, couponActivity.getName());
+
             //回填白名单  2、记录发送时间
-            logger.info("accountId:"+accountId+"|回填白名单");
+            logger.info("accountId:" + accountId + "|回填白名单");
             whiteList.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
             whiteList.setAccountId(accountId);
             whiteList.setIsGet(1);
             sixWhiteListRepository.save(whiteList);
         }
     }
+
     /**
      * cbc发送验证码(建行短信服务)
      *
@@ -245,16 +251,16 @@ public class OilNewCardController {
             throws NotRuleException {
         //106白名单
         String sixWhiteList = sixWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
-        if(ObjectUtils.isEmpty(sixWhiteList)){
-            logger.info("身份证"+driverLicense+"电话号码"+phone+"用户不在106白名单");
+        if (ObjectUtils.isEmpty(sixWhiteList)) {
+            logger.info("身份证" + driverLicense + "电话号码" + phone + "用户不在106白名单");
             throw new NotRuleException("WhiteLists.notWhiteLists");
-        }else {
+        } else {
             infoCard = sixWhiteList;
         }
         MsgContent mc = new MsgContent();
         mc.setKh(infoCard);
-        if(!StringUtils.isEmpty(phone)){
-            phone = phone.substring(7,11);
+        if (!StringUtils.isEmpty(phone)) {
+            phone = phone.substring(7, 11);
         }
         mc.setSjh(phone);
         String msgParam = StringFormatUtils.bean2JsonStr(mc);

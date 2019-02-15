@@ -205,11 +205,11 @@ public class OilOrderUtil {
         }
     }
     /*
-  * 判断用户是否能参加103\104\3活动  0 可以购买   1 已购买  2 有未关闭订单
+  * 判断用户是否能参加106  0 可以购买   1 已购买  2 有未关闭订单
   * */
     public static String judgeActivity2(String accountId, String activityId){
         Date begin =  DateUtil.getInputDate("2018-09-29 00:00:01");
-        Date end = DateUtil.getInputDate("2019-01-01 00:00:01");
+        Date end = DateUtil.getInputDate("2019-12-31 00:00:01");
         List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,begin, end);
         if(oilOrders.size()<1){
             return "0";
