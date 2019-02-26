@@ -1,6 +1,8 @@
 package com.winstar.order.controller;
 
 import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
+import com.winstar.coupon.entity.MyCoupon;
+import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.couponActivity.entity.CareJuanList;
 import com.winstar.couponActivity.repository.CareJuanListRepository;
@@ -55,6 +57,8 @@ public class OilOrderSecKillController {
     CareJuanListRepository careJuanListRepository;
     @Autowired
     EarlyAndEveningMarketConfigService earlyAndEveningMarketConfigService;
+    @Autowired
+    MyCouponRepository myCouponRepository;
 
     @Value("${info.amount}")
     private Integer amount;
@@ -72,9 +76,9 @@ public class OilOrderSecKillController {
      */
     @PostMapping(produces = "application/json;charset=utf-8")
     @ResponseBody
-    public ResponseEntity addOrder(@RequestParam String itemId
-            , @RequestParam String activityId
+    public ResponseEntity addOrder(@RequestParam String itemId, @RequestParam String activityId
             , HttpServletRequest request) throws NotFoundException, NotRuleException, InvalidParameterException {
+        logger.info("itemId is {} and activityId is {}", itemId, activityId);
         String accountId = accountService.getAccountId(request);
         Account account = accountService.findOne(accountId);
         String serialNumber = OilOrderUtil.getSerialNumber();
@@ -112,7 +116,6 @@ public class OilOrderSecKillController {
 
         checkEarlyAndEveningMarket(activityId, accountId);
         if (activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_201.getActivity()))) {
-//            activity 201  auth infoCard
             if (StringUtils.isEmpty(account.getAuthInfoCard())) {
                 throw new NotRuleException("notBindInfoCard.order");
             }
@@ -129,50 +132,56 @@ public class OilOrderSecKillController {
         if (activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_202.getActivity()))) {
             String canBuy = OilOrderUtil.judgeActivitySecKill(accountId, activityId);
             if (canBuy.equals("1")) {
-                logger.error("活动202，每用户一天只能买一次");
+                logger.error("活动202，每用户每周只能买一次");
                 throw new NotRuleException("oneMonthOnce.order");
             } else if (canBuy.equals("2")) {
                 logger.error("活动202，有未关闭订单");
                 throw new NotRuleException("haveNotPay.order");
             }
         }
-        //1.是否专属活动
-//        if(StringUtils.isEmpty(activityId)||(!activityId.equals("106")&&!activityId.equals("107")&&!activityId.equals("108"))){
-//            throw new NotFoundException("exclusiveActivities.order");
+
+            if (activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_106.getActivity()))) {
+                //查询该用户是否 买过105
+                MyCoupon myCoupon = myCouponRepository.findByAccountIdAndActivityIdAndStatus(accountId, "105", 1);
+                if (ObjectUtils.isEmpty(myCoupon)) {
+                    String canBuy = OilOrderUtil.judgeActivity2(accountId, activityId);
+                    if (canBuy.equals("1")) {
+                        logger.error("活动106，活动内每用户只能买一次");
+                        throw new NotRuleException("oneMonthOnce.order");
+                    } else if (canBuy.equals("2")) {
+                        logger.error("活动106，有未关闭订单");
+                        throw new NotRuleException("haveNotPay.order");
+                    }
+                }else if (!ObjectUtils.isEmpty(myCoupon)) {
+                    logger.error("已经购买过105活动");
+                    throw new NotRuleException("ParticipatedInActivities.order");
+                }
+            }
+
+//        if (activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_107.getActivity()))) {
+//            String canBuy = OilOrderUtil.judgeActivity2(accountId, activityId);
+//            if (canBuy.equals("1")) {
+//                logger.error("活动107，活动内每用户只能买一次");
+//                throw new NotRuleException("oneMonthOnce.order");
+//            } else if (canBuy.equals("2")) {
+//                logger.error("活动107，有未关闭订单");
+//                throw new NotRuleException("haveNotPay.order");
+//            }
 //        }
-        if (activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_106.getActivity()))) {
-            String canBuy = OilOrderUtil.judgeActivity2(accountId, activityId);
-            if (canBuy.equals("1")) {
-                logger.error("活动106，活动内每用户只能买一次");
-                throw new NotRuleException("oneMonthOnce.order");
-            } else if (canBuy.equals("2")) {
-                logger.error("活动106，有未关闭订单");
-                throw new NotRuleException("haveNotPay.order");
-            }
-        }
-        if (activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_107.getActivity()))) {
-            String canBuy = OilOrderUtil.judgeActivity2(accountId, activityId);
-            if (canBuy.equals("1")) {
-                logger.error("活动107，活动内每用户只能买一次");
-                throw new NotRuleException("oneMonthOnce.order");
-            } else if (canBuy.equals("2")) {
-                logger.error("活动107，有未关闭订单");
-                throw new NotRuleException("haveNotPay.order");
-            }
-        }
-        if (activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_108.getActivity()))) {
-            String canBuy = OilOrderUtil.judgeActivity2(accountId, activityId);
-            if (canBuy.equals("1")) {
-                logger.error("活动108，活动内每用户只能买一次");
-                throw new NotRuleException("oneMonthOnce.order");
-            } else if (canBuy.equals("2")) {
-                logger.error("活动108，有未关闭订单");
-                throw new NotRuleException("haveNotPay.order");
-            }
-        }
+//        }
+//        if (activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_108.getActivity()))) {
+//            String canBuy = OilOrderUtil.judgeActivity2(accountId, activityId);
+//            if (canBuy.equals("1")) {
+//                logger.error("活动108，活动内每用户只能买一次");
+//                throw new NotRuleException("oneMonthOnce.order");
+//            } else if (canBuy.equals("2")) {
+//                logger.error("活动108，有未关闭订单");
+//                throw new NotRuleException("haveNotPay.order");
+//            }
+//        }
         //5.初始化订单及订单项
         OilOrder oilOrder = new OilOrder(accountId, serialNumber, Constant.ORDER_STATUS_CREATE, Constant.PAY_STATUS_NOT_PAID, new Date(), Constant.REFUND_STATUS_ORIGINAL, itemId, activityId);
-        if (activityId.equals("106") ||activityId.equals("107") ||activityId.equals("108") ||activityId.equals("201") || activityId.equals("202") || activityId.equals("9") || activityId.equals("10")) {
+        if (activityId.equals("106")  || activityId.equals("201") || activityId.equals("202") || activityId.equals("9") || activityId.equals("10")) {
             oilOrder = OilOrderUtil.initOrderSecKill(oilOrder, goods, activity.getType());
             //6.生成订单
             oilOrder = orderRepository.save(oilOrder);
