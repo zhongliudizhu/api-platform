@@ -50,7 +50,7 @@ public class WxPay {
 
     public static ResponseEntity getPayParams(Map<String,Object> payMap, HttpServletRequest request, PayOrderRepository payOrderService, PayLogRepository payLogService) throws Exception{
         long startTime = new Date().getTime();
-        payMap.put("payOrderNumber", DateUtil.currentTimeToSS() + WsdUtils.getRandomNumber(8));
+        payMap.put("payOrderNumber", "W" + DateUtil.currentTimeToSS() + WsdUtils.getRandomNumber(8));
         logger.info("微信支付开始。。。。。。");
         WxPayParams wxPayParams = new WxPayParams();
         String nonce_str = WsdUtils.generateRandomCharAndNumber(16);

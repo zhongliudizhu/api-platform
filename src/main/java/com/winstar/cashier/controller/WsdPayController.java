@@ -125,6 +125,11 @@ public class WsdPayController {
             long endTime = System.currentTimeMillis();
             logger.info("储蓄卡整体消耗时间：" + (endTime - beginTime) + "ms");
             return entity;
+        }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DRAGON.valueStr())){
+            ResponseEntity entity = CreditPay.pay(payMap,request,payOrderService,payLogService);
+            long endTime = System.currentTimeMillis();
+            logger.info("龙支付整体消耗时间：" + (endTime - beginTime) + "ms");
+            return entity;
         }
         return null;
     }
@@ -161,7 +166,8 @@ public class WsdPayController {
                 && !bankCode.equals(EnumType.PAY_BANKCODE_ALIPAY.valueStr())
                 && !bankCode.equals(EnumType.PAY_BANKCODE_WECHAT.valueStr())
                 && !bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr())
-                && !bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr())){
+                && !bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr())
+                && !bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DRAGON.valueStr())){
             logger.info("bankCode 参数不合法!");
             PayLog log = new PayLog(orderNumber,"",ip,applyUrl,"","ERROR","支付方式不合法!");
             payLogService.save(log);
@@ -245,6 +251,9 @@ public class WsdPayController {
         }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr())){
             payMap.put("payWay", EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr());
             subBankCode = WsdUtils.isEmpty(subBankCode) ? EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr() : subBankCode;
+        }else if(bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DRAGON.valueStr())){
+            payMap.put("payWay", EnumType.PAY_BANKCODE_CONDTRUCTION_DRAGON.valueStr());
+            subBankCode = WsdUtils.isEmpty(subBankCode) ? EnumType.PAY_BANKCODE_CONDTRUCTION_DRAGON.valueStr() : subBankCode;
         }
         return subBankCode;
     }

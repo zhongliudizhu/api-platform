@@ -81,7 +81,7 @@ public class PayMoney {
         reqMap.put("backEndUrl", profilesActive ? PayConfPC.PROD_BACK_END_URL : PayConfPC.TEST_BACK_END_URL);
         reqMap.put("frontEndUrl", frontEndUrl);
         reqMap.put("orderTime", DateUtil.currentTime());
-        reqMap.put("orderNumber", DateUtil.currentTimeToSS() + WsdUtils.getRandomNumber(8));
+        reqMap.put("orderNumber", "W" + DateUtil.currentTimeToSS() + WsdUtils.getRandomNumber(8));
         reqMap.put("orderAmount", PayUtils.convertAmountY2F(Double.valueOf(orderAmount)) + "");
         reqMap.put("customerIp", WsdUtils.getIpAddress(request));
         reqMap.put("defaultBankNumber", bankCode);

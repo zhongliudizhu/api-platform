@@ -8,6 +8,7 @@ import com.winstar.cashier.construction.utils.PayConfPC;
 import com.winstar.cashier.construction.utils.PayUtils;
 import com.winstar.cashier.creditpay.config.CreditConfig;
 import com.winstar.cashier.creditpay.config.DebitConfig;
+import com.winstar.cashier.creditpay.config.DragonConfig;
 import com.winstar.cashier.entity.PayLog;
 import com.winstar.cashier.entity.PayOrder;
 import com.winstar.cashier.repository.PayLogRepository;
@@ -46,7 +47,7 @@ public class CreditPay {
         long beginTime = System.currentTimeMillis();
         PayOrder payOrder = new PayOrder();
         payOrder.setOrderNumber(MapUtils.getString(payMap,"orderNumber"));
-        payOrder.setPayOrderNumber(DateUtil.currentTimeToSS() + WsdUtils.getRandomNumber(8));
+        payOrder.setPayOrderNumber("W" + DateUtil.currentTimeToSS() + WsdUtils.getRandomNumber(8));
         payOrder.setPayAmount(PayUtils.convertAmountY2F(MapUtils.getDouble(payMap,"orderAmount")) + "");
         payOrder.setOrderAmount(PayUtils.convertAmountY2F(MapUtils.getDouble(payMap,"orderAmount")) + "");
         payOrder.setState("0");
@@ -73,17 +74,17 @@ public class CreditPay {
 
     private static Map<String, String> getReqMap(String orderId, String payment, String bankCode) {
         Map<String, String> reqMap = Maps.newHashMap();
-        reqMap.put("MERCHANTID", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.merchantid : DebitConfig.merchantid);
-        reqMap.put("POSID", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.posid : DebitConfig.posid);
-        reqMap.put("BRANCHID", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.branchid : DebitConfig.branchid);
+        reqMap.put("MERCHANTID", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.merchantid : (bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr()) ? DebitConfig.merchantid : DragonConfig.merchantId));
+        reqMap.put("POSID", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.posid : (bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr()) ? DebitConfig.posid : DragonConfig.posId));
+        reqMap.put("BRANCHID", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.branchid : (bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr()) ? DebitConfig.branchid : DragonConfig.branchId));
         reqMap.put("ORDERID", orderId);
         reqMap.put("PAYMENT", payment);
-        reqMap.put("CURCODE", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.curcode : DebitConfig.curcode);
-        reqMap.put("TXCODE", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.txcode : DebitConfig.txcode);
+        reqMap.put("CURCODE", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.curcode : (bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr()) ? DebitConfig.curcode : DragonConfig.curcode));
+        reqMap.put("TXCODE", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.txcode : (bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr()) ? DebitConfig.txcode : DragonConfig.txCode));
         reqMap.put("REMARK1", "");
         reqMap.put("REMARK2", "");
         reqMap.put("TYPE", "1");
-        reqMap.put("PUB", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.pubkey30 : DebitConfig.pubkey30);
+        reqMap.put("PUB", bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_CREDIT.valueStr()) ? CreditConfig.pubkey30 : (bankCode.equals(EnumType.PAY_BANKCODE_CONDTRUCTION_DEBIT.valueStr()) ? DebitConfig.pubkey30 : DragonConfig.pub));
         reqMap.put("GATEWAY", "");
         reqMap.put("CLIENTIP", profilesActive ? CreditConfig.clientIp_prod : CreditConfig.clientIp_test);
         reqMap.put("REGINFO", "");
