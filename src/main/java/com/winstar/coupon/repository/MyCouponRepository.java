@@ -18,6 +18,8 @@ public interface MyCouponRepository extends JpaRepository<MyCoupon,String> ,JpaS
 
     List<MyCoupon> findByAccountId(String accountId);
 
+    MyCoupon findByAccountIdAndActivityIdAndStatus(String accountId,String activityId,Integer status);
+
 //    List<MyCoupon> findByAccountIdAndStatusAndUseRuleLessThanEqual(String accountId,Integer status,Double rules);
 
     List<MyCoupon> findByAccountIdAndActivityIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(Object accountId, String activityId, Date startMonth, Date endMonth);
