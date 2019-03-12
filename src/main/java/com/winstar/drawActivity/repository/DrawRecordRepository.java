@@ -10,4 +10,5 @@ import org.springframework.data.repository.CrudRepository;
  * author: uu
  */
 public interface DrawRecordRepository extends CrudRepository<DrawRecord, String> {
+     DrawRecord findByAccountId(String accountId);
 }
