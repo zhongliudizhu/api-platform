@@ -1,19 +1,18 @@
 package com.winstar.drawActivity.controller;
 
+import com.winstar.drawActivity.comm.ErrorCodeEnum;
 import com.winstar.drawActivity.entity.DrawRecord;
 import com.winstar.drawActivity.repository.DrawRecordRepository;
 import com.winstar.exception.NotRuleException;
 import com.winstar.redis.RedisTools;
 import com.winstar.user.service.AccountService;
+import com.winstar.vo.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Classname: DrawActivityController
@@ -28,17 +27,17 @@ public class DrawActivityController {
     /**
      * 2019.03.31.23.59.59
      */
-    private static final long ENDOFMARCH = 1554047999;
+    private static final long END_OF_MARCH = 1554047999000L;
 
     /**
      * 99元隐形优惠券
      */
-    private static final String SMALLPRIZE = "prize99";
+    private static final String SMALL_PRIZE = "prize_99";
 
     /**
      * 999元隐形优惠券
      */
-    private static final String LARGEPRIZE = "prize999";
+    private static final String LARGE_PRIZE = "prize_999";
 
     private final RedisTools redisTools;
 
@@ -54,36 +53,32 @@ public class DrawActivityController {
     }
 
     @RequestMapping(value = "/judge")
-    public Map<String, Object> judge(HttpServletRequest request) throws NotRuleException {
-        Map<String, Object> map = new HashMap<>();
+    public Result judge(HttpServletRequest request) throws NotRuleException {
         //判断是否在活动时间内及奖品是否充足
-        if (System.currentTimeMillis() > ENDOFMARCH || getPrizeNum() == 0) {
-            map.put("code", "400");
-            map.put("message", "该活动已结束");
-            return map;
+        if (System.currentTimeMillis() > END_OF_MARCH || getPrizeNum() == 0) {
+            return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_END.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_END.description());
         }
         String accountId = accountService.getAccountId(request);
         DrawRecord drawRecord = drawRecordRepository.findByAccountId(accountId);
+        log.info("用户的抽奖情况： {}", drawRecord);
         //判断用户是否参与过活动
         if (drawRecord == null) {
-            map.put("code", "301");
-            map.put("message", "跳转authMsg");
-            return map;
+            return Result.success("");
         }
-        if ("NO".equals(drawRecord.getIsPrized()) || isBought()) {
-            map.put("code", "401");
-            map.put("message", "抱歉您已参与过该活动，无法重复参与哦");
-            return map;
+        boolean isBought = isBought();
+        if ("NO".equals(drawRecord.getIsPrized()) || isBought) {
+            return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_PARTAKE.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_PARTAKE.description());
         }
-        if (!isBought()) {
-            map.put("code", "302");
-            map.put("message", "已中奖未购买");
-            map.put("data", drawRecord.getPrizeType());
-            return map;
+        if (!isBought) {
+            if ("1".equals(drawRecord.getPrizeType())) {
+                return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_99.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_99.description());
+            } else if ("2".equals(drawRecord.getPrizeType())) {
+                return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_999.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_999.description());
+            } else {
+                throw new NotRuleException("状态异常");
+            }
         }
-        map.put("code", "200");
-        map.put("message", "跳转authMsg");
-        return map;
+        throw new NotRuleException("状态异常");
     }
 
     /**
@@ -91,17 +86,15 @@ public class DrawActivityController {
      */
     private boolean isBought() {
         //TODO
-        return true;
+        return Math.random() > 0.5;
     }
 
     /**
      * 获取剩余奖品数量
      */
     private int getPrizeNum() {
-        Set set = redisTools.setMembers(SMALLPRIZE);
-        Set set2 = redisTools.setMembers(LARGEPRIZE);
-        int num1 = set == null ? 0 : set.size();
-        int num2 = set2 == null ? 0 : set2.size();
+        int num1 = (int) redisTools.get(SMALL_PRIZE);
+        int num2 = (int) redisTools.get(LARGE_PRIZE);
         return num1 + num2;
     }
 
