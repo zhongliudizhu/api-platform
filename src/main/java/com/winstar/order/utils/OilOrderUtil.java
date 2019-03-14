@@ -224,6 +224,24 @@ public class OilOrderUtil {
     }
 
     /*
+       判断用户是否能购买锦鲤活动0 可以购买   1 已购买  2 有未关闭订单
+     */
+    public static String BrocadeCarp(String accountId, String activityId){
+        Date begin =  DateUtil.getInputDate("2019-03-01 00:00:01");
+        Date end = DateUtil.getInputDate("2019-04-01 00:00:01");
+        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,begin, end);
+        if(oilOrders.size()<1){
+            return "0";
+        }else{
+            for (OilOrder oilOrder:oilOrders) {
+                if(oilOrder.getPayStatus()==1){
+                    return "1";
+                }
+            }
+            return "2";
+        }
+    }
+    /*
     * 用户本月20元油券订单
     * */
     private static String thisMonth(String accountId){
