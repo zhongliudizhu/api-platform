@@ -46,6 +46,11 @@ public interface OilOrderRepository extends JpaRepository<OilOrder, String> {
     @Query("select o from OilOrder o where o.isAvailable='0' and o.accountId=?1 and o.activityId=?2 and o.createTime between ?3 and ?4")
     List<OilOrder> findByAccountIdAndActivityId(String accountId, String activityId, Date begin, Date end);
 
+    /**
+     * 用户某活动订单
+     */
+    List<OilOrder> findByAccountIdAndActivityId(String accountId, String activityId);
+
     /*
      * 用户一段时间某活动的订单
      * */

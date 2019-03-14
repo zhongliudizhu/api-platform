@@ -3,16 +3,20 @@ package com.winstar.drawActivity.controller;
 import com.winstar.drawActivity.comm.ErrorCodeEnum;
 import com.winstar.drawActivity.entity.DrawRecord;
 import com.winstar.drawActivity.repository.DrawRecordRepository;
+import com.winstar.drawActivity.repository.PrizeRepository;
 import com.winstar.exception.NotRuleException;
-import com.winstar.redis.RedisTools;
+import com.winstar.order.entity.OilOrder;
+import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.user.service.AccountService;
 import com.winstar.vo.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * Classname: DrawActivityController
@@ -24,32 +28,36 @@ import javax.servlet.http.HttpServletRequest;
 @Slf4j
 @RequestMapping("/api/v1/cbc/drawActivity")
 public class DrawActivityController {
+
     /**
      * 2019.03.31.23.59.59
      */
     private static final long END_OF_MARCH = 1554047999000L;
 
     /**
-     * 99元隐形优惠券
+     * 奖品总数
      */
-    private static final String SMALL_PRIZE = "prize_99";
+    private static final int MAX_PRIZE_NUM = 555;
 
     /**
-     * 999元隐形优惠券
+     * 奖品总数
      */
-    private static final String LARGE_PRIZE = "prize_999";
-
-    private final RedisTools redisTools;
+    private static final String ACTIVITY_ID = "204";
 
     private final DrawRecordRepository drawRecordRepository;
 
     private final AccountService accountService;
 
+    private final PrizeRepository prizeRepository;
+
+    private final OilOrderRepository oilOrderRepository;
+
     @Autowired
-    public DrawActivityController(DrawRecordRepository drawRecordRepository, RedisTools redisTools, AccountService accountService) {
+    public DrawActivityController(DrawRecordRepository drawRecordRepository, OilOrderRepository oilOrderRepository, PrizeRepository prizeRepository, AccountService accountService) {
         this.drawRecordRepository = drawRecordRepository;
-        this.redisTools = redisTools;
+        this.prizeRepository = prizeRepository;
         this.accountService = accountService;
+        this.oilOrderRepository = oilOrderRepository;
     }
 
     @RequestMapping(value = "/judge")
@@ -65,7 +73,7 @@ public class DrawActivityController {
         if (drawRecord == null) {
             return Result.success("");
         }
-        boolean isBought = isBought();
+        boolean isBought = isBought(accountId);
         //未中奖或已中将且购买的用户不能重复参与
         if ("NO".equals(drawRecord.getIsPrized()) || isBought) {
             return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_PARTAKE.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_PARTAKE.description());
@@ -83,18 +91,28 @@ public class DrawActivityController {
     /**
      * 判断是否购买
      */
-    private boolean isBought() {
-        //TODO
-        return Math.random() > 0.5;
+    private boolean isBought(String accountId) {
+        boolean flag = false;
+        List<OilOrder> oilOrders = oilOrderRepository.findByAccountIdAndActivityId(accountId, ACTIVITY_ID);
+        if (!ObjectUtils.isEmpty(oilOrders)) {
+            for (OilOrder o : oilOrders) {
+                if (o.getPayStatus() == 1) {
+                    flag = true;
+                }
+            }
+        }
+        return flag;
     }
 
     /**
      * 获取剩余奖品数量
      */
-    private int getPrizeNum() {
-        int num1 = (int) redisTools.get(SMALL_PRIZE);
-        int num2 = (int) redisTools.get(LARGE_PRIZE);
-        return num1 + num2;
+    private int getPrizeNum() throws NotRuleException {
+        int lastNum = MAX_PRIZE_NUM - prizeRepository.countByIsGet("YES");
+        if (lastNum < 0) {
+            throw new NotRuleException("奖品超出限制");
+        }
+        return lastNum;
     }
 
 }
