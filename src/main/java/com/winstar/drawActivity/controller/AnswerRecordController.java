@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Calendar;
 import java.util.Date;
 
 @RestController
@@ -23,19 +22,18 @@ public class AnswerRecordController {
     AnswerRecordRepository answerRecordRepository;
     @Autowired
     AccountService accountService;
+    /**
+     * 2019.03.31.23.59.59
+     */
+    private static final long END_OF_MARCH = 1554047999000L;
 
     /**
      * 提交答案
      */
     @RequestMapping(value = "/submitAnswer", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public void submitAnswer(HttpServletRequest request, String answer, Date nowTime) throws NotRuleException {
-        Date date1 = new Date(2019, 4, 01);
-        Date now;
-        Calendar c = Calendar.getInstance();
-        now = new Date(c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH));
-        if(date1.after(now)) {
-            //设置时间大于当前时间
+    public void submitAnswer(HttpServletRequest request, String answer) throws NotRuleException {
+        if(System.currentTimeMillis()<END_OF_MARCH) {
             AnswerRecord answerRecord = new AnswerRecord();
             String accountId = accountService.getAccountId(request);
             answerRecord.setAccountId(accountId);
@@ -43,7 +41,6 @@ public class AnswerRecordController {
             answerRecord.setAnswer(answer);
             answerRecordRepository.save(answerRecord);
         }else {
-            //设置时间小于当前时间（活动已过期）
             throw new NotRuleException("activityOverdue.drawActivity");
         }
     }

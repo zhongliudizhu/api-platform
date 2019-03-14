@@ -59,6 +59,10 @@ public class OilOrderSecKillController {
     EarlyAndEveningMarketConfigService earlyAndEveningMarketConfigService;
     @Autowired
     MyCouponRepository myCouponRepository;
+    /**
+     * 2019.03.31.23.59.59
+     */
+    private static final long END_OF_MARCH = 1554047999000L;
 
     @Value("${info.amount}")
     private Integer amount;
@@ -141,13 +145,17 @@ public class OilOrderSecKillController {
         }
         //锦鲤活动第2季度到3月31日(后面用记得该时间)
         if (activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_204.getActivity()))) {
-            String canBuy = OilOrderUtil.BrocadeCarp(accountId, activityId);
-            if (canBuy.equals("1")) {
-                logger.error("锦鲤活动，用户只能买一次(204)");
-                throw new NotRuleException("purchaseOnce.order");
-            } else if (canBuy.equals("2")) {
-                logger.error("锦鲤活动，有未关闭订单(204)");
-                throw new NotRuleException("haveNotPay.order");
+            if(System.currentTimeMillis()<END_OF_MARCH) {
+                String canBuy = OilOrderUtil.BrocadeCarp(accountId, activityId);
+                if (canBuy.equals("1")) {
+                    logger.error("锦鲤活动，用户只能买一次(204)");
+                    throw new NotRuleException("purchaseOnce.order");
+                } else if (canBuy.equals("2")) {
+                    logger.error("锦鲤活动，有未关闭订单(204)");
+                    throw new NotRuleException("haveNotPay.order");
+                }
+            }else {
+                throw new NotRuleException("activityOverdue.drawActivity");
             }
         }
 
