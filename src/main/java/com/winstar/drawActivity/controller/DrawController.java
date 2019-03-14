@@ -50,6 +50,10 @@ public class DrawController {
             logger.info(ErrorCodeEnum.ERROR_CODE_ACTIVITY_END.description());
             return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_END.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_END.description());
         }
+        logger.info("prize999_number:" + redisTools.get("prize_999"));
+        logger.info("prize99_number:" + redisTools.get("prize_99"));
+        logger.info("probability_999:" + redisTools.get("probability_999"));
+        logger.info("probability_99:" + redisTools.get("probability_99"));
         String accountId = accountService.getAccountId(request);
         if(!redisTools.setIfAbsent(accountId, 1)){
             logger.info(ErrorCodeEnum.ERROR_CODE_ACTIVITY_ONLY_ONE.description());
@@ -69,18 +73,16 @@ public class DrawController {
         logger.info("randomNumber：" + randomNumber);
         Map<String,String> retMap = new HashMap<>();
         retMap.put("prizedId", "0");
-        logger.info("prize999_number:" + redisTools.get("prize999"));
-        logger.info("prize99_number:" + redisTools.get("prize99"));
-        if(randomNumber < (Double) redisTools.get("probability_999") && (Integer) redisTools.get("prize999") > 0){
+        if(randomNumber < (Double) redisTools.get("probability_999") && (Integer) redisTools.get("prize_999") > 0){
             logger.info(ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_999.description());
             retMap.put("prizedId", "2");
-            redisTools.set("prize999", (Integer) redisTools.get("prize999") - 1);
+            redisTools.set("prize_999", (Integer) redisTools.get("prize_999") - 1);
             drawRecordRepository.save(saveDrawRecord(accountId, cardNumber, "2"));
         }
-        if(randomNumber < (Double) redisTools.get("probability_99") && (Integer) redisTools.get("prize99") > 0){
+        if(randomNumber < (Double) redisTools.get("probability_99") && (Integer) redisTools.get("prize_99") > 0){
             logger.info(ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_99.description());
             retMap.put("prizedId", "1");
-            redisTools.set("prize99", (Integer) redisTools.get("prize99") - 1);
+            redisTools.set("prize_99", (Integer) redisTools.get("prize_99") - 1);
             drawRecordRepository.save(saveDrawRecord(accountId, cardNumber, "1"));
         }
         return Result.success(retMap);

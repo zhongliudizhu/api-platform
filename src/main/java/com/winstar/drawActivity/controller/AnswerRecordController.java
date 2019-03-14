@@ -32,7 +32,7 @@ public class AnswerRecordController {
      */
     @RequestMapping(value = "/submitAnswer", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public void submitAnswer(HttpServletRequest request, String answer) throws NotRuleException {
+    public Boolean submitAnswer(HttpServletRequest request, String answer) throws NotRuleException {
         if(System.currentTimeMillis()<END_OF_MARCH) {
             AnswerRecord answerRecord = new AnswerRecord();
             String accountId = accountService.getAccountId(request);
@@ -40,9 +40,11 @@ public class AnswerRecordController {
             answerRecord.setCreatedAt(new Date());
             answerRecord.setAnswer(answer);
             answerRecordRepository.save(answerRecord);
+            return true;
         }else {
             throw new NotRuleException("activityOverdue.drawActivity");
         }
+
     }
 
 
