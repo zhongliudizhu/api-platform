@@ -5,14 +5,11 @@ import com.winstar.exception.InvalidParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.exception.ServiceUnavailableException;
-import com.winstar.obu.utils.SmsUtil;
 import com.winstar.order.utils.StringFormatUtils;
-import com.winstar.redis.RedisTools;
 import com.winstar.user.entity.Account;
 import com.winstar.user.param.CCBAuthParam;
 import com.winstar.user.param.MsgContent;
 import com.winstar.user.param.UpdateAccountParam;
-import com.winstar.user.service.AccountService;
 import com.winstar.user.utils.ServiceManager;
 import com.winstar.user.utils.SimpleResult;
 import com.winstar.user.vo.AuthVerifyCodeEntity;
@@ -21,7 +18,6 @@ import com.winstar.user.vo.SendVerifyCodeEntity;
 import com.winstar.user.vo.SendVerifyCodeMsgResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,8 +26,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.ws.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +44,7 @@ public class AuthController {
     static Logger logger = LoggerFactory.getLogger(AuthController.class);
     @Value("${send_sms_url}")
     String sendSmsUrl;
+
     /**
      * 校验手机号码是否绑定
      *
@@ -57,21 +52,22 @@ public class AuthController {
      * @throws InvalidParameterException, NotRuleException
      */
     @PostMapping("/validateMobile")
-    public Map<String,Object> validateMobile(HttpServletRequest request) throws NotRuleException {
-        Map<String,Object> activityMap = Maps.newHashMap();
+    public Map<String, Object> validateMobile(HttpServletRequest request) throws NotRuleException {
+        Map<String, Object> activityMap = Maps.newHashMap();
         String accountId = accountService.getAccountId(request);
         Account account = ServiceManager.accountService.findOne(accountId);
-        if (StringUtils.isEmpty(account)){
-            activityMap.put("ac_state","0");
-        }else{
-            if (StringUtils.isEmpty(account.getMobile())){
-                activityMap.put("ac_state","0");
-            }else {
-                activityMap.put("ac_state","1");
+        if (StringUtils.isEmpty(account)) {
+            activityMap.put("ac_state", "0");
+        } else {
+            if (StringUtils.isEmpty(account.getMobile())) {
+                activityMap.put("ac_state", "0");
+            } else {
+                activityMap.put("ac_state", "1");
             }
         }
         return activityMap;
     }
+
     /**
      * 补全手机号码
      *
@@ -79,14 +75,14 @@ public class AuthController {
      * @return
      */
     @PostMapping("/updateMobile")
-    public Account updateMobile(@RequestBody UpdateAccountParam updateAccountParam, HttpServletRequest request) throws NotRuleException,NotFoundException {
-        if (!ServiceManager.smsService.verifySms(updateAccountParam)){
+    public Account updateMobile(@RequestBody UpdateAccountParam updateAccountParam, HttpServletRequest request) throws NotRuleException, NotFoundException {
+        if (!ServiceManager.smsService.verifySms(updateAccountParam)) {
             logger.info("验证码错误！！");
             throw new NotRuleException("code.is.error");
         }
-        if(!accountService.checkBindMobileUnique(updateAccountParam.getMobile())){
+        if (!accountService.checkBindMobileUnique(updateAccountParam.getMobile())) {
             logger.info("该手机号已被绑定！！");
-            throw new  NotRuleException("phone.had.bind");
+            throw new NotRuleException("phone.had.bind");
         }
         if (null == updateAccountParam || StringUtils.isEmpty(updateAccountParam.getMobile())) {
             logger.info("参数不合法！！！");
@@ -97,7 +93,7 @@ public class AuthController {
         account.setMobile(updateAccountParam.getMobile());
         account.setUpdateTime(new Date());
 
-        ServiceManager.redisTools.remove(ServiceManager.REDIS_KEY_FIND_ACCOUNT_BY_ID+accountId);
+        ServiceManager.redisTools.remove(ServiceManager.REDIS_KEY_FIND_ACCOUNT_BY_ID + accountId);
         ServiceManager.redisTools.remove(ServiceManager.REDIS_KEY_FIND_ACCOUNT_BY_OPENID + account.getOpenid());
         return ServiceManager.accountRepository.save(account);
     }
@@ -178,7 +174,6 @@ public class AuthController {
     @PostMapping(value = "/authMsg", produces = MediaType.APPLICATION_JSON_VALUE)
     public Account authAccount(@RequestBody MsgContent msgContent, HttpServletRequest request) throws NotRuleException {
         String accountId = accountService.getAccountId(request);
-
         Account account = ServiceManager.accountService.findOne(accountId);
         if (null != account && !StringUtils.isEmpty(account.getAuthInfoCard()) && !StringUtils.isEmpty(account.getAuthMobile())) {
             return account;
@@ -214,8 +209,8 @@ public class AuthController {
         account.setAuthTime(new Date());
         account.setAuthDriverLicense(driverLicense);
         Account accountSaved = ServiceManager.accountRepository.save(account);
-        ServiceManager.redisTools.remove(ServiceManager.REDIS_KEY_FIND_ACCOUNT_BY_ID+accountId);
-        ServiceManager.redisTools.remove(ServiceManager.REDIS_KEY_FIND_ACCOUNT_BY_OPENID+account.getOpenid());
+        ServiceManager.redisTools.remove(ServiceManager.REDIS_KEY_FIND_ACCOUNT_BY_ID + accountId);
+        ServiceManager.redisTools.remove(ServiceManager.REDIS_KEY_FIND_ACCOUNT_BY_OPENID + account.getOpenid());
         return accountSaved;
     }
 }
