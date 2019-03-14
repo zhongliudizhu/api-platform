@@ -24,6 +24,7 @@ public enum  ActivityIdEnum {
 
     ACTIVITY_ID_201("交安卡周四秒杀", 201),
     ACTIVITY_ID_202("优驾行周四秒杀", 202),
+    ACTIVITY_ID_204("锦鲤活动", 204),
 
 
     ACTIVITY_STATUS_0("未领取", 0),
