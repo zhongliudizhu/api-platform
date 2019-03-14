@@ -66,19 +66,18 @@ public class DrawActivityController {
             return Result.success("");
         }
         boolean isBought = isBought();
+        //未中奖或已中将且购买的用户不能重复参与
         if ("NO".equals(drawRecord.getIsPrized()) || isBought) {
             return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_PARTAKE.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_PARTAKE.description());
         }
-        if (!isBought) {
-            if ("1".equals(drawRecord.getPrizeType())) {
-                return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_99.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_99.description());
-            } else if ("2".equals(drawRecord.getPrizeType())) {
-                return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_999.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_999.description());
-            } else {
-                throw new NotRuleException("状态异常");
-            }
+        //已中奖未购买返回中奖类型
+        if ("1".equals(drawRecord.getPrizeType())) {
+            return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_99.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_99.description());
+        } else if ("2".equals(drawRecord.getPrizeType())) {
+            return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_999.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_999.description());
+        } else {
+            throw new NotRuleException("状态异常");
         }
-        throw new NotRuleException("状态异常");
     }
 
     /**
