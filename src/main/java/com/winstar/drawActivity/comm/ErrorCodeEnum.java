@@ -12,7 +12,7 @@ public enum ErrorCodeEnum {
     ERROR_CODE_ACTIVITY_NOPRIZE("activity_no_prize", "很遗憾，您没有中奖~"),
     ERROR_CODE_ACTIVITY_ONLY_ONE("activity_only_one", "您的手速太快了，不带这么玩！"),
     ERROR_CODE_ACTIVITY_USER_NOT_RULE("activity_user_not_rule", "非交安卡用户不能参与！"),
-    ERROR_CODE_ACTIVITY_USER_DID_NOT_PAY("activity_user_did_not_pay", "你已经下单了且未支付哦"),
+    ERROR_CODE_ACTIVITY_USER_DID_NOT_BIND("activity_user_did_not_bind", "用户未认证交安卡"),
     ;
 
     private final String value;

@@ -7,6 +7,7 @@ import com.winstar.drawActivity.repository.PrizeRepository;
 import com.winstar.exception.NotRuleException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
+import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
 import com.winstar.vo.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -69,6 +70,11 @@ public class DrawActivityController {
         String accountId = accountService.getAccountId(request);
         DrawRecord drawRecord = drawRecordRepository.findByAccountId(accountId);
         log.info("用户的抽奖情况： {}", drawRecord);
+        //判断用户是否绑定交安卡
+        Account account = accountService.findOne(accountId);
+        if (ObjectUtils.isEmpty(account.getAuthInfoCard()) || ObjectUtils.isEmpty(account.getAuthMobile())) {
+            return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_USER_DID_NOT_BIND.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_USER_DID_NOT_BIND.description());
+        }
         //判断用户是否参与过活动
         if (drawRecord == null) {
             return Result.success("");
