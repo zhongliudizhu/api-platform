@@ -7,6 +7,7 @@ import com.winstar.coupon.service.CouponService;
 import com.winstar.couponActivity.entity.CareJuanList;
 import com.winstar.couponActivity.repository.CareJuanListRepository;
 import com.winstar.couponActivity.utils.ActivityIdEnum;
+import com.winstar.drawActivity.comm.ErrorCodeEnum;
 import com.winstar.drawActivity.entity.DrawRecord;
 import com.winstar.drawActivity.repository.DrawRecordRepository;
 import com.winstar.exception.InvalidParameterException;
@@ -15,6 +16,7 @@ import com.winstar.exception.NotRuleException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.*;
+import com.winstar.redis.RedisTools;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
@@ -63,6 +65,8 @@ public class OilOrderSecKillController {
     EarlyAndEveningMarketConfigService earlyAndEveningMarketConfigService;
     @Autowired
     MyCouponRepository myCouponRepository;
+    @Autowired
+    RedisTools redisTools;
     /**
      * 2019.03.31.23.59.59
      */
@@ -150,6 +154,10 @@ public class OilOrderSecKillController {
         //锦鲤活动第2季度到3月31日(后面用记得该时间)
         if (activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_204.getActivity()))) {
             if (System.currentTimeMillis() < END_OF_MARCH) {
+                if(!redisTools.setIfAbsent(accountId + "_" + ActivityIdEnum.ACTIVITY_ID_204.getActivity(), 5)){
+                    logger.info(ErrorCodeEnum.ERROR_CODE_ACTIVITY_ONLY_ONE.description());
+                    throw new NotRuleException("haveNotPay.order");
+                }
                 DrawRecord drawRecord = drawRecordRepository.findByAccountId(accountId);
                 if (!StringUtils.isEmpty(drawRecord)) {
                     if ((itemId.equals("2041") && drawRecord.getPrizeType().equals("1")) || (itemId.equals("2042") && drawRecord.getPrizeType().equals("2"))) {
