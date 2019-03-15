@@ -74,14 +74,14 @@ public class DrawController {
         logger.info("randomNumber：" + randomNumber);
         Map<String,String> retMap = new HashMap<>();
         retMap.put("prizedId", "0");
-        if(randomNumber <= (Double) redisTools.get("probability_999") && (Integer) redisTools.get("prize_999") > 0){
+        if(randomNumber < (Double) redisTools.get("probability_999") && (Integer) redisTools.get("prize_999") > 0){
             logger.info(ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_999.description());
             retMap.put("prizedId", "2");
             redisTools.set("prize_999", (Integer) redisTools.get("prize_999") - 1);
             drawRecordRepository.save(saveDrawRecord(accountId, cardNumber, "2"));
             return Result.success(retMap);
         }
-        if(randomNumber <= (Double) redisTools.get("probability_99") && (Integer) redisTools.get("prize_99") > 0){
+        if(randomNumber < (Double) redisTools.get("probability_99") && (Integer) redisTools.get("prize_99") > 0){
             logger.info(ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_99.description());
             retMap.put("prizedId", "1");
             redisTools.set("prize_99", (Integer) redisTools.get("prize_99") - 1);
