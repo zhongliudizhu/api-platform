@@ -7,6 +7,8 @@ import com.winstar.coupon.service.CouponService;
 import com.winstar.couponActivity.entity.CareJuanList;
 import com.winstar.couponActivity.repository.CareJuanListRepository;
 import com.winstar.couponActivity.utils.ActivityIdEnum;
+import com.winstar.drawActivity.entity.DrawRecord;
+import com.winstar.drawActivity.repository.DrawRecordRepository;
 import com.winstar.exception.InvalidParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
@@ -55,6 +57,8 @@ public class OilOrderSecKillController {
     private AccountService accountService;
     @Autowired
     CareJuanListRepository careJuanListRepository;
+    @Autowired
+    DrawRecordRepository drawRecordRepository;
     @Autowired
     EarlyAndEveningMarketConfigService earlyAndEveningMarketConfigService;
     @Autowired
@@ -145,16 +149,25 @@ public class OilOrderSecKillController {
         }
         //锦鲤活动第2季度到3月31日(后面用记得该时间)
         if (activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_204.getActivity()))) {
-            if(System.currentTimeMillis()<END_OF_MARCH) {
-                String canBuy = OilOrderUtil.BrocadeCarp(accountId, activityId);
-                if (canBuy.equals("1")) {
-                    logger.error("锦鲤活动，用户只能买一次(204)");
-                    throw new NotRuleException("purchaseOnce.order");
-                } else if (canBuy.equals("2")) {
-                    logger.error("锦鲤活动，有未关闭订单(204)");
-                    throw new NotRuleException("haveNotPay.order");
+            if (System.currentTimeMillis() < END_OF_MARCH) {
+                DrawRecord drawRecord = drawRecordRepository.findByAccountId(accountId);
+                if (!StringUtils.isEmpty(drawRecord)) {
+                    if ((itemId.equals("2041") && drawRecord.getPrizeType().equals("1")) || (itemId.equals("2042") && drawRecord.getPrizeType().equals("2"))) {
+                        String canBuy = OilOrderUtil.BrocadeCarp(accountId, activityId);
+                        if (canBuy.equals("1")) {
+                            logger.error("锦鲤活动，用户只能买一次(204)");
+                            throw new NotRuleException("purchaseOnce.order");
+                        } else if (canBuy.equals("2")) {
+                            logger.error("锦鲤活动，有未关闭订单(204)");
+                            throw new NotRuleException("haveNotPay.order");
+                        }
+                    } else {
+                        throw new NotRuleException(" notWinning.drawActivity");
+                    }
+                } else {
+                    throw new NotRuleException(" notWinning.drawActivity");
                 }
-            }else {
+            } else {
                 throw new NotRuleException("activityOverdue.drawActivity");
             }
         }
@@ -178,7 +191,7 @@ public class OilOrderSecKillController {
         }
         //5.初始化订单及订单项
         OilOrder oilOrder = new OilOrder(accountId, serialNumber, Constant.ORDER_STATUS_CREATE, Constant.PAY_STATUS_NOT_PAID, new Date(), Constant.REFUND_STATUS_ORIGINAL, itemId, activityId);
-        if (activityId.equals("106")|| activityId.equals("204") || activityId.equals("201") || activityId.equals("202") || activityId.equals("9") || activityId.equals("10")) {
+        if (activityId.equals("106") || activityId.equals("204") || activityId.equals("201") || activityId.equals("202") || activityId.equals("9") || activityId.equals("10")) {
             oilOrder = OilOrderUtil.initOrderSecKill(oilOrder, goods, activity.getType());
             //6.生成订单
             oilOrder = orderRepository.save(oilOrder);

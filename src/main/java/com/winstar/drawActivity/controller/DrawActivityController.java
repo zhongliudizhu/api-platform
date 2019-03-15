@@ -72,6 +72,7 @@ public class DrawActivityController {
         log.info("用户的抽奖情况： {}", drawRecord);
         //判断用户是否绑定交安卡
         Account account = accountService.findOne(accountId);
+        log.info(accountId);
         if (ObjectUtils.isEmpty(account.getAuthInfoCard()) || ObjectUtils.isEmpty(account.getAuthMobile())) {
             return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_USER_DID_NOT_BIND.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_USER_DID_NOT_BIND.description());
         }
