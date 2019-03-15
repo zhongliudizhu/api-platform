@@ -78,7 +78,8 @@ public class DrawActivityController {
         }
         //判断用户是否参与过活动
         if (drawRecord == null) {
-            return Result.success("");
+
+            return Result.success(account.getAuthInfoCard());
         }
         boolean isBought = isBought(accountId);
         //未中奖或已中将且购买的用户不能重复参与
