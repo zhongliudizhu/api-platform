@@ -70,7 +70,7 @@ public class DrawController {
             logger.info(ErrorCodeEnum.ERROR_CODE_ACTIVITY_PARTAKE.description());
             return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_PARTAKE.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_PARTAKE.description());
         }
-        double randomNumber = Arith.mul(new Random().nextDouble(), 100, 2);
+        double randomNumber = Arith.mul(new Random().nextDouble(), 100, 3);
         logger.info("randomNumber：" + randomNumber);
         Map<String,String> retMap = new HashMap<>();
         retMap.put("prizedId", "0");
