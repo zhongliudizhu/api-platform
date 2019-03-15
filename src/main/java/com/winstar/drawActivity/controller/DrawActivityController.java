@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Classname: DrawActivityController
@@ -78,7 +80,9 @@ public class DrawActivityController {
         }
         //判断用户是否参与过活动
         if (drawRecord == null) {
-            return Result.success("");
+            Map<String, String> map = new HashMap<>();
+            map.put("authInfoCard", account.getAuthInfoCard());
+            return Result.success(map);
         }
         boolean isBought = isBought(accountId);
         //未中奖或已中将且购买的用户不能重复参与

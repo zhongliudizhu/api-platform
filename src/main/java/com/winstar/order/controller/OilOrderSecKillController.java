@@ -154,7 +154,7 @@ public class OilOrderSecKillController {
         //锦鲤活动第2季度到3月31日(后面用记得该时间)
         if (activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_204.getActivity()))) {
             if (System.currentTimeMillis() < END_OF_MARCH) {
-                if(!redisTools.setIfAbsent(accountId + "_" + ActivityIdEnum.ACTIVITY_ID_204.getActivity(), 5)){
+                if (!redisTools.setIfAbsent(accountId + "_" + ActivityIdEnum.ACTIVITY_ID_204.getActivity(), 5)) {
                     logger.info(ErrorCodeEnum.ERROR_CODE_ACTIVITY_ONLY_ONE.description());
                     throw new NotRuleException("haveNotPay.order");
                 }
@@ -170,12 +170,15 @@ public class OilOrderSecKillController {
                             throw new NotRuleException("haveNotPay.order");
                         }
                     } else {
+                        logger.error("请用户购买正确活动商品");
                         throw new NotRuleException(" notWinning.drawActivity");
                     }
                 } else {
+                    logger.error("用户未中奖");
                     throw new NotRuleException(" notWinning.drawActivity");
                 }
             } else {
+                logger.error("活动时间已过期");
                 throw new NotRuleException("activityOverdue.drawActivity");
             }
         }
