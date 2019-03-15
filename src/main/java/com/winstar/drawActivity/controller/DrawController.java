@@ -1,5 +1,6 @@
 package com.winstar.drawActivity.controller;
 
+import com.winstar.cashier.construction.utils.Arith;
 import com.winstar.drawActivity.comm.ErrorCodeEnum;
 import com.winstar.drawActivity.entity.DrawRecord;
 import com.winstar.drawActivity.repository.DrawRecordRepository;
@@ -69,24 +70,25 @@ public class DrawController {
             logger.info(ErrorCodeEnum.ERROR_CODE_ACTIVITY_PARTAKE.description());
             return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_PARTAKE.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_PARTAKE.description());
         }
-        int randomNumber = new Random().nextInt(100);
+        double randomNumber = Arith.mul(new Random().nextDouble(), 100, 2);
         logger.info("randomNumber：" + randomNumber);
         Map<String,String> retMap = new HashMap<>();
         retMap.put("prizedId", "0");
-        if(randomNumber < (Double) redisTools.get("probability_999") && (Integer) redisTools.get("prize_999") > 0){
+        if(randomNumber <= (Double) redisTools.get("probability_999") && (Integer) redisTools.get("prize_999") > 0){
             logger.info(ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_999.description());
             retMap.put("prizedId", "2");
             redisTools.set("prize_999", (Integer) redisTools.get("prize_999") - 1);
             drawRecordRepository.save(saveDrawRecord(accountId, cardNumber, "2"));
             return Result.success(retMap);
         }
-        if(randomNumber < (Double) redisTools.get("probability_99") && (Integer) redisTools.get("prize_99") > 0){
+        if(randomNumber <= (Double) redisTools.get("probability_99") && (Integer) redisTools.get("prize_99") > 0){
             logger.info(ErrorCodeEnum.ERROR_CODE_ACTIVITY_HASPRIZE_99.description());
             retMap.put("prizedId", "1");
             redisTools.set("prize_99", (Integer) redisTools.get("prize_99") - 1);
             drawRecordRepository.save(saveDrawRecord(accountId, cardNumber, "1"));
             return Result.success(retMap);
         }
+        drawRecordRepository.save(saveDrawRecord(accountId, cardNumber, "0"));
         return Result.success(retMap);
     }
 
