@@ -10,5 +10,4 @@ import org.springframework.data.repository.CrudRepository;
  * author: uu
  */
 public interface PrizeRepository extends CrudRepository<Prize, String> {
-    int countByIsGet(String isGet);
 }

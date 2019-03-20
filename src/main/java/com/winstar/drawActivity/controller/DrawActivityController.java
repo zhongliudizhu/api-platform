@@ -3,7 +3,6 @@ package com.winstar.drawActivity.controller;
 import com.winstar.drawActivity.comm.ErrorCodeEnum;
 import com.winstar.drawActivity.entity.DrawRecord;
 import com.winstar.drawActivity.repository.DrawRecordRepository;
-import com.winstar.drawActivity.repository.PrizeRepository;
 import com.winstar.exception.NotRuleException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
@@ -58,20 +57,22 @@ public class DrawActivityController {
      */
     private static final String LARGE_PRIZE = "prize_999";
 
+    /**
+     * 已投放总数
+     */
+    private static final String PUT_IN_NUM = "punInNum";
+
     private final DrawRecordRepository drawRecordRepository;
 
     private final AccountService accountService;
 
     private final RedisTools redisTools;
 
-    private final PrizeRepository prizeRepository;
-
     private final OilOrderRepository oilOrderRepository;
 
     @Autowired
-    public DrawActivityController(DrawRecordRepository drawRecordRepository, OilOrderRepository oilOrderRepository, RedisTools redisTools, PrizeRepository prizeRepository, AccountService accountService) {
+    public DrawActivityController(DrawRecordRepository drawRecordRepository, OilOrderRepository oilOrderRepository, RedisTools redisTools, AccountService accountService) {
         this.drawRecordRepository = drawRecordRepository;
-        this.prizeRepository = prizeRepository;
         this.redisTools = redisTools;
         this.accountService = accountService;
         this.oilOrderRepository = oilOrderRepository;
@@ -84,13 +85,13 @@ public class DrawActivityController {
             return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_END.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_END.description());
         }
         String accountId = accountService.getAccountId(request);
-        DrawRecord drawRecord = drawRecordRepository.findByAccountId(accountId);
         //判断用户是否绑定交安卡
         Account account = accountService.findOne(accountId);
         log.info("用户id是： {} ,交安卡号是： {} ,认证手机尾号是： {}", accountId, account.getAuthInfoCard(), account.getAuthMobile());
         if (ObjectUtils.isEmpty(account.getAuthInfoCard()) || ObjectUtils.isEmpty(account.getAuthMobile())) {
             return Result.fail(ErrorCodeEnum.ERROR_CODE_ACTIVITY_USER_DID_NOT_BIND.value(), ErrorCodeEnum.ERROR_CODE_ACTIVITY_USER_DID_NOT_BIND.description());
         }
+        DrawRecord drawRecord = drawRecordRepository.findByAccountId(accountId);
         log.info("用户的抽奖情况： {}", drawRecord);
         //判断用户是否参与过活动
         if (drawRecord == null) {
@@ -135,11 +136,12 @@ public class DrawActivityController {
     private int getPrizeNum() throws NotRuleException {
         Integer last_99 = (Integer) redisTools.get(SMALL_PRIZE);
         Integer last_999 = (Integer) redisTools.get(LARGE_PRIZE);
-        int punInNum = prizeRepository.countByIsGet("NO");
+        Integer punInNum = (Integer) redisTools.get(PUT_IN_NUM);
         int lastNum = MAX_PRIZE_NUM - punInNum + last_99 + last_999;
         if (lastNum < 0) {
             throw new NotRuleException("奖品超出限制");
         }
+        log.info("剩余奖品是：{}", lastNum);
         return lastNum;
     }
 
