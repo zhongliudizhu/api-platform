@@ -82,5 +82,7 @@ public interface OilOrderRepository extends JpaRepository<OilOrder, String> {
     @Query(value = "SELECT count(0) FROM cbc_oil_order o WHERE o.is_available = '0'AND o.pay_status='1'AND o.account_id =?1", nativeQuery = true)
     long countByStatusAndAccountIdAndIsAvailable(String accountId);
 
-    long countByIdAndActivityIdAndIsAvailableAndStatus(String id, String activityId, String isAvaliable, Integer status);
+    //购买的109活动
+    @Query(value = "SELECT * FROM `cbc_oil_order` WHERE account_id=?1 AND activity_id=?2 AND item_total_value=?3",nativeQuery = true)
+    List<OilOrder> findByAccountIdAndActivityIdAndItemTotalValue(String accountId,String activityId, Double itemTotalValue);
 }

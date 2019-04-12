@@ -21,6 +21,7 @@ public enum  ActivityIdEnum {
     ACTIVITY_ID_106("新办交安卡", 106),
     ACTIVITY_ID_107("新开通手机银行", 107),
     ACTIVITY_ID_108("新办约定还款账户", 108),
+    ACTIVITY_ID_109("领取50元优惠包", 109),
 
     ACTIVITY_ID_201("交安卡周四秒杀", 201),
     ACTIVITY_ID_202("优驾行周四秒杀", 202),

@@ -82,5 +82,11 @@ public class Activity {
     @Transient
     private Integer isVerify;
 
+    /**
+     * 已领
+     */
+    @Transient
+    private String sendTime;
+
 
 }

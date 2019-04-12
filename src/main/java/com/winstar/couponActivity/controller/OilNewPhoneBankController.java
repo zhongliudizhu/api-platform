@@ -6,14 +6,16 @@
 //import com.winstar.couponActivity.entity.CouponActivity;
 //import com.winstar.couponActivity.entity.OilSubsidyVerifyLog;
 //import com.winstar.couponActivity.entity.SevenWhiteList;
-//import com.winstar.couponActivity.entity.WhiteList;
 //import com.winstar.couponActivity.repository.CouponActivityRepository;
 //import com.winstar.couponActivity.repository.OilSubsidyVerifyLogRepository;
 //import com.winstar.couponActivity.repository.SevenWhiteListRepository;
 //import com.winstar.couponActivity.repository.WhiteListRepository;
 //import com.winstar.couponActivity.utils.ActivityIdEnum;
 //import com.winstar.couponActivity.utils.TimeUtil;
-//import com.winstar.exception.*;
+//import com.winstar.exception.InvalidParameterException;
+//import com.winstar.exception.NotFoundException;
+//import com.winstar.exception.NotRuleException;
+//import com.winstar.exception.ServiceUnavailableException;
 //import com.winstar.order.utils.DateUtil;
 //import com.winstar.order.utils.StringFormatUtils;
 //import com.winstar.shop.entity.Activity;
@@ -82,10 +84,10 @@
 //    public Activity getActivity(HttpServletRequest request) {
 //        Object accountId = request.getAttribute("accountId");
 //        Activity activity = new Activity();
-//        activity.setName("新开通手机银行购--第四季度活动");
-//        activity.setType(107);
+//        activity.setName("新开通手机银行购--第二季度活动");
+//        activity.setType(109);
 //
-//        List<MyCoupon> myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(107),0, DateUtil.getInputDate("2018-07-01 00:00:01"), DateUtil.getInputDate("2019-12-31 23:59:59"));//0: 未使用
+//        List<MyCoupon> myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(109),0, DateUtil.getInputDate("2019-04-01 00:00:01"), DateUtil.getInputDate("2019-12-31 23:59:59"));//0: 未使用
 //        if(!ObjectUtils.isEmpty(myCoupons)){
 //            activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
 //        }else{
@@ -150,24 +152,12 @@
 //
 //
 //        Activity activity = getActivityInfo();
-//        //判断该用户是否存在在105白名单
-//        WhiteList ifWhitList= whiteListRepository.checkIfWhiteList(phoneNumber);
-//        //判断是否参加了105白名单
-//        WhiteList fiveWhiteList = whiteListRepository.checkWhiteList(phoneNumber, 0);
-//        //判断是否领取107优惠券
-//        SevenWhiteList whiteList = sevenWhiteListRepository.findByPhoneNumberAndIsGetAndType(phoneNumber,0,107);
-//        if(ObjectUtils.isEmpty(ifWhitList)){
+//        //判断是否领取109优惠券
+//        SevenWhiteList whiteList = sevenWhiteListRepository.findByPhoneNumberAndIsGetAndType(phoneNumber,0,109);
 //        if(ObjectUtils.isEmpty(whiteList)){
-//            logger.info("电话号码:"+phoneNumber+"已认证过107活动");
+//            logger.info("电话号码:"+phoneNumber+"已认证过109活动");
 //            throw new NotFoundException("couponActivity.notWhiteLists");
 //            }
-//        }else {
-//            if(ObjectUtils.isEmpty(whiteList)||ObjectUtils.isEmpty(fiveWhiteList)){
-//                logger.info("电话号码:"+phoneNumber+"已认证过105活动或者107活动");
-//                throw new NotFoundException("couponActivity.notWhiteLists");
-//            }
-//        }
-//
 //        String nowMonth = TimeUtil.getMonth();
 //        try {
 //            if(whiteList.getTime().equals(nowMonth)||TimeUtil.getCheckTimeNextMonth(whiteList.getTime()).equals(nowMonth)){
@@ -196,8 +186,8 @@
 //
 //    public Activity getActivityInfo(){
 //        Activity activity = new Activity();
-//        activity.setName("新开通手机银行--第四季度活动");
-//        activity.setType(ActivityIdEnum.ACTIVITY_ID_107.getActivity());
+//        activity.setName("建行第二季度活动");
+//        activity.setType(ActivityIdEnum.ACTIVITY_ID_109.getActivity());
 //        activity.setIsVerify(0);
 //        activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_0.getActivity());
 //        return  activity;
@@ -210,7 +200,7 @@
 //     */
 //    @Async
 //    public void giveCouponInfo(String accountId, SevenWhiteList whiteList){
-//        List<MyCoupon> coupons = myCouponRepository.findByAccountIdAndActivityId(accountId, "107");
+//        List<MyCoupon> coupons = myCouponRepository.findByAccountIdAndActivityId(accountId, "109");
 //        if(ObjectUtils.isEmpty(coupons)){
 //            CouponActivity couponActivity = couponActivityRepository.findOne("107");
 //
@@ -236,13 +226,13 @@
 //     * @throws NotFoundException
 //     * @throws ServiceUnavailableException
 //     */
-//    @PostMapping(value = "/cbcSevenSendAuthMsg", produces = MediaType.APPLICATION_JSON_VALUE)
+//    @PostMapping(value = "/cbcNineSendAuthMsg", produces = MediaType.APPLICATION_JSON_VALUE)
 //    public ResponseEntity sendAuth(@RequestParam String driverLicense, @RequestParam String phone, String infoCard, HttpServletRequest request)
 //            throws NotRuleException {
-//        //107白名单
+//        //109白名单
 //        String sevenWhiteList = sevenWhiteListRepository.findByDriverLicenseAndPhoneNumber(driverLicense, phone);
 //        if(ObjectUtils.isEmpty(sevenWhiteList)){
-//            logger.info("身份证"+driverLicense+"电话号码"+phone+"用户不在107白名单");
+//            logger.info("身份证"+driverLicense+"电话号码"+phone+"用户不在109白名单");
 //            throw new NotRuleException("WhiteLists.notWhiteLists");
 //        }else {
 //            infoCard = sevenWhiteList;

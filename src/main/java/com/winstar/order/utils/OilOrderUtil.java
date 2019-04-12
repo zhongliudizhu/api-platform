@@ -241,6 +241,44 @@ public class OilOrderUtil {
             return "2";
         }
     }
+
+    /**
+     *判断用户是否能购买109活动 0可以购买 1已购买 2有未关闭订单(300元商品)
+     */
+    public static String couponsPackage300(String accountId,String activityId){
+        //面额300
+        double figure=300;
+        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityIdAndItemTotalValue(accountId,activityId,figure);
+        if(oilOrders.size()<1){
+            return "0";
+        }else {
+            for (OilOrder oilOrder:oilOrders){
+                if(oilOrder.getPayStatus()==1){
+                    return "1";
+                }
+            }
+            return "2";
+        }
+    }
+    /**
+     *判断用户是否能购买109活动 0可以购买 1已购买 2有未关闭订单(100元商品)
+     */
+    public static String couponsPackage100(String accountId,String activityId){
+        //面额100
+        double denomination=100;
+        List<OilOrder> oilOrdersList = ServiceManager.oilOrderRepository.findByAccountIdAndActivityIdAndItemTotalValue(accountId,activityId,denomination);
+        if(oilOrdersList.size()<2){
+            return "0";
+        }else {
+            for (OilOrder oilOrder:oilOrdersList){
+                if (oilOrder.getPayStatus()!=1){
+                    return "2";
+                }
+            }
+            return "1";
+        }
+    }
+
     /*
     * 用户本月20元油券订单
     * */

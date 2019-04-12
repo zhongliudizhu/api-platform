@@ -5,7 +5,9 @@ import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.couponActivity.entity.CareJuanList;
+import com.winstar.couponActivity.entity.NineWhiteList;
 import com.winstar.couponActivity.repository.CareJuanListRepository;
+import com.winstar.couponActivity.repository.NineWhiteListRepository;
 import com.winstar.couponActivity.utils.ActivityIdEnum;
 import com.winstar.drawActivity.comm.ErrorCodeEnum;
 import com.winstar.drawActivity.entity.DrawRecord;
@@ -67,6 +69,8 @@ public class OilOrderSecKillController {
     MyCouponRepository myCouponRepository;
     @Autowired
     RedisTools redisTools;
+    @Autowired
+    NineWhiteListRepository nineWhiteListRepository;
     /**
      * 2019.03.31.23.59.59
      */
@@ -151,7 +155,36 @@ public class OilOrderSecKillController {
                 throw new NotRuleException("haveNotPay.order");
             }
         }
-        //锦鲤活动第2季度到3月31日(后面用记得该时间)
+        //建行第二季度优惠包活动
+        if (activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_109.getActivity()))) {
+            NineWhiteList nineWhiteList = nineWhiteListRepository.findByAccountIdAndSendTime(accountId);
+            if (!ObjectUtils.isEmpty(nineWhiteList)) {
+                if (itemId.equals("1091")) {
+                    String canBuy = OilOrderUtil.couponsPackage100(accountId, activityId);
+                    if (canBuy.equals("1")) {
+                        logger.error("建行二期优惠包活动，用户只能买二次(100元)");
+                        throw new NotRuleException("onlyBuyOnce100.order");
+                    } else if (canBuy.equals("2")) {
+                        logger.error("建行二期优惠包活动，有未关闭订单(100元)");
+                        throw new NotRuleException("haveNotPay100.order");
+                    }
+                } else if (itemId.equals("1092")) {
+                    String can = OilOrderUtil.couponsPackage300(accountId, activityId);
+                    if (can.equals("1")) {
+                        logger.error("建行二期优惠包活动，用户只能买一次(300元)");
+                        throw new NotRuleException("onlyBuyOnce300.order");
+                    } else if (can.equals("2")) {
+                        logger.error("建行二期优惠包活动，有未关闭订单(300元)");
+                        throw new NotRuleException("haveNotPay300.order");
+                    }
+                }
+            } else {
+                logger.error("活动时间已过期");
+                throw new NotRuleException("discountPackageActivities.expired");
+            }
+
+        }
+        //锦鲤活动第2季度到3月31日(后面用记得改时间戳END_OF_MARCH)
         if (activityId.equals(String.valueOf(ActivityIdEnum.ACTIVITY_ID_204.getActivity()))) {
             if (System.currentTimeMillis() < END_OF_MARCH) {
                 if (!redisTools.setIfAbsent(accountId + "_" + ActivityIdEnum.ACTIVITY_ID_204.getActivity(), 5)) {
@@ -202,7 +235,7 @@ public class OilOrderSecKillController {
         }
         //5.初始化订单及订单项
         OilOrder oilOrder = new OilOrder(accountId, serialNumber, Constant.ORDER_STATUS_CREATE, Constant.PAY_STATUS_NOT_PAID, new Date(), Constant.REFUND_STATUS_ORIGINAL, itemId, activityId);
-        if (activityId.equals("106") || activityId.equals("204") || activityId.equals("201") || activityId.equals("202") || activityId.equals("9") || activityId.equals("10")) {
+        if (activityId.equals("106") || activityId.equals("109") || activityId.equals("204") || activityId.equals("201") || activityId.equals("202") || activityId.equals("9") || activityId.equals("10")) {
             oilOrder = OilOrderUtil.initOrderSecKill(oilOrder, goods, activity.getType());
             //6.生成订单
             oilOrder = orderRepository.save(oilOrder);
