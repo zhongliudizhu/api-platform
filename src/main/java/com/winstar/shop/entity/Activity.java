@@ -86,7 +86,7 @@ public class Activity {
      * 已领
      */
     @Transient
-    private String sendTime;
+    private Date sendTime;
 
 
 }

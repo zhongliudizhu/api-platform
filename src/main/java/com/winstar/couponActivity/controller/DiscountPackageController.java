@@ -37,6 +37,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -75,11 +78,12 @@ public class DiscountPackageController {
      */
     @RequestMapping(value = "nineFind", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public Activity getActivity(HttpServletRequest request) {
+    public Activity getActivity(HttpServletRequest request) throws ParseException {
         Object accountId = request.getAttribute("accountId");
         Activity activity = new Activity();
         activity.setName("建行二期活动--优惠加油包");
         activity.setType(109);
+        SimpleDateFormat format =   new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
         //查询该用户是否验证过109
         NineWhiteList list = nineWhiteListRepository.findByAccountId(accountId.toString());
         //109白名单验证时间是否超过15天
@@ -88,7 +92,8 @@ public class DiscountPackageController {
             if (!ObjectUtils.isEmpty(nineWhiteList)) {
                 if (list.getIsGet() == 1) {
                     activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
-                    activity.setSendTime(nineWhiteList.getSendTime());
+                    Date date = format.parse(nineWhiteList.getSendTime());
+                    activity.setSendTime(date);
                 }
             }else {
                 activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_0.getActivity());
@@ -109,10 +114,11 @@ public class DiscountPackageController {
         Object accountId = request.getAttribute("accountId");
         Account account = accountService.findOne(accountId.toString());
         logger.info("openid:" + account.getOpenid() + "-----建行二期活动优惠包-----");
-        logger.info("driverLicense:" + driverLicense + "|phoneNumber:" + phoneNumber
-                + "|msgVerifyCode:" + msgVerifyCode + "|msgVerifyId:" + msgVerifyId);
+        logger.info("身份证后6位:" + driverLicense + "|电话号码:" + phoneNumber
+                + "|验证码:" + msgVerifyCode + "|验证编号:" + msgVerifyId);
 
         if (StringUtils.isEmpty(driverLicense)) {
+            logger.info("身份证号后6位:" + driverLicense + "为空");
             throw new NotRuleException("couponActivity.driverLicense");
         }
         if (StringUtils.isEmpty(phoneNumber)) {
