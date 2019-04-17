@@ -34,6 +34,7 @@ public enum  ActivityIdEnum {
     ACTIVITY_STATUS_2("重复领取", 2),
     ACTIVITY_STATUS_3("已售罄", 3),
     ACTIVITY_STATUS_4("已使用", 4),
+    ACTIVITY_STATUS_5("已过期", 5),
 
     ACTIVITY_VERIFY_0("未领取千万加油补贴", 0),
     ACTIVITY_VERIFY_1("已领取", 1),

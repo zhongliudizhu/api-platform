@@ -96,7 +96,7 @@ public class DiscountPackageController {
                     activity.setSendTime(date);
                 }
             }else {
-                activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_0.getActivity());
+                activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_5.getActivity());
             }
         } else {
             activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_0.getActivity());
