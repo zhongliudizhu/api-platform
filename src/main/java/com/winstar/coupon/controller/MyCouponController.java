@@ -1,16 +1,23 @@
 package com.winstar.coupon.controller;
 
 import com.winstar.coupon.entity.MyCoupon;
+import com.winstar.coupon.entity.OilStation;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
+import com.winstar.coupon.service.OilStationService;
 import com.winstar.couponActivity.utils.ActivityIdEnum;
 import com.winstar.exception.*;
+import com.winstar.oil.entity.MyOilCoupon;
+import com.winstar.oil.repository.MyOilCouponRepository;
+import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.GoodsRepository;
 import com.winstar.user.service.AccountService;
+import com.winstar.utils.AESUtil;
 import com.winstar.utils.WsdUtils;
+import com.winstar.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +26,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +35,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -53,6 +63,10 @@ public class MyCouponController {
     GoodsRepository goodsRepository;
     @Autowired
     OilOrderRepository oilOrderRepository;
+    @Autowired
+    MyOilCouponRepository myOilCouponRepository;
+    @Autowired
+    OilStationService oilStationService;
 
     /**
      * 我的优惠券列表
@@ -76,7 +90,7 @@ public class MyCouponController {
         List<MyCoupon> list = new LinkedList<>();
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
-        if (StringUtils.isEmpty(accountId))  throw new NotRuleException("accountId");
+        if (StringUtils.isEmpty(accountId)) throw new NotRuleException("accountId");
         Sort sorts = new Sort(Sort.Direction.DESC, "createdAt");
         Pageable pageable = new PageRequest(pageNumber - 1, pageSize, sorts);
         Page<MyCoupon> page = myCouponRepository.findAll(new Specification<MyCoupon>() {
@@ -100,8 +114,8 @@ public class MyCouponController {
         }, pageable);
         if (page.getContent().size() == 0) throw new NotFoundException("mycoupon");
         page.getContent().stream().forEach(bean -> {
-            if (30.0 == bean.getAmount()&&oilOrderRepository.countByStatusAndAccountIdAndIsAvailable(accountId)>0&&Integer.parseInt(bean.getActivityId())==ActivityIdEnum.ACTIVITY_ID_667.getActivity()){
-               bean.setUseRule(300.0);
+            if (30.0 == bean.getAmount() && oilOrderRepository.countByStatusAndAccountIdAndIsAvailable(accountId) > 0 && Integer.parseInt(bean.getActivityId()) == ActivityIdEnum.ACTIVITY_ID_667.getActivity()) {
+                bean.setUseRule(300.0);
             }
             list.add(bean);
         });
@@ -122,9 +136,9 @@ public class MyCouponController {
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
 
-        if (StringUtils.isEmpty(accountId))  throw new NotRuleException("accountId");
-        if (StringUtils.isEmpty(status))  throw new NotRuleException("status");
-        if (StringUtils.isEmpty(activityId))  throw new NotRuleException("activityId");
+        if (StringUtils.isEmpty(accountId)) throw new NotRuleException("accountId");
+        if (StringUtils.isEmpty(status)) throw new NotRuleException("status");
+        if (StringUtils.isEmpty(activityId)) throw new NotRuleException("activityId");
 
         Sort sorts = new Sort(Sort.Direction.DESC, "createdAt");
         Pageable pageable = new PageRequest(pageNumber - 1, pageSize, sorts);
@@ -144,7 +158,7 @@ public class MyCouponController {
         }, pageable);
         if (page.getContent().size() == 0) throw new NotFoundException("mycoupon");
         page.getContent().stream().forEach(bean -> {
-            if (30.0 == bean.getAmount()&&oilOrderRepository.countByStatusAndAccountIdAndIsAvailable(accountId)>0&&Integer.parseInt(bean.getActivityId())==ActivityIdEnum.ACTIVITY_ID_667.getActivity()){
+            if (30.0 == bean.getAmount() && oilOrderRepository.countByStatusAndAccountIdAndIsAvailable(accountId) > 0 && Integer.parseInt(bean.getActivityId()) == ActivityIdEnum.ACTIVITY_ID_667.getActivity()) {
                 bean.setUseRule(300.0);
             }
             list.add(bean);
@@ -156,7 +170,7 @@ public class MyCouponController {
      * 发券
      *
      * @param activityId 活动ID
-     * @param goodsId 商品ID
+     * @param goodsId    商品ID
      * @return MyCoupon
      */
     @RequestMapping(value = "/sendCoupon", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -170,8 +184,10 @@ public class MyCouponController {
         MyCoupon myCoupon = couponService.sendCoupon(accountId, activityId, goodsId);
         return myCoupon;
     }
+
     /**
      * 活动3发券 20元优惠券
+     *
      * @return MyCoupon
      */
     @RequestMapping(value = "/giveCoupon", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -179,15 +195,16 @@ public class MyCouponController {
     public MyCoupon sendCoupon_freedom(@RequestParam String openId) {
         String accountId = accountService.findAccountIdByOpenid(openId);
         String couponName = "X1-" + WsdUtils.getRandomNumber(8);
-        Date time = DateUtil.addInteger(new Date(), Calendar.MONTH,1);
-        MyCoupon myCoupon = couponService.sendCoupon_freedom(accountId,"3",20.0,DateUtil.getInputDate("2018-06-30 23:59:59"),100.0,couponName,"20元优惠券");
+        Date time = DateUtil.addInteger(new Date(), Calendar.MONTH, 1);
+        MyCoupon myCoupon = couponService.sendCoupon_freedom(accountId, "3", 20.0, DateUtil.getInputDate("2018-06-30 23:59:59"), 100.0, couponName, "20元优惠券");
         return myCoupon;
     }
+
     /**
      * 查询当前商品我可用的优惠券
      *
      * @param request
-     * @param goodsId   商品id
+     * @param goodsId 商品id
      * @return List<MyCoupon>
      * @throws MissingParameterException
      * @throws NotRuleException
@@ -206,7 +223,7 @@ public class MyCouponController {
         Double money = goods.getPrice();
         String accountId = accountService.getAccountId(request);
         couponService.checkExpired(accountId);
-        List<MyCoupon> list = couponService.findMyUsableCoupon(accountId, money,goods);
+        List<MyCoupon> list = couponService.findMyUsableCoupon(accountId, money, goods);
         if (list.size() == 0) throw new NotFoundException("mycoupon");
         return list;
     }
@@ -228,12 +245,39 @@ public class MyCouponController {
             @RequestParam(defaultValue = "前端调用发券") String name,
             @RequestParam(defaultValue = "前端调用发券") String description
     ) throws MissingParameterException, NotFoundException {
-        if(openId==null) throw  new MissingParameterException("openId");
-        if(validEndAt==null) throw  new MissingParameterException("validEndAt");
+        if (openId == null) throw new MissingParameterException("openId");
+        if (validEndAt == null) throw new MissingParameterException("validEndAt");
         String accountId = accountService.findAccountIdByOpenid(openId);
-        if(StringUtils.isEmpty(accountId)) throw new NotFoundException("openId");
+        if (StringUtils.isEmpty(accountId)) throw new NotFoundException("openId");
         MyCoupon myCoupon = couponService.sendCoupon_freedom(accountId, activityId, amount, validEndAt, useRule, name, description);
 
         return myCoupon;
     }
+
+
+    @GetMapping(value = "/info")
+    public Result getInfo(@RequestParam String id) throws Exception {
+        Map<String, String> map = new HashMap<>();
+        MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
+        if (ObjectUtils.isEmpty(myOilCoupon)) {
+            return Result.fail("data_null", "该券不存在");
+        }
+        if (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(myOilCoupon.getCreateTime()).getTime() < 1556640000000L) {
+            return Result.fail("time_error", "无法查看详情");
+        }
+        if ("0".equals(myOilCoupon.getUseState())) {
+            return Result.fail("error", "该油券未使用");
+        }
+        map.put("usedTime", myOilCoupon.getUseDate());
+        OilStation oilStation = oilStationService.getOilStation(myOilCoupon.getTId());
+        if (!ObjectUtils.isEmpty(oilStation)) {
+            map.put("usedLocation", oilStation.getName());
+        } else {
+            map.put("usedLocation", "陕西省");
+        }
+        map.put("panCode", AESUtil.decrypt(myOilCoupon.getPan(), AESUtil.dekey));
+        return Result.success(map);
+    }
+
+
 }
