@@ -275,7 +275,8 @@ public class MyCouponController {
         } else {
             map.put("usedLocation", "陕西省");
         }
-        map.put("panCode", AESUtil.decrypt(myOilCoupon.getPan(), AESUtil.dekey));
+        StringBuilder panCode = new StringBuilder(AESUtil.decrypt(myOilCoupon.getPan(), AESUtil.dekey));
+        map.put("panCode", panCode.replace(2, 16, "** **** **** **** ").toString());
         return Result.success(map);
     }
 
