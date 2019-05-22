@@ -96,6 +96,12 @@ public class AccountCoupon {
     private String state;
 
     /**
+     * 显示状态（yes/no）
+     */
+    @Column(columnDefinition = "varchar(5) comment '显示状态'")
+    private String showStatus;
+
+    /**
      * 创建时间
      */
     @Column(columnDefinition = "datetime comment '创建时间'")
