@@ -36,6 +36,24 @@ public class CostShop {
     private String templateId;
 
     /**
+     * 优惠券模板名称
+     */
+    @Column(columnDefinition = "varchar(50) comment '优惠券模板名称'")
+    private String name;
+
+    /**
+     * 优惠券金额
+     */
+    @Column(columnDefinition = "double(10,2) comment '优惠券金额'")
+    private Double amount;
+
+    /**
+     * 满金额
+     */
+    @Column(columnDefinition = "double(10,2) comment '满金额'")
+    private Double fullMoney;
+
+    /**
      * 话费金额
      */
     @Column(columnDefinition = "double(10,2) comment '话费金额'")
