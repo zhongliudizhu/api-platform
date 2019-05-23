@@ -19,7 +19,10 @@ public class SignUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(SignUtil.class);
 
-    public static String sign(Map<String, String> parameters, String secret) {
+    public static String merchant = "61045834521";
+    private static String secret = "6abab93252ea1a93c6c36a4585075da1b7116c6cdc0dccc8c8fe14e633289305";
+
+    public static String sign(Map<String, String> parameters) {
         StringBuilder param = new StringBuilder();
         TreeMap<String, String> map = new TreeMap<>(parameters);
         Set es = map.entrySet();
@@ -36,10 +39,10 @@ public class SignUtil {
         return encodeMd5(param.toString().getBytes());
     }
 
-    public static boolean checkSign(Map<String, String> parameters, String secret) {
+    public static boolean checkSign(Map<String, String> parameters) {
         String sign = MapUtils.getString(parameters, "sign");
         parameters.remove("sign");
-        return sign.equals(sign(parameters, secret));
+        return sign.equals(sign(parameters));
     }
 
     private static String encodeMd5(byte[] source) {

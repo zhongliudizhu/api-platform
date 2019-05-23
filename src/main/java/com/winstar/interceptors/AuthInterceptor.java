@@ -2,6 +2,7 @@ package com.winstar.interceptors;
 
 import com.winstar.exception.ServiceUnavailableException;
 import com.winstar.user.entity.AccessToken;
+import com.winstar.user.entity.Account;
 import com.winstar.user.utils.ServiceManager;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
@@ -78,7 +79,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         AccessToken accessToken = ServiceManager.accessTokenService.findByTokenId(tokenId);
-        if (checkAccount(response, accessToken)) {
+        if (checkAccount(request, response, accessToken)) {
 
             logger.info("url:"+request.getRequestURI());
             logger.info("拦截器中根据token_id获取到的AccessToken不存在"+tokenId);
@@ -89,13 +90,19 @@ public class AuthInterceptor implements HandlerInterceptor {
         return true;
     }
 
-    private boolean checkAccount(HttpServletResponse response, AccessToken accessToken) throws ServiceUnavailableException {
+    private boolean checkAccount(HttpServletRequest request, HttpServletResponse response, AccessToken accessToken) throws ServiceUnavailableException {
 
-        if (null == accessToken || null == ServiceManager.accountService.findOne(accessToken.getAccountId())) {
+        if (null == accessToken) {
 
             unauthorized(response);
             return true;
         }
+        Account account = ServiceManager.accountService.findOne(accessToken.getAccountId());
+        if(null == account){
+            unauthorized(response);
+            return true;
+        }
+        request.setAttribute("openId", account.getOpenid());
         return false;
     }
 

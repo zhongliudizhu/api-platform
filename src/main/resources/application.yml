@@ -54,6 +54,8 @@ info:
   checkBindLicense: https://mobile.sxwinstar.net/wechat_access/api/user/auth/checkBindLicense
   authDriverLicense: https://mobile.sxwinstar.net/wechat_access/api/user/auth/auth
   coupon_recover_switch: false
+  cost_exchange_server: http://192.168.118.54:11020/
+
 #建行信息卡校验
 bank:
   sms:
@@ -124,6 +126,8 @@ info:
   checkBindLicense: https://mobile.sxwinstar.net/wechat_access/api/user/auth/checkBindLicense
   authDriverLicense: https://mobile.sxwinstar.net/wechat_access/api/user/auth/auth
   coupon_recover_switch: ${couponRecoverSwitch}
+  cost_exchange_server: http://192.168.118.28:2000/
+
 #建行信息卡校验
 bank:
   sms:
