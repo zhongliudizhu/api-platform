@@ -1,5 +1,6 @@
 package com.winstar.order.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.couponActivity.entity.InviteTableLog;
 import com.winstar.couponActivity.entity.MileageObtainLog;
@@ -9,6 +10,7 @@ import com.winstar.couponActivity.utils.ActivityIdEnum;
 import com.winstar.couponActivity.utils.TimeUtil;
 import com.winstar.couponActivity.utils.UtilConstants;
 import com.winstar.exception.NotFoundException;
+import com.winstar.kafka.Product;
 import com.winstar.order.entity.FlowOrder;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.FlowOrderRepository;
@@ -57,6 +59,12 @@ public class OilOrderServiceImpl implements OilOrderService {
     @Value("${info.flowUrl}")
     private String flowUrl;
 
+    @Autowired
+    Product product;
+
+    @Value("${spring.kafka.template.default-topic}")
+    private String topicName;
+
     @Override
     public String updateOrderCashier(PayInfoVo payInfo) {
         Date time = new Date();
@@ -87,6 +95,11 @@ public class OilOrderServiceImpl implements OilOrderService {
             oilOrder.setUpdateTime(time);
             oilOrder.setFinishTime(time);
             oilOrderRepository.save(oilOrder);
+            try {
+                product.sendMessage(topicName, oilOrder.getSerialNumber(), JSON.toJSONString(oilOrder));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             ServiceManager.orderRedPackageInfoService.generateOrdersRedPackageInfoByOrder(oilOrder);
         } else {
             FlowOrder flowOrder = flowOrderRepository.findBySerialNumber(serialNumber);
@@ -109,6 +122,11 @@ public class OilOrderServiceImpl implements OilOrderService {
             flowOrder.setUpdateTime(time);
             flowOrder.setFinishTime(time);
             flowOrderRepository.save(flowOrder);
+            try {
+                product.sendMessage(topicName, flowOrder.getSerialNumber(), JSON.toJSONString(flowOrder));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         /*//活动2发优惠券
         try{

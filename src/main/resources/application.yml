@@ -34,7 +34,19 @@ spring:
     pool.max-idle: 8
     pool.min-idle: 0
     timeout: 10000
-
+  kafka:
+    producer:
+      acks: -1
+      batch-size: 10
+    template:
+      default-topic: order_success_message
+    bootstrap-servers: 192.168.118.101:9092
+    consumer:
+      group-id: myGroup
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+    listener:
+      ack-mode: MANUAL_IMMEDIATE
   jpa:
     hibernate:
       ddl-auto: update
@@ -95,6 +107,19 @@ spring:
     pool.max-idle: 8
     pool.min-idle: 0
     timeout: 10000
+  kafka:
+    producer:
+      acks: -1
+      batch-size: 10
+    template:
+      default-topic: order_success_message
+    bootstrap-servers: ${KAFKA_SERVERS}
+    consumer:
+      group-id: myGroup
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+    listener:
+      ack-mode: MANUAL_IMMEDIATE
   jpa:
     hibernate:
       ddl-auto: none
