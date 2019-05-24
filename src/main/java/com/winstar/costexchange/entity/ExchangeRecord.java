@@ -86,6 +86,12 @@ public class ExchangeRecord {
     private String state;
 
     /**
+     * 结果时间
+     */
+    @Column(columnDefinition = "datetime comment '结果时间'")
+    private Date resultTime;
+
+    /**
      * 兑换时间
      */
     @Column(columnDefinition = "datetime comment '兑换时间'")

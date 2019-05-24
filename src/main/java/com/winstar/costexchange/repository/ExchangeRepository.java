@@ -13,4 +13,8 @@ public interface ExchangeRepository extends JpaRepository<ExchangeRecord, String
 
     List<ExchangeRecord> findByMobileAndStateAndCreatedAtBetween(String mobile, String state, Date beginTime, Date endTime);
 
+    ExchangeRecord findByOrderNumber(String orderNumber);
+
+    ExchangeRecord findByMobileAndTemplateIdAndState(String mobile, String templateId, String state);
+
 }

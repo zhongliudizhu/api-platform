@@ -63,16 +63,23 @@ public class ExchangeController {
             logger.info("该手机号今日兑换话费已达100元！");
             return Result.fail("exchange_cost_100", "该手机号今日兑换话费已达100元！");
         }
+        ExchangeRecord exchangeRecord_just = exchangeRepository.findByMobileAndTemplateIdAndState(mobile, costShop.getTemplateId(), "inExchange");
         String accountId = (String) request.getAttribute("accountId");
         String openId = (String) request.getAttribute("openId");
         logger.info("accountId=" + accountId + ",openId=" + openId);
-        ExchangeRecord exchangeRecord = new ExchangeRecord(costShop, accountId, openId, mobile);
+        ExchangeRecord exchangeRecord;
+        if(!ObjectUtils.isEmpty(exchangeRecord_just)){
+            exchangeRecord = exchangeRecord_just;
+        }else{
+            exchangeRecord = new ExchangeRecord(costShop, accountId, openId, mobile);
+        }
         exchangeRepository.save(exchangeRecord);
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("orderId", exchangeRecord.getOrderNumber());
         reqMap.put("mobileId", exchangeRecord.getMobile());
         reqMap.put("couponId", exchangeRecord.getTemplateId());
         reqMap.put("merId", SignUtil.merchant);
+        reqMap.put("domain", "moveCost");
         reqMap.put("sign", SignUtil.sign(reqMap));
         Map map = RequestUtil.post(sendCodeUrl + "api/v1/phonebill/exchange/add", reqMap);
         logger.info("请求发送验证码返回结果：" + JSON.toJSONString(map));
@@ -89,9 +96,12 @@ public class ExchangeController {
         reqMap.put("verifyCode", code);
         reqMap.put("merId", SignUtil.merchant);
         reqMap.put("sign", SignUtil.sign(reqMap));
+        long beginTime = System.currentTimeMillis();
         Map map = RequestUtil.post(sendCodeUrl + "api/v1/phonebill/exchange/sendIdentifyingCode", reqMap);
+        long endTime = System.currentTimeMillis();
+        logger.info("消耗时间：" + (endTime - beginTime));
         logger.info("请求校验验证码返回结果：" + JSON.toJSONString(map));
-        return null;
+        return Result.success(map);
     }
 
 }

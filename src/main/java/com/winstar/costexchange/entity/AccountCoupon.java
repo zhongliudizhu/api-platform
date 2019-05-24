@@ -1,9 +1,8 @@
 package com.winstar.costexchange.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -18,6 +17,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Entity
 @Table(name = "communal_account_coupon")
+@ToString
 public class AccountCoupon {
 
     /**
@@ -27,6 +27,7 @@ public class AccountCoupon {
     @GenericGenerator(name = "idGenerator", strategy = "uuid")
     @GeneratedValue(generator = "idGenerator")
     @Column(columnDefinition = "varchar(50) comment '主键id'")
+    @JSONField(deserialize = false)
     private String id;
 
     /**
@@ -39,42 +40,49 @@ public class AccountCoupon {
      * 优惠券id
      */
     @Column(columnDefinition = "varchar(50) comment '优惠券id'")
+    @JSONField(name = "id")
     private String couponId;
 
     /**
      * 面值
      */
     @Column(columnDefinition = "double(10,2) comment '面值'")
+    @JSONField(name = "amount")
     private Double amount;
 
     /**
      * 满多钱使用
      */
     @Column(columnDefinition = "double(10,2) comment '满多钱'")
+    @JSONField(name = "doorSkill")
     private Double fullMoney;
 
     /**
      * 标题
      */
     @Column(columnDefinition = "varchar(100) comment '标题'")
+    @JSONField(name = "name")
     private String title;
 
     /**
      * 副标题
      */
     @Column(columnDefinition = "varchar(100) comment '副标题'")
+    @JSONField(name = "subTitle")
     private String subTitle;
 
     /**
      * 有效开始时间
      */
     @Column(columnDefinition = "datetime comment '有效开始时间'")
+    @JSONField(name = "startTime")
     private Date beginTime;
 
     /**
      * 有效结束时间
      */
     @Column(columnDefinition = "datetime comment '有效结束时间'")
+    @JSONField(name = "endTime")
     private Date endTime;
 
     /**
@@ -87,24 +95,28 @@ public class AccountCoupon {
      * 优惠券标记
      */
     @Column(columnDefinition = "varchar(100) comment '优惠券标记'")
+    @JSONField(name = "suitItems")
     private String tags;
 
     /**
      * 状态
      */
     @Column(columnDefinition = "varchar(10) comment '状态：used/normal/expired'")
+    @JSONField(name = "status")
     private String state;
 
     /**
      * 显示状态（yes/no）
      */
     @Column(columnDefinition = "varchar(5) comment '显示状态'")
+    @JSONField(name = "showStatus")
     private String showStatus;
 
     /**
      * 创建时间
      */
     @Column(columnDefinition = "datetime comment '创建时间'")
+    @JsonIgnore
     private Date createdAt;
 
 }
