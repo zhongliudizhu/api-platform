@@ -8,12 +8,17 @@ import com.winstar.costexchange.repository.ExchangeRepository;
 import com.winstar.costexchange.utils.RequestUtil;
 import com.winstar.costexchange.utils.SignUtil;
 import com.winstar.order.utils.DateUtil;
+import com.winstar.utils.WebUitl;
 import com.winstar.vo.Result;
+import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -63,17 +68,17 @@ public class ExchangeController {
             logger.info("该手机号今日兑换话费已达100元！");
             return Result.fail("exchange_cost_100", "该手机号今日兑换话费已达100元！");
         }
-        ExchangeRecord exchangeRecord_just = exchangeRepository.findByMobileAndTemplateIdAndState(mobile, costShop.getTemplateId(), "inExchange");
+        List<ExchangeRecord> exchangeRecord_just = exchangeRepository.findByMobileAndTemplateIdAndStateOrderByCreatedAtDesc(mobile, costShop.getTemplateId(), "inExchange");
         String accountId = (String) request.getAttribute("accountId");
         String openId = (String) request.getAttribute("openId");
         logger.info("accountId=" + accountId + ",openId=" + openId);
         ExchangeRecord exchangeRecord;
         if(!ObjectUtils.isEmpty(exchangeRecord_just)){
-            exchangeRecord = exchangeRecord_just;
+            exchangeRecord = exchangeRecord_just.get(0);
+            //System.currentTimeMillis() - exchangeRecord.getCreatedAt().getTime()
         }else{
             exchangeRecord = new ExchangeRecord(costShop, accountId, openId, mobile);
         }
-        exchangeRepository.save(exchangeRecord);
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("orderId", exchangeRecord.getOrderNumber());
         reqMap.put("mobileId", exchangeRecord.getMobile());
@@ -83,7 +88,11 @@ public class ExchangeController {
         reqMap.put("sign", SignUtil.sign(reqMap));
         Map map = RequestUtil.post(sendCodeUrl + "api/v1/phonebill/exchange/add", reqMap);
         logger.info("请求发送验证码返回结果：" + JSON.toJSONString(map));
-        return Result.success(exchangeRecord);
+        if(MapUtils.getString(map, "retCode").equals("0000")){
+            exchangeRepository.save(exchangeRecord);
+            return Result.success(exchangeRecord);
+        }
+        return Result.fail(MapUtils.getString(map, "retCode"), MapUtils.getString(map, "retMsg"));
     }
 
     /**
@@ -91,6 +100,14 @@ public class ExchangeController {
      */
     @RequestMapping(value = "verifyCode", method = RequestMethod.GET)
     public Result verifyCode(@RequestParam String orderNumber, @RequestParam String code){
+        if(StringUtils.isEmpty(orderNumber)){
+            logger.info("订单号不能为空！");
+            return Result.fail("orderNumber_not_found", "订单号不能为空！");
+        }
+        if(StringUtils.isEmpty(code)){
+            logger.info("验证码不能为空！");
+            return Result.fail("code_not_found", "验证码不能为空！");
+        }
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("orderId", orderNumber);
         reqMap.put("verifyCode", code);
@@ -101,7 +118,21 @@ public class ExchangeController {
         long endTime = System.currentTimeMillis();
         logger.info("消耗时间：" + (endTime - beginTime));
         logger.info("请求校验验证码返回结果：" + JSON.toJSONString(map));
-        return Result.success(map);
+        if(MapUtils.getString(map, "retCode").equals("0000")){
+            return Result.success(map);
+        }
+        return Result.fail(MapUtils.getString(map, "retCode"), MapUtils.getString(map, "retMsg"));
+    }
+
+    /**
+     * 查询兑换记录列表
+     */
+    @RequestMapping(value = "getExchangeRecord", method = RequestMethod.GET)
+    public Result getCoupons(HttpServletRequest request, @RequestParam(defaultValue = "0") Integer nextPage, @RequestParam(defaultValue = "10") Integer pageSize){
+        String accountId = (String) request.getAttribute("accountId");
+        Pageable pageable = WebUitl.buildPageRequest(nextPage, pageSize, null);
+        Page<ExchangeRecord> exchangeRecordPage = exchangeRepository.findByAccountId(accountId, pageable);
+        return Result.success(exchangeRecordPage);
     }
 
 }

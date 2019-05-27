@@ -1,6 +1,8 @@
 package com.winstar.costexchange.repository;
 
 import com.winstar.costexchange.entity.ExchangeRecord;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Date;
@@ -15,6 +17,8 @@ public interface ExchangeRepository extends JpaRepository<ExchangeRecord, String
 
     ExchangeRecord findByOrderNumber(String orderNumber);
 
-    ExchangeRecord findByMobileAndTemplateIdAndState(String mobile, String templateId, String state);
+    List<ExchangeRecord> findByMobileAndTemplateIdAndStateOrderByCreatedAtDesc(String mobile, String templateId, String state);
+
+    Page<ExchangeRecord> findByAccountId(String accountId, Pageable pageable);
 
 }

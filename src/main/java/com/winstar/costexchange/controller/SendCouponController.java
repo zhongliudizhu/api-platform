@@ -46,6 +46,44 @@ public class SendCouponController {
     @RequestMapping(value = "sendCoupon", method = RequestMethod.POST)
     public Result getCostShop(@RequestBody Map map){
         logger.info("获取推送优惠券的参数：" + JSON.toJSONString(map));
+        Result result = checkingParameters(map);
+        if(!ObjectUtils.isEmpty(result)){
+            return result;
+        }
+        ExchangeRecord exchangeRecord = exchangeRepository.findByOrderNumber(MapUtils.getString(map, "orderNumber"));
+        if(ObjectUtils.isEmpty(exchangeRecord)){
+            logger.info("订单不存在！");
+            return Result.fail("orderNumber_not_found", "订单不存在！");
+        }
+        List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(map, exchangeRecord.getAccountId());
+        accountCouponRepository.save(accountCoupons);
+        exchangeRecord.setState("success");
+        exchangeRecord.setResultTime(new Date());
+        exchangeRepository.save(exchangeRecord);
+        logger.info("接收话费通知成功！");
+        return Result.success("接收话费通知成功！");
+    }
+
+    @RequestMapping(value = "exchangeFail", method = RequestMethod.POST)
+    public Result exchangeFail(@RequestBody Map map){
+        logger.info("兑换优惠券失败的参数：" + JSON.toJSONString(map));
+        Result result = checkingParameters(map);
+        if(!ObjectUtils.isEmpty(result)){
+            return result;
+        }
+        ExchangeRecord exchangeRecord = exchangeRepository.findByOrderNumber(MapUtils.getString(map, "orderNumber"));
+        if(ObjectUtils.isEmpty(exchangeRecord)){
+            logger.info("订单不存在！");
+            return Result.fail("orderNumber_not_found", "订单不存在！");
+        }
+        exchangeRecord.setState("fail");
+        exchangeRecord.setResultTime(new Date());
+        exchangeRepository.save(exchangeRecord);
+        logger.info("话费兑换失败！");
+        return Result.success("话费兑换失败！");
+    }
+
+    private static Result checkingParameters(Map map){
         if(StringUtils.isEmpty(MapUtils.getString(map, "merchant"))){
             logger.info("缺失商户号参数！");
             return Result.fail("Missing_parameter_merchant", "缺失商户号参数！");
@@ -66,18 +104,7 @@ public class SendCouponController {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
         }
-        ExchangeRecord exchangeRecord = exchangeRepository.findByOrderNumber(MapUtils.getString(map, "orderNumber"));
-        if(ObjectUtils.isEmpty(exchangeRecord)){
-            logger.info("订单不存在！");
-            return Result.fail("orderNumber_not_found", "订单不存在！");
-        }
-        List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(map, exchangeRecord.getAccountId());
-        accountCouponRepository.save(accountCoupons);
-        exchangeRecord.setState("success");
-        exchangeRecord.setResultTime(new Date());
-        exchangeRepository.save(exchangeRecord);
-        logger.info("接收话费通知成功！");
-        return Result.success("接收话费通知成功！");
+        return null;
     }
 
 }
