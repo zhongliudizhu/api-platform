@@ -75,7 +75,6 @@ public class ExchangeController {
         ExchangeRecord exchangeRecord;
         if(!ObjectUtils.isEmpty(exchangeRecord_just)){
             exchangeRecord = exchangeRecord_just.get(0);
-            //System.currentTimeMillis() - exchangeRecord.getCreatedAt().getTime()
         }else{
             exchangeRecord = new ExchangeRecord(costShop, accountId, openId, mobile);
         }
