@@ -2,6 +2,7 @@ package com.winstar.costexchange.controller;
 
 import com.winstar.costexchange.entity.AccountCoupon;
 import com.winstar.costexchange.repository.AccountCouponRepository;
+import com.winstar.costexchange.utils.SignUtil;
 import com.winstar.costexchange.vo.AccountCouponVo;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.GoodsRepository;
@@ -13,16 +14,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -76,7 +77,14 @@ public class AccountCouponController {
             logger.info("商品不存在！");
             return Result.fail("shop_not_found", "商品不存在！");
         }
-        Double money = goods.getPrice();
+        String couponIds = accountCoupons.stream().map(AccountCoupon::getCouponId).collect(Collectors.joining(","));
+        logger.info("couponIds:" + couponIds);
+        Map<String, String> reqMap = new HashMap<>();
+        reqMap.put("ids", couponIds);
+        reqMap.put("itemAmount", goods.getPrice().toString());
+        reqMap.put("merchant", SignUtil.merchant);
+        ResponseEntity<Map> resp = new RestTemplate().getForEntity("http://localhost:12002/api/v1/coupon/verify/verify?" + SignUtil.getParameters(reqMap), Map.class);
+        logger.info("map:" + resp.getBody().toString());
         return Result.success(getAccountCoupons(accountCoupons));
     }
 

@@ -39,6 +39,21 @@ public class SignUtil {
         return encodeMd5(param.toString().getBytes());
     }
 
+    public static String getParameters(Map<String, String> parameters){
+        StringBuilder param = new StringBuilder();
+        TreeMap<String, String> map = new TreeMap<>(parameters);
+        Set es = map.entrySet();
+        for (Object e : es) {
+            Map.Entry entry = (Map.Entry) e;
+            Object value = entry.getValue();
+            if (!StringUtils.isEmpty(value)) {
+                param.append((String) entry.getKey()).append("=").append(value).append("&");
+            }
+        }
+        param.append("sign=").append(sign(parameters));
+        return param.toString();
+    }
+
     public static boolean checkSign(Map<String, String> parameters) {
         String sign = MapUtils.getString(parameters, "sign");
         parameters.remove("sign");
