@@ -1,6 +1,8 @@
 package com.winstar.invoice.controller;
 
-import com.winstar.exception.*;
+import com.winstar.exception.MissingParameterException;
+import com.winstar.exception.NotFoundException;
+import com.winstar.exception.NotRuleException;
 import com.winstar.invoice.entity.Invoice;
 import com.winstar.invoice.entity.InvoiceItem;
 import com.winstar.invoice.entity.InvoiceStockSwitch;
@@ -26,10 +28,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author shoo on 2017/10/23 15:16.
@@ -84,7 +83,7 @@ public class InvoiceController {
     public List<MyOilCoupon> query(
             HttpServletRequest request,
             @RequestParam(defaultValue = "0") Integer nextPage,
-            @RequestParam(defaultValue = "5") Integer pageSize
+            @RequestParam(defaultValue = "20") Integer pageSize
     ) throws NotRuleException, NotFoundException {
         String accountId = accountService.getAccountId(request);
         if (StringUtils.isEmpty(accountId)) throw new NotFoundException("MyOilCoupon");
@@ -106,11 +105,11 @@ public class InvoiceController {
         calendar.add(Calendar.DATE, -3);//三天前
         Date endTime = calendar.getTime();
 
-        calendar.setTime(now);
-        calendar.add(Calendar.MONTH, -3);//三月前
-        Date startTime = calendar.getTime();
+//        calendar.setTime(now);
+//        calendar.add(Calendar.MONTH, -3);//三月前
+//        Date startTime = calendar.getTime();
 
-        Page<MyOilCoupon> page = myOilCouponService.findUsedCoupon(accountId, startTime, endTime, ids, pageable);
+        Page<MyOilCoupon> page = myOilCouponService.findUsedCoupon(accountId, endTime, ids, pageable);
 //        Page<MyOilCoupon> page = myOilCouponService.findUsedCoupon(accountId,ids, pageable);
         List<MyOilCoupon> list = page.getContent();
 
@@ -142,11 +141,10 @@ public class InvoiceController {
     public Invoice makeInvoice(
             HttpServletRequest request,
             String[] ids, Integer type, String name, String oilType, String email, String phone, String companyName,
-            String
-                    taxpayerNumber, String companyAddress, String telephone, String depositBank, String bankAccount
+            String taxpayerNumber, String companyAddress, String telephone, String depositBank, String bankAccount,
+            Integer invoiceType,String recipients,String consigneePhone,String consigneeAddress,String detailedAddress
     ) throws MissingParameterException, NotRuleException, NotFoundException {
         checkInvoiceStock();
-
         String accountId = accountService.getAccountId(request);
         if (StringUtils.isEmpty(accountId)) throw new NotFoundException("MyOilCoupon");
         if (type == null) throw new MissingParameterException("type");
@@ -156,6 +154,16 @@ public class InvoiceController {
         if (email == null) throw new MissingParameterException("email");
         if (phone == null) throw new MissingParameterException("phone");
         Invoice invoice = new Invoice();
+        if(invoiceType==null){
+            invoiceType=1;
+        }
+
+        if(invoiceType==2){
+            if(recipients==null)throw new MissingParameterException("recipients");
+            if(consigneePhone==null)throw new MissingParameterException("consigneePhone");
+            if(consigneeAddress==null)throw new MissingParameterException("consigneeAddress");
+            if(detailedAddress==null)throw new MissingParameterException("detailedAddress");
+        }
         if (type == 1) {
             if (name == null) throw new MissingParameterException("name");
             invoice.setName(name);
@@ -167,6 +175,7 @@ public class InvoiceController {
             invoice.setCompanyName(companyName);
             invoice.setTaxpayerNumber(taxpayerNumber);
         }
+        List list = new ArrayList();
         BigDecimal price = new BigDecimal(0.00);
         for (String id : ids) {
             InvoiceItem item = invoiceItemRepository.findByOilId(id);
@@ -174,9 +183,15 @@ public class InvoiceController {
             MyOilCoupon myOilCoupon = myOilCouponService.findOne(id);
             if (myOilCoupon == null) throw new NotFoundException(id);
             myOilCoupon = this.reckon(myOilCoupon, myOilCoupon.getOrderId());
+            list.add(myOilCoupon.getOrderId());
             BigDecimal p = new BigDecimal(myOilCoupon.getPayPrice());
             price = price.add(p);
         }
+        //订单编号保存到List 然后去重
+        Set<String> middleHashSet = new HashSet<String>(list);
+        List<String> invoiceOrderList = new ArrayList<String>(middleHashSet);
+
+        invoice.setInvoiceOrder(invoiceOrderList.toString());
         invoice.setPrice(price.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
         invoice.setAccountId(accountId);
         invoice.setType(type);
@@ -185,6 +200,11 @@ public class InvoiceController {
         invoice.setPhone(phone);
         invoice.setStatus(0);
         invoice.setCreateDate(new Date());
+        invoice.setInvoiceType(invoiceType);
+        invoice.setRecipients(recipients);
+        invoice.setConsigneeAddress(consigneeAddress);
+        invoice.setConsigneePhone(consigneePhone);
+        invoice.setDetailedAddress(detailedAddress);
         if (!StringUtils.isEmpty(telephone)) invoice.setTelephone(telephone);
         if (!StringUtils.isEmpty(companyAddress)) invoice.setCompanyAddress(companyAddress);
         if (!StringUtils.isEmpty(depositBank)) invoice.setDepositBank(depositBank);
@@ -201,7 +221,6 @@ public class InvoiceController {
             item.setSalePrice(p.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             invoiceItemRepository.save(item);
         }
-
         return in;
 
     }

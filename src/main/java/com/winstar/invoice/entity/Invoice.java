@@ -110,10 +110,33 @@ public class Invoice {
      * 开票状态 0 待开 1 已开 2开票中 3失败
      */
     private Integer status;
-
-    /*
-       * 操作人
-       * */
+    /**
+     * 订单编号
+     */
+    private String invoiceOrder;
+    /**
+     * 发票类型 1 电子 2纸质
+     */
+    private Integer invoiceType;
+    /**
+     * 收件人
+     */
+    private String recipients;
+    /**
+     * 手机号码
+     */
+    private String consigneePhone;
+    /**
+     * 收件地址
+     */
+    private String consigneeAddress;
+    /**
+     * 详细地址
+     */
+    private String detailedAddress;
+    /**
+     * 操作人
+     */
     @Column(length = 50)
     private String doPerson;
 

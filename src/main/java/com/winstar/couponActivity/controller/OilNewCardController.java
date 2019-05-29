@@ -3,7 +3,6 @@ package com.winstar.couponActivity.controller;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
-import com.winstar.couponActivity.entity.CouponActivity;
 import com.winstar.couponActivity.entity.OilSubsidyVerifyLog;
 import com.winstar.couponActivity.entity.SixWhiteList;
 import com.winstar.couponActivity.entity.WhiteList;
@@ -13,7 +12,10 @@ import com.winstar.couponActivity.repository.SixWhiteListRepository;
 import com.winstar.couponActivity.repository.WhiteListRepository;
 import com.winstar.couponActivity.utils.ActivityIdEnum;
 import com.winstar.couponActivity.utils.TimeUtil;
-import com.winstar.exception.*;
+import com.winstar.exception.InvalidParameterException;
+import com.winstar.exception.NotFoundException;
+import com.winstar.exception.NotRuleException;
+import com.winstar.exception.ServiceUnavailableException;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.StringFormatUtils;
 import com.winstar.shop.entity.Activity;
@@ -27,7 +29,6 @@ import com.winstar.user.vo.AuthVerifyCodeEntity;
 import com.winstar.user.vo.AuthVerifyCodeMsgResult;
 import com.winstar.user.vo.SendVerifyCodeEntity;
 import com.winstar.user.vo.SendVerifyCodeMsgResult;
-import com.winstar.utils.WsdUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
@@ -166,24 +166,35 @@ public class OilNewCardController {
             if (ObjectUtils.isEmpty(whiteLists)) {
                 logger.info("电话号码:" + phoneNumber + "已认证过106活动");
                 throw new NotFoundException("couponActivity.notWhiteLists");
+            }else{
+                whiteLists.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
+                whiteLists.setAccountId(accountId.toString());
+                whiteLists.setIsGet(1);
+                sixWhiteListRepository.save(whiteLists);
             }
         } else {
             if (ObjectUtils.isEmpty(whiteLists) || ObjectUtils.isEmpty(whiteList)) {
                 logger.info("电话号码:" + phoneNumber + "已认证过105活动或者106活动");
                 throw new NotFoundException("couponActivity.notWhiteLists");
+            }else{
+                whiteLists.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
+                whiteLists.setAccountId(accountId.toString());
+                whiteLists.setIsGet(1);
+                sixWhiteListRepository.save(whiteLists);
             }
+
         }
-        String nowMonth = TimeUtil.getMonth();
-        try {
-            if (whiteLists.getTime().equals(nowMonth) || TimeUtil.getCheckTimeNextMonth(whiteLists.getTime()).equals(nowMonth)) {
-                activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
-                giveCouponInfo(accountId.toString(), whiteLists);
-            } else {
-                throw new NotFoundException("couponActivity.notWhiteLists");
-            }
-        } catch (ParseException e) {
-            throw new NotFoundException("couponActivity.notWhiteLists");
-        }
+//        String nowMonth = TimeUtil.getMonth();
+//        try {
+//            if (whiteLists.getTime().equals(nowMonth) || TimeUtil.getCheckTimeNextMonth(whiteLists.getTime()).equals(nowMonth)) {
+//                activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
+//                giveCouponInfo(accountId.toString(), whiteLists);
+//            } else {
+//                throw new NotFoundException("couponActivity.notWhiteLists");
+//            }
+//        } catch (ParseException e) {
+//            throw new NotFoundException("couponActivity.notWhiteLists");
+//        }
 
         return activity;
     }
@@ -210,30 +221,30 @@ public class OilNewCardController {
         return activity;
     }
 
-    /**
-     * 异步发卷
-     *
-     * @param accountId
-     * @param whiteList
-     */
-    @Async
-    public void giveCouponInfo(String accountId, SixWhiteList whiteList) {
-        List<MyCoupon> coupons = myCouponRepository.findByAccountIdAndActivityId(accountId, "106");
-        if (ObjectUtils.isEmpty(coupons)) {
-            CouponActivity couponActivity = couponActivityRepository.findOne("106");
-
-            String couponName = "C2" + "-" + WsdUtils.getRandomNumber(8);
-            couponService.cbcsendCoupon_freedom(
-                    accountId, "106", couponActivity.getAmount(), DateUtil.getNextMonthEnd(), couponActivity.getUseRule(), couponName, couponActivity.getName());
-
-            //回填白名单  2、记录发送时间
-            logger.info("accountId:" + accountId + "|回填白名单");
-            whiteList.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
-            whiteList.setAccountId(accountId);
-            whiteList.setIsGet(1);
-            sixWhiteListRepository.save(whiteList);
-        }
-    }
+//    /**
+//     * 异步发卷
+//     *
+//     * @param accountId
+//     * @param whiteList
+//     */
+//    @Async
+//    public void giveCouponInfo(String accountId, SixWhiteList whiteList) {
+//        List<MyCoupon> coupons = myCouponRepository.findByAccountIdAndActivityId(accountId, "106");
+//        if (ObjectUtils.isEmpty(coupons)) {
+//            CouponActivity couponActivity = couponActivityRepository.findOne("106");
+//
+//            String couponName = "C2" + "-" + WsdUtils.getRandomNumber(8);
+//            couponService.cbcsendCoupon_freedom(
+//                    accountId, "106", couponActivity.getAmount(), DateUtil.getNextMonthEnd(), couponActivity.getUseRule(), couponName, couponActivity.getName());
+//
+//            //回填白名单  2、记录发送时间
+//            logger.info("accountId:" + accountId + "|回填白名单");
+//            whiteList.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
+//            whiteList.setAccountId(accountId);
+//            whiteList.setIsGet(1);
+//            sixWhiteListRepository.save(whiteList);
+//        }
+//    }
 
     /**
      * cbc发送验证码(建行短信服务)
