@@ -75,7 +75,6 @@ public class OilOrderController {
         long startTime = System.currentTimeMillis();
 
         ServiceManager.orderRedPackageInfoService.canBuy(accountId, activityId);
-       /* ServiceManager.orderRedPackageInfoService.checkActivityStatus(activityId);*/
 
         //2.根据商品id 查询商品
         Goods goods = shopService.findByGoodsId(itemId);
@@ -91,12 +90,6 @@ public class OilOrderController {
             logger.error("查询活动失败，activityId：" + activityId);
             throw new NotFoundException("activity.order");
         }
-       /* // 活动一：判断每日每个商品只能前一百名购买
-        if(activity.getType()==1){
-            if(!OilOrderUtil.judgeOneDay(itemId,amount)){
-               throw new NotRuleException("oneDay100.order");
-            }
-        }*/
         if (activity.getType() == 1 && !StringUtils.isEmpty(couponId)) {
             logger.error("只有活动2和3能使用优惠券！");
             throw new NotRuleException("canNotUseCoupon.order");
