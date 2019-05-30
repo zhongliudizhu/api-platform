@@ -1,8 +1,8 @@
 package com.winstar.costexchange.service;
 
-import com.winstar.costexchange.entity.AccountCoupon;
+import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.costexchange.entity.ExchangeRecord;
-import com.winstar.costexchange.repository.AccountCouponRepository;
+import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.costexchange.repository.ExchangeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

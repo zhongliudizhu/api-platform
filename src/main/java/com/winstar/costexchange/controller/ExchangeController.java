@@ -6,7 +6,7 @@ import com.winstar.costexchange.entity.ExchangeRecord;
 import com.winstar.costexchange.repository.CostShopRepository;
 import com.winstar.costexchange.repository.ExchangeRepository;
 import com.winstar.costexchange.utils.RequestUtil;
-import com.winstar.costexchange.utils.SignUtil;
+import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.utils.WebUitl;
 import com.winstar.vo.Result;

@@ -1,7 +1,7 @@
 package com.winstar.costexchange.utils;
 
 import com.alibaba.fastjson.JSON;
-import com.winstar.costexchange.entity.AccountCoupon;
+import com.winstar.communalCoupon.entity.AccountCoupon;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

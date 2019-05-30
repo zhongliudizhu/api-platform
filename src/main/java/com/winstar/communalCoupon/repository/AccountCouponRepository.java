@@ -1,6 +1,6 @@
-package com.winstar.costexchange.repository;
+package com.winstar.communalCoupon.repository;
 
-import com.winstar.costexchange.entity.AccountCoupon;
+import com.winstar.communalCoupon.entity.AccountCoupon;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

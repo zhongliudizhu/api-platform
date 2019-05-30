@@ -1,4 +1,4 @@
-package com.winstar.costexchange.entity;
+package com.winstar.communalCoupon.entity;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -86,6 +86,13 @@ public class AccountCoupon {
     private Date endTime;
 
     /**
+     * 订单id
+     */
+    @Column(columnDefinition = "varchar(100) comment '订单id'")
+    @JSONField(name = "order_id")
+    private String orderId;
+
+    /**
      * 适用类型   移动话费/建行/优驾行
      */
     @Column(columnDefinition = "varchar(20) comment '适用类型'")
@@ -101,7 +108,7 @@ public class AccountCoupon {
     /**
      * 状态
      */
-    @Column(columnDefinition = "varchar(10) comment '状态：used/normal/expired'")
+    @Column(columnDefinition = "varchar(10) comment '状态：used/normal/expired/locked'")
     @JSONField(name = "status")
     private String state;
 

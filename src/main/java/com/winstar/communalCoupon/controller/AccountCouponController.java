@@ -1,8 +1,8 @@
-package com.winstar.costexchange.controller;
+package com.winstar.communalCoupon.controller;
 
-import com.winstar.costexchange.entity.AccountCoupon;
-import com.winstar.costexchange.repository.AccountCouponRepository;
-import com.winstar.costexchange.service.AccountCouponService;
+import com.winstar.communalCoupon.entity.AccountCoupon;
+import com.winstar.communalCoupon.repository.AccountCouponRepository;
+import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.costexchange.vo.AccountCouponVo;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.GoodsRepository;
@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -65,7 +64,6 @@ public class AccountCouponController {
      * 查询我的可用优惠券列表
      */
     @RequestMapping(value = "getUsableCoupons", method = RequestMethod.GET)
-    @SuppressWarnings("unchecked")
     public Result getMyUsableCoupons(HttpServletRequest request, @RequestParam String shopId) {
         String accountId = (String) request.getAttribute("accountId");
         List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndShowStatus(accountId, "yes");
@@ -78,17 +76,8 @@ public class AccountCouponController {
             logger.info("商品不存在！");
             return Result.fail("shop_not_found", "商品不存在！");
         }
-        String couponIds = accountCoupons.stream().map(AccountCoupon::getCouponId).collect(Collectors.joining(","));
-        logger.info("couponIds:" + couponIds);
-        ResponseEntity<Map> resp = accountCouponService.checkCoupon(couponIds, goods.getPrice().toString());
-        logger.info("map:" + resp.getBody().toString());
-        Map map = resp.getBody();
-        if (!"SUCCESS".equals(map.get("code"))) {
-            List<String> list = (List<String>) map.get("data");
-            List<AccountCoupon> couponList = accountCoupons.stream().filter(e -> !list.contains(e.getCouponId())).collect(Collectors.toList());
-            return Result.success(getAccountCoupons(couponList));
-        }
-        return Result.success(getAccountCoupons(accountCoupons));
+        List<AccountCoupon> couponList = accountCouponService.getAvailableCoupons(accountCoupons, goods.getPrice());
+        return Result.success(getAccountCoupons(couponList));
     }
 
     private List<AccountCouponVo> getAccountCoupons(List<AccountCoupon> accountCoupons) {

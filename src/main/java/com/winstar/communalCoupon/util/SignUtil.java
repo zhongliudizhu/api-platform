@@ -1,4 +1,4 @@
-package com.winstar.costexchange.utils;
+package com.winstar.communalCoupon.util;
 
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;

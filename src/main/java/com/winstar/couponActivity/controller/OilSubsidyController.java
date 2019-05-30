@@ -1,5 +1,8 @@
 package com.winstar.couponActivity.controller;
 
+import com.winstar.communalCoupon.entity.AccountCoupon;
+import com.winstar.communalCoupon.repository.AccountCouponRepository;
+import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
@@ -71,6 +74,10 @@ public class OilSubsidyController {
     @Autowired
     MyCouponRepository myCouponRepository;
     @Autowired
+    private AccountCouponService accountCouponService;
+    @Autowired
+    private AccountCouponRepository accountCouponRepository;
+    @Autowired
     private CouponService couponService;
 
     @Value("${send_sms_url}")
@@ -114,6 +121,7 @@ public class OilSubsidyController {
                                 String driverLicense,
                                 String phoneNumber,
                                 String msgVerifyCode,
+                                String templateId,
                                 String msgVerifyId)
             throws NotRuleException, NotFoundException {
         Object accountId = request.getAttribute("accountId");
@@ -179,7 +187,7 @@ public class OilSubsidyController {
         try {
             if (whiteList.getTime().equals(nowMonth) || TimeUtil.getCheckTimeNextMonth(whiteList.getTime()).equals(nowMonth)) {
                 activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
-                giveCouponInfo(accountId.toString(), whiteList);
+                giveCouponInfo(accountId.toString(), templateId, whiteList);
             } else {
                 throw new NotFoundException("couponActivity.notWhiteLists");
             }
@@ -281,4 +289,29 @@ public class OilSubsidyController {
             whiteListRepository.save(whiteList);
         }
     }
+
+
+    /**
+     * 新异步发卷
+     *
+     * @param accountId  用户id
+     * @param templateId 模板id
+     * @param whiteList  白名单
+     */
+    @Async
+    public void giveCouponInfo(String accountId, String templateId, WhiteList whiteList) {
+        // TODO: 2019/5/30
+        List<AccountCoupon> coupons = accountCouponRepository.findByAccountIdAndShowStatus(accountId, "105");
+
+        if (ObjectUtils.isEmpty(coupons)) {
+            accountCouponService.sendCoupon(accountId, templateId, "ccb", "no");
+            //回填白名单  2、记录发送时间
+            logger.info("accountId:" + accountId + "|回填白名单");
+            whiteList.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
+            whiteList.setAccountId(accountId);
+            whiteList.setIsGet(1);
+            whiteListRepository.save(whiteList);
+        }
+    }
+
 }

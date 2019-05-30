@@ -1,13 +1,13 @@
 package com.winstar.costexchange.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.winstar.costexchange.entity.AccountCoupon;
+import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.costexchange.entity.ExchangeRecord;
-import com.winstar.costexchange.repository.AccountCouponRepository;
+import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.costexchange.repository.ExchangeRepository;
 import com.winstar.costexchange.service.CouponSendService;
 import com.winstar.costexchange.utils.RequestUtil;
-import com.winstar.costexchange.utils.SignUtil;
+import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.redis.RedisTools;
 import com.winstar.vo.Result;
 import groovy.util.logging.Slf4j;

@@ -1,6 +1,6 @@
 package com.winstar.costexchange.vo;
 
-import com.winstar.costexchange.entity.AccountCoupon;
+import com.winstar.communalCoupon.entity.AccountCoupon;
 import lombok.*;
 
 import java.util.List;
