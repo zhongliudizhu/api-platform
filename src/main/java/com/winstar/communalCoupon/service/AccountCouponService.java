@@ -3,7 +3,6 @@ package com.winstar.communalCoupon.service;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.util.SignUtil;
-import com.winstar.user.entity.Account;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
@@ -30,7 +29,6 @@ public class AccountCouponService {
 
     AccountCouponRepository accountCouponRepository;
 
-    AccountCouponService accountCouponService;
 
     /**
      * 获取优惠券
@@ -85,7 +83,7 @@ public class AccountCouponService {
     public List<AccountCoupon> getAvailableCoupons(List<AccountCoupon> accountCoupons, Double amount) {
         String couponIds = accountCoupons.stream().map(AccountCoupon::getCouponId).collect(Collectors.joining(","));
         log.info("couponIds:" + couponIds);
-        ResponseEntity<Map> resp = accountCouponService.checkCoupon(couponIds, amount.toString());
+        ResponseEntity<Map> resp = checkCoupon(couponIds, amount.toString());
         log.info("map:" + resp.getBody().toString());
         Map map = resp.getBody();
         if (!"SUCCESS".equals(map.get("code"))) {
@@ -104,7 +102,7 @@ public class AccountCouponService {
      * @param itemAmount 商品金额
      * @return ResponseEntity
      */
-    public ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount) {
+    public static ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount) {
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("ids", couponIds);
         reqMap.put("itemAmount", itemAmount);
