@@ -13,7 +13,7 @@ import java.util.List;
  */
 public interface ExchangeRepository extends JpaRepository<ExchangeRecord, String> {
 
-    List<ExchangeRecord> findByMobileAndStateAndCreatedAtBetween(String mobile, String state, Date beginTime, Date endTime);
+    List<ExchangeRecord> findByMobileAndStateAndCreatedAtBetweenOrderByCreatedAtDesc(String mobile, String state, Date beginTime, Date endTime);
 
     ExchangeRecord findByOrderNumber(String orderNumber);
 

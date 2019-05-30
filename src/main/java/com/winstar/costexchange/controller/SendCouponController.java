@@ -5,8 +5,10 @@ import com.winstar.costexchange.entity.AccountCoupon;
 import com.winstar.costexchange.entity.ExchangeRecord;
 import com.winstar.costexchange.repository.AccountCouponRepository;
 import com.winstar.costexchange.repository.ExchangeRepository;
+import com.winstar.costexchange.service.CouponSendService;
 import com.winstar.costexchange.utils.RequestUtil;
 import com.winstar.costexchange.utils.SignUtil;
+import com.winstar.redis.RedisTools;
 import com.winstar.vo.Result;
 import groovy.util.logging.Slf4j;
 import org.apache.commons.collections.MapUtils;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +43,12 @@ public class SendCouponController {
     @Autowired
     AccountCouponRepository accountCouponRepository;
 
+    @Autowired
+    CouponSendService sendService;
+
+    @Autowired
+    RedisTools redisTools;
+
     /**
      * 查询话费兑换商品列表
      */
@@ -50,18 +59,26 @@ public class SendCouponController {
         if(!ObjectUtils.isEmpty(result)){
             return result;
         }
-        ExchangeRecord exchangeRecord = exchangeRepository.findByOrderNumber(MapUtils.getString(map, "orderNumber"));
+        String orderNumber = MapUtils.getString(map, "orderNumber");
+        if(!redisTools.setIfAbsent(orderNumber, 20)){
+            logger.info("20秒之内同一订单的重复通知:" + orderNumber);
+            return Result.fail("many_notify", "20秒之内的重复通知！");
+        }
+        ExchangeRecord exchangeRecord = exchangeRepository.findByOrderNumber(orderNumber);
         if(ObjectUtils.isEmpty(exchangeRecord)){
             logger.info("订单不存在！");
             return Result.fail("orderNumber_not_found", "订单不存在！");
         }
+        if(exchangeRecord.getState().equals("success")){
+            logger.info("订单已经成功，又再次推送！订单号：" + orderNumber);
+            return Result.fail("order_success_again_notify", "订单已经成功，又再次推送！");
+        }
         List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(map, exchangeRecord.getAccountId());
-        accountCouponRepository.save(accountCoupons);
         exchangeRecord.setState("success");
         exchangeRecord.setResultTime(new Date());
-        exchangeRepository.save(exchangeRecord);
+        sendService.sendCoupon(accountCoupons, exchangeRecord);
         logger.info("接收话费通知成功！");
-        return Result.success("接收话费通知成功！");
+        return Result.success(new HashMap<>());
     }
 
     @RequestMapping(value = "exchangeFail", method = RequestMethod.POST)
@@ -80,7 +97,7 @@ public class SendCouponController {
         exchangeRecord.setResultTime(new Date());
         exchangeRepository.save(exchangeRecord);
         logger.info("话费兑换失败！");
-        return Result.success("话费兑换失败！");
+        return Result.success(new HashMap<>());
     }
 
     private static Result checkingParameters(Map map){

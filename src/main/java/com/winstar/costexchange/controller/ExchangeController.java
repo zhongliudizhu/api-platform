@@ -58,7 +58,7 @@ public class ExchangeController {
             logger.info("移动话费商品不存在！");
             return Result.fail("cost_shop_not_found", "移动话费商品不存在！");
         }
-        List<ExchangeRecord> exchangeRecords = exchangeRepository.findByMobileAndStateAndCreatedAtBetween(mobile, "success", DateUtil.getDayBegin(), DateUtil.getDayEnd());
+        List<ExchangeRecord> exchangeRecords = exchangeRepository.findByMobileAndStateAndCreatedAtBetweenOrderByCreatedAtDesc(mobile, "success", DateUtil.getDayBegin(), DateUtil.getDayEnd());
         if(exchangeRecords.size() >= 3){
             logger.info("该手机号今日兑换已达3次！");
             return Result.fail("exchange_limit_3", "该手机号今日兑换已达3次！");
@@ -67,6 +67,10 @@ public class ExchangeController {
         if(costTotal >= 100){
             logger.info("该手机号今日兑换话费已达100元！");
             return Result.fail("exchange_cost_100", "该手机号今日兑换话费已达100元！");
+        }
+        if((System.currentTimeMillis() - exchangeRecords.get(0).getCreatedAt().getTime()) < 35 * 60 * 1000) {
+            logger.info("同一手机号距离上次兑换必须大于35分钟！");
+            return Result.fail("exchange_cost_time30", "同一手机号距离上次兑换必须大于35分钟！");
         }
         List<ExchangeRecord> exchangeRecord_just = exchangeRepository.findByMobileAndTemplateIdAndStateOrderByCreatedAtDesc(mobile, costShop.getTemplateId(), "inExchange");
         String accountId = (String) request.getAttribute("accountId");
