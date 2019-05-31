@@ -105,14 +105,27 @@ public class AccountCouponService {
      *
      * @param couponIds  优惠券id
      * @param itemAmount 商品金额
+     * @param tags       商品标签
      * @return ResponseEntity
      */
-    public static ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount) {
+    public static ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount, String tags) {
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("ids", couponIds);
         reqMap.put("itemAmount", itemAmount);
+        reqMap.put("tags", tags);
         reqMap.put("merchant", SignUtil.merchant);
         return new RestTemplate().getForEntity("http://localhost:12002/api/v1/coupon/verify/verify?" + SignUtil.getParameters(reqMap), Map.class);
+    }
+
+    /**
+     * 检验优惠券
+     *
+     * @param couponIds  优惠券id
+     * @param itemAmount 商品金额
+     * @return ResponseEntity
+     */
+    public static ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount) {
+        return checkCoupon(couponIds, itemAmount, "");
     }
 
     /**
