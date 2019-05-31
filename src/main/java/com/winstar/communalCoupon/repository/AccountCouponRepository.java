@@ -14,6 +14,8 @@ public interface AccountCouponRepository extends JpaRepository<AccountCoupon, St
 
     Page<AccountCoupon> findByAccountIdAndShowStatusAndState(String accountId, String showStatus, String state, Pageable pageable);
 
-    List<AccountCoupon> findByAccountIdAndShowStatus(String accountId, String showStatus);
+    List<AccountCoupon> findByAccountIdAndShowStatusAndStateNot(String accountId, String showStatus, String state);
+
+    List<AccountCoupon> findByAccountIdAndCouponIdIn(String accountId, String[] couponIds);
 
 }

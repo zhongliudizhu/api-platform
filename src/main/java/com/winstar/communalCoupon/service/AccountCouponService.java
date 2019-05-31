@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -27,8 +28,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AccountCouponService {
 
-    AccountCouponRepository accountCouponRepository;
+    public static final String LOCKED = "locked";
+    public static final String NORMAL = "normal";
+    public static final String USED = "used";
+    public static final String EXPIRED = "expired";
 
+    AccountCouponRepository accountCouponRepository;
 
     /**
      * 获取优惠券
@@ -117,6 +122,7 @@ public class AccountCouponService {
      * @param itemAmount 商品金额
      * @return ResponseEntity
      */
+    @Async
     public ResponseEntity<Map> writeOffCoupon(String couponIds, String itemAmount) {
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("ids", couponIds);
@@ -126,6 +132,25 @@ public class AccountCouponService {
         return new RestTemplate().postForEntity("http://localhost:12002/api/v1/coupon/verify/cancel", reqMap, Map.class);
     }
 
+    @Async
+    public static void modifyCouponState(AccountCouponRepository accountCouponRepository, String accountId, String couponIds, String state, String serialNumber){
+        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndCouponIdIn(accountId, couponIds.split(","));
+        for(AccountCoupon accountCoupon : accountCoupons){
+            accountCoupon.setState(state);
+            accountCoupon.setOrderId(serialNumber);
+        }
+        accountCouponRepository.save(accountCoupons);
+    }
+
+    @Async
+    public void modifyCouponState(String accountId, String couponIds, String state, String serialNumber){
+        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndCouponIdIn(accountId, couponIds.split(","));
+        for(AccountCoupon accountCoupon : accountCoupons){
+            accountCoupon.setState(state);
+            accountCoupon.setOrderId(serialNumber);
+        }
+        accountCouponRepository.save(accountCoupons);
+    }
 
 }
 

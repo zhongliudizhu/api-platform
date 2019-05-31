@@ -1,12 +1,12 @@
 package com.winstar.costexchange.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.costexchange.entity.CostShop;
 import com.winstar.costexchange.entity.ExchangeRecord;
 import com.winstar.costexchange.repository.CostShopRepository;
 import com.winstar.costexchange.repository.ExchangeRepository;
 import com.winstar.costexchange.utils.RequestUtil;
-import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.utils.WebUitl;
 import com.winstar.vo.Result;
@@ -58,7 +58,7 @@ public class ExchangeController {
             logger.info("移动话费商品不存在！");
             return Result.fail("cost_shop_not_found", "移动话费商品不存在！");
         }
-        List<ExchangeRecord> exchangeRecords = exchangeRepository.findByMobileAndStateAndCreatedAtBetweenOrderByCreatedAtDesc(mobile, "success", DateUtil.getDayBegin(), DateUtil.getDayEnd());
+        List<ExchangeRecord> exchangeRecords = exchangeRepository.findByMobileAndStateAndCreatedAtBetweenOrderByCreatedAtDesc(mobile, ExchangeRecord.SUCCESS, DateUtil.getDayBegin(), DateUtil.getDayEnd());
         if(exchangeRecords.size() >= 3){
             logger.info("该手机号今日兑换已达3次！");
             return Result.fail("exchange_limit_3", "该手机号今日兑换已达3次！");
@@ -68,11 +68,16 @@ public class ExchangeController {
             logger.info("该手机号今日兑换话费已达100元！");
             return Result.fail("exchange_cost_100", "该手机号今日兑换话费已达100元！");
         }
-        if((System.currentTimeMillis() - exchangeRecords.get(0).getCreatedAt().getTime()) < 35 * 60 * 1000) {
+        if(!ObjectUtils.isEmpty(exchangeRecords) && (System.currentTimeMillis() - exchangeRecords.get(0).getCreatedAt().getTime()) < 35 * 60 * 1000) {
             logger.info("同一手机号距离上次兑换必须大于35分钟！");
             return Result.fail("exchange_cost_time30", "同一手机号距离上次兑换必须大于35分钟！");
         }
-        List<ExchangeRecord> exchangeRecord_just = exchangeRepository.findByMobileAndTemplateIdAndStateOrderByCreatedAtDesc(mobile, costShop.getTemplateId(), "inExchange");
+        List<ExchangeRecord> exchangeRecord_inChange = exchangeRepository.findByMobileAndTemplateIdAndStateOrderByCreatedAtDesc(mobile, costShop.getTemplateId(), ExchangeRecord.INEXCHANGE);
+        if(!ObjectUtils.isEmpty(exchangeRecord_inChange)){
+            logger.info("同一手机号相同的商品已经在兑换中，请勿重复兑换！");
+            return Result.fail("exchange_cost_ing", "同一手机号相同的商品已经在兑换中，请勿重复兑换！");
+        }
+        List<ExchangeRecord> exchangeRecord_just = exchangeRepository.findByMobileAndTemplateIdAndStateOrderByCreatedAtDesc(mobile, costShop.getTemplateId(), ExchangeRecord.INORDER);
         String accountId = (String) request.getAttribute("accountId");
         String openId = (String) request.getAttribute("openId");
         logger.info("accountId=" + accountId + ",openId=" + openId);
@@ -111,6 +116,15 @@ public class ExchangeController {
             logger.info("验证码不能为空！");
             return Result.fail("code_not_found", "验证码不能为空！");
         }
+        ExchangeRecord exchangeRecord = exchangeRepository.findByOrderNumber(orderNumber);
+        if(ObjectUtils.isEmpty(exchangeRecord)){
+            logger.info("订单不存在！");
+            return Result.fail("order_not_found", "订单不存在！");
+        }
+        if(exchangeRecord.getState().equals(ExchangeRecord.INEXCHANGE)){
+            logger.info("订单已在兑换中，请耐心等待结果！");
+            return Result.fail("order_not_found", "订单已在兑换中，请耐心等待结果！");
+        }
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("orderId", orderNumber);
         reqMap.put("verifyCode", code);
@@ -122,6 +136,8 @@ public class ExchangeController {
         logger.info("消耗时间：" + (endTime - beginTime));
         logger.info("请求校验验证码返回结果：" + JSON.toJSONString(map));
         if(MapUtils.getString(map, "retCode").equals("0000")){
+            exchangeRecord.setState(ExchangeRecord.INEXCHANGE);
+            exchangeRepository.save(exchangeRecord);
             return Result.success(map);
         }
         return Result.fail(MapUtils.getString(map, "retCode"), MapUtils.getString(map, "retMsg"));

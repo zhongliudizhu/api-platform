@@ -21,7 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -66,7 +68,7 @@ public class AccountCouponController {
     @RequestMapping(value = "getUsableCoupons", method = RequestMethod.GET)
     public Result getMyUsableCoupons(HttpServletRequest request, @RequestParam String shopId) {
         String accountId = (String) request.getAttribute("accountId");
-        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndShowStatus(accountId, "yes");
+        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndShowStatusAndStateNot(accountId, "yes", "locked");
         if (ObjectUtils.isEmpty(accountCoupons)) {
             logger.info("用户无优惠券！");
             return Result.fail("coupons_not_found", "用户无优惠券！");
