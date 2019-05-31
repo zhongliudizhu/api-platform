@@ -1,7 +1,7 @@
 server:
   port: ${{SERVER_PORT}:20001}
   tomcat:
-       uri-encoding: UTF-8
+    uri-encoding: UTF-8
   context-path: /ccb-api
 
 management:
@@ -67,6 +67,9 @@ info:
   authDriverLicense: https://mobile.sxwinstar.net/wechat_access/api/user/auth/auth
   coupon_recover_switch: false
   cost_exchange_server: http://192.168.118.54:11020/
+  takeCouponUrl: http://localhost:12002/api/v1/coupon/takeCoupons?
+  verifyCouponUrl: http://localhost:12002/api/v1/coupon/verify/verify?
+  writeOffCouponUrl: http://localhost:12002/api/v1/coupon/verify/cancel
 
 #建行信息卡校验
 bank:
@@ -152,7 +155,9 @@ info:
   authDriverLicense: https://mobile.sxwinstar.net/wechat_access/api/user/auth/auth
   coupon_recover_switch: ${couponRecoverSwitch}
   cost_exchange_server: http://192.168.118.28:2000/
-
+  takeCouponUrl: ${takeCouponUrl}
+  verifyCouponUrl: ${verifyCouponUrl}
+  writeOffCouponUrl: ${writeOffCouponUrl}
 #建行信息卡校验
 bank:
   sms:

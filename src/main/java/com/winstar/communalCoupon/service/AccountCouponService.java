@@ -3,9 +3,10 @@ package com.winstar.communalCoupon.service;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.util.SignUtil;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -24,16 +25,30 @@ import java.util.stream.Collectors;
  * @Date 2019/5/28 17:57
  */
 @Service
-@AllArgsConstructor
 @Slf4j
 public class AccountCouponService {
+
+    private AccountCouponRepository accountCouponRepository;
+
+    @Autowired
+    public AccountCouponService(AccountCouponRepository accountCouponRepository) {
+        this.accountCouponRepository = accountCouponRepository;
+    }
 
     public static final String LOCKED = "locked";
     public static final String NORMAL = "normal";
     public static final String USED = "used";
     public static final String EXPIRED = "expired";
 
-    AccountCouponRepository accountCouponRepository;
+
+    @Value("${info.takeCouponUrl}")
+    private String takeCouponUrl;
+
+    @Value("${info.verifyCouponUrl}")
+    private String verifyCouponUrl;
+
+    @Value("${info.writeOffCouponUrl}")
+    private String writeOffCouponUrl;
 
     /**
      * 获取优惠券
@@ -108,13 +123,13 @@ public class AccountCouponService {
      * @param tags       商品标签
      * @return ResponseEntity
      */
-    public static ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount, String tags) {
+    public ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount, String tags) {
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("ids", couponIds);
         reqMap.put("itemAmount", itemAmount);
         reqMap.put("tags", tags);
         reqMap.put("merchant", SignUtil.merchant);
-        return new RestTemplate().getForEntity("http://localhost:12002/api/v1/coupon/verify/verify?" + SignUtil.getParameters(reqMap), Map.class);
+        return new RestTemplate().getForEntity(verifyCouponUrl + SignUtil.getParameters(reqMap), Map.class);
     }
 
     /**
@@ -124,7 +139,7 @@ public class AccountCouponService {
      * @param itemAmount 商品金额
      * @return ResponseEntity
      */
-    public static ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount) {
+    public ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount) {
         return checkCoupon(couponIds, itemAmount, "");
     }
 
@@ -155,7 +170,7 @@ public class AccountCouponService {
         reqMap.put("merchant", SignUtil.merchant);
         reqMap.put("tags", tags);
         reqMap.put("sign", SignUtil.sign(reqMap));
-        return new RestTemplate().postForEntity("http://localhost:12002/api/v1/coupon/verify/cancel", reqMap, Map.class);
+        return new RestTemplate().postForEntity(writeOffCouponUrl, reqMap, Map.class);
     }
 
     @Async
