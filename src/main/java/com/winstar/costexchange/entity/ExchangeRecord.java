@@ -22,6 +22,14 @@ import java.util.Date;
 @Table(name = "communal_coupon_cost_exchange_record")
 public class ExchangeRecord {
 
+    public static final String SUCCESS = "success";
+
+    public static final String FAIL = "fail";
+
+    public static final String INEXCHANGE = "inExchange";
+
+    public static final String INORDER = "inOrder";
+
     /**
      * 唯一标识
      */
@@ -82,7 +90,7 @@ public class ExchangeRecord {
     /**
      * 兑换状态
      */
-    @Column(columnDefinition = "varchar(50) comment '兑换状态: success/fail/inExchange'")
+    @Column(columnDefinition = "varchar(50) comment '兑换状态: success/fail/inExchange/inOrder'")
     private String state;
 
     /**
@@ -106,7 +114,7 @@ public class ExchangeRecord {
         this.couponName = costShop.getName();
         this.couponAmount = costShop.getAmount();
         this.costAmount = costShop.getCostAmount();
-        this.state = "inExchange";
+        this.state = INORDER;
         this.createdAt = new Date();
     }
 
