@@ -131,14 +131,26 @@ public class AccountCouponService {
      * @return ResponseEntity
      */
     public ResponseEntity<Map> writeOffCoupon(String couponIds, String itemAmount) {
+        return writeOffCoupon(couponIds, itemAmount, "");
+    }
+
+    /**
+     * 核销优惠券
+     *
+     * @param couponIds  优惠券id
+     * @param itemAmount 商品金额
+     * @param tags       商品金额
+     * @return ResponseEntity
+     */
+    public ResponseEntity<Map> writeOffCoupon(String couponIds, String itemAmount, String tags) {
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("ids", couponIds);
         reqMap.put("itemAmount", itemAmount);
         reqMap.put("merchant", SignUtil.merchant);
+        reqMap.put("tags", tags);
         reqMap.put("sign", SignUtil.sign(reqMap));
         return new RestTemplate().postForEntity("http://localhost:12002/api/v1/coupon/verify/cancel", reqMap, Map.class);
     }
-
 
 }
 
