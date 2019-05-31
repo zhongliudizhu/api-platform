@@ -174,16 +174,6 @@ public class AccountCouponService {
     }
 
     @Async
-    public static void modifyCouponState(AccountCouponRepository accountCouponRepository, String accountId, String couponIds, String state, String serialNumber){
-        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndCouponIdIn(accountId, couponIds.split(","));
-        for(AccountCoupon accountCoupon : accountCoupons){
-            accountCoupon.setState(state);
-            accountCoupon.setOrderId(serialNumber);
-        }
-        accountCouponRepository.save(accountCoupons);
-    }
-
-    @Async
     public void modifyCouponState(String accountId, String couponIds, String state, String serialNumber){
         List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndCouponIdIn(accountId, couponIds.split(","));
         for(AccountCoupon accountCoupon : accountCoupons){
