@@ -140,6 +140,8 @@ public class ExchangeController {
             exchangeRepository.save(exchangeRecord);
             return Result.success(map);
         }
+        exchangeRecord.setState(ExchangeRecord.FAIL);
+        exchangeRepository.save(exchangeRecord);
         return Result.fail(MapUtils.getString(map, "retCode"), MapUtils.getString(map, "retMsg"));
     }
 
