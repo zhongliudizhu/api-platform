@@ -4,7 +4,6 @@ import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.util.SignUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -12,10 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -55,42 +51,12 @@ public class AccountCouponService {
      *
      * @return ResponseEntity
      */
-    public ResponseEntity<Map> getCoupon(String templateId, String num) {
+    public ResponseEntity<String> getCoupon(String templateId, String num) {
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("templateId", templateId);
         reqMap.put("num", num);
         reqMap.put("merchant", SignUtil.merchant);
-        return new RestTemplate().getForEntity("http://localhost:12002/api/v1/coupon/takeCoupons?" + SignUtil.getParameters(reqMap), Map.class);
-    }
-
-    /**
-     * 发放优惠券
-     *
-     * @param accountId  用户id
-     * @param templateId 优惠券模板Id
-     * @param type       优惠券种类
-     * @param showStatus 是否显示
-     * @return ResponseEntity
-     */
-    public AccountCoupon sendCoupon(String accountId, String templateId, String type, String showStatus) {
-        AccountCoupon accountCoupon = new AccountCoupon();
-        Map map = getCoupon(templateId, "1").getBody();
-        accountCoupon.setAccountId(accountId);
-        accountCoupon.setCouponId(MapUtils.getString(map, "id"));
-        accountCoupon.setAmount(MapUtils.getDouble(map, "amount"));
-        accountCoupon.setFullMoney(MapUtils.getDouble(map, "doorSkill"));
-        accountCoupon.setTitle(MapUtils.getString(map, "name"));
-        accountCoupon.setSubTitle(MapUtils.getString(map, "subTitle"));
-        accountCoupon.setBeginTime((Date) map.get("startTime"));
-        accountCoupon.setEndTime((Date) map.get("endTime"));
-        accountCoupon.setType(type);
-        accountCoupon.setTags(MapUtils.getString(map, "suitItems"));
-        accountCoupon.setState("normal");
-        accountCoupon.setShowStatus(showStatus);
-        accountCoupon.setCreatedAt(new Date());
-        AccountCoupon coupon = accountCouponRepository.save(accountCoupon);
-        log.info("发券结束 优惠券信息：{}", coupon);
-        return coupon;
+        return new RestTemplate().getForEntity(takeCouponUrl + SignUtil.getParameters(reqMap), String.class);
     }
 
 
@@ -174,9 +140,9 @@ public class AccountCouponService {
     }
 
     @Async
-    public void modifyCouponState(String accountId, String couponIds, String state, String serialNumber){
+    public void modifyCouponState(String accountId, String couponIds, String state, String serialNumber) {
         List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndCouponIdIn(accountId, couponIds.split(","));
-        for(AccountCoupon accountCoupon : accountCoupons){
+        for (AccountCoupon accountCoupon : accountCoupons) {
             accountCoupon.setState(state);
             accountCoupon.setOrderId(serialNumber);
         }
