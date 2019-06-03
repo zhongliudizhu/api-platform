@@ -68,7 +68,7 @@ public class AccountCouponController {
     @RequestMapping(value = "getUsableCoupons", method = RequestMethod.GET)
     public Result getMyUsableCoupons(HttpServletRequest request, @RequestParam String shopId) {
         String accountId = (String) request.getAttribute("accountId");
-        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndShowStatusAndStateNot(accountId, "yes", "locked");
+        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndShowStatusAndState(accountId, "yes", "normal");
         if (ObjectUtils.isEmpty(accountCoupons)) {
             logger.info("用户无优惠券！");
             return Result.fail("coupons_not_found", "用户无优惠券！");
