@@ -11,7 +11,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -40,8 +42,12 @@ public class AccountCouponService {
     @Value("${info.takeCouponUrl}")
     private String takeCouponUrl;
 
+    private static String verifyCouponUrl;
+
     @Value("${info.verifyCouponUrl}")
-    private String verifyCouponUrl;
+    public void setVerifyCouponUrl(String verifyCouponUrl){
+        AccountCouponService.verifyCouponUrl = verifyCouponUrl;
+    }
 
     @Value("${info.writeOffCouponUrl}")
     private String writeOffCouponUrl;
@@ -89,7 +95,8 @@ public class AccountCouponService {
      * @param tags       商品标签
      * @return ResponseEntity
      */
-    public ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount, String tags) {
+    public static ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount, String tags) {
+        log.info("verifyCouponUrl=" + verifyCouponUrl);
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("ids", couponIds);
         reqMap.put("itemAmount", itemAmount);
@@ -105,7 +112,7 @@ public class AccountCouponService {
      * @param itemAmount 商品金额
      * @return ResponseEntity
      */
-    public ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount) {
+    public static ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount) {
         return checkCoupon(couponIds, itemAmount, "");
     }
 
