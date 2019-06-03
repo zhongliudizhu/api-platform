@@ -62,7 +62,9 @@ public class AccountCouponService {
         reqMap.put("templateId", templateId);
         reqMap.put("num", num);
         reqMap.put("merchant", SignUtil.merchant);
-        return new RestTemplate().getForEntity(takeCouponUrl + SignUtil.getParameters(reqMap), String.class);
+        ResponseEntity<String> stringResponseEntity = new RestTemplate().getForEntity(takeCouponUrl + SignUtil.getParameters(reqMap), String.class);
+        log.info("请求获取优惠券接口结果：" + stringResponseEntity.getBody());
+        return stringResponseEntity;
     }
 
 
@@ -102,7 +104,9 @@ public class AccountCouponService {
         reqMap.put("itemAmount", itemAmount);
         reqMap.put("tags", tags);
         reqMap.put("merchant", SignUtil.merchant);
-        return new RestTemplate().getForEntity(verifyCouponUrl + SignUtil.getParameters(reqMap), Map.class);
+        ResponseEntity<Map> mapResponseEntity = new RestTemplate().getForEntity(verifyCouponUrl + SignUtil.getParameters(reqMap), Map.class);
+        log.info("请求校验优惠券接口结果：" + mapResponseEntity.getBody().toString());
+        return mapResponseEntity;
     }
 
     /**
@@ -143,7 +147,9 @@ public class AccountCouponService {
         reqMap.put("merchant", SignUtil.merchant);
         reqMap.put("tags", tags);
         reqMap.put("sign", SignUtil.sign(reqMap));
-        return new RestTemplate().postForEntity(writeOffCouponUrl, reqMap, Map.class);
+        ResponseEntity<Map> mapResponseEntity = new RestTemplate().postForEntity(writeOffCouponUrl, reqMap, Map.class);
+        log.info("请求核销优惠券接口结果：" + mapResponseEntity.getBody().toString());
+        return mapResponseEntity;
     }
 
     @Async
