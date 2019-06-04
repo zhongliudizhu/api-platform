@@ -117,7 +117,7 @@ public class AccountCouponService {
      * @return ResponseEntity
      */
     public static ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount) {
-        return checkCoupon(couponIds, itemAmount, "");
+        return checkCoupon(couponIds, itemAmount, null);
     }
 
     /**
@@ -140,6 +140,7 @@ public class AccountCouponService {
      * @param tags       商品金额
      * @return ResponseEntity
      */
+    @Async
     public ResponseEntity<Map> writeOffCoupon(String couponIds, String itemAmount, String tags) {
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("ids", couponIds);
