@@ -6,10 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
 
 /**
@@ -85,5 +82,16 @@ public class Goods {
     private Integer isSale;
 
     private Integer limitAmount;
+
+    /**
+     * 优惠券标识
+     */
+    @Column(length = 500)
+    private String tags;
+
+    /**
+     * 优惠券限额
+     */
+    private Integer couponLimitAmount;
 
 }
