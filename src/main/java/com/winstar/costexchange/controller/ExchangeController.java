@@ -64,13 +64,19 @@ public class ExchangeController {
             return Result.fail("exchange_limit_3", "该手机号今日兑换已达3次！");
         }
         Double costTotal = exchangeRecords.stream().mapToDouble(ExchangeRecord::getCostAmount).sum();
-        if(costTotal >= 100){
-            logger.info("该手机号今日兑换话费已达100元！");
-            return Result.fail("exchange_cost_100", "该手机号今日兑换话费已达100元！");
+        if((costTotal + costShop.getCostAmount()) >= 100){
+            logger.info("同一手机号每日兑换话费不能超过100元！");
+            return Result.fail("exchange_cost_100", "同一手机号每日兑换话费不能超过100元！");
         }
         if(!ObjectUtils.isEmpty(exchangeRecords) && (System.currentTimeMillis() - exchangeRecords.get(0).getCreatedAt().getTime()) < 35 * 60 * 1000) {
             logger.info("同一手机号距离上次兑换必须大于35分钟！");
             return Result.fail("exchange_cost_time30", "同一手机号距离上次兑换必须大于35分钟！");
+        }
+        List<ExchangeRecord> exchangeRecords_months = exchangeRepository.findByMobileAndStateAndCreatedAtBetweenOrderByCreatedAtDesc(mobile, ExchangeRecord.SUCCESS, DateUtil.getMonthBegin(), DateUtil.getMonthEnd());
+        Double costTotal_months = exchangeRecords_months.stream().mapToDouble(ExchangeRecord::getCostAmount).sum();
+        if((costTotal_months + costShop.getCostAmount()) >= 300){
+            logger.info("同一手机号每月兑换话费不能超过300元！");
+            return Result.fail("exchange_cost_300", "同一手机号每月兑换话费不能超过300元！");
         }
         List<ExchangeRecord> exchangeRecord_inChange = exchangeRepository.findByMobileAndTemplateIdAndStateOrderByCreatedAtDesc(mobile, costShop.getTemplateId(), ExchangeRecord.INEXCHANGE);
         if(!ObjectUtils.isEmpty(exchangeRecord_inChange)){
