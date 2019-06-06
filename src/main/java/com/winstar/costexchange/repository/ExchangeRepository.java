@@ -17,7 +17,7 @@ public interface ExchangeRepository extends JpaRepository<ExchangeRecord, String
 
     ExchangeRecord findByOrderNumber(String orderNumber);
 
-    List<ExchangeRecord> findByMobileAndTemplateIdAndStateOrderByCreatedAtDesc(String mobile, String templateId, String state);
+    List<ExchangeRecord> findByMobileAndTemplateIdOrderByCreatedAtDesc(String mobile, String templateId);
 
     Page<ExchangeRecord> findByAccountId(String accountId, Pageable pageable);
 

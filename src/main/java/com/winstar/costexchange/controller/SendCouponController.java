@@ -2,12 +2,12 @@ package com.winstar.costexchange.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.winstar.communalCoupon.entity.AccountCoupon;
-import com.winstar.costexchange.entity.ExchangeRecord;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
+import com.winstar.communalCoupon.util.SignUtil;
+import com.winstar.costexchange.entity.ExchangeRecord;
 import com.winstar.costexchange.repository.ExchangeRepository;
 import com.winstar.costexchange.service.CouponSendService;
 import com.winstar.costexchange.utils.RequestUtil;
-import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.redis.RedisTools;
 import com.winstar.vo.Result;
 import groovy.util.logging.Slf4j;
@@ -69,13 +69,16 @@ public class SendCouponController {
             logger.info("订单不存在！");
             return Result.fail("orderNumber_not_found", "订单不存在！");
         }
-        if(exchangeRecord.getState().equals("success")){
+        if(exchangeRecord.getState().equals(ExchangeRecord.SUCCESS)){
             logger.info("订单已经成功，又再次推送！订单号：" + orderNumber);
             return Result.fail("order_success_again_notify", "订单已经成功，又再次推送！");
         }
         List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(map, exchangeRecord.getAccountId());
-        exchangeRecord.setState("success");
+        exchangeRecord.setState(ExchangeRecord.SUCCESS);
         exchangeRecord.setResultTime(new Date());
+        if(!ObjectUtils.isEmpty(accountCoupons)){
+            exchangeRecord.setCouponId(accountCoupons.get(0).getCouponId());
+        }
         sendService.sendCoupon(accountCoupons, exchangeRecord);
         logger.info("接收话费通知成功！");
         return Result.success(new HashMap<>());
@@ -93,7 +96,7 @@ public class SendCouponController {
             logger.info("订单不存在！");
             return Result.fail("orderNumber_not_found", "订单不存在！");
         }
-        exchangeRecord.setState("fail");
+        exchangeRecord.setState(ExchangeRecord.FAIL);
         exchangeRecord.setResultTime(new Date());
         exchangeRepository.save(exchangeRecord);
         logger.info("话费兑换失败！");

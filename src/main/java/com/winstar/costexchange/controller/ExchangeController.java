@@ -29,6 +29,7 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by zl on 2019/5/22
@@ -78,12 +79,13 @@ public class ExchangeController {
             logger.info("同一手机号每月兑换话费不能超过300元！");
             return Result.fail("exchange_cost_300", "同一手机号每月兑换话费不能超过300元！");
         }
-        List<ExchangeRecord> exchangeRecord_inChange = exchangeRepository.findByMobileAndTemplateIdAndStateOrderByCreatedAtDesc(mobile, costShop.getTemplateId(), ExchangeRecord.INEXCHANGE);
+        List<ExchangeRecord> exchangeRecordList = exchangeRepository.findByMobileAndTemplateIdOrderByCreatedAtDesc(mobile, costShop.getTemplateId());
+        List<ExchangeRecord> exchangeRecord_inChange = exchangeRecordList.stream().filter(s -> s.getState().equals(ExchangeRecord.INEXCHANGE)).collect(Collectors.toList());
         if(!ObjectUtils.isEmpty(exchangeRecord_inChange)){
             logger.info("同一手机号相同的商品已经在兑换中，请勿重复兑换！");
             return Result.fail("exchange_cost_ing", "同一手机号相同的商品已经在兑换中，请勿重复兑换！");
         }
-        List<ExchangeRecord> exchangeRecord_just = exchangeRepository.findByMobileAndTemplateIdAndStateOrderByCreatedAtDesc(mobile, costShop.getTemplateId(), ExchangeRecord.INORDER);
+        List<ExchangeRecord> exchangeRecord_just = exchangeRecordList.stream().filter(s -> s.getState().equals(ExchangeRecord.INORDER)).collect(Collectors.toList());
         String accountId = (String) request.getAttribute("accountId");
         String openId = (String) request.getAttribute("openId");
         logger.info("accountId=" + accountId + ",openId=" + openId);
@@ -114,6 +116,7 @@ public class ExchangeController {
      */
     @RequestMapping(value = "verifyCode", method = RequestMethod.GET)
     public Result verifyCode(@RequestParam String orderNumber, @RequestParam String code){
+        logger.info("orderNumber:" + orderNumber + ",code:" + code);
         if(StringUtils.isEmpty(orderNumber)){
             logger.info("订单号不能为空！");
             return Result.fail("orderNumber_not_found", "订单号不能为空！");

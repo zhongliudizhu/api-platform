@@ -105,6 +105,12 @@ public class ExchangeRecord {
     @Column(columnDefinition = "datetime comment '兑换时间'")
     private Date createdAt;
 
+    /**
+     * 优惠券id
+     */
+    @Column(columnDefinition = "varchar(500) comment '优惠券id'")
+    private String couponId;
+
     public ExchangeRecord(CostShop costShop, String accountId, String openId, String mobile){
         this.orderNumber = DateUtil.DateToString(new Date(), "yyyyMMddHHmmssSSS") + OilOrderUtil.getRandomNum(6);
         this.accountId = accountId;
