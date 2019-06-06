@@ -144,13 +144,19 @@ public class ExchangeController {
         long endTime = System.currentTimeMillis();
         logger.info("消耗时间：" + (endTime - beginTime));
         logger.info("请求校验验证码返回结果：" + JSON.toJSONString(map));
+        //防止同步链路比异步链路慢时导致把成功状态改成其它状态
+        ExchangeRecord record = exchangeRepository.findByOrderNumber(orderNumber);
         if(MapUtils.getString(map, "retCode").equals("0000")){
-            exchangeRecord.setState(ExchangeRecord.INEXCHANGE);
-            exchangeRepository.save(exchangeRecord);
+            if(record.getState().equals(ExchangeRecord.INORDER)){
+                exchangeRecord.setState(ExchangeRecord.INEXCHANGE);
+                exchangeRepository.save(exchangeRecord);
+            }
             return Result.success(map);
         }
-        exchangeRecord.setState(ExchangeRecord.FAIL);
-        exchangeRepository.save(exchangeRecord);
+        if(record.getState().equals(ExchangeRecord.INORDER)) {
+            exchangeRecord.setState(ExchangeRecord.FAIL);
+            exchangeRepository.save(exchangeRecord);
+        }
         return Result.fail(MapUtils.getString(map, "retCode"), MapUtils.getString(map, "retMsg"));
     }
 
