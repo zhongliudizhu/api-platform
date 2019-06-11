@@ -166,7 +166,7 @@ public class ExchangeController {
     @RequestMapping(value = "getExchangeRecord", method = RequestMethod.GET)
     public Result getCoupons(HttpServletRequest request, @RequestParam(defaultValue = "0") Integer nextPage, @RequestParam(defaultValue = "10") Integer pageSize){
         String accountId = (String) request.getAttribute("accountId");
-        Pageable pageable = WebUitl.buildPageRequest(nextPage, pageSize, null);
+        Pageable pageable = WebUitl.buildPageRequest(nextPage, pageSize, "[{property:'createdAt',direction:'DESC'}]");
         Page<ExchangeRecord> exchangeRecordPage = exchangeRepository.findByAccountId(accountId, pageable);
         return Result.success(exchangeRecordPage);
     }
