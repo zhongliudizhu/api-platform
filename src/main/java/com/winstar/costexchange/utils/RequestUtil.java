@@ -2,6 +2,7 @@ package com.winstar.costexchange.utils;
 
 import com.alibaba.fastjson.JSON;
 import com.winstar.communalCoupon.entity.AccountCoupon;
+import com.winstar.communalCoupon.service.AccountCouponService;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ public class RequestUtil {
     public static List<AccountCoupon> getAccountCoupons(Map map, String accountId) {
         List<AccountCoupon> accountCoupons = JSON.parseArray(map.get("coupons").toString(), AccountCoupon.class);
         for(AccountCoupon accountCoupon : accountCoupons){
+            accountCoupon.setState(AccountCouponService.NORMAL);
             accountCoupon.setCreatedAt(new Date());
             accountCoupon.setAccountId(accountId);
             accountCoupon.setType(MapUtils.getString(map, "domain"));

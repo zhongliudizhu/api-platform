@@ -47,15 +47,15 @@ public class AccountCouponController {
      * 查询优惠券列表
      */
     @RequestMapping(value = "getCoupons", method = RequestMethod.GET)
-    public Result getCoupons(HttpServletRequest request, @RequestParam(defaultValue = "0") Integer nextPage, @RequestParam(defaultValue = "10") Integer pageSize, @RequestParam(defaultValue = "normal") String state) {
-        if (!state.equals("normal") && !state.equals("used") && !state.equals("expired") && !state.equals("locked")) {
+    public Result getCoupons(HttpServletRequest request, @RequestParam(defaultValue = "0") Integer nextPage, @RequestParam(defaultValue = "10") Integer pageSize, @RequestParam(defaultValue = AccountCouponService.NORMAL) String state) {
+        if (!state.equals(AccountCouponService.NORMAL) && !state.equals(AccountCouponService.USED) && !state.equals(AccountCouponService.EXPIRED) && !state.equals(AccountCouponService.EXPIRED)) {
             logger.info("状态值错误！");
             return Result.fail("state_not_auth", "状态值错误！");
         }
         String accountId = (String) request.getAttribute("accountId");
         Pageable pageable = WebUitl.buildPageRequest(nextPage, pageSize, null);
         Page<AccountCoupon> accountCouponPage = accountCouponRepository.findByAccountIdAndShowStatusAndState(accountId, "yes", state, pageable);
-        accountCouponPage.getContent().stream().filter(accountCoupon -> "normal".equals(accountCoupon.getState()) && (new Date().getTime() - accountCoupon.getEndTime().getTime()) >= 0).forEach(accountCoupon -> {
+        accountCouponPage.getContent().stream().filter(accountCoupon -> AccountCouponService.NORMAL.equals(accountCoupon.getState()) && (new Date().getTime() - accountCoupon.getEndTime().getTime()) >= 0).forEach(accountCoupon -> {
             accountCoupon.setState("expired");
             accountCouponRepository.save(accountCoupon);
         });
@@ -68,7 +68,7 @@ public class AccountCouponController {
     @RequestMapping(value = "getUsableCoupons", method = RequestMethod.GET)
     public Result getMyUsableCoupons(HttpServletRequest request, @RequestParam String shopId) {
         String accountId = (String) request.getAttribute("accountId");
-        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndShowStatusAndState(accountId, "yes", "normal");
+        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndShowStatusAndState(accountId, "yes", AccountCouponService.NORMAL);
         if (ObjectUtils.isEmpty(accountCoupons)) {
             logger.info("用户无优惠券！");
             return Result.fail("coupons_not_found", "用户无优惠券！");
