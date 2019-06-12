@@ -1,8 +1,14 @@
 package com.winstar.order.utils;
 
 
+import com.alibaba.fastjson.JSON;
 import com.winstar.cashier.construction.utils.Arith;
+import com.winstar.communalCoupon.entity.AccountCoupon;
+import com.winstar.communalCoupon.repository.AccountCouponRepository;
+import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.couponActivity.utils.ActivityIdEnum;
+import com.winstar.exception.NotFoundException;
+import com.winstar.exception.NotRuleException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.vo.OilDetailVo;
 import com.winstar.shop.entity.Goods;
@@ -10,10 +16,14 @@ import com.winstar.user.utils.ServiceManager;
 import com.winstar.weekendBrand.entity.OrdersRedPackageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 /**
  * @author shoo on 2017/7/7 14:44.
@@ -327,7 +337,48 @@ public class OilOrderUtil {
         return  ServiceManager.oilOrderRepository.findByItemId(itemId, startDate,endDate).size();
     }
 
-
-
+    /**
+     * 订单使用优惠券的处理
+     * 2019-05-31
+     * zl add
+     */
+    public static OilOrder orderUseCoupons(AccountCouponRepository accountCouponRepository, OilOrder oilOrder, Goods goods, Integer activityType, String couponId) throws NotFoundException, NotRuleException{
+        logger.info(oilOrder.getSerialNumber() + "使用优惠券" +  couponId);
+        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndCouponIdIn(oilOrder.getAccountId(), couponId.split(","));
+        if(ObjectUtils.isEmpty(accountCoupons)){
+            logger.error("根据couponId查询优惠券失败，couponId：" + couponId);
+            throw new NotFoundException("coupon");
+        }
+        if(accountCoupons.size() != couponId.split(",").length){
+            logger.error("优惠券中有查询不到的优惠券，couponId：" + couponId);
+            throw new NotRuleException("coupon_have_invalid.order");
+        }
+        logger.info(JSON.toJSONString(accountCoupons));
+        List<AccountCoupon> normalCoupons = accountCoupons.stream().filter(s -> !s.getState().equals(AccountCouponService.NORMAL)).collect(Collectors.toList());
+        if(normalCoupons.size() > 0){
+            logger.info("优惠券有非正常的优惠券，非正常优惠券：" + JSON.toJSONString(normalCoupons));
+            throw new NotRuleException("coupon_not_use.order");
+        }
+        ResponseEntity<Map> resp = AccountCouponService.checkCoupon(couponId, goods.getPrice().toString(), goods.getTags());
+        logger.info("map:" + resp.getBody().toString());
+        Map map = resp.getBody();
+        if (!"SUCCESS".equals(map.get("code"))) {
+            logger.error("优惠券不可用！");
+            throw new NotRuleException("coupon_not_use.order");
+        }
+        Double discountAmount = accountCoupons.stream().mapToDouble(AccountCoupon::getAmount).sum();
+        if(!ObjectUtils.isEmpty(goods.getCouponLimitAmount()) && discountAmount > goods.getCouponLimitAmount()){
+            logger.error("优惠金额大于限制！");
+            throw new NotRuleException("priceLimit.order");
+        }
+        oilOrder.setCouponId(couponId);
+        oilOrder.setDiscountAmount(discountAmount);
+        oilOrder = initOrder(oilOrder, goods, activityType);
+        if(oilOrder.getPayPrice() <= 0){
+            logger.error("优惠后的订单价格不能小于0！");
+            throw new NotRuleException("price.order");
+        }
+        return oilOrder;
+    }
 
 }

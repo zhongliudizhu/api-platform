@@ -1,7 +1,6 @@
 package com.winstar.order.schedule;
 
-import com.winstar.coupon.service.CouponService;
-import com.winstar.exception.NotRuleException;
+import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.order.entity.FlowOrder;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.FlowOrderRepository;
@@ -10,15 +9,9 @@ import com.winstar.order.utils.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Date;
@@ -31,14 +24,17 @@ import java.util.List;
 @Component
 @EnableScheduling
 public class OilOrderShutdownController {
+
     public static final Logger logger = LoggerFactory.getLogger(OilOrderShutdownController.class);
+
     @Autowired
     private OilOrderRepository oilOrderRepository;
-    @Autowired
-    private CouponService couponService;
+
     @Autowired
     private FlowOrderRepository flowOrderRepository;
 
+    @Autowired
+    AccountCouponService accountCouponService;
 
     @Scheduled(cron = "0 0/30 * * * ?")
     public void shutdownOilOrder() {
@@ -51,8 +47,7 @@ public class OilOrderShutdownController {
             oilOrder.setIsAvailable("1");
             oilOrder.setUpdateTime(new Date());
             if(!StringUtils.isEmpty(oilOrder.getCouponId())){
-                //1.返还优惠券
-                couponService.cancelMyCoupon(oilOrder.getCouponId());
+                accountCouponService.modifyCouponState(oilOrder.getAccountId(), oilOrder.getCouponId(), AccountCouponService.NORMAL, null);
             }
         }
         oilOrderRepository.save(orders);
@@ -65,13 +60,11 @@ public class OilOrderShutdownController {
         Date begin = DateUtil.addYear(end,-1);
         //查出未付款未关闭的订单
         List<FlowOrder> flowOrders = flowOrderRepository.findByIsAvailableAndStatusAndCreateTimeBetween("0", 1,begin,end);
-        for (FlowOrder flowOrder:flowOrders
-                ) {
+        for (FlowOrder flowOrder:flowOrders) {
             flowOrder.setIsAvailable("1");
             flowOrder.setUpdateTime(new Date());
             if(!StringUtils.isEmpty(flowOrder.getCouponId())){
-                //1.返还优惠券
-                couponService.cancelMyCoupon(flowOrder.getCouponId());
+                accountCouponService.modifyCouponState(flowOrder.getAccountId(), flowOrder.getCouponId(), AccountCouponService.NORMAL, null);
             }
         }
         flowOrderRepository.save(flowOrders);

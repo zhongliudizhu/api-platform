@@ -1,22 +1,22 @@
 package com.winstar.order.controller;
 
 import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
-import com.winstar.cashier.construction.utils.Arith;
-import com.winstar.coupon.entity.MyCoupon;
-import com.winstar.coupon.service.CouponService;
-import com.winstar.couponActivity.utils.ActivityIdEnum;
-import com.winstar.exception.*;
+import com.winstar.communalCoupon.repository.AccountCouponRepository;
+import com.winstar.communalCoupon.service.AccountCouponService;
+import com.winstar.exception.MissingParameterException;
+import com.winstar.exception.NotFoundException;
+import com.winstar.exception.NotRuleException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.Constant;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.OilOrderUtil;
+import com.winstar.redis.RedisTools;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
 import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
-import com.winstar.user.utils.ServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,83 +41,79 @@ import static java.util.stream.Collectors.toList;
 @RestController
 @RequestMapping("/api/v1/cbc/orders")
 public class OilOrderController {
+
     public static final Logger logger = LoggerFactory.getLogger(OilOrderController.class);
+
     @Autowired
     private OilOrderRepository orderRepository;
+
     @Autowired
     private ShopService shopService;
-    @Autowired
-    private CouponService couponService;
+
     @Autowired
     private AccountService accountService;
+
     @Autowired
     EarlyAndEveningMarketConfigService earlyAndEveningMarketConfigService;
+
+    @Autowired
+    AccountCouponRepository accountCouponRepository;
+
+    @Autowired
+    AccountCouponService accountCouponService;
 
     @Value("${info.amount}")
     private Integer amount;
 
+    @Autowired
+    RedisTools redisTools;
+
     /**
      * 添加油券订单
-     *
      * @param itemId     商品id
      * @param activityId 活动id
      * @param couponId   优惠券id
      */
     @PostMapping(produces = "application/json;charset=utf-8")
     @ResponseBody
-    public ResponseEntity addOrder(@RequestParam String itemId
-            , @RequestParam String activityId
-            , @RequestParam(required = false, defaultValue = "") String couponId
-            , HttpServletRequest request) throws NotFoundException, NotRuleException {
+    public ResponseEntity addOrder(@RequestParam String itemId, @RequestParam String activityId, @RequestParam(required = false, defaultValue = "") String couponId, HttpServletRequest request) throws NotFoundException, NotRuleException {
         String accountId = accountService.getAccountId(request);
         Account account = accountService.findOne(accountId);
+        if(!redisTools.setIfAbsent(accountId + itemId, 2)){
+            logger.info("下单频率太高了吧，请慢点！");
+            throw new NotFoundException("clickFast.order");
+        }
         String serialNumber = OilOrderUtil.getSerialNumber();
         long startTime = System.currentTimeMillis();
-
-        ServiceManager.orderRedPackageInfoService.canBuy(accountId, activityId);
-
-        //2.根据商品id 查询商品
         Goods goods = shopService.findByGoodsId(itemId);
         logger.info("开始添加订单，goodsId：" + goods.getId());
         if (ObjectUtils.isEmpty(goods)) {
             logger.error("查询商品失败，itemId：" + itemId);
             throw new NotFoundException("goods.order");
         }
-
-        //3.根据活动id查询活动
         Activity activity = shopService.findByActivityId(activityId);
         if (ObjectUtils.isEmpty(activity)) {
             logger.error("查询活动失败，activityId：" + activityId);
             throw new NotFoundException("activity.order");
         }
-        if (activity.getType() == 1 && !StringUtils.isEmpty(couponId)) {
-            logger.error("只有活动2和3能使用优惠券！");
+        if (activity.getType() != 2 && !StringUtils.isEmpty(couponId)) {
+            logger.error("只有活动2能使用优惠券！");
             throw new NotRuleException("canNotUseCoupon.order");
         }
-
         if (goods.getIsSale() == 1) {
             logger.error("商品" + goods.getId() + "已售罄！");
             throw new NotRuleException("isSale.order");
         }
-        Integer soldAmount = 0;
-        if (activity.getType() == 3 || activity.getType() == 103 || activity.getType() == 104) {
-            soldAmount = OilOrderUtil.getSoldAmount(itemId, DateUtil.getInputDate("2018-03-29 00:00:01"), DateUtil.getInputDate("2018-06-30 23:59:59"));
-        } else {
-            soldAmount = OilOrderUtil.getSoldAmount(itemId, DateUtil.getMonthBegin(), DateUtil.getMonthEnd());
-        }
+        Integer soldAmount = OilOrderUtil.getSoldAmount(itemId, DateUtil.getMonthBegin(), DateUtil.getMonthEnd());
         //判断是否超过限售数量
         if (goods.getLimitAmount() != null && goods.getLimitAmount() != 0 && (soldAmount >= goods.getLimitAmount())) {
             logger.error("商品" + goods.getId() + "已超售！");
             throw new NotRuleException("soldOut.order");
         }
-
-        if (StringUtils.isEmpty(goods.getCouponTempletId()) && !StringUtils.isEmpty(couponId)) {
-            throw new NotRuleException("canNotUseCoupon.order");
-        }
-
         //activity 1 and 3 auth infoCard
-        if (activityId.equals("1") || activityId.equals("3")) {
+        if (activityId.equals("1")) {
             if (StringUtils.isEmpty(account.getAuthInfoCard())) {
+                logger.info("活动1需要绑定交安卡！");
                 throw new NotRuleException("notBindInfoCard.order");
             }
         }
@@ -146,67 +142,18 @@ public class OilOrderController {
                 logger.error("活动一商品，有未关闭订单");
                 throw new NotRuleException("haveNotPay.order");
             }
-//            String canBuySeckill = OilOrderUtil.judgeActivitySecKill(accountId, "201");
-//            if (canBuySeckill.equals("1")) {
-//                logger.error("活动201，每用户一周只能买一次");
-//                throw new NotRuleException("oneMonthOnce.order");
-//            } else if (canBuySeckill.equals("2")) {
-//                logger.error("活动201，有未关闭订单");
-//                throw new NotRuleException("haveNotPay.order");
-//            }
-        }
-        //验证特价商品有没有资格
-        if (activity.getType() == ActivityIdEnum.ACTIVITY_ID_101.getActivity()
-                || activity.getType() == ActivityIdEnum.ACTIVITY_ID_102.getActivity()) {
-            if (StringUtils.isEmpty(couponId)) {
-                throw new NotRuleException("notAbility.order");
-            }
-            String canBuy = OilOrderUtil.judgeActivity(accountId, activityId);
-            if (canBuy.equals("1")) {
-                logger.error("活动101、102，每用户一个月只能买一次");
-                throw new NotRuleException("oneMonthOnce.order");
-            } else if (canBuy.equals("2")) {
-                logger.error("活动101、102，有未关闭订单");
-                throw new NotRuleException("haveNotPay.order");
-            }
-        }
-        if (activity.getType() == ActivityIdEnum.ACTIVITY_ID_103.getActivity()
-                || activity.getType() == ActivityIdEnum.ACTIVITY_ID_104.getActivity()
-                || activity.getType() == ActivityIdEnum.ACTIVITY_ID_3.getActivity()
-                || activity.getType() == ActivityIdEnum.ACTIVITY_ID_666.getActivity()) {
-            if (StringUtils.isEmpty(couponId)) {
-                throw new NotRuleException("notAbility.order");
-            }
-            String canBuy = OilOrderUtil.judgeActivity2(accountId, activityId);
-            if (canBuy.equals("1")) {
-                logger.error("活动103、104、3，活动期间只能买一次");
-                throw new NotRuleException("oneMonthOnce.order");
-            } else if (canBuy.equals("2")) {
-                logger.error("活动103、104、3，有未关闭订单");
-                throw new NotRuleException("haveNotPay.order");
-            }
         }
         //5.初始化订单及订单项
         OilOrder oilOrder = new OilOrder(accountId, serialNumber, Constant.ORDER_STATUS_CREATE, Constant.PAY_STATUS_NOT_PAID, new Date(), Constant.REFUND_STATUS_ORIGINAL, itemId, activityId);
         //4.如果优惠券，查询优惠券
         if (!StringUtils.isEmpty(couponId)) {
-            MyCoupon myCoupon = couponService.checkIfMyCouponAvailable(goods.getPrice(), couponId);
-            if (myCoupon == null) {
-                logger.error("根据couponId查询优惠券失败，couponId：" + couponId);
-                throw new NotFoundException("myCoupon");
-
+            oilOrder = OilOrderUtil.orderUseCoupons(accountCouponRepository, oilOrder, goods, activity.getType(), couponId);
+            if (!StringUtils.isEmpty(oilOrder.getCouponId())) {
+                accountCouponService.modifyCouponState(oilOrder.getAccountId(), oilOrder.getCouponId(), AccountCouponService.LOCKED, oilOrder.getSerialNumber());
             }
-            oilOrder.setCouponId(couponId);
-            if (ObjectUtils.isEmpty(myCoupon.getAmount())) {
-                oilOrder.setDiscountAmount(Arith.mul(goods.getSaledPrice(), Arith.sub(1, myCoupon.getDiscountRate())));
-            } else if (ObjectUtils.isEmpty(myCoupon.getDiscountRate())) {
-                oilOrder.setDiscountAmount(myCoupon.getAmount());
-            }
+        }else{
+            oilOrder = OilOrderUtil.initOrder(oilOrder, goods, activity.getType());
         }
-        if (!StringUtils.isEmpty(oilOrder.getCouponId())) {
-            couponService.useCoupon(couponId);
-        }
-        oilOrder = OilOrderUtil.initOrder(oilOrder, goods, activity.getType());
         oilOrder = orderRepository.save(oilOrder);
         //6.生成订单
         long endTime = System.currentTimeMillis();
@@ -315,7 +262,7 @@ public class OilOrderController {
         oilOrder = orderRepository.save(oilOrder);
         //返还优惠券
         if (!StringUtils.isEmpty(oilOrder.getCouponId())) {
-            couponService.cancelMyCoupon(oilOrder.getCouponId());
+            accountCouponService.modifyCouponState(oilOrder.getAccountId(), oilOrder.getCouponId(), AccountCouponService.NORMAL, null);
         }
         return new ResponseEntity<>(null, HttpStatus.OK);
     }

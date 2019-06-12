@@ -1,14 +1,7 @@
 package com.winstar.order.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.winstar.coupon.repository.MyCouponRepository;
-import com.winstar.couponActivity.entity.InviteTableLog;
-import com.winstar.couponActivity.entity.MileageObtainLog;
-import com.winstar.couponActivity.repository.InviteTableLogRepository;
-import com.winstar.couponActivity.repository.MileageObtainLogRepository;
-import com.winstar.couponActivity.utils.ActivityIdEnum;
-import com.winstar.couponActivity.utils.TimeUtil;
-import com.winstar.couponActivity.utils.UtilConstants;
+import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.exception.NotFoundException;
 import com.winstar.kafka.Product;
 import com.winstar.order.entity.FlowOrder;
@@ -20,8 +13,9 @@ import com.winstar.order.utils.Constant;
 import com.winstar.order.utils.FlowOrderUtil;
 import com.winstar.order.vo.FlowResult;
 import com.winstar.order.vo.PayInfoVo;
+import com.winstar.shop.entity.Goods;
+import com.winstar.shop.repository.GoodsRepository;
 import com.winstar.user.service.OneMoneyCouponRecordService;
-import com.winstar.user.utils.ServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -31,10 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * @author shoo on 2017/12/14 9:54.
@@ -50,14 +41,15 @@ public class OilOrderServiceImpl implements OilOrderService {
     private FlowOrderRepository flowOrderRepository;
     @Autowired
     private OneMoneyCouponRecordService oneMoneyCouponRecordService;
-    @Autowired
-    private InviteTableLogRepository inviteTableLogRepository;
-    @Autowired
-    MileageObtainLogRepository mileageObtainLogRepository;
-    @Autowired
-    MyCouponRepository myCouponRepository;
+
     @Value("${info.flowUrl}")
     private String flowUrl;
+
+    @Autowired
+    AccountCouponService accountCouponService;
+
+    @Autowired
+    GoodsRepository goodsRepository;
 
     @Autowired
     Product product;
@@ -81,8 +73,6 @@ public class OilOrderServiceImpl implements OilOrderService {
             if (oilOrder.getItemId().equals(Constant.ONE_BUY_ITEMID)) {
                 oneMoneyCouponRecordService.changeStatus(oilOrder.getAccountId());
             }
-            //裂变活动订单回调
-            fassionCallBack(oilOrder);
             oilOrder.setBankSerialNo(payInfo.getBankSerialNumber());
             oilOrder.setPayTime(payInfo.getPayTime());
             oilOrder.setPayType(payInfo.getPayType());
@@ -95,12 +85,19 @@ public class OilOrderServiceImpl implements OilOrderService {
             oilOrder.setUpdateTime(time);
             oilOrder.setFinishTime(time);
             oilOrderRepository.save(oilOrder);
+            //更新优惠券的状态为已使用
+            if(!StringUtils.isEmpty(oilOrder.getCouponId()) && oilOrder.getActivityId().equals("2")){
+                logger.info(oilOrder.getSerialNumber() + "优惠券信息不为空，更新优惠券状态并通知优惠券平台！");
+                accountCouponService.modifyCouponState(oilOrder.getAccountId(), oilOrder.getCouponId(), AccountCouponService.USED, oilOrder.getSerialNumber());
+                Goods goods = goodsRepository.findOne(oilOrder.getItemId());
+                accountCouponService.writeOffCoupon(oilOrder.getCouponId(), oilOrder.getItemTotalValue().toString(), goods.getTags());
+                logger.info(oilOrder.getSerialNumber() + "优惠券信息更新完毕！");
+            }
             try {
                 product.sendMessage(topicName, oilOrder.getSerialNumber(), JSON.toJSONString(oilOrder));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            ServiceManager.orderRedPackageInfoService.generateOrdersRedPackageInfoByOrder(oilOrder);
         } else {
             FlowOrder flowOrder = flowOrderRepository.findBySerialNumber(serialNumber);
             if (ObjectUtils.isEmpty(flowOrder)) {
@@ -122,23 +119,18 @@ public class OilOrderServiceImpl implements OilOrderService {
             flowOrder.setUpdateTime(time);
             flowOrder.setFinishTime(time);
             flowOrderRepository.save(flowOrder);
+            //更新优惠券的状态为已使用
+            if(!StringUtils.isEmpty(flowOrder.getCouponId())){
+                accountCouponService.modifyCouponState(flowOrder.getAccountId(), flowOrder.getCouponId(), AccountCouponService.USED, flowOrder.getSerialNumber());
+                Goods goods = goodsRepository.findOne(flowOrder.getItemId());
+                accountCouponService.writeOffCoupon(flowOrder.getCouponId(), flowOrder.getItemTotalValue().toString(), goods.getTags());
+            }
             try {
                 product.sendMessage(topicName, flowOrder.getSerialNumber(), JSON.toJSONString(flowOrder));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        /*//活动2发优惠券
-        try{
-            if(oilOrder.getActivityId().equals(Constant.CBC_ACTIVITY_SEC)){
-                MyCoupon coupon = couponService.sendCoupon(oilOrder.getAccountId(),oilOrder.getActivityId(),oilOrder.getItemId());
-                if(!ObjectUtils.isEmpty(coupon)){
-                    logger.info("活动2，发优惠券，couponId："+coupon.getId());
-                }
-            }
-        }catch (Exception ex){
-            logger.error("发优惠券失败"+ex);
-        }*/
         return "ok";
     }
 
@@ -180,45 +172,4 @@ public class OilOrderServiceImpl implements OilOrderService {
         return oilOrder;
     }
 
-    /**
-     * 裂变活动回调方法
-     *
-     * @param oilOrder
-     */
-    public void fassionCallBack(OilOrder oilOrder) {
-        if (Integer.parseInt(oilOrder.getActivityId()) == ActivityIdEnum.ACTIVITY_ID_667.getActivity() && !StringUtils.isEmpty(oilOrder.getCouponId()) && inviteTableLogRepository.findByInvitedUserAndStateAndInvtiteState(oilOrder.getAccountId(), 1, 1).size() > 0) {
-            if (Integer.parseInt(myCouponRepository.findOne(oilOrder.getCouponId()).getActivityId()) == ActivityIdEnum.ACTIVITY_ID_667.getActivity()) {
-                List<InviteTableLog> inviteList = inviteTableLogRepository.findByInvitedUserAndState(oilOrder.getAccountId(), 1);
-                MileageObtainLog mileageObtainLog;
-                List<MileageObtainLog> mileageObtainLogList = new ArrayList<MileageObtainLog>();
-                Double mileageSum = 10.0;
-                Integer optainType = 2;
-                //使用优惠券赠送里程
-                mileageObtainLog = new MileageObtainLog(UUID.randomUUID().toString(), oilOrder.getAccountId(), UtilConstants.FissionActivityConstants.COUPON_MILEAFE, optainType, TimeUtil.getCurrentDateTime2(), 1);
-                mileageObtainLogList.add(mileageObtainLog);
-                logger.info(oilOrder.getAccountId() + ":使用优惠券获得10里程！");
-                if (inviteList.size() > 0) {
-                    //邀请人和被邀请人里程赠送，以及邀请状态和时间的更新
-                    for (int i = 0; i < inviteList.size(); i++) {
-                        String inviteUsreid = inviteList.get(i).getAccountId();
-                        if (inviteList.get(i).getInviteType() == 0) {
-                            mileageSum = UtilConstants.FissionActivityConstants.DIRECT_INVTIE_MILEAFE;
-                            optainType = 1;
-                            logger.info(inviteList.get(i).getAccountId() + ":直接邀请成功！获得10里程！");
-                        } else {
-                            mileageSum = UtilConstants.FissionActivityConstants.INDIRECT_INVTIE_MILEAFE;
-                            optainType = 0;
-                            logger.info(inviteList.get(i).getAccountId() + ":直接邀请成功！获得5里程！");
-                        }
-                        inviteList.get(i).setInvtiteState(0);
-                        inviteList.get(i).setUpdateTime(TimeUtil.getCurrentDateTime2());
-                        mileageObtainLog = new MileageObtainLog(UUID.randomUUID().toString(), inviteUsreid, mileageSum, optainType, TimeUtil.getCurrentDateTime2(), 1);
-                        mileageObtainLogList.add(mileageObtainLog);
-                    }
-                }
-                inviteTableLogRepository.save(inviteList);
-                mileageObtainLogRepository.save(mileageObtainLogList);
-            }
-        }
-    }
 }
