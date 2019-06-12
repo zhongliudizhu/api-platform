@@ -37,6 +37,7 @@ public class RequestUtil {
             accountCoupon.setCreatedAt(new Date());
             accountCoupon.setAccountId(accountId);
             accountCoupon.setType(MapUtils.getString(map, "domain"));
+            logger.info("优惠券状态：" + accountCoupon.getState());
             logger.info("优惠券：" + accountCoupon.toString());
         }
         return accountCoupons;
