@@ -155,6 +155,7 @@ public class ExchangeController {
         }
         if(record.getState().equals(ExchangeRecord.INORDER)) {
             exchangeRecord.setState(ExchangeRecord.FAIL);
+            exchangeRecord.setFailMessage(MapUtils.getString(map, "retCode") + "：" + MapUtils.getString(map, "retMsg"));
             exchangeRepository.save(exchangeRecord);
         }
         return Result.fail(MapUtils.getString(map, "retCode"), MapUtils.getString(map, "retMsg"));

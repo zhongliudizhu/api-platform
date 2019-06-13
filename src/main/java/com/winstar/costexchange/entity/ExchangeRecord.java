@@ -111,6 +111,12 @@ public class ExchangeRecord {
     @Column(columnDefinition = "varchar(500) comment '优惠券id'")
     private String couponId;
 
+    /**
+     * 失败原因
+     */
+    @Column(columnDefinition = "varchar(255) comment '失败原因'")
+    private String failMessage;
+
     public ExchangeRecord(CostShop costShop, String accountId, String openId, String mobile){
         this.orderNumber = DateUtil.DateToString(new Date(), "yyyyMMddHHmmssSSS") + OilOrderUtil.getRandomNum(6);
         this.accountId = accountId;
