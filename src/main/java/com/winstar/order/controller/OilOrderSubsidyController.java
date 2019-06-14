@@ -1,16 +1,15 @@
 package com.winstar.order.controller;
 
-import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
 import com.winstar.cashier.construction.utils.Arith;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.service.CouponService;
-import com.winstar.couponActivity.repository.CareJuanListRepository;
-import com.winstar.exception.InvalidParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
-import com.winstar.order.utils.*;
+import com.winstar.order.utils.Constant;
+import com.winstar.order.utils.DateUtil;
+import com.winstar.order.utils.OilOrderUtil;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
@@ -19,8 +18,8 @@ import com.winstar.user.service.AccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -44,14 +43,6 @@ public class OilOrderSubsidyController {
     private CouponService couponService;
     @Autowired
     private AccountService accountService;
-    @Autowired
-    CareJuanListRepository careJuanListRepository;
-    @Autowired
-    EarlyAndEveningMarketConfigService earlyAndEveningMarketConfigService;
-
-    @Value("${info.amount}")
-    private Integer amount;
-
 
     /**
      * 添加油券订单

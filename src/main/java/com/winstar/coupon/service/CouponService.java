@@ -285,47 +285,9 @@ public class CouponService {
      * @return MyCoupon
      */
     public List<MyCoupon> findMyUsableCoupon(String accountId, Double money,Goods goods)throws NotFoundException {
-//        List<MyCoupon> list=myCouponRepository.findByAccountIdAndStatusAndUseRuleLessThanEqual(accountId, 0, money);
-//        for(MyCoupon coupon:list){
-//            Date now = new Date();
-//           if(coupon.getValidEndAt().getTime()<now.getTime()){
-//               logger.info("优惠券："+coupon.getId()+" 过期");
-//               list.remove(coupon);
-//           }
-//            if(coupon.getActivityId().equals("3")
-//                    ||coupon.getActivityId().equals("101")
-//                    ||coupon.getActivityId().equals("102")
-//                    ||coupon.getActivityId().equals("103")
-//                    ||coupon.getActivityId().equals("104")){
-//                logger.info("优惠券：不能使用类型3、101、102、103、104的券");
-//                list.remove(coupon);
-//            }
-//        }
-//      List<MyCoupon> list = new LinkedList<>();
-        List<MyCoupon> list = new LinkedList<>();
         List<String> types = new LinkedList<>();
-        types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_3.getActivity()));
-        types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_101.getActivity()));
-        types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_103.getActivity()));
-        types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_104.getActivity()));
         types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_105.getActivity()));
-        types.add(String.valueOf(ActivityIdEnum.ACTIVITY_ID_667.getActivity()));
-        if(goods.getType()==ActivityIdEnum.ACTIVITY_ID_667.getActivity()){
-            list =myCouponRepository.findFassionMyUsableCoupon(accountId,0,money, new Date(),goods.getType().toString());
-            if(list.size()<=0){
-                throw  new NotFoundException("data.is.null");
-            }
-            if(oilOrderRepository.countByStatusAndAccountIdAndIsAvailable(accountId)>0){
-                for (int i=0;i<list.size();i++){
-                    if (list.get(i).getAmount()==30.0&&goods.getPrice()==200){
-                        list.remove(i);
-                    }
-                }
-            }
-        }else {
-            list = myCouponRepository.findMyUsableCoupon(accountId,0,money, new Date(),types);
-        }
-
+        List<MyCoupon> list = myCouponRepository.findMyUsableCoupon(accountId,0,money, new Date(),types);
         return list;
     }
 

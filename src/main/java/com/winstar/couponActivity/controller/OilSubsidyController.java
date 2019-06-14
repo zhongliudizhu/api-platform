@@ -3,11 +3,16 @@ package com.winstar.couponActivity.controller;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
-import com.winstar.couponActivity.entity.*;
-import com.winstar.couponActivity.repository.*;
+import com.winstar.couponActivity.entity.CouponActivity;
+import com.winstar.couponActivity.entity.WhiteList;
+import com.winstar.couponActivity.repository.CouponActivityRepository;
+import com.winstar.couponActivity.repository.WhiteListRepository;
 import com.winstar.couponActivity.utils.ActivityIdEnum;
 import com.winstar.couponActivity.utils.TimeUtil;
-import com.winstar.exception.*;
+import com.winstar.exception.InvalidParameterException;
+import com.winstar.exception.NotFoundException;
+import com.winstar.exception.NotRuleException;
+import com.winstar.exception.ServiceUnavailableException;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.StringFormatUtils;
 import com.winstar.shop.entity.Activity;
@@ -36,7 +41,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -60,14 +64,7 @@ public class OilSubsidyController {
     ActivityRepository activityRepository;
     @Autowired
     WhiteListRepository whiteListRepository;
-    @Autowired
-    SixWhiteListRepository sixWhiteListRepository;
-    @Autowired
-    SevenWhiteListRepository sevenWhiteListRepository;
-    @Autowired
-    EightWhiteListRepository eightWhiteListRepository;
-    @Autowired
-    OilSubsidyVerifyLogRepository oilSubsidyVerifyLogRepository;
+
     @Autowired
     MyCouponRepository myCouponRepository;
     @Autowired
@@ -93,12 +90,6 @@ public class OilSubsidyController {
         activity.setName("百万加油补贴--第三季度活动");
         activity.setType(105);
 
-//        OilSubsidyVerifyLog oilSubsidyVerifyLog = oilSubsidyVerifyLogRepository.findByAccountId(accountId.toString());
-//        if(!ObjectUtils.isEmpty(oilSubsidyVerifyLog)){
-//           activity.setIsVerify(1); //0 :未验证  1：已验证
-//        }else{
-//            activity.setIsVerify(0);
-//        }
         List<MyCoupon> myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(105), 0, DateUtil.getInputDate("2018-07-01 00:00:01"), DateUtil.getInputDate("2019-12-31 23:59:59"));//0: 未使用
         if (!ObjectUtils.isEmpty(myCoupons)) {
             activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
@@ -188,19 +179,6 @@ public class OilSubsidyController {
         }
 
         return activity;
-    }
-
-    /**
-     * 异步保存验证日志
-     *
-     * @param accountId
-     */
-    @Async
-    public void saveOilSubsidyVerifyLog(String accountId) {
-        OilSubsidyVerifyLog oilSubsidyVerifyLog = new OilSubsidyVerifyLog();
-        oilSubsidyVerifyLog.setAccountId(accountId);
-        oilSubsidyVerifyLog.setCreateTime(new Date());
-        oilSubsidyVerifyLogRepository.save(oilSubsidyVerifyLog);
     }
 
     public Activity getActivityInfo() {

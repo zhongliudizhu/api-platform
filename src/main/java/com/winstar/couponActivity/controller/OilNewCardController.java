@@ -2,12 +2,9 @@ package com.winstar.couponActivity.controller;
 
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
-import com.winstar.coupon.service.CouponService;
-import com.winstar.couponActivity.entity.OilSubsidyVerifyLog;
 import com.winstar.couponActivity.entity.SixWhiteList;
 import com.winstar.couponActivity.entity.WhiteList;
 import com.winstar.couponActivity.repository.CouponActivityRepository;
-import com.winstar.couponActivity.repository.OilSubsidyVerifyLogRepository;
 import com.winstar.couponActivity.repository.SixWhiteListRepository;
 import com.winstar.couponActivity.repository.WhiteListRepository;
 import com.winstar.couponActivity.utils.ActivityIdEnum;
@@ -36,13 +33,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -64,11 +59,7 @@ public class OilNewCardController {
     @Autowired
     SixWhiteListRepository sixWhiteListRepository;
     @Autowired
-    OilSubsidyVerifyLogRepository oilSubsidyVerifyLogRepository;
-    @Autowired
     MyCouponRepository myCouponRepository;
-    @Autowired
-    private CouponService couponService;
 
     @Value("${send_sms_url}")
     String sendSmsUrl;
@@ -184,32 +175,8 @@ public class OilNewCardController {
             }
 
         }
-//        String nowMonth = TimeUtil.getMonth();
-//        try {
-//            if (whiteLists.getTime().equals(nowMonth) || TimeUtil.getCheckTimeNextMonth(whiteLists.getTime()).equals(nowMonth)) {
-//                activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
-//                giveCouponInfo(accountId.toString(), whiteLists);
-//            } else {
-//                throw new NotFoundException("couponActivity.notWhiteLists");
-//            }
-//        } catch (ParseException e) {
-//            throw new NotFoundException("couponActivity.notWhiteLists");
-//        }
 
         return activity;
-    }
-
-    /**
-     * 异步保存验证日志
-     *
-     * @param accountId
-     */
-    @Async
-    public void saveOilSubsidyVerifyLog(String accountId) {
-        OilSubsidyVerifyLog oilSubsidyVerifyLog = new OilSubsidyVerifyLog();
-        oilSubsidyVerifyLog.setAccountId(accountId);
-        oilSubsidyVerifyLog.setCreateTime(new Date());
-        oilSubsidyVerifyLogRepository.save(oilSubsidyVerifyLog);
     }
 
     public Activity getActivityInfo() {
@@ -220,31 +187,6 @@ public class OilNewCardController {
         activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_0.getActivity());
         return activity;
     }
-
-//    /**
-//     * 异步发卷
-//     *
-//     * @param accountId
-//     * @param whiteList
-//     */
-//    @Async
-//    public void giveCouponInfo(String accountId, SixWhiteList whiteList) {
-//        List<MyCoupon> coupons = myCouponRepository.findByAccountIdAndActivityId(accountId, "106");
-//        if (ObjectUtils.isEmpty(coupons)) {
-//            CouponActivity couponActivity = couponActivityRepository.findOne("106");
-//
-//            String couponName = "C2" + "-" + WsdUtils.getRandomNumber(8);
-//            couponService.cbcsendCoupon_freedom(
-//                    accountId, "106", couponActivity.getAmount(), DateUtil.getNextMonthEnd(), couponActivity.getUseRule(), couponName, couponActivity.getName());
-//
-//            //回填白名单  2、记录发送时间
-//            logger.info("accountId:" + accountId + "|回填白名单");
-//            whiteList.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
-//            whiteList.setAccountId(accountId);
-//            whiteList.setIsGet(1);
-//            sixWhiteListRepository.save(whiteList);
-//        }
-//    }
 
     /**
      * cbc发送验证码(建行短信服务)

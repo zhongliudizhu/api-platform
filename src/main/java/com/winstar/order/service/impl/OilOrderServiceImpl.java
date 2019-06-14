@@ -4,21 +4,15 @@ import com.alibaba.fastjson.JSON;
 import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.exception.NotFoundException;
 import com.winstar.kafka.Product;
-import com.winstar.order.entity.FlowOrder;
 import com.winstar.order.entity.OilOrder;
-import com.winstar.order.repository.FlowOrderRepository;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.service.OilOrderService;
 import com.winstar.order.utils.Constant;
-import com.winstar.order.utils.FlowOrderUtil;
-import com.winstar.order.vo.FlowResult;
 import com.winstar.order.vo.PayInfoVo;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.GoodsRepository;
-import com.winstar.user.service.OneMoneyCouponRecordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -37,10 +31,6 @@ public class OilOrderServiceImpl implements OilOrderService {
     private static Logger logger = LoggerFactory.getLogger(OilOrderServiceImpl.class);
     @Autowired
     private OilOrderRepository oilOrderRepository;
-    @Autowired
-    private FlowOrderRepository flowOrderRepository;
-    @Autowired
-    private OneMoneyCouponRecordService oneMoneyCouponRecordService;
 
     @Value("${info.flowUrl}")
     private String flowUrl;
@@ -70,9 +60,6 @@ public class OilOrderServiceImpl implements OilOrderService {
             if (ObjectUtils.isEmpty(oilOrder)) {
                 return "2";
             }
-            if (oilOrder.getItemId().equals(Constant.ONE_BUY_ITEMID)) {
-                oneMoneyCouponRecordService.changeStatus(oilOrder.getAccountId());
-            }
             oilOrder.setBankSerialNo(payInfo.getBankSerialNumber());
             oilOrder.setPayTime(payInfo.getPayTime());
             oilOrder.setPayType(payInfo.getPayType());
@@ -98,38 +85,6 @@ public class OilOrderServiceImpl implements OilOrderService {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } else {
-            FlowOrder flowOrder = flowOrderRepository.findBySerialNumber(serialNumber);
-            if (ObjectUtils.isEmpty(flowOrder)) {
-                return "2";
-            }
-            flowOrder.setBankSerialNo(payInfo.getBankSerialNumber());
-            flowOrder.setPayTime(payInfo.getPayTime());
-            flowOrder.setPayType(payInfo.getPayType());
-            flowOrder.setPayStatus(payInfo.getPayState());//支付成功
-            FlowResult flowResult = FlowOrderUtil.chargeFlow(flowOrder.getPhoneNo(), "M", "1024", "N", "30", flowUrl);
-
-            if (ObjectUtils.isEmpty(flowResult) || flowResult.getOrderStatus().equals("SubmitFail")) {
-                flowOrder.setSendStatus(4);//发货失败
-                flowOrder.setStatus(3);//已完成
-            } else {
-                flowOrder.setSendStatus(3);//发货成功
-                flowOrder.setStatus(3);//已完成
-            }
-            flowOrder.setUpdateTime(time);
-            flowOrder.setFinishTime(time);
-            flowOrderRepository.save(flowOrder);
-            //更新优惠券的状态为已使用
-            if(!StringUtils.isEmpty(flowOrder.getCouponId())){
-                accountCouponService.modifyCouponState(flowOrder.getAccountId(), flowOrder.getCouponId(), AccountCouponService.USED, flowOrder.getSerialNumber());
-                Goods goods = goodsRepository.findOne(flowOrder.getItemId());
-                accountCouponService.writeOffCoupon(flowOrder.getCouponId(), flowOrder.getItemTotalValue().toString(), goods.getTags());
-            }
-            try {
-                product.sendMessage(topicName, flowOrder.getSerialNumber(), JSON.toJSONString(flowOrder));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
         return "ok";
     }
@@ -143,12 +98,6 @@ public class OilOrderServiceImpl implements OilOrderService {
             if (ObjectUtils.isEmpty(oilOrder) || oilOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)) {
                 throw new NotFoundException("oilOrder.order");
             }
-        } else {
-            FlowOrder flowOrder = flowOrderRepository.findBySerialNumber(serialNumber);
-            if (ObjectUtils.isEmpty(flowOrder) || flowOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)) {
-                throw new NotFoundException("flowOrder.order");
-            }
-            BeanUtils.copyProperties(flowOrder, oilOrder);
         }
 
         return oilOrder;
@@ -162,12 +111,6 @@ public class OilOrderServiceImpl implements OilOrderService {
             if (ObjectUtils.isEmpty(oilOrder)) {
                 return null;
             }
-        } else {
-            FlowOrder flowOrder = flowOrderRepository.findBySerialNumber(serialNumber);
-            if (ObjectUtils.isEmpty(flowOrder)) {
-                return null;
-            }
-            BeanUtils.copyProperties(flowOrder, oilOrder);
         }
         return oilOrder;
     }

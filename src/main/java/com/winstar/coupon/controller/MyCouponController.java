@@ -5,11 +5,11 @@ import com.winstar.coupon.entity.OilStation;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.coupon.service.OilStationService;
-import com.winstar.couponActivity.utils.ActivityIdEnum;
-import com.winstar.exception.*;
+import com.winstar.exception.MissingParameterException;
+import com.winstar.exception.NotFoundException;
+import com.winstar.exception.NotRuleException;
 import com.winstar.oil.entity.MyOilCoupon;
 import com.winstar.oil.repository.MyOilCouponRepository;
-import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.shop.entity.Goods;
@@ -35,10 +35,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 名称： MyCouponController
@@ -67,61 +65,6 @@ public class MyCouponController {
     MyOilCouponRepository myOilCouponRepository;
     @Autowired
     OilStationService oilStationService;
-
-    /**
-     * 我的优惠券列表
-     *
-     * @param request    HttpServletRequest
-     * @param status     状态 0 未使用 1 已使用 2 已失效
-     * @param pageNumber 默认 1
-     * @param pageSize   默认 5
-     * @return List<MyCoupon>
-     * @throws NotRuleException
-     * @throws NotFoundException
-     */
-    @RequestMapping(value = "/query", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.OK)
-    public List<MyCoupon> query(
-            HttpServletRequest request,
-            Integer status,
-            @RequestParam(defaultValue = "1") Integer pageNumber,
-            @RequestParam(defaultValue = "10000") Integer pageSize
-    ) throws NotRuleException, NotFoundException {
-        List<MyCoupon> list = new LinkedList<>();
-        String accountId = accountService.getAccountId(request);
-        couponService.checkExpired(accountId);
-        if (StringUtils.isEmpty(accountId)) throw new NotRuleException("accountId");
-        Sort sorts = new Sort(Sort.Direction.DESC, "createdAt");
-        Pageable pageable = new PageRequest(pageNumber - 1, pageSize, sorts);
-        Page<MyCoupon> page = myCouponRepository.findAll(new Specification<MyCoupon>() {
-            public Predicate toPredicate(Root<MyCoupon> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-                List<Predicate> list = new ArrayList<Predicate>();
-                if (!StringUtils.isEmpty(accountId)) {
-                    list.add(cb.equal(root.<String>get("accountId"), accountId));
-                }
-                if (status != null) {
-                    list.add(cb.equal(root.<Integer>get("status"), status));
-                }
-                list.add(cb.notEqual(root.<Integer>get("activityId"), "3"));
-                list.add(cb.notEqual(root.<Integer>get("activityId"), "101"));
-                list.add(cb.notEqual(root.<Integer>get("activityId"), "102"));
-                list.add(cb.notEqual(root.<Integer>get("activityId"), "103"));
-                list.add(cb.notEqual(root.<Integer>get("activityId"), "104"));
-                list.add(cb.notEqual(root.<Integer>get("activityId"), "105"));
-                Predicate[] p = new Predicate[list.size()];
-                return cb.and(list.toArray(p));
-            }
-        }, pageable);
-        if (page.getContent().size() == 0) throw new NotFoundException("mycoupon");
-        page.getContent().stream().forEach(bean -> {
-            if (30.0 == bean.getAmount() && oilOrderRepository.countByStatusAndAccountIdAndIsAvailable(accountId) > 0 && Integer.parseInt(bean.getActivityId()) == ActivityIdEnum.ACTIVITY_ID_667.getActivity()) {
-                bean.setUseRule(300.0);
-            }
-            list.add(bean);
-        });
-
-        return list;
-    }
 
     @RequestMapping(value = "/queryType", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -157,12 +100,6 @@ public class MyCouponController {
             }
         }, pageable);
         if (page.getContent().size() == 0) throw new NotFoundException("mycoupon");
-        page.getContent().stream().forEach(bean -> {
-            if (30.0 == bean.getAmount() && oilOrderRepository.countByStatusAndAccountIdAndIsAvailable(accountId) > 0 && Integer.parseInt(bean.getActivityId()) == ActivityIdEnum.ACTIVITY_ID_667.getActivity()) {
-                bean.setUseRule(300.0);
-            }
-            list.add(bean);
-        });
         return list;
     }
 

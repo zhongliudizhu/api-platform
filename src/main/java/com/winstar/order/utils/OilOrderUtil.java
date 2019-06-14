@@ -13,7 +13,6 @@ import com.winstar.order.entity.OilOrder;
 import com.winstar.order.vo.OilDetailVo;
 import com.winstar.shop.entity.Goods;
 import com.winstar.user.utils.ServiceManager;
-import com.winstar.weekendBrand.entity.OrdersRedPackageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -98,22 +97,9 @@ public class OilOrderUtil {
         }else if(activityType == ActivityIdEnum.ACTIVITY_ID_2.getActivity()){
             order.setPayPrice(Arith.sub(goods.getSaledPrice(),order.getDiscountAmount()));
             order.setCouponTempletId(goods.getCouponTempletId());
-        }else if(activityType == ActivityIdEnum.ACTIVITY_ID_3.getActivity()){
-            if(goods.getId().equals(Constant.ONE_BUY_ITEMID9)||goods.getId().equals(Constant.ONE_BUY_ITEMID10)){
-                order.setPayPrice(Arith.sub(goods.getSaledPrice(),order.getDiscountAmount()));
-                order.setCouponTempletId(goods.getCouponTempletId());
-            }else{
-                order.setPayPrice(Arith.mul(goods.getSaledPrice(),goods.getDisCount()));
-            }
-        }else if(activityType == ActivityIdEnum.ACTIVITY_ID_101.getActivity()
-                ||activityType == ActivityIdEnum.ACTIVITY_ID_103.getActivity()
-                ||activityType == ActivityIdEnum.ACTIVITY_ID_104.getActivity()
-                ||activityType == ActivityIdEnum.ACTIVITY_ID_666.getActivity()
-                ||activityType == ActivityIdEnum.ACTIVITY_ID_667.getActivity()){
+        }else if(activityType == ActivityIdEnum.ACTIVITY_ID_666.getActivity()){
             order.setPayPrice(Arith.sub(goods.getSaledPrice(),order.getDiscountAmount()));
             order.setCouponTempletId(goods.getCouponTempletId());
-        }else if(OrdersRedPackageInfo.ACTIVITY_ID_WEEKEND_BRAND.equals(order.getActivityId())){
-            order.setPayPrice(Arith.mul(goods.getSaledPrice(),goods.getDisCount()));
         }
 
         order.setSalePrice(goods.getSaledPrice());

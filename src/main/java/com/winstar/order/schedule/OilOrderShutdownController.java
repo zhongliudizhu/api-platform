@@ -1,9 +1,7 @@
 package com.winstar.order.schedule;
 
 import com.winstar.communalCoupon.service.AccountCouponService;
-import com.winstar.order.entity.FlowOrder;
 import com.winstar.order.entity.OilOrder;
-import com.winstar.order.repository.FlowOrderRepository;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.DateUtil;
 import org.slf4j.Logger;
@@ -31,9 +29,6 @@ public class OilOrderShutdownController {
     private OilOrderRepository oilOrderRepository;
 
     @Autowired
-    private FlowOrderRepository flowOrderRepository;
-
-    @Autowired
     AccountCouponService accountCouponService;
 
     @Scheduled(cron = "0 0/30 * * * ?")
@@ -52,23 +47,6 @@ public class OilOrderShutdownController {
         }
         oilOrderRepository.save(orders);
         logger.info("关闭油券订单数量："+orders.size());
-    }
-
-    @Scheduled(cron = "0 0/30 * * * ?")
-    public void shutdownFlowOrder() {
-        Date end = DateUtil.addHour(DateUtil.getNowDate(),-1);
-        Date begin = DateUtil.addYear(end,-1);
-        //查出未付款未关闭的订单
-        List<FlowOrder> flowOrders = flowOrderRepository.findByIsAvailableAndStatusAndCreateTimeBetween("0", 1,begin,end);
-        for (FlowOrder flowOrder:flowOrders) {
-            flowOrder.setIsAvailable("1");
-            flowOrder.setUpdateTime(new Date());
-            if(!StringUtils.isEmpty(flowOrder.getCouponId())){
-                accountCouponService.modifyCouponState(flowOrder.getAccountId(), flowOrder.getCouponId(), AccountCouponService.NORMAL, null);
-            }
-        }
-        flowOrderRepository.save(flowOrders);
-        logger.info("关闭流量订单数量："+flowOrders.size());
     }
 
 }

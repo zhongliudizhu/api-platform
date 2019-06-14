@@ -1,9 +1,9 @@
 package com.winstar.shop.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.winstar.exception.*;
-import com.winstar.order.entity.OilOrder;
+import com.winstar.exception.MissingParameterException;
+import com.winstar.exception.NotFoundException;
+import com.winstar.exception.NotRuleException;
 import com.winstar.order.service.OilOrderService;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.shop.entity.Activity;
@@ -12,7 +12,6 @@ import com.winstar.shop.repository.ActivityRepository;
 import com.winstar.shop.repository.GoodsRepository;
 import com.winstar.user.entity.PageViewLog;
 import com.winstar.user.service.AccountService;
-import com.winstar.user.service.OneMoneyCouponRecordService;
 import com.winstar.user.utils.ServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,11 +40,9 @@ public class GoodsController {
 
     public static final Logger logger = LoggerFactory.getLogger(GoodsController.class);
 
-    static final String GoodId = "8"; //0.01元抢购券
     static final Integer Status = 1;
     static final Integer HOUR_BEGIN = 7;
     static final Integer HOUR_END = 23;
-    static final String SORT = "createTime";
     @Autowired
     GoodsRepository goodsRepository;
 
@@ -56,8 +53,6 @@ public class GoodsController {
     @Autowired
     OilOrderService oilOrderService;
 
-    @Autowired
-    OneMoneyCouponRecordService oneMoneyCouponRecordService;
     /**
      * 根据活动Id查询商品
      *
@@ -98,17 +93,6 @@ public class GoodsController {
             throw new NotFoundException("this activity has no goods");
         }
         JSONArray array= JSONArray.parseArray(activity.getGoods());
-        if("3".equals(activityId)){
-            Boolean b=oneMoneyCouponRecordService.checkBuyAuth(accountId);
-            logger.info(array.toString());
-            if(!b || !checkTime()){
-                for(int i=0;i<array.size();i++){
-                    if(array.getString(i).equals(GoodId)){
-                        array.remove(i);
-                    }
-                }
-            }
-        }
         List<Goods> list=goodsRepository.findByStatusAndIdInOrderByPriceAsc(Status,array);
         logger.info("商品列表：" + list.size());
         if (list.size() == 0)  throw new NotFoundException("goods");

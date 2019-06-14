@@ -10,17 +10,10 @@ package com.winstar.couponActivity.utils;
 public enum  ActivityIdEnum {
     ACTIVITY_ID_1("购加油券折上折优惠", 1),
     ACTIVITY_ID_2("购加油券返利", 2),
-    ACTIVITY_ID_3("首比违法赠20元优惠券", 3),
-    ACTIVITY_ID_101("消费满笔/额获赠加油优惠券-50元", 101),
     ACTIVITY_ID_102("龙途乐享卡月度日均存款达标-50元", 102),
-    ACTIVITY_ID_103("购车分期获赠加油优惠券-100元", 103),
-    ACTIVITY_ID_104("购车分期获赠加油优惠券-200元", 104),
     ACTIVITY_ID_666("新手活动", 666),
-    ACTIVITY_ID_667("裂变活动", 667),
     ACTIVITY_ID_105("百万加油补贴", 105),
     ACTIVITY_ID_106("新办交安卡", 106),
-    ACTIVITY_ID_107("新开通手机银行", 107),
-    ACTIVITY_ID_108("新办约定还款账户", 108),
     ACTIVITY_ID_109("领取50元优惠包", 109),
 
     ACTIVITY_ID_201("交安卡周四秒杀", 201),

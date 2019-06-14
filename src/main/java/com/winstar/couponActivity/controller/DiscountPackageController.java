@@ -1,12 +1,7 @@
 package com.winstar.couponActivity.controller;
 
-import com.winstar.coupon.repository.MyCouponRepository;
-import com.winstar.coupon.service.CouponService;
 import com.winstar.couponActivity.entity.NineWhiteList;
-import com.winstar.couponActivity.repository.CouponActivityRepository;
 import com.winstar.couponActivity.repository.NineWhiteListRepository;
-import com.winstar.couponActivity.repository.OilSubsidyVerifyLogRepository;
-import com.winstar.couponActivity.repository.WhiteListRepository;
 import com.winstar.couponActivity.utils.ActivityIdEnum;
 import com.winstar.couponActivity.utils.TimeUtil;
 import com.winstar.exception.InvalidParameterException;
@@ -15,7 +10,6 @@ import com.winstar.exception.NotRuleException;
 import com.winstar.exception.ServiceUnavailableException;
 import com.winstar.order.utils.StringFormatUtils;
 import com.winstar.shop.entity.Activity;
-import com.winstar.shop.repository.ActivityRepository;
 import com.winstar.user.entity.Account;
 import com.winstar.user.param.CCBAuthParam;
 import com.winstar.user.param.MsgContent;
@@ -28,7 +22,6 @@ import com.winstar.user.vo.SendVerifyCodeMsgResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -48,27 +41,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/cbc/discountPackage")
 public class DiscountPackageController {
-    public static final Logger logger = LoggerFactory.getLogger(OilSubsidyController.class);
+    public static final Logger logger = LoggerFactory.getLogger(DiscountPackageController.class);
     @Autowired
     private AccountService accountService;
-    @Autowired
-    CouponActivityRepository couponActivityRepository;
-    @Autowired
-    ActivityRepository activityRepository;
+
     @Autowired
     NineWhiteListRepository nineWhiteListRepository;
-    @Autowired
-    WhiteListRepository whiteListRepository;
-    @Autowired
-    OilSubsidyVerifyLogRepository oilSubsidyVerifyLogRepository;
-    @Autowired
-    MyCouponRepository myCouponRepository;
-    @Autowired
-    private CouponService couponService;
-    @Value("${send_sms_url}")
-    String sendSmsUrl;
-    @Value("${verify_sms_url}")
-    String verifySmsUrl;
 
     /**
      * 活动以及活动状态查询

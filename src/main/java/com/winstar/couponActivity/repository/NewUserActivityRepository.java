@@ -1,13 +1,8 @@
 package com.winstar.couponActivity.repository;
 
-import com.winstar.couponActivity.entity.CareJuanList;
 import com.winstar.couponActivity.entity.NewUserActivity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
-
-import java.util.Date;
-import java.util.List;
 
 /**
  * CareJuanListRepository

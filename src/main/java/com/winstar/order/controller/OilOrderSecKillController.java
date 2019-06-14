@@ -4,9 +4,7 @@ import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
 import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
-import com.winstar.couponActivity.entity.CareJuanList;
 import com.winstar.couponActivity.entity.NineWhiteList;
-import com.winstar.couponActivity.repository.CareJuanListRepository;
 import com.winstar.couponActivity.repository.NineWhiteListRepository;
 import com.winstar.couponActivity.utils.ActivityIdEnum;
 import com.winstar.drawActivity.comm.ErrorCodeEnum;
@@ -17,7 +15,9 @@ import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
-import com.winstar.order.utils.*;
+import com.winstar.order.utils.Constant;
+import com.winstar.order.utils.DateUtil;
+import com.winstar.order.utils.OilOrderUtil;
 import com.winstar.redis.RedisTools;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
@@ -25,23 +25,18 @@ import com.winstar.shop.service.ShopService;
 import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
 import com.winstar.user.utils.ServiceManager;
-import net.sf.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author shoo on 2017/7/7 13:52.
@@ -56,11 +51,7 @@ public class OilOrderSecKillController {
     @Autowired
     private ShopService shopService;
     @Autowired
-    private CouponService couponService;
-    @Autowired
     private AccountService accountService;
-    @Autowired
-    CareJuanListRepository careJuanListRepository;
     @Autowired
     DrawRecordRepository drawRecordRepository;
     @Autowired
@@ -75,12 +66,6 @@ public class OilOrderSecKillController {
      * 2019.03.31.23.59.59
      */
     private static final long END_OF_MARCH = 1554047999000L;
-
-    @Value("${info.amount}")
-    private Integer amount;
-
-    @Value("${info.sendMsgUrl}")
-    private String sendMsgUrl;
 
     private static final String ACTIVITY_MORNING_MARKET = "9";
 
@@ -257,139 +242,6 @@ public class OilOrderSecKillController {
         if (times > 0) {
             throw new NotRuleException("justOnce.earlyAndEveningMarket");
         }
-    }
-
-    /**
-     * 是否有资格领取免费洗车$消毒
-     *
-     * @param request
-     * @param activityId
-     * @return
-     * @throws NotRuleException
-     */
-    @RequestMapping(value = "/getCareCoupons", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.OK)
-    public Map<String, String> getCareCoupons(
-            HttpServletRequest request,
-            @RequestParam String activityId,
-            @RequestParam(defaultValue = "0.0") Double salePrice) throws NotRuleException {
-        String accountId = accountService.getAccountId(request);
-        if (StringUtils.isEmpty(activityId) || StringUtils.isEmpty(salePrice)) {
-            throw new NotRuleException("getCareCoupons.params");
-        }
-        List<CareJuanList> careJuanList = careJuanListRepository.findByAccountIdandJoinTypeAndTypeAndTime(accountId, DateUtil.getWeekBegin(), DateUtil.getWeekEnd());
-        Map<String, String> map = new HashMap<>();
-        if (!ObjectUtils.isEmpty(careJuanList)) {
-            map.put("result", "0");
-            return map;
-        }
-        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByActivityId(activityId, DateUtil.getWeekBegin(), DateUtil.getWeekEnd());
-
-        if (oilOrders.size() <= 200) {
-            if (salePrice == 1000) {
-                map.put("result", "1");//领取免费洗车卷
-            } else if (salePrice == 2000) {
-                map.put("result", "2");//领取免费洗车卷&消毒
-            } else {
-                map.put("result", "0");
-            }
-        } else {
-            map.put("result", "0");//没资格
-        }
-        return map;
-    }
-
-    /**
-     * 领取汽车养护券
-     *
-     * @param request
-     * @param name
-     * @param phoneNumber
-     * @param plateNumber
-     * @return
-     * @throws NotRuleException
-     * @throws NotFoundException
-     */
-    @RequestMapping(value = "/giveCareCoupons", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.OK)
-    public CareJuanList giveCareCoupons(
-            HttpServletRequest request, String name, String phoneNumber, String plateNumber, String activityId, String type
-    ) throws NotRuleException, NotFoundException {
-        Object accountId = request.getAttribute("accountId");
-        if (StringUtils.isEmpty(name) || StringUtils.isEmpty(phoneNumber) || StringUtils.isEmpty(plateNumber) || StringUtils.isEmpty(type)) {
-            throw new NotRuleException("NotRuleException.params");
-        }
-        List<CareJuanList> careJuanLists = careJuanListRepository.findByAccountIdandJoinTypeAndTypeAndTime(accountId.toString(), DateUtil.getWeekBegin(), DateUtil.getWeekEnd());
-        if (!ObjectUtils.isEmpty(careJuanLists)) {
-            throw new NotFoundException("getCareCoupons.isGet");
-        }
-        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByActivityId(activityId, DateUtil.getWeekBegin(), DateUtil.getWeekEnd());
-        if (oilOrders.size() >= 200) {
-            throw new NotRuleException("getCareCoupons.isOut");
-        }
-        CareJuanList careJuanList = new CareJuanList();
-        careJuanList.setAccountId(accountId.toString());
-        careJuanList.setName(name);
-        careJuanList.setPhoneNumber(phoneNumber);
-        careJuanList.setPlateNumber(plateNumber);
-        careJuanList.setCreatTime(new Date());
-        careJuanList.setType(Integer.parseInt(type));
-        if (activityId.equals("201")) {
-            careJuanList.setJoinType(1);
-        } else {
-            careJuanList.setJoinType(2);
-        }
-        CareJuanList getCareJuanList = careJuanListRepository.save(careJuanList);
-        if (ObjectUtils.isEmpty(getCareJuanList)) {
-            throw new NotFoundException("getCareCoupons.error");
-        }
-        String content = "";
-        if (type.equals("2")) {
-            content = "您已成功在优驾行微信平台领取到免费洗车与车内臭氧消毒权益，请您在3个工作日内前往西安精典汽车服务有限公司体验。地址：西安市雁翔路与西影路十字向南100米路西；联系电：029—89293377。每人仅限一次。";
-        } else {
-            content = "您已成功在优驾行微信平台领取到免费洗车权益，请您在3个工作日内前往西安精典汽车服务有限公司体验。地址：西安市雁翔路与西影路十字向南100米路西；联系电：029—89293377。每人仅限一次。";
-        }
-
-        sendMsg(sendMsgUrl, phoneNumber, content);
-        return getCareJuanList;
-    }
-
-    @Async
-    public void sendMsg(String sendMsgUrl, String phoneNo, String content) {
-
-        SmsResult text = sendNotice(sendMsgUrl, content, phoneNo);
-        logger.info(text.getStatus());
-
-    }
-
-    /**
-     * 发送短信
-     *
-     * @param msgContent  短信内容
-     * @param phoneNumber 手机号码
-     * @return result
-     */
-    public static SmsResult sendNotice(String sendMsgUrl, String msgContent, String phoneNumber) {
-        SmsResult result = new SmsResult();
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        SendMsg msg = new SendMsg();
-        msg.setAutograph(1);
-        msg.setMsgContent(msgContent);
-        msg.setPhoneNumber(phoneNumber);
-        JSONObject jsonObject = JSONObject.fromObject(msg);
-        HttpEntity<String> formEntity = new HttpEntity<>(jsonObject.toString(), headers);
-        try {
-            result = restTemplate.postForObject(sendMsgUrl, formEntity, SmsResult.class);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            result.setStatus("失败");
-            result.setText("发送短信失败:" + ex);
-        }
-        return result;
     }
 
 }
