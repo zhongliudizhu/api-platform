@@ -48,7 +48,7 @@ public class AccountCouponController {
      */
     @RequestMapping(value = "getCoupons", method = RequestMethod.GET)
     public Result getCoupons(HttpServletRequest request, @RequestParam(defaultValue = "0") Integer nextPage, @RequestParam(defaultValue = "10") Integer pageSize, @RequestParam(defaultValue = AccountCouponService.NORMAL) String state) {
-        if (!state.equals(AccountCouponService.NORMAL) && !state.equals(AccountCouponService.USED) && !state.equals(AccountCouponService.EXPIRED) && !state.equals(AccountCouponService.EXPIRED)) {
+        if (!state.equals(AccountCouponService.NORMAL) && !state.equals(AccountCouponService.USED) && !state.equals(AccountCouponService.EXPIRED) && !state.equals(AccountCouponService.LOCKED)) {
             logger.info("状态值错误！");
             return Result.fail("state_not_auth", "状态值错误！");
         }
