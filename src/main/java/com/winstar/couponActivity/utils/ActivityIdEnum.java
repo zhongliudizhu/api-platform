@@ -12,6 +12,7 @@ public enum  ActivityIdEnum {
     ACTIVITY_ID_2("购加油券返利", 2),
     ACTIVITY_ID_102("龙途乐享卡月度日均存款达标-50元", 102),
     ACTIVITY_ID_666("新手活动", 666),
+    ACTIVITY_ID_667("裂变活动", 667),
     ACTIVITY_ID_105("百万加油补贴", 105),
     ACTIVITY_ID_106("新办交安卡", 106),
     ACTIVITY_ID_109("领取50元优惠包", 109),

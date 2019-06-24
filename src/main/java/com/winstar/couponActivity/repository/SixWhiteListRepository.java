@@ -16,4 +16,6 @@ public interface SixWhiteListRepository extends JpaRepository<SixWhiteList,Strin
     SixWhiteList findByPhoneNumberAndIsGetAndType(String phoneNumber,Integer isGet,Integer type);
     //根据电话查询白名单是否存在该用户
     SixWhiteList findByPhoneNumberAndType(String phoneNumber,Integer type);
+
+    SixWhiteList findByAccountId(String accountId);
 }
