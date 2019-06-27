@@ -5,6 +5,7 @@ import com.winstar.coupon.entity.OilStation;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.coupon.service.CouponService;
 import com.winstar.coupon.service.OilStationService;
+import com.winstar.couponActivity.utils.ActivityIdEnum;
 import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
@@ -100,6 +101,12 @@ public class MyCouponController {
             }
         }, pageable);
         if (page.getContent().size() == 0) throw new NotFoundException("mycoupon");
+        page.getContent().stream().forEach(bean -> {
+            if (30.0 == bean.getAmount() && oilOrderRepository.countByStatusAndAccountIdAndIsAvailable(accountId) > 0 && Integer.parseInt(bean.getActivityId()) == ActivityIdEnum.ACTIVITY_ID_667.getActivity()) {
+                bean.setUseRule(300.0);
+            }
+            list.add(bean);
+        });
         return list;
     }
 

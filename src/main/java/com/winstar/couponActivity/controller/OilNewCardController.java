@@ -1,6 +1,5 @@
 package com.winstar.couponActivity.controller;
 
-import com.winstar.coupon.entity.MyCoupon;
 import com.winstar.coupon.repository.MyCouponRepository;
 import com.winstar.couponActivity.entity.SixWhiteList;
 import com.winstar.couponActivity.entity.WhiteList;
@@ -13,7 +12,6 @@ import com.winstar.exception.InvalidParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.exception.ServiceUnavailableException;
-import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.StringFormatUtils;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.repository.ActivityRepository;
@@ -80,10 +78,12 @@ public class OilNewCardController {
         Activity activity = new Activity();
         activity.setName("新办交安卡购--8折优惠");
         activity.setType(106);
-
-        List<MyCoupon> myCoupons = myCouponRepository.findByAccountIdAndActivityIdAndStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThanEqual(accountId, String.valueOf(106), 0, DateUtil.getInputDate("2018-07-01 00:00:01"), DateUtil.getInputDate("2019-12-31 23:59:59"));//0: 未使用
-        if (!ObjectUtils.isEmpty(myCoupons)) {
-            activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
+        //查询该用户是否验证过106
+        SixWhiteList list = sixWhiteListRepository.findByAccountId(accountId.toString());
+        if (!ObjectUtils.isEmpty(list)) {
+            if (list.getIsGet() == 1) {
+                activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_1.getActivity());
+            }
         } else {
             activity.setIsGet(ActivityIdEnum.ACTIVITY_STATUS_0.getActivity());
         }
@@ -157,7 +157,7 @@ public class OilNewCardController {
             if (ObjectUtils.isEmpty(whiteLists)) {
                 logger.info("电话号码:" + phoneNumber + "已认证过106活动");
                 throw new NotFoundException("couponActivity.notWhiteLists");
-            }else{
+            } else {
                 whiteLists.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
                 whiteLists.setAccountId(accountId.toString());
                 whiteLists.setIsGet(1);
@@ -167,7 +167,7 @@ public class OilNewCardController {
             if (ObjectUtils.isEmpty(whiteLists) || ObjectUtils.isEmpty(whiteList)) {
                 logger.info("电话号码:" + phoneNumber + "已认证过105活动或者106活动");
                 throw new NotFoundException("couponActivity.notWhiteLists");
-            }else{
+            } else {
                 whiteLists.setSendTime(TimeUtil.getCurrentDateTime(TimeUtil.TimeFormat.LONG_DATE_PATTERN_LINE));
                 whiteLists.setAccountId(accountId.toString());
                 whiteLists.setIsGet(1);
