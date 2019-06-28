@@ -96,6 +96,7 @@ public class OilOrderServiceImpl implements OilOrderService {
         if (serialNumber.contains("wxyj")) {
             oilOrder = oilOrderRepository.findBySerialNumber(serialNumber);
             if (ObjectUtils.isEmpty(oilOrder) || oilOrder.getIsAvailable().equals(Constant.IS_NORMAL_CANCELED)) {
+                logger.info("订单 {} 不存在+++++++++++++++++++++++++++++",serialNumber);
                 throw new NotFoundException("oilOrder.order");
             }
         }

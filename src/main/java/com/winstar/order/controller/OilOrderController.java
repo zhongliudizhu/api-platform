@@ -193,6 +193,7 @@ public class OilOrderController {
         }
         OilOrder order = orderRepository.findBySerialNumber(serialNumber);
         if (ObjectUtils.isEmpty(order)) {
+            logger.info("订单 {} 不存在111111111111111111111",serialNumber);
             throw new NotFoundException("oilOrder.order");
         }
         return new ResponseEntity<>(order, HttpStatus.OK);
@@ -222,7 +223,7 @@ public class OilOrderController {
         } else {
             oilOrders = oilOrders.stream().filter(o -> o.getStatus() == orderStatus).filter(o -> o.getIsAvailable().equals("0")).collect(toList());
         }
-        if (oilOrders.size() <= 0) {
+        if (oilOrders.size() <= 0) { ;
             throw new NotFoundException("orders.order");
         }
         return new ResponseEntity<>(oilOrders, HttpStatus.OK);
