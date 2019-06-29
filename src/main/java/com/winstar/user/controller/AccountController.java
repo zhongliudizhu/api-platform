@@ -1,19 +1,23 @@
 package com.winstar.user.controller;
 
 import com.winstar.exception.*;
+import com.winstar.order.entity.OilOrder;
 import com.winstar.user.entity.AccessToken;
 import com.winstar.user.entity.Account;
 import com.winstar.user.param.AccountParam;
 import com.winstar.user.utils.ServiceManager;
 import com.winstar.user.utils.SimpleResult;
 import com.winstar.user.utils.UUIDUtils;
+import com.winstar.vo.Result;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author laohu
@@ -21,6 +25,20 @@ import java.util.Date;
 @RestController
 @RequestMapping("/api/v1/cbc/account")
 public class AccountController {
+
+    @GetMapping(value = "userHasBoughtOil")
+    public Result userHasBoughtOil(@RequestParam String openId) {
+        Account account = ServiceManager.accountRepository.findByOpenid(openId);
+        if (ObjectUtils.isEmpty(account)) {
+            return Result.fail("user_not_here", "查找不到该用户");
+        }
+        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndStatus(account.getId(), 3);
+        if (!ObjectUtils.isEmpty(oilOrders)) {
+            return Result.success(true);
+        }
+        return Result.fail("user_never_bought", "该用户未买过");
+    }
+
 
     /**
      * 获取token

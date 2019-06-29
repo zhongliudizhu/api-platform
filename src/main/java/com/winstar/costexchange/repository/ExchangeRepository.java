@@ -21,4 +21,7 @@ public interface ExchangeRepository extends JpaRepository<ExchangeRecord, String
 
     Page<ExchangeRecord> findByAccountId(String accountId, Pageable pageable);
 
+
+    List<ExchangeRecord> findByCouponId(String couponId);
+
 }
