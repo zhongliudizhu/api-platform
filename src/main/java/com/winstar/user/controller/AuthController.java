@@ -7,25 +7,34 @@ import com.winstar.exception.NotRuleException;
 import com.winstar.exception.ServiceUnavailableException;
 import com.winstar.order.utils.StringFormatUtils;
 import com.winstar.user.entity.Account;
+import com.winstar.user.entity.Fans;
 import com.winstar.user.param.CCBAuthParam;
 import com.winstar.user.param.MsgContent;
 import com.winstar.user.param.UpdateAccountParam;
+import com.winstar.user.repository.FansRepository;
+import com.winstar.user.service.FansService;
 import com.winstar.user.utils.ServiceManager;
 import com.winstar.user.utils.SimpleResult;
 import com.winstar.user.vo.AuthVerifyCodeEntity;
 import com.winstar.user.vo.AuthVerifyCodeMsgResult;
 import com.winstar.user.vo.SendVerifyCodeEntity;
 import com.winstar.user.vo.SendVerifyCodeMsgResult;
+import com.winstar.vo.Result;
+import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +53,50 @@ public class AuthController {
     static Logger logger = LoggerFactory.getLogger(AuthController.class);
     @Value("${send_sms_url}")
     String sendSmsUrl;
+
+    @Autowired
+    FansRepository fansRepository;
+    @Autowired
+    FansService fansService;
+
+    @GetMapping(value = "/fansInfo")
+    public Result userTagInfo(HttpServletRequest request) {
+        String openId = (String) request.getAttribute("openId");
+        if (ObjectUtils.isEmpty(openId)) {
+            return Result.fail("openId_not_exist", "openId不存在");
+        }
+        final Base64.Encoder encoder = Base64.getEncoder();
+        Fans fans = fansRepository.findByOpenid(openId);
+        if (ObjectUtils.isEmpty(fans)) {
+            fans = new Fans();
+        }
+        Map map = fansService.getFansInfo(openId, false);
+        if (ObjectUtils.isEmpty(map)) {
+            return Result.fail("fans_not_exist", "粉丝信息不存在");
+        }
+        fans.setSubscribe(MapUtils.getString(map, "subscribe"));
+        String name = MapUtils.getString(map, "nickname");
+        String encodedText;
+        if (!ObjectUtils.isEmpty(name)) {
+            byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);//编码
+            encodedText = encoder.encodeToString(nameBytes);
+        } else {
+            encodedText = "";
+        }
+        fans.setNickname(encodedText);
+        fans.setSex(MapUtils.getString(map, "sex"));
+        fans.setCity(MapUtils.getString(map, "city"));
+        fans.setProvince(MapUtils.getString(map, "province"));
+        fans.setCountry(MapUtils.getString(map, "country"));
+        fans.setHeadImgUrl(MapUtils.getString(map, "headimgurl"));
+        fans.setSubscribeTime(new Date(1000 * Long.valueOf(MapUtils.getString(map, "subscribe_time"))));
+        fans.setGroupId(MapUtils.getString(map, "groupid"));
+        fans.setTagIdList(MapUtils.getString(map, "tagid_list"));
+        fans.setSubScribeScene(MapUtils.getString(map, "subscribe_scene"));
+        fansRepository.save(fans);
+        fans.setNickname(name);
+        return Result.success(fans);
+    }
 
     /**
      * 校验手机号码是否绑定
