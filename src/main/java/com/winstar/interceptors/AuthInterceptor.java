@@ -119,7 +119,6 @@ public class AuthInterceptor implements HandlerInterceptor {
         JSONObject responseJSONObject = JSONObject.fromObject(map);
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json; charset=utf-8");
-
         PrintWriter out = null;
         try {
             out = response.getWriter();
