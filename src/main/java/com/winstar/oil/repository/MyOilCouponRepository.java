@@ -44,5 +44,5 @@ public interface MyOilCouponRepository extends JpaSpecificationExecutor<MyOilCou
     long findByUseState(String accountId);
     //统计用户未使用的油卷金额
     @Query(value = "SELECT SUM(pan_amt) FROM `cbc_my_oil_coupon` WHERE account_id=?1 AND use_state=0;",nativeQuery = true)
-    long findByPanAmt(String accountId);
+    String findByPanAmt(String accountId);
 }

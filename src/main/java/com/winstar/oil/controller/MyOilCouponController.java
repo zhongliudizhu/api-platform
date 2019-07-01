@@ -432,11 +432,14 @@ public class MyOilCouponController {
     }
     @RequestMapping(value = "/statisticalOilVolume", method = RequestMethod.POST)
     public Map statisticalOilVolume(HttpServletRequest request) throws NotRuleException {
-        Map<String, Long> map = new HashMap<>();
+        Map<String,Object> map = new HashMap<>();
         String accountId = accountService.getAccountId(request);
 
-        Long num = myOilCouponRepository.findByUseState(accountId);
-        Long sum = myOilCouponRepository.findByPanAmt(accountId);
+        long num = myOilCouponRepository.findByUseState(accountId);
+        String sum = myOilCouponRepository.findByPanAmt(accountId);
+        if (WsdUtils.isEmpty(sum)){
+            sum="0";
+        }
         map.put("num", num);
         map.put("sum", sum);
         return map;
