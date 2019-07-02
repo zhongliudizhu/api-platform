@@ -70,25 +70,25 @@ public class CommunalActivity {
      * 领取开始日期
      */
     @Column(columnDefinition = "datetime COMMENT 'startDate'")
-    private String startDate;
+    private Date startDate;
 
     /**
      * 活动状态(yes上架，no下架)
      */
-    @Column(columnDefinition = "varchar(100) COMMENT '活动状态'")
+    @Column(columnDefinition = "varchar(10) COMMENT '活动状态'")
     private String status;
 
     /**
      * 是否删除(yes已删除，no未删除)
      */
-    @Column(columnDefinition = "varchar(100) COMMENT '是否删除'")
+    @Column(columnDefinition = "varchar(10) COMMENT '是否删除'")
     private String del;
 
     /**
      * 创建时间
      */
-    @Column(columnDefinition = "varchar(100) COMMENT '创建时间'")
-    private String createdAt;
+    @Column(columnDefinition = "datetime COMMENT '创建时间'")
+    private Date createdAt;
 
 
 }
