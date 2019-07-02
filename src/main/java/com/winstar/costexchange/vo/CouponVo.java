@@ -87,4 +87,9 @@ public class CouponVo {
      */
     private Date endTime;
 
+    /**
+     * 模板ID
+     */
+    private String templateId;
+
 }

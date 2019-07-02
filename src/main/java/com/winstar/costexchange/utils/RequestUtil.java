@@ -50,6 +50,7 @@ public class RequestUtil {
             accountCoupon.setCreatedAt(new Date());
             accountCoupon.setAccountId(accountId);
             accountCoupon.setType(MapUtils.getString(map, "domain"));
+            accountCoupon.setTemplateId(couponVo.getTemplateId());
             logger.info("优惠券：" + accountCoupon.toString());
             accountCoupons.add(accountCoupon);
         }
