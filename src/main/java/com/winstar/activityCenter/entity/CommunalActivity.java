@@ -33,13 +33,13 @@ public class CommunalActivity {
     /**
      * 名称
      */
-    @Column(columnDefinition = "varchar(100) COMMENT 'name'")
+    @Column(columnDefinition = "varchar(100) COMMENT '名称'")
     private String name;
 
     /**
-     * 发放类型
+     * 发放类型 1：长期;  2:限时限量
      */
-    @Column(columnDefinition = "varchar(100) COMMENT 'type'")
+    @Column(columnDefinition = "varchar(100) COMMENT '发放类型 1：长期;  2:限时限量'")
     private String type;
 
     /**
@@ -69,13 +69,13 @@ public class CommunalActivity {
     /**
      * 领取开始日期
      */
-    @Column(columnDefinition = "datetime COMMENT 'startDate'")
+    @Column(columnDefinition = "datetime COMMENT '领取开始日期'")
     private Date startDate;
 
     /**
      * 领取结束日期
      */
-    @Column(columnDefinition = "datetime COMMENT 'endDate'")
+    @Column(columnDefinition = "datetime COMMENT '领取结束日期'")
     private Date endDate;
 
     /**
