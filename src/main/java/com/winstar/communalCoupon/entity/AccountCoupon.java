@@ -113,6 +113,21 @@ public class AccountCoupon {
     private String state;
 
     /**
+     * 优惠券模板ID
+     */
+    @Column(columnDefinition = "varchar(50) comment '优惠券模板ID'")
+    @JSONField(name = "status")
+    private String templateId;
+
+    /**
+     * 使用时间
+     */
+    @Column(columnDefinition = "varchar(10) comment '使用时间'")
+    @JSONField(name = "status")
+    private Date useDate;
+
+
+    /**
      * 显示状态（yes/no）
      */
     @Column(columnDefinition = "varchar(5) comment '显示状态'")

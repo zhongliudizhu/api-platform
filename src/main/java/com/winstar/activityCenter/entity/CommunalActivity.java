@@ -51,7 +51,7 @@ public class CommunalActivity {
     /**
      * 每人限领张数
      */
-    @Column(columnDefinition = "int(100) COMMENT '每人限领张数'")
+    @Column(columnDefinition = "int(10) COMMENT '每人限领张数'")
     private Integer perLimitNum;
 
     /**
@@ -75,19 +75,19 @@ public class CommunalActivity {
     /**
      * 领取结束日期
      */
-    @Column(columnDefinition = "datetime COMMENT 'startDate'")
+    @Column(columnDefinition = "datetime COMMENT 'endDate'")
     private Date endDate;
 
     /**
      * 活动状态(yes上架，no下架)
      */
-    @Column(columnDefinition = "varchar(10) COMMENT '活动状态'")
+    @Column(columnDefinition = "varchar(10) COMMENT '活动状态(yes上架，no下架)'")
     private String status;
 
     /**
      * 是否删除(yes已删除，no未删除)
      */
-    @Column(columnDefinition = "varchar(10) COMMENT '是否删除'")
+    @Column(columnDefinition = "varchar(10) COMMENT '是否删除(yes已删除，no未删除)'")
     private String del;
 
     /**
