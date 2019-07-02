@@ -46,7 +46,7 @@ public class CommunalActivity {
      * 发放总量
      */
     @Column(columnDefinition = "int(100) COMMENT '发放总量'")
-    private Integer totalAmount;
+    private Integer totalNum;
 
     /**
      * 每人限领张数
