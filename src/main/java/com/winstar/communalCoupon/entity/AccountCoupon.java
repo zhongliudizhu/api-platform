@@ -120,6 +120,13 @@ public class AccountCoupon {
     private String templateId;
 
     /**
+     * 活动ID
+     */
+    @Column(columnDefinition = "varchar(50) comment '活动ID'")
+    @JSONField(name = "status")
+    private String activityId;
+
+    /**
      * 使用时间
      */
     @Column(columnDefinition = "varchar(10) comment '使用时间'")
