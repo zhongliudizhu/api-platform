@@ -127,7 +127,7 @@ public class AccountCoupon {
     /**
      * 使用时间
      */
-    @Column(columnDefinition = "varchar(10) comment '使用时间'")
+    @Column(columnDefinition = "datetime comment '使用时间'")
     private Date useDate;
 
 
