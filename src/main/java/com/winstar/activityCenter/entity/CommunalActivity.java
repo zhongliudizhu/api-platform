@@ -73,6 +73,12 @@ public class CommunalActivity {
     private Date startDate;
 
     /**
+     * 领取结束日期
+     */
+    @Column(columnDefinition = "datetime COMMENT 'startDate'")
+    private Date endDate;
+
+    /**
      * 活动状态(yes上架，no下架)
      */
     @Column(columnDefinition = "varchar(10) COMMENT '活动状态'")
