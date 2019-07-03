@@ -104,6 +104,11 @@ public class ReceiveCouponCenterController {
         Long result = redisTools.add("accountId", activityId + "-is-purchase-" + accountId);
         if(result > 0){
             log.info("抢券成功！");
+            List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndActivityId(accountId, activityId);
+            if(!ObjectUtils.isEmpty(accountCoupons)){
+                log.info("该活动用户已经领过券，不能再领取了：accountId is {} and activityId is {}" , accountId, activityId);
+                return Result.fail("activity_coupon_receive", "此活动非长期领券活动！");
+            }
             sendCoupon(activity.getCouponTemplateId(), accountId, activityId);
             String numberKey = "activity" + activityId;
             if(redisTools.exists(numberKey)){
