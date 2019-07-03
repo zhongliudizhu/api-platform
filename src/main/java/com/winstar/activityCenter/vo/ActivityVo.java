@@ -14,7 +14,10 @@ import java.util.Date;
 @Data
 public class ActivityVo {
 
-
+    /**
+     * 活动ID
+     */
+    private String activityId;
     /**
      * 活动名称
      */

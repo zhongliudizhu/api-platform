@@ -73,6 +73,7 @@ public class CommunalActivityService {
             ActivityVo activityVo = new ActivityVo();
             BeanUtils.copyProperties(communalActivity, activityVo);
             activityVo.setTemplateId(communalActivity.getCouponTemplateId());
+            activityVo.setActivityId(communalActivity.getId());
             if (!sb.toString().contains(communalActivity.getCouponTemplateId())) {
                 sb.append(communalActivity.getCouponTemplateId()).append(",");
             }
@@ -109,7 +110,7 @@ public class CommunalActivityService {
             templateIds = sb.toString().substring(0, sb.toString().length() - 1);
         }
         setTemplateInfo(activityVos, templateIds);
-        log.info("筛选活动结果：{}",activityVos);
+        log.info("筛选活动结果：{}", activityVos);
         return activityVos;
     }
 
