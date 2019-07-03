@@ -122,7 +122,7 @@ public class ReceiveCouponCenterController {
         }
         log.info("已经抢过一次了，把占用的名额恢复到待抢列表中！");
         redisTools.rightPush(listKey, 1);
-        return Result.fail("coupon_purchase_repeat", "您已经抢过了！");
+        return Result.fail("activity_coupon_receive", "您已经抢过了！");
     }
 
     /**
