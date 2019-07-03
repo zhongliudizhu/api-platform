@@ -4,6 +4,7 @@ import com.winstar.communalCoupon.entity.AccountCoupon;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -19,5 +20,8 @@ public interface AccountCouponRepository extends JpaRepository<AccountCoupon, St
     List<AccountCoupon> findByAccountIdAndCouponIdIn(String accountId, String[] couponIds);
 
     List<AccountCoupon> findByAccountId(String accountId);
+    //统计用户未使用的优惠券张数
+    @Query(value = "SELECT COUNT(*) FROM `communal_account_coupon` WHERE account_id=?1 AND state='used'",nativeQuery = true)
+    long findByState(String accountId);
 
 }

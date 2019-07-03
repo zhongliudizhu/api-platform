@@ -93,5 +93,13 @@ public class Goods {
      * 优惠券限额
      */
     private Integer couponLimitAmount;
+    /**
+     * 排序
+     */
+    private String sort;
+    /**
+     * 角标图片
+     */
+    private String cornerMarkUrl;
 
 }
