@@ -10,7 +10,7 @@ import java.io.Serializable;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "activity_resource")
+@Table(name = "cbc_activity_resource")
 @Data
 @Entity
 public class ActivityResource implements Serializable {
@@ -36,5 +36,16 @@ public class ActivityResource implements Serializable {
     @Column(columnDefinition = "varchar(100) COMMENT '资源url'")
     private String resourceUrl;
 
+    /**
+     * 活动名称
+     */
+    @Column(columnDefinition = "varchar(20) COMMENT '活动名称'")
+    private String activityName;
+
+    /**
+     * 活动类型 1，建行交安卡 2，移动用户
+     */
+    @Column(columnDefinition = "varchar(10) COMMENT '活动类型'")
+    private String type;
 
 }
