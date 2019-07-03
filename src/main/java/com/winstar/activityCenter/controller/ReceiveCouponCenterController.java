@@ -111,7 +111,7 @@ public class ReceiveCouponCenterController {
             List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndActivityId(accountId, activityId);
             if(!ObjectUtils.isEmpty(accountCoupons)){
                 log.info("该活动用户已经领过券，不能再领取了：accountId is {} and activityId is {}" , accountId, activityId);
-                return Result.fail("activity_coupon_receive", "此活动非长期领券活动！");
+                return Result.fail("activity_coupon_receive", "您已经领过券了，不能重复领取！");
             }
             sendCoupon(activity.getCouponTemplateId(), accountId, activityId);
             String numberKey = "activity" + activityId;
@@ -158,7 +158,7 @@ public class ReceiveCouponCenterController {
         List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndActivityId(accountId, activityId);
         if(!ObjectUtils.isEmpty(accountCoupons)){
             log.info("该活动用户已经领过券，不能再领取了：accountId is {} and activityId is {}" , accountId, activityId);
-            return Result.fail("activity_coupon_receive", "此活动非长期领券活动！");
+            return Result.fail("activity_coupon_receive", "您已经领过券了，不能重复领取！");
         }
         log.info("该活动用户未领过券，可以领取：accountId is {} and activityId is {}" , accountId, activityId);
         sendCoupon(activity.getCouponTemplateId(), accountId, activityId);
