@@ -104,7 +104,16 @@ public class ReceiveCouponCenterController {
         Long result = redisTools.add("accountId", activityId + "-is-purchase-" + accountId);
         if(result > 0){
             log.info("抢券成功！");
+            List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndActivityId(accountId, activityId);
+            if(!ObjectUtils.isEmpty(accountCoupons)){
+                log.info("该活动用户已经领过券，不能再领取了：accountId is {} and activityId is {}" , accountId, activityId);
+                return Result.fail("activity_coupon_receive", "此活动非长期领券活动！");
+            }
             sendCoupon(activity.getCouponTemplateId(), accountId, activityId);
+            String numberKey = "activity" + activityId;
+            if(redisTools.exists(numberKey)){
+                redisTools.set(numberKey, (Integer)redisTools.get(numberKey) + 1);
+            }
             return Result.success(new HashMap<>());
         }
         log.info("已经抢过一次了，把占用的名额恢复到待抢列表中！");
@@ -133,6 +142,12 @@ public class ReceiveCouponCenterController {
             log.info("此活动非长期领券活动！");
             return Result.fail("activity_not_normal", "此活动非长期领券活动！");
         }
+        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndActivityId(accountId, activityId);
+        if(!ObjectUtils.isEmpty(accountCoupons)){
+            log.info("该活动用户已经领过券，不能再领取了：accountId is {} and activityId is {}" , accountId, activityId);
+            return Result.fail("activity_coupon_receive", "此活动非长期领券活动！");
+        }
+        log.info("该活动用户未领过券，可以领取：accountId is {} and activityId is {}" , accountId, activityId);
         sendCoupon(activity.getCouponTemplateId(), accountId, activityId);
         return Result.success(new HashMap<>());
     }
@@ -149,10 +164,6 @@ public class ReceiveCouponCenterController {
             List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(JSON.toJSONString(map.get("data")), "yjx", accountId, activityId);
             accountCouponRepository.save(accountCoupons);
             log.info("发放优惠券成功！accountId is {} and templateId is {}" , accountId, templateId);
-            String numberKey = "activity" + activityId;
-            if(redisTools.exists(numberKey)){
-                redisTools.set(numberKey, (Integer)redisTools.get(numberKey) + 1);
-            }
         }
     }
 
