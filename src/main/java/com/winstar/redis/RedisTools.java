@@ -1,11 +1,11 @@
 package com.winstar.redis;
 
-import org.springframework.stereotype.Service;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.*;
+import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -163,6 +163,26 @@ public class RedisTools {
         list.rightPush(k, v);
     }
 
+    public void rightPush(String key, Object v){
+        redisTemplate.opsForList().rightPush(key, v);
+    }
+
+    public void rightPushAll(String key, Collection values){
+        redisTemplate.opsForList().rightPushAll(key, values);
+    }
+
+    public Object leftPop(Object k){
+       return redisTemplate.opsForList().leftPop(k);
+    }
+
+    public Long size(String key){
+        return redisTemplate.opsForList().size(key);
+    }
+
+    public Long remove(String key, String value){
+        return redisTemplate.opsForList().remove(key,0,value);
+    }
+
     /**
      * 列表获取
      *
@@ -184,9 +204,9 @@ public class RedisTools {
      * @param value
      */
 
-    public void add(String key, Object value) {
+    public Long add(String key, Object value) {
         SetOperations<String, Object> set = redisTemplate.opsForSet();
-        set.add(key, value);
+        return set.add(key, value);
     }
 
     /**
@@ -238,5 +258,7 @@ public class RedisTools {
         }
         return result;
     }
+
+
 }
 

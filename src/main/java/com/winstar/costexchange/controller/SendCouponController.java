@@ -73,7 +73,7 @@ public class SendCouponController {
             logger.info("订单已经成功，又再次推送！订单号：" + orderNumber);
             return Result.success(new HashMap<>());
         }
-        List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(map, exchangeRecord.getAccountId());
+        List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(map.get("coupons").toString(), MapUtils.getString(map, "domain"), exchangeRecord.getAccountId(), null);
         exchangeRecord.setState(ExchangeRecord.SUCCESS);
         exchangeRecord.setResultTime(new Date());
         if (!ObjectUtils.isEmpty(accountCoupons)) {

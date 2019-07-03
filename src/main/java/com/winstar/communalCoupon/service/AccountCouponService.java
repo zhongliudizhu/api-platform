@@ -57,12 +57,12 @@ public class AccountCouponService {
      *
      * @return ResponseEntity
      */
-    public ResponseEntity<String> getCoupon(String templateId, String num) {
+    public ResponseEntity<Map> getCoupon(String templateId, String num) {
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("templateId", templateId);
         reqMap.put("num", num);
         reqMap.put("merchant", SignUtil.merchant);
-        ResponseEntity<String> stringResponseEntity = new RestTemplate().getForEntity(takeCouponUrl + SignUtil.getParameters(reqMap), String.class);
+        ResponseEntity<Map> stringResponseEntity = new RestTemplate().getForEntity(takeCouponUrl + SignUtil.getParameters(reqMap), Map.class);
         log.info("请求获取优惠券接口结果：" + stringResponseEntity.getBody());
         return stringResponseEntity;
     }
