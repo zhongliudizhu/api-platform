@@ -91,6 +91,10 @@ public class ReceiveCouponCenterController {
             log.info("活动已结束！");
             return Result.fail("activity_end", "活动尚已结束！");
         }
+        if(activity.getStatus().equals("no")){
+            log.info("活动未上架！");
+            return Result.fail("activity_is_down", "活动未上架！");
+        }
         if(!activity.getType().equals("2")){
             log.info("此活动非限量抢购活动！");
             return Result.fail("activity_not_purchase", "此活动非限量抢购活动！");
@@ -137,6 +141,15 @@ public class ReceiveCouponCenterController {
         if(ObjectUtils.isEmpty(activity)){
             log.info("活动不存在！");
             return Result.fail("Not_found_activity", "活动不存在！");
+        }
+        long nowTime = System.currentTimeMillis();
+        if(nowTime < activity.getStartDate().getTime()){
+            log.info("活动尚未开始！");
+            return Result.fail("activity_not_begin", "活动尚未开始！");
+        }
+        if(activity.getStatus().equals("no")){
+            log.info("活动未上架！");
+            return Result.fail("activity_is_down", "活动未上架！");
         }
         if(!activity.getType().equals("1")){
             log.info("此活动非长期领券活动！");
