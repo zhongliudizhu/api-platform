@@ -162,7 +162,7 @@ info:
   takeCouponUrl: ${info.communal_coupon_server}api/v1/coupon/takeCoupons?
   verifyCouponUrl: ${info.communal_coupon_server}api/v1/coupon/verify/verify?
   writeOffCouponUrl: ${info.communal_coupon_server}api/v1/coupon/verify/cancel
-
+  getTemplateInfoUrl: ${info.communal_coupon_server}api/v1/coupon/template?
 #建行信息卡校验
 bank:
   sms:
