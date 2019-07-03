@@ -50,18 +50,32 @@ public class CommunalActivityService {
      * @return list
      */
     public List<ActivityVo> findAvailableActivities(String accountId) {
+        log.info("开始查找活动列表");
         List<ActivityVo> activityVos = new ArrayList<>();
         Date now = new Date();
         List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountId(accountId);
-        Map<String, List<AccountCoupon>> groupAccountCoupons = accountCoupons.stream().collect(Collectors.groupingBy(AccountCoupon::getActivityId));
+        log.info("用户{}已有优惠券列表：{}", accountId, accountCoupons);
+        Map<String, List<AccountCoupon>> groupAccountCoupons = new HashMap<>();
+        accountCoupons
+                .forEach(e -> {
+                    if (!ObjectUtils.isEmpty(e.getActivityId())) {
+                        if (ObjectUtils.isEmpty(groupAccountCoupons.get(e.getActivityId()))) {
+                            groupAccountCoupons.put(e.getActivityId(), new ArrayList<>());
+                        }
+                        groupAccountCoupons.get(e.getActivityId()).add(e);
+                    }
+                });
         //已上架未删除已到展示时间
         List<CommunalActivity> list = communalActivityRepository.findAllByStatusAndDelAndShowDateBefore("yes", "no", now);
+        log.info("所有已上架未删除已到展示时间的活动：{}", list);
         StringBuilder sb = new StringBuilder();
         for (CommunalActivity communalActivity : list) {
             ActivityVo activityVo = new ActivityVo();
             BeanUtils.copyProperties(communalActivity, activityVo);
             activityVo.setTemplateId(communalActivity.getCouponTemplateId());
-            sb.append(communalActivity.getCouponTemplateId()).append(",");
+            if (!sb.toString().contains(communalActivity.getCouponTemplateId())) {
+                sb.append(communalActivity.getCouponTemplateId()).append(",");
+            }
             boolean available = true;
             //未开始领取直接返回
             if (communalActivity.getStartDate().getTime() > now.getTime()) {
@@ -95,6 +109,7 @@ public class CommunalActivityService {
             templateIds = sb.toString().substring(0, sb.toString().length() - 1);
         }
         setTemplateInfo(activityVos, templateIds);
+        log.info("筛选活动结果：{}",activityVos);
         return activityVos;
     }
 
@@ -155,12 +170,9 @@ public class CommunalActivityService {
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("templateIds", templateIds);
         reqMap.put("merchant", SignUtil.merchant);
-//        reqMap.put("sign", SignUtil.sign(reqMap));
         ResponseEntity<Map> mapResponseEntity = new RestTemplate().getForEntity(getTemplateInfoUrl + SignUtil.getParameters(reqMap), Map.class);
-        log.info("请求优惠券模板信息接口结果：{}", mapResponseEntity.getBody().get("data").toString());
-        List<CouponTemplateVo> list =
-//                (List<CouponTemplateVo>) mapResponseEntity.getBody().get("data");
-                JSON.parseArray(mapResponseEntity.getBody().get("data").toString(), CouponTemplateVo.class);
+        log.info("请求优惠券模板信息接口结果：{}", mapResponseEntity.getBody().toString());
+        List<CouponTemplateVo> list = JSON.parseArray(mapResponseEntity.getBody().get("data").toString(), CouponTemplateVo.class);
         log.info("请求优惠券模板信息接口结果：{}", list);
         return list;
     }
