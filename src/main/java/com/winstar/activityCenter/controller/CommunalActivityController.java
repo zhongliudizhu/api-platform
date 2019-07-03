@@ -1,9 +1,17 @@
 package com.winstar.activityCenter.controller;
 
+import com.winstar.activityCenter.repository.CommunalActivityRepository;
+import com.winstar.activityCenter.service.CommunalActivityService;
+import com.winstar.activityCenter.vo.ActivityVo;
+import com.winstar.vo.Result;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @author UU
@@ -17,8 +25,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/cbc/communalActivity")
 public class CommunalActivityController {
 
+    CommunalActivityRepository communalActivityRepository;
+    CommunalActivityService communalActivityService;
+    HttpServletRequest request;
 
-
+    @GetMapping(value = "/availableActivities")
+    public Result getActivities() {
+        String accountId = (String) request.getAttribute("accountId");
+        List<ActivityVo> activityVos = communalActivityService.findAvailableActivities(accountId);
+        return Result.success(activityVos);
+    }
 
 
 }
