@@ -62,11 +62,10 @@ public class CommunalActivityService {
             BeanUtils.copyProperties(communalActivity, activityVo);
             activityVo.setTemplateId(communalActivity.getCouponTemplateId());
             sb.append(communalActivity.getCouponTemplateId()).append(",");
-            activityVo.setStatus("领取");
             boolean available = true;
             //未开始领取直接返回
             if (communalActivity.getStartDate().getTime() > now.getTime()) {
-                activityVo.setStatus("即将开抢");
+                activityVo.setStatus("soon");
                 activityVos.add(activityVo);
                 continue;
             }
@@ -75,7 +74,7 @@ public class CommunalActivityService {
                 Integer activityReceivedNum = getActivityReceivedNum("activity" + communalActivity.getId());
                 activityVo.setReceivedNum(activityReceivedNum);
                 if (activityReceivedNum >= communalActivity.getTotalNum()) {
-                    activityVo.setStatus("已结束");
+                    activityVo.setStatus("finished");
                 }
             }
             List<AccountCoupon> activityCoupons = groupAccountCoupons.get(communalActivity.getId());
@@ -84,7 +83,7 @@ public class CommunalActivityService {
                 if (getDayEnd(activityCoupons.get(0).getCreatedAt()).getTime() <= now.getTime()) {
                     available = false;
                 } else {
-                    activityVo.setStatus("已领取");
+                    activityVo.setStatus("received");
                 }
             }
             if (available) {
@@ -138,7 +137,11 @@ public class CommunalActivityService {
      */
     private Integer getActivityReceivedNum(String key) {
         Integer activityReceivedNum = (Integer) redisTools.get(key);
-        return ObjectUtils.isEmpty(activityReceivedNum) ? 0 : activityReceivedNum;
+        if (ObjectUtils.isEmpty(activityReceivedNum)) {
+            activityReceivedNum = 0;
+            redisTools.set(key, activityReceivedNum);
+        }
+        return activityReceivedNum;
     }
 
 
