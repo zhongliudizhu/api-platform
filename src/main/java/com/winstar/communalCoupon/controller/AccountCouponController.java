@@ -4,6 +4,7 @@ import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.costexchange.vo.AccountCouponVo;
+import com.winstar.order.utils.DateUtil;
 import com.winstar.redis.RedisTools;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.GoodsRepository;
@@ -58,7 +59,10 @@ public class AccountCouponController {
             return Result.fail("state_not_auth", "状态值错误！");
         }
         String accountId = (String) request.getAttribute("accountId");
-        if(redisTools.setIfAbsent(accountId + "-check-coupon-state", 3600)){
+        Date date = new Date();
+        int hour = DateUtil.getHour(date);
+        int minute = DateUtil.getMinute(date);
+        if(redisTools.setIfAbsent(accountId + "-check-coupon-state", 3600) || (hour == 0 && minute < 30)){
             logger.info("检查过期优惠券，如已过期更新数据:" + accountId + "-check-coupon-state");
             List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountId(accountId);
             accountCoupons.stream().filter(accountCoupon -> AccountCouponService.NORMAL.equals(accountCoupon.getState()) && (new Date().getTime() - accountCoupon.getEndTime().getTime()) >= 0).forEach(accountCoupon -> {
@@ -115,6 +119,12 @@ public class AccountCouponController {
         accountCouponVo_yjx.setNumber(yjx.size());
         accountCouponVos.add(accountCouponVo_yjx);
         return accountCouponVos;
+    }
+
+    public static void main(String[] args) {
+        int hour = DateUtil.getHour(new Date());
+        int minute = DateUtil.getMinute(new Date());
+        System.out.println(hour + ":" + minute);
     }
 
 }
