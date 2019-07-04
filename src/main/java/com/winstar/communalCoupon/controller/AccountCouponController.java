@@ -121,10 +121,4 @@ public class AccountCouponController {
         return accountCouponVos;
     }
 
-    public static void main(String[] args) {
-        int hour = DateUtil.getHour(new Date());
-        int minute = DateUtil.getMinute(new Date());
-        System.out.println(hour + ":" + minute);
-    }
-
 }
