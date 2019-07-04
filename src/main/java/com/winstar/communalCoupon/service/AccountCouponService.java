@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -159,6 +160,7 @@ public class AccountCouponService {
         for (AccountCoupon accountCoupon : accountCoupons) {
             accountCoupon.setState(state);
             accountCoupon.setOrderId(serialNumber);
+            accountCoupon.setUseDate(new Date());
         }
         accountCouponRepository.save(accountCoupons);
     }
