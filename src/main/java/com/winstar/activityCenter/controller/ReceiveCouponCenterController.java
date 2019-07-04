@@ -75,7 +75,7 @@ public class ReceiveCouponCenterController {
         String activityId = receiveCouponVo.getActivityId();
         if(!redisTools.setIfAbsent(activityId + "<->" + accountId, 5)){
             log.info("5秒之内禁止重复抢购！");
-            return Result.fail("click_fast", "5秒之内禁止重复抢购！");
+            return Result.fail("click_fast", "请勿频繁点击！");
         }
         CommunalActivity activity = communalActivityRepository.findOne(activityId);
         if(ObjectUtils.isEmpty(activity)){
@@ -135,7 +135,7 @@ public class ReceiveCouponCenterController {
         String activityId = receiveCouponVo.getActivityId();
         if(!redisTools.setIfAbsent(activityId + "<->" + accountId, 5)){
             log.info("5秒之内禁止重复抢购！");
-            return Result.fail("click_fast", "5秒之内禁止重复抢购！");
+            return Result.fail("click_fast", "请勿频繁点击！");
         }
         CommunalActivity activity = communalActivityRepository.findOne(activityId);
         if(ObjectUtils.isEmpty(activity)){
