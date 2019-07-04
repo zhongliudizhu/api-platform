@@ -58,7 +58,7 @@ public class AccountCouponController {
             return Result.fail("state_not_auth", "状态值错误！");
         }
         String accountId = (String) request.getAttribute("accountId");
-        if(redisTools.setIfAbsent(accountId + "-check-coupon-state", 60 * 60 * 12)){
+        if(redisTools.setIfAbsent(accountId + "-check-coupon-state", 3600)){
             logger.info("检查过期优惠券，如已过期更新数据:" + accountId + "-check-coupon-state");
             List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountId(accountId);
             accountCoupons.stream().filter(accountCoupon -> AccountCouponService.NORMAL.equals(accountCoupon.getState()) && (new Date().getTime() - accountCoupon.getEndTime().getTime()) >= 0).forEach(accountCoupon -> {
