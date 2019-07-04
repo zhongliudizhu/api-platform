@@ -8,6 +8,7 @@ import com.winstar.activityCenter.vo.CouponTemplateVo;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.util.SignUtil;
+import com.winstar.exception.NotRuleException;
 import com.winstar.redis.RedisTools;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -49,7 +50,7 @@ public class CommunalActivityService {
      * @param accountId 用户ID
      * @return list
      */
-    public List<ActivityVo> findAvailableActivities(String accountId) {
+    public List<ActivityVo> findAvailableActivities(String accountId) throws NotRuleException {
         log.info("开始查找活动列表");
         List<ActivityVo> activityVos = new ArrayList<>();
         Date now = new Date();
@@ -120,7 +121,7 @@ public class CommunalActivityService {
      * @param activityVos 活动VOList
      * @param templateIds 模板ID
      */
-    private void setTemplateInfo(List<ActivityVo> activityVos, String templateIds) {
+    private void setTemplateInfo(List<ActivityVo> activityVos, String templateIds) throws NotRuleException {
         if (!ObjectUtils.isEmpty(activityVos)) {
             List<CouponTemplateVo> list = getTemplateInfo(templateIds);
             Map<String, CouponTemplateVo> map = list.stream().collect(Collectors.toMap(CouponTemplateVo::getId, CouponTemplateVo::getThis));
@@ -167,12 +168,15 @@ public class CommunalActivityService {
      * @param templateIds 优惠券模板id
      * @return ResponseEntity
      */
-    private List<CouponTemplateVo> getTemplateInfo(String templateIds) {
+    private List<CouponTemplateVo> getTemplateInfo(String templateIds) throws NotRuleException {
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("templateIds", templateIds);
         reqMap.put("merchant", SignUtil.merchant);
         ResponseEntity<Map> mapResponseEntity = new RestTemplate().getForEntity(getTemplateInfoUrl + SignUtil.getParameters(reqMap), Map.class);
         log.info("请求优惠券模板信息接口结果：{}", mapResponseEntity.getBody().toString());
+        if ("data_null".equals(mapResponseEntity.getBody().get("code"))) {
+            throw new NotRuleException("template_not_exist");
+        }
         List<CouponTemplateVo> list = JSON.parseArray(mapResponseEntity.getBody().get("data").toString(), CouponTemplateVo.class);
         log.info("请求优惠券模板信息接口结果：{}", list);
         return list;

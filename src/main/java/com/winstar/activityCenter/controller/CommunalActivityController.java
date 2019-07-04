@@ -3,6 +3,7 @@ package com.winstar.activityCenter.controller;
 import com.winstar.activityCenter.repository.CommunalActivityRepository;
 import com.winstar.activityCenter.service.CommunalActivityService;
 import com.winstar.activityCenter.vo.ActivityVo;
+import com.winstar.exception.NotRuleException;
 import com.winstar.vo.Result;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,7 @@ public class CommunalActivityController {
     HttpServletRequest request;
 
     @GetMapping(value = "/availableActivities")
-    public Result getActivities() {
+    public Result getActivities() throws NotRuleException {
         String accountId = (String) request.getAttribute("accountId");
         List<ActivityVo> activityVos = communalActivityService.findAvailableActivities(accountId);
         return Result.success(activityVos);

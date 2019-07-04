@@ -7,7 +7,7 @@ import java.util.Date;
 
 /**
  * @author UU
- * @Classname ActivytyVo
+ * @Classname ActivityVo
  * @Description TODO
  * @Date 2019/7/2 13:34
  */
