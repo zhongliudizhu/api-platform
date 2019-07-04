@@ -6,8 +6,6 @@ package com.winstar.utils;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
-import java.util.ArrayList;
-import java.util.List;
 
 public class AESUtil {
 
@@ -71,7 +69,4 @@ public class AESUtil {
         return hs.toUpperCase();
     }
 
-    public static void main(String[] args) throws Exception {
-        System.out.println("11493082494502243053  " + encrypt("11493082494502243053", dekey));
-    }
 }
