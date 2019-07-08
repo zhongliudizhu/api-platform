@@ -4,6 +4,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.Date;
 
 /**
  * Created by zl on 2017/8/25
@@ -39,7 +40,7 @@ public class CouponSendRecord {
      * 赠送时间
      */
     @Column(columnDefinition = "datetime comment '赠送时间'")
-    private String sendTime;
+    private Date sendTime;
 
     /**
      * 领取人
@@ -57,7 +58,7 @@ public class CouponSendRecord {
      * 领取时间
      */
     @Column(columnDefinition = "datetime comment '领取时间'")
-    private String receiveTime;
+    private Date receiveTime;
 
     /**
      * 优惠券id

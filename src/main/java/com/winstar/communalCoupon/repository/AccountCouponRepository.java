@@ -25,4 +25,6 @@ public interface AccountCouponRepository extends JpaRepository<AccountCoupon, St
     @Query(value = "SELECT COUNT(*) FROM `communal_account_coupon` WHERE account_id=?1 AND state='normal'",nativeQuery = true)
     long findByState(String accountId);
 
+    AccountCoupon findByCouponId(String couponId);
+
 }

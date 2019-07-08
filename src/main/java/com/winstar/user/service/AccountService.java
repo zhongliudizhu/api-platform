@@ -1,7 +1,6 @@
 package com.winstar.user.service;
 
 import com.alibaba.fastjson.JSON;
-import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.user.entity.Account;
 import com.winstar.user.param.AccountParam;
@@ -84,6 +83,15 @@ public class AccountService {
     public String getAccountId(HttpServletRequest request) throws NotRuleException {
         Object obj = request.getAttribute("accountId");
         if (null == obj) throw new NotRuleException("accountId");
+        return obj.toString();
+    }
+
+    /**
+     * 从head中获取openId
+     */
+    public String getOpenId(HttpServletRequest request) throws NotRuleException {
+        Object obj = request.getAttribute("openId");
+        if (null == obj) throw new NotRuleException("openId");
         return obj.toString();
     }
 

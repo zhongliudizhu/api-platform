@@ -38,6 +38,7 @@ public class AccountCouponService {
     public static final String NORMAL = "normal";
     public static final String USED = "used";
     public static final String EXPIRED = "expired";
+    public static final String SENDING = "sending";
 
 
     @Value("${info.takeCouponUrl}")

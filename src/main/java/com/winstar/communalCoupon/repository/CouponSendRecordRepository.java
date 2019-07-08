@@ -7,4 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * Created by zl on 2019/7/8
  */
 public interface CouponSendRecordRepository extends JpaRepository<CouponSendRecord, String> {
+
+    CouponSendRecord findByCouponIdAndIsTimeOut(String couponId, String isTimeOut);
+
 }

@@ -145,4 +145,10 @@ public class AccountCoupon {
     @JsonIgnore
     private Date createdAt;
 
+    /**
+     * 赠送时间
+     */
+    @Column(columnDefinition = "datetime comment '赠送时间'")
+    private Date sendTime;
+
 }
