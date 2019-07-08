@@ -21,10 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * Created by zl on 2019/7/8
@@ -55,20 +53,18 @@ public class CouponSendController {
      */
     @RequestMapping(value = "send/receive", method = RequestMethod.POST)
     public Result receiveSendCoupon(@RequestBody @Valid SendCouponVo sendCouponVo, HttpServletRequest request) throws NotRuleException {
-        logger.info("领取别人赠送的优惠券》》》》》领取优惠券id{}和对应的模板id{}", sendCouponVo.getCouponId(), sendCouponVo.getTemplateId());
         String listKey = "sendCoupons:" + sendCouponVo.getCouponId();
-        redisTools.remove(listKey);
-        redisTools.rightPush(listKey, "1");
-        logger.info(listKey + "的集合长度：" + redisTools.size(listKey));
         Object popValue = redisTools.leftPop(listKey);
         if(ObjectUtils.isEmpty(popValue)){
             logger.info("你手也太慢了吧，机会已经被别人抢走喽！");
+            redisTools.remove(listKey);
             return Result.fail("coupon_get_other", "你手也太慢了吧，机会已经被别人抢走喽！");
         }
-        redisTools.remove(listKey);
+        logger.info("领取别人赠送的优惠券id={}和对应的模板id={}", sendCouponVo.getCouponId(), sendCouponVo.getTemplateId());
         Object switchValue = redisTools.get(sendCouponVo.getTemplateId() + "_switch");
         if(ObjectUtils.isEmpty(switchValue)){
             logger.info("模板赠送开关值不存在，需要查询数据库！");
+            switchValue = "yes";
         }
         if(switchValue.toString().equals("no")){
             logger.info("优惠券不支持赠送！");

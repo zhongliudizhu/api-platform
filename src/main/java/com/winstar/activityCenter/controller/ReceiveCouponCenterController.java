@@ -55,7 +55,7 @@ public class ReceiveCouponCenterController {
 
     @RequestMapping(value = "/setNumber", method = RequestMethod.GET)
     public void setNumber(String activityId, Integer number){
-        String listKey = "awards:" + activityId;
+        String listKey = "sendCoupons:" + activityId;
         redisTools.remove(listKey);
         List<Object> list = new ArrayList<>();
         for(int i=0;i<number;i++){
@@ -103,6 +103,7 @@ public class ReceiveCouponCenterController {
         Object popValue = redisTools.leftPop(listKey);
         if(ObjectUtils.isEmpty(popValue)){
             log.info("券已经被抢完了，没有了，下次再来吧！");
+            redisTools.remove(listKey);
             return Result.fail("coupon_over", "券已经被抢完了，没有了，下次再来吧！");
         }
         Long result = redisTools.add("accountId", activityId + "-is-purchase-" + accountId);
