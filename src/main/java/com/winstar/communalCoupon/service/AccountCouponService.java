@@ -1,7 +1,10 @@
 package com.winstar.communalCoupon.service;
 
+import com.alibaba.fastjson.JSON;
 import com.winstar.communalCoupon.entity.AccountCoupon;
+import com.winstar.communalCoupon.entity.CouponSendRecord;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
+import com.winstar.communalCoupon.repository.CouponSendRecordRepository;
 import com.winstar.communalCoupon.util.SignUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Date;
@@ -28,6 +32,9 @@ import java.util.stream.Collectors;
 public class AccountCouponService {
 
     private AccountCouponRepository accountCouponRepository;
+
+    @Autowired
+    private CouponSendRecordRepository couponSendRecordRepository;
 
     @Autowired
     public AccountCouponService(AccountCouponRepository accountCouponRepository) {
@@ -164,6 +171,16 @@ public class AccountCouponService {
             accountCoupon.setUseDate(new Date());
         }
         accountCouponRepository.save(accountCoupons);
+    }
+
+    @Transactional
+    public void saveCouponAndRecord(AccountCoupon accountCoupon, CouponSendRecord couponSendRecord){
+        log.info("保存的用户优惠券：" + JSON.toJSONString(accountCoupon));
+        accountCouponRepository.save(accountCoupon);
+        log.info("保存优惠券成功！");
+        log.info("保存优惠券赠送记录：" + JSON.toJSONString(couponSendRecord));
+        couponSendRecordRepository.save(couponSendRecord);
+        log.info("保存优惠券赠送记录成功！");
     }
 
 }
