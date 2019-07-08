@@ -108,7 +108,7 @@ public class AccountCoupon {
     /**
      * 状态
      */
-    @Column(columnDefinition = "varchar(10) comment '状态：used/normal/expired/locked'")
+    @Column(columnDefinition = "varchar(10) comment '状态：used/normal/expired/locked/sending'")
     @JSONField(name = "status")
     private String state;
 
