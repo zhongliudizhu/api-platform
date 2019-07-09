@@ -4,7 +4,6 @@ import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.costexchange.vo.AccountCouponVo;
-import com.winstar.order.utils.DateUtil;
 import com.winstar.redis.RedisTools;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.GoodsRepository;
@@ -59,17 +58,16 @@ public class AccountCouponController {
             return Result.fail("state_not_auth", "状态值错误！");
         }
         String accountId = (String) request.getAttribute("accountId");
-        Date date = new Date();
-        int hour = DateUtil.getHour(date);
-        int minute = DateUtil.getMinute(date);
-        if(redisTools.setIfAbsent(accountId + "-check-coupon-state", 3600) || (hour == 0 && minute < 30)){
-            logger.info("检查过期优惠券，如已过期更新数据:" + accountId + "-check-coupon-state");
-            List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountId(accountId);
-            accountCoupons.stream().filter(accountCoupon -> AccountCouponService.NORMAL.equals(accountCoupon.getState()) && (new Date().getTime() - accountCoupon.getEndTime().getTime()) >= 0).forEach(accountCoupon -> {
-                accountCoupon.setState("expired");
-                accountCouponRepository.save(accountCoupon);
-            });
-        }
+        logger.info("检查优惠券状态，如已过期或赠送超时未领取的券更新数据，用户id is {}", accountId);
+        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountId(accountId);
+        accountCoupons.stream().filter(accountCoupon -> accountCoupon.getState().equals(AccountCouponService.SENDING) && (new Date().getTime() - accountCoupon.getSendTime().getTime()) >= 0).forEach(accountCoupon -> {
+            accountCoupon.setState(AccountCouponService.NORMAL);
+            accountCouponRepository.save(accountCoupon);
+        });
+        accountCoupons.stream().filter(accountCoupon -> AccountCouponService.NORMAL.equals(accountCoupon.getState()) && (new Date().getTime() - accountCoupon.getEndTime().getTime()) >= 0).forEach(accountCoupon -> {
+            accountCoupon.setState(AccountCouponService.EXPIRED);
+            accountCouponRepository.save(accountCoupon);
+        });
         Pageable pageable = WebUitl.buildPageRequest(nextPage, pageSize, null);
         Page<AccountCoupon> accountCouponPage = accountCouponRepository.findByAccountIdAndShowStatusAndState(accountId, "yes", state, pageable);
         return Result.success(accountCouponPage);
