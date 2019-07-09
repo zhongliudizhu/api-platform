@@ -92,6 +92,10 @@ public class CommunalActivityService {
                 if (activityReceivedNum >= communalActivity.getTotalNum()) {
                     activityVo.setStatus("finished");
                 }
+                String listKey = "awards:" + communalActivity.getId();
+                if(!redisTools.exists(listKey)){
+                    activityVo.setStatus("finished");
+                }
             }
             List<AccountCoupon> activityCoupons = groupAccountCoupons.get(communalActivity.getId());
             //正常活动已领取当天显示
