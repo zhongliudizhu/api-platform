@@ -103,11 +103,10 @@ public class CouponSendController {
     }
 
     /**
-     *  赠送优惠券
+     * 赠送优惠券
      */
     @PostMapping(value = "send")
     public Result sendCoupon(@RequestBody @Valid SendCouponVo sendCouponVo, HttpServletRequest request) throws NotRuleException {
-
         logger.info("领取别人赠送的优惠券id={}和对应的模板id={}", sendCouponVo.getCouponId(), sendCouponVo.getTemplateId());
         Object switchValue = redisTools.get(sendCouponVo.getTemplateId() + "_switch");
         if (ObjectUtils.isEmpty(switchValue)) {
@@ -115,8 +114,9 @@ public class CouponSendController {
             TemplateRule templateRule = templateRuleRepository.findByTemplateId(sendCouponVo.getTemplateId());
             if (!ObjectUtils.isEmpty(templateRule)) {
                 switchValue = templateRule.getGiftable();
-            }else {
+            } else {
                 switchValue = "no";
+                redisTools.set(sendCouponVo.getTemplateId() + "_switch", switchValue);
             }
         }
         if (!"yes".equals(switchValue.toString())) {
@@ -128,7 +128,7 @@ public class CouponSendController {
             logger.info("优惠券不存在！");
             return Result.fail("coupon_not_found", "优惠券不存在！");
         }
-        if (AccountCouponService.SENDING.equals(accountCoupon.getState())){
+        if (AccountCouponService.SENDING.equals(accountCoupon.getState())) {
             logger.info("优惠券已是赠送状态！");
             return Result.fail("coupon_state_sending", "优惠券已是赠送状态！");
         }
@@ -148,6 +148,7 @@ public class CouponSendController {
         accountCoupon.setState(AccountCouponService.SENDING);
         accountCouponService.saveCouponAndRecord(accountCoupon, couponSendRecord);
         String listKey = "sendCoupons:" + sendCouponVo.getCouponId();
+        redisTools.remove(listKey);
         redisTools.rightPush(listKey, "1");
         logger.info("赠送优惠券成功！优惠券id{}" + sendCouponVo.getCouponId());
         return Result.success(new HashMap<>());
