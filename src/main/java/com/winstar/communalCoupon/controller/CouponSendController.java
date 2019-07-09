@@ -116,8 +116,8 @@ public class CouponSendController {
                 switchValue = templateRule.getGiftable();
             } else {
                 switchValue = "no";
-                redisTools.set(sendCouponVo.getTemplateId() + "_switch", switchValue);
             }
+            redisTools.set(sendCouponVo.getTemplateId() + "_switch", switchValue);
         }
         if (!"yes".equals(switchValue.toString())) {
             logger.info("优惠券不支持赠送！");
