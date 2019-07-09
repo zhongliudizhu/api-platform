@@ -66,7 +66,9 @@ public class CouponSendController {
         Object switchValue = redisTools.get(sendCouponVo.getTemplateId() + "_switch");
         if (ObjectUtils.isEmpty(switchValue)) {
             logger.info("模板赠送开关值不存在，需要查询数据库！");
-            switchValue = "yes";
+            TemplateRule templateRule = templateRuleRepository.findByTemplateId(sendCouponVo.getTemplateId());
+            switchValue = !ObjectUtils.isEmpty(templateRule) ? templateRule.getGiftable() : "no";
+            redisTools.set(sendCouponVo.getTemplateId() + "_switch", switchValue);
         }
         if (switchValue.toString().equals("no")) {
             logger.info("优惠券不支持赠送！");
@@ -85,13 +87,18 @@ public class CouponSendController {
             logger.info("优惠券已过期，不能领取！");
             return Result.fail("coupon_expired", "优惠券已过期，不能领取！");
         }
-        CouponSendRecord couponSendRecord = couponSendRecordRepository.findByCouponIdAndIsTimeOut(sendCouponVo.getCouponId(), "no");
+        String accountId = accountService.getAccountId(request);
+        String openId = accountService.getOpenId(request);
+        if(accountCoupon.getAccountId().equals(accountId)){
+            logger.info("领取人不能是自己！");
+            redisTools.rightPush(listKey, "1");
+            return Result.fail("coupon_receiver_not_sender", "领取人不能是自己！");
+        }
+        CouponSendRecord couponSendRecord = couponSendRecordRepository.findByCouponId(sendCouponVo.getCouponId());
         if (ObjectUtils.isEmpty(couponSendRecord)) {
             logger.info("优惠券赠送记录不存在！");
             return Result.fail("coupon_send_record_not_found", "优惠券赠送记录不存在！");
         }
-        String accountId = accountService.getAccountId(request);
-        String openId = accountService.getOpenId(request);
         accountCoupon.setAccountId(accountId);
         accountCoupon.setState(AccountCouponService.NORMAL);
         couponSendRecord.setReceiveAccountId(accountId);

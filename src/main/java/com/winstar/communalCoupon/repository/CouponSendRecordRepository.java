@@ -8,6 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface CouponSendRecordRepository extends JpaRepository<CouponSendRecord, String> {
 
-    CouponSendRecord findByCouponIdAndIsTimeOut(String couponId, String isTimeOut);
+    CouponSendRecord findByCouponId(String couponId);
 
 }
