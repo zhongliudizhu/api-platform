@@ -17,13 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -117,6 +115,47 @@ public class AccountCouponController {
         accountCouponVo_yjx.setNumber(yjx.size());
         accountCouponVos.add(accountCouponVo_yjx);
         return accountCouponVos;
+    }
+
+
+    @GetMapping("/getCouponInfo")
+    public Result getCouponInfo(HttpServletRequest request, @RequestParam(value = "couponId") String couponId) {
+        String accountId = (String) request.getAttribute("accountId");
+        if (ObjectUtils.isEmpty(accountId) || ObjectUtils.isEmpty(couponId)) {
+            return Result.fail("param_missing", "参数缺失");
+        }
+        AccountCoupon accountCoupon = accountCouponRepository.findAccountCouponByAccountIdAndCouponId(accountId, couponId);
+        if (ObjectUtils.isEmpty(accountCoupon)) {
+            logger.info("用户无优惠券！");
+            return Result.fail("coupon_not_found", "用户无优惠券！");
+        }
+        List<String> couponStateList = Arrays.asList("used", "expired", "locked", "sending");
+        String state = accountCoupon.getState();
+        if (couponStateList.contains(state)) {
+            logger.info("====用户无正常状态优惠券====");
+            return judgeResult(state);
+        }
+        logger.info("====找到正常状态下的优惠券====");
+        return Result.success(accountCoupon);
+    }
+
+    private Result judgeResult(String state) {
+        Result result = null;
+        switch (state) {
+            case "used":
+                result = Result.fail("coupon_used", "优惠券已使用");
+                break;
+            case "expired":
+                result = Result.fail("coupon_expired", "优惠券已过期");
+                break;
+            case "locked":
+                result = Result.fail("coupon_locked", "优惠券已被锁定");
+                break;
+            case "sending":
+                result = Result.fail("coupon_sending", "优惠券已被使用");
+                break;
+        }
+        return result;
     }
 
 }
