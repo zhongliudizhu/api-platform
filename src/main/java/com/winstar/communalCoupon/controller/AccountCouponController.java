@@ -22,12 +22,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -142,24 +140,11 @@ public class AccountCouponController {
         if (ObjectUtils.isEmpty(couponSendRecord)) {
             return Result.fail("sendRecord_not_found", "无赠送记录");
         }
-        if (ObjectUtils.isEmpty(couponSendRecord.getCouponId())) {
-            return Result.fail("couponId_not_found", "优惠券Id为空");
-        }
         //根据优惠券id查询优惠券信息
-        AccountCoupon accountCoupon = accountCouponRepository.findAccountCouponByAccountIdAndCouponId(accountId, couponSendRecord.getCouponId());
+        AccountCoupon accountCoupon = accountCouponRepository.findAccountCouponByCouponId(couponSendRecord.getCouponId());
         if (ObjectUtils.isEmpty(accountCoupon)) {
             logger.info("用户无优惠券");
             return Result.fail("coupon_not_found", "用户无优惠券！");
-        }
-        String state = accountCoupon.getState();
-        if (StringUtils.isEmpty(state)) {
-            logger.error("用户优惠券状态异常！");
-            return Result.fail("coupon_non_state", "用户优惠券状态异常！");
-        }
-        List<String> couponStateList = Arrays.asList("used", "expired", "locked");
-        if (couponStateList.contains(state)) {
-            logger.info("====用户无正常状态优惠券====");
-            return judgeResult(state);
         }
         logger.info("====找到优惠券信息====");
         String sendAccountId = couponSendRecord.getSendAccountId();
@@ -180,20 +165,5 @@ public class AccountCouponController {
 
     }
 
-    private Result judgeResult(String state) {
-        Result result = null;
-        switch (state) {
-            case "used":
-                result = Result.fail("coupon_used", "优惠券已使用");
-                break;
-            case "expired":
-                result = Result.fail("coupon_expired", "优惠券已过期");
-                break;
-            case "locked":
-                result = Result.fail("coupon_locked", "优惠券已被锁定");
-                break;
-        }
-        return result;
-    }
 
 }
