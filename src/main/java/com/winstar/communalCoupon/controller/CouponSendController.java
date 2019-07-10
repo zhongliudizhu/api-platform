@@ -12,6 +12,8 @@ import com.winstar.redis.RedisTools;
 import com.winstar.user.service.AccountService;
 import com.winstar.vo.Result;
 import com.winstar.vo.SendCouponVo;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -55,27 +57,37 @@ public class CouponSendController {
      * 领取优惠券
      */
     @RequestMapping(value = "send/receive", method = RequestMethod.POST)
-    public Result receiveSendCoupon(@RequestBody @Valid SendCouponVo sendCouponVo, HttpServletRequest request) throws NotRuleException {
-        String listKey = "sendCoupons:" + sendCouponVo.getCouponId();
+    public Result receiveSendCoupon(@RequestBody Map map, HttpServletRequest request) throws NotRuleException {
+        String recordId = MapUtils.getString(map, "recordId");
+        if(StringUtils.isEmpty(recordId)){
+            logger.info("赠送记录id不能为空！");
+            return Result.fail("recordId_not_found", "赠送记录id不能为空！");
+        }
+        String listKey = "sendCoupons:" + recordId;
         Object popValue = redisTools.leftPop(listKey);
         if (ObjectUtils.isEmpty(popValue)) {
             logger.info("你手也太慢了吧，机会已经被别人抢走喽！");
             redisTools.remove(listKey);
             return Result.fail("coupon_get_other", "你手也太慢了吧，机会已经被别人抢走喽！");
         }
-        logger.info("领取别人赠送的优惠券id={}和对应的模板id={}", sendCouponVo.getCouponId(), sendCouponVo.getTemplateId());
-        Object switchValue = redisTools.get(sendCouponVo.getTemplateId() + "_switch");
+        logger.info("领取别人赠送的优惠券，对应的赠送记录id is {}", recordId);
+        CouponSendRecord couponSendRecord = couponSendRecordRepository.findOne(recordId);
+        if (ObjectUtils.isEmpty(couponSendRecord)) {
+            logger.info("优惠券赠送记录不存在！");
+            return Result.fail("coupon_send_record_not_found", "优惠券赠送记录不存在！");
+        }
+        Object switchValue = redisTools.get(couponSendRecord.getTemplateId() + "_switch");
         if (ObjectUtils.isEmpty(switchValue)) {
             logger.info("模板赠送开关值不存在，需要查询数据库！");
-            TemplateRule templateRule = templateRuleRepository.findByTemplateId(sendCouponVo.getTemplateId());
+            TemplateRule templateRule = templateRuleRepository.findByTemplateId(couponSendRecord.getTemplateId());
             switchValue = !ObjectUtils.isEmpty(templateRule) ? templateRule.getGiftable() : "no";
-            redisTools.set(sendCouponVo.getTemplateId() + "_switch", switchValue);
+            redisTools.set(couponSendRecord.getTemplateId() + "_switch", switchValue);
         }
         if (switchValue.toString().equals("no")) {
             logger.info("优惠券不支持赠送！");
             return Result.fail("coupon_not_support", "优惠券不支持赠送！");
         }
-        AccountCoupon accountCoupon = accountCouponRepository.findByCouponId(sendCouponVo.getCouponId());
+        AccountCoupon accountCoupon = accountCouponRepository.findByCouponId(couponSendRecord.getCouponId());
         if (ObjectUtils.isEmpty(accountCoupon)) {
             logger.info("优惠券不存在！");
             return Result.fail("coupon_not_found", "优惠券不存在！");
@@ -95,19 +107,14 @@ public class CouponSendController {
             redisTools.rightPush(listKey, "1");
             return Result.fail("coupon_receiver_not_sender", "领取人不能是自己！");
         }
-        CouponSendRecord couponSendRecord = couponSendRecordRepository.findByCouponId(sendCouponVo.getCouponId());
-        if (ObjectUtils.isEmpty(couponSendRecord)) {
-            logger.info("优惠券赠送记录不存在！");
-            return Result.fail("coupon_send_record_not_found", "优惠券赠送记录不存在！");
-        }
         accountCoupon.setAccountId(accountId);
         accountCoupon.setState(AccountCouponService.NORMAL);
         couponSendRecord.setReceiveAccountId(accountId);
         couponSendRecord.setReceiverAccountOpenid(openId);
         couponSendRecord.setReceiveTime(new Date());
         accountCouponService.saveCouponAndRecord(accountCoupon, couponSendRecord);
-        logger.info("赠送的优惠券领取成功！优惠券id{}" + sendCouponVo.getCouponId());
-        return Result.success(new HashMap<>());
+        logger.info("赠送的优惠券领取成功！优惠券id{}" + couponSendRecord.getCouponId());
+        return Result.success(couponSendRecord);
     }
 
     /**
@@ -156,7 +163,7 @@ public class CouponSendController {
         accountCoupon.setSendTime(new Date());
         accountCoupon.setState(AccountCouponService.SENDING);
         accountCouponService.saveCouponAndRecord(accountCoupon, couponSendRecord);
-        String listKey = "sendCoupons:" + sendCouponVo.getCouponId();
+        String listKey = "sendCoupons:" + couponSendRecord.getId();
         redisTools.remove(listKey);
         redisTools.rightPush(listKey, "1");
         logger.info("赠送优惠券成功！优惠券id{}" + sendCouponVo.getCouponId());
