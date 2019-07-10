@@ -58,7 +58,7 @@ public class AccountCouponController {
         String accountId = (String) request.getAttribute("accountId");
         logger.info("检查优惠券状态，如已过期或赠送超时未领取的券更新数据，用户id is {}", accountId);
         List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountId(accountId);
-        accountCoupons.stream().filter(accountCoupon -> accountCoupon.getState().equals(AccountCouponService.SENDING) && (new Date().getTime() - accountCoupon.getSendTime().getTime()) >= 0).forEach(accountCoupon -> {
+        accountCoupons.stream().filter(accountCoupon -> accountCoupon.getState().equals(AccountCouponService.SENDING) && (new Date().getTime() - accountCoupon.getSendTime().getTime()) >= 24 * 60 * 60 * 1000).forEach(accountCoupon -> {
             accountCoupon.setState(AccountCouponService.NORMAL);
             accountCouponRepository.save(accountCoupon);
         });
