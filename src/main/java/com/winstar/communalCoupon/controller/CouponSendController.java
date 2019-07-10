@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Date;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Created by zl on 2019/7/8
@@ -59,7 +58,7 @@ public class CouponSendController {
     @RequestMapping(value = "send/receive", method = RequestMethod.POST)
     public Result receiveSendCoupon(@RequestBody Map map, HttpServletRequest request) throws NotRuleException {
         String recordId = MapUtils.getString(map, "recordId");
-        if(StringUtils.isEmpty(recordId)){
+        if (StringUtils.isEmpty(recordId)) {
             logger.info("赠送记录id不能为空！");
             return Result.fail("recordId_not_found", "赠送记录id不能为空！");
         }
@@ -154,7 +153,6 @@ public class CouponSendController {
         String accountId = accountService.getAccountId(request);
         String openId = accountService.getOpenId(request);
         CouponSendRecord couponSendRecord = new CouponSendRecord();
-        couponSendRecord.setId(UUID.randomUUID().toString());
         couponSendRecord.setSendAccountId(accountId);
         couponSendRecord.setSendAccountOpenid(openId);
         couponSendRecord.setCouponId(sendCouponVo.getCouponId());
@@ -162,11 +160,11 @@ public class CouponSendController {
         couponSendRecord.setSendTime(new Date());
         accountCoupon.setSendTime(new Date());
         accountCoupon.setState(AccountCouponService.SENDING);
-        accountCouponService.saveCouponAndRecord(accountCoupon, couponSendRecord);
-        String listKey = "sendCoupons:" + couponSendRecord.getId();
+        CouponSendRecord record = accountCouponService.saveCouponAndRecord(accountCoupon, couponSendRecord);
+        String listKey = "sendCoupons:" + record.getId();
         redisTools.remove(listKey);
         redisTools.rightPush(listKey, "1");
         logger.info("赠送优惠券成功！优惠券id{}" + sendCouponVo.getCouponId());
-        return Result.success(couponSendRecord);
+        return Result.success(record);
     }
 }

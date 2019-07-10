@@ -54,7 +54,7 @@ public class AccountCouponService {
     private static String verifyCouponUrl;
 
     @Value("${info.verifyCouponUrl}")
-    public void setVerifyCouponUrl(String verifyCouponUrl){
+    public void setVerifyCouponUrl(String verifyCouponUrl) {
         AccountCouponService.verifyCouponUrl = verifyCouponUrl;
     }
 
@@ -168,7 +168,7 @@ public class AccountCouponService {
         for (AccountCoupon accountCoupon : accountCoupons) {
             accountCoupon.setState(state);
             accountCoupon.setOrderId(serialNumber);
-            if(state.equals(AccountCouponService.USED)){
+            if (state.equals(AccountCouponService.USED)) {
                 accountCoupon.setUseDate(new Date());
             }
         }
@@ -176,13 +176,14 @@ public class AccountCouponService {
     }
 
     @Transactional
-    public void saveCouponAndRecord(AccountCoupon accountCoupon, CouponSendRecord couponSendRecord){
+    public CouponSendRecord saveCouponAndRecord(AccountCoupon accountCoupon, CouponSendRecord couponSendRecord) {
         log.info("保存的用户优惠券：" + JSON.toJSONString(accountCoupon));
         accountCouponRepository.save(accountCoupon);
         log.info("保存优惠券成功！");
         log.info("保存优惠券赠送记录：" + JSON.toJSONString(couponSendRecord));
-        couponSendRecordRepository.save(couponSendRecord);
+        CouponSendRecord record = couponSendRecordRepository.save(couponSendRecord);
         log.info("保存优惠券赠送记录成功！");
+        return record;
     }
 
 }
