@@ -168,7 +168,9 @@ public class AccountCouponService {
         for (AccountCoupon accountCoupon : accountCoupons) {
             accountCoupon.setState(state);
             accountCoupon.setOrderId(serialNumber);
-            accountCoupon.setUseDate(new Date());
+            if(state.equals(AccountCouponService.USED)){
+                accountCoupon.setUseDate(new Date());
+            }
         }
         accountCouponRepository.save(accountCoupons);
     }
