@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.UUID;
 
 /**
  * Created by zl on 2019/7/8
@@ -89,7 +90,7 @@ public class CouponSendController {
         }
         String accountId = accountService.getAccountId(request);
         String openId = accountService.getOpenId(request);
-        if(accountCoupon.getAccountId().equals(accountId)){
+        if (accountCoupon.getAccountId().equals(accountId)) {
             logger.info("领取人不能是自己！");
             redisTools.rightPush(listKey, "1");
             return Result.fail("coupon_receiver_not_sender", "领取人不能是自己！");
@@ -146,6 +147,7 @@ public class CouponSendController {
         String accountId = accountService.getAccountId(request);
         String openId = accountService.getOpenId(request);
         CouponSendRecord couponSendRecord = new CouponSendRecord();
+        couponSendRecord.setId(UUID.randomUUID().toString());
         couponSendRecord.setSendAccountId(accountId);
         couponSendRecord.setSendAccountOpenid(openId);
         couponSendRecord.setCouponId(sendCouponVo.getCouponId());
@@ -158,6 +160,6 @@ public class CouponSendController {
         redisTools.remove(listKey);
         redisTools.rightPush(listKey, "1");
         logger.info("赠送优惠券成功！优惠券id{}" + sendCouponVo.getCouponId());
-        return Result.success(new HashMap<>());
+        return Result.success(couponSendRecord);
     }
 }
