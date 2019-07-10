@@ -132,13 +132,13 @@ public class AccountCouponController {
      * 查询赠送优惠券详情
      */
     @GetMapping("/getCouponInfo")
-    public Result getCouponInfo(HttpServletRequest request, @RequestParam(value = "couponSendRecordId") String couponSendRecordId) {
+    public Result getCouponInfo(HttpServletRequest request, @RequestParam(value = "recordId") String recordId) {
         String accountId = (String) request.getAttribute("accountId");
-        if (ObjectUtils.isEmpty(accountId) || ObjectUtils.isEmpty(couponSendRecordId)) {
+        if (ObjectUtils.isEmpty(accountId) || ObjectUtils.isEmpty(recordId)) {
             return Result.fail("param_missing", "参数缺失");
         }
         //根据记录Id查询记录信息，获取优惠券id
-        CouponSendRecord couponSendRecord = sendRecordRepository.findCouponSendRecordById(couponSendRecordId);
+        CouponSendRecord couponSendRecord = sendRecordRepository.findCouponSendRecordById(recordId);
         if (ObjectUtils.isEmpty(couponSendRecord)) {
             return Result.fail("sendRecord_not_found", "无赠送记录");
         }
