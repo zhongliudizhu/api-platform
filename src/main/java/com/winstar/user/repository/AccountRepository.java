@@ -11,4 +11,6 @@ public interface AccountRepository extends JpaRepository<Account, String> {
 
     List<Account> findByMobile(String phone);
 
+    Account findAccountById(String id);
+
 }
