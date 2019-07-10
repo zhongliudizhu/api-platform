@@ -72,4 +72,25 @@ public class CouponSendRecord {
     @Column(columnDefinition = "varchar(50) comment '模板id'")
     private String templateId;
 
+    /**
+     * 是否超时未领取，yes/no
+     */
+    @Column(columnDefinition = "varchar(10) comment '是否超时未领取 yes/no'")
+    private String isTimeOut;
+
+    @Transient
+    private AccountCoupon accountCoupon;
+
+    /**
+     * 赠送人姓名
+     */
+
+    @Transient
+    private String sendName;
+    /**
+     * 领取人姓名
+     */
+    @Transient
+    private String receiveName;
+
 }

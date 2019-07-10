@@ -10,4 +10,6 @@ public interface CouponSendRecordRepository extends JpaRepository<CouponSendReco
 
     CouponSendRecord findByCouponId(String couponId);
 
+    CouponSendRecord findCouponSendRecordById(String id);
+
 }

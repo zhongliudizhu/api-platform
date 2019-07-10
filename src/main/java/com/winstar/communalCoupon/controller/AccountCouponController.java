@@ -1,12 +1,17 @@
 package com.winstar.communalCoupon.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.winstar.communalCoupon.entity.AccountCoupon;
+import com.winstar.communalCoupon.entity.CouponSendRecord;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
+import com.winstar.communalCoupon.repository.CouponSendRecordRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.costexchange.vo.AccountCouponVo;
 import com.winstar.redis.RedisTools;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.GoodsRepository;
+import com.winstar.user.entity.Account;
+import com.winstar.user.repository.AccountRepository;
 import com.winstar.utils.WebUitl;
 import com.winstar.vo.Result;
 import groovy.util.logging.Slf4j;
@@ -17,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -42,6 +48,10 @@ public class AccountCouponController {
     GoodsRepository goodsRepository;
 
     AccountCouponService accountCouponService;
+
+    CouponSendRecordRepository sendRecordRepository;
+
+    AccountRepository accountRepository;
 
     @Autowired
     RedisTools redisTools;
@@ -117,26 +127,56 @@ public class AccountCouponController {
         return accountCouponVos;
     }
 
-
+    /**
+     * 查询赠送优惠券详情
+     */
     @GetMapping("/getCouponInfo")
-    public Result getCouponInfo(HttpServletRequest request, @RequestParam(value = "couponId") String couponId) {
+    public Result getCouponInfo(HttpServletRequest request, @RequestParam(value = "couponSendRecordId") String couponSendRecordId) {
         String accountId = (String) request.getAttribute("accountId");
-        if (ObjectUtils.isEmpty(accountId) || ObjectUtils.isEmpty(couponId)) {
+        if (ObjectUtils.isEmpty(accountId) || ObjectUtils.isEmpty(couponSendRecordId)) {
             return Result.fail("param_missing", "参数缺失");
         }
-        AccountCoupon accountCoupon = accountCouponRepository.findAccountCouponByAccountIdAndCouponId(accountId, couponId);
+        //根据记录Id查询记录信息，获取优惠券id
+        CouponSendRecord couponSendRecord = sendRecordRepository.findCouponSendRecordById(couponSendRecordId);
+        if (ObjectUtils.isEmpty(couponSendRecord)) {
+            return Result.fail("sendRecord_not_found", "无赠送记录");
+        }
+        if (ObjectUtils.isEmpty(couponSendRecord.getCouponId())) {
+            return Result.fail("couponId_not_found", "优惠券Id为空");
+        }
+        //根据优惠券id查询优惠券信息
+        AccountCoupon accountCoupon = accountCouponRepository.findAccountCouponByAccountIdAndCouponId(accountId, couponSendRecord.getCouponId());
         if (ObjectUtils.isEmpty(accountCoupon)) {
-            logger.info("用户无优惠券！");
+            logger.info("用户无优惠券");
             return Result.fail("coupon_not_found", "用户无优惠券！");
         }
-        List<String> couponStateList = Arrays.asList("used", "expired", "locked", "sending");
         String state = accountCoupon.getState();
+        if (StringUtils.isEmpty(state)) {
+            logger.error("用户优惠券状态异常！");
+            return Result.fail("coupon_non_state", "用户优惠券状态异常！");
+        }
+        List<String> couponStateList = Arrays.asList("used", "expired", "locked");
         if (couponStateList.contains(state)) {
             logger.info("====用户无正常状态优惠券====");
             return judgeResult(state);
         }
-        logger.info("====找到正常状态下的优惠券====");
-        return Result.success(accountCoupon);
+        logger.info("====找到优惠券信息====");
+        String sendAccountId = couponSendRecord.getSendAccountId();
+        String receiveAccountId = couponSendRecord.getReceiveAccountId();
+        //获取赠送人信息
+        Account sendAccount = accountRepository.findAccountById(sendAccountId);
+        logger.info("sendAccount==" + JSON.toJSONString(sendAccount));
+        Account receiveAccount = null;
+        if (!ObjectUtils.isEmpty(receiveAccountId)) {
+            receiveAccount = accountRepository.findAccountById(receiveAccountId);
+        }
+        if (!ObjectUtils.isEmpty(receiveAccount)) {
+            couponSendRecord.setReceiveName(receiveAccount.getRealName());
+        }
+        couponSendRecord.setAccountCoupon(accountCoupon);
+        couponSendRecord.setSendName(sendAccount.getRealName());
+        return Result.success(couponSendRecord);
+
     }
 
     private Result judgeResult(String state) {
@@ -150,9 +190,6 @@ public class AccountCouponController {
                 break;
             case "locked":
                 result = Result.fail("coupon_locked", "优惠券已被锁定");
-                break;
-            case "sending":
-                result = Result.fail("coupon_sending", "优惠券已被使用");
                 break;
         }
         return result;
