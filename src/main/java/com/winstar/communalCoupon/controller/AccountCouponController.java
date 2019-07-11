@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -161,6 +162,16 @@ public class AccountCouponController {
         }
         couponSendRecord.setAccountCoupon(accountCoupon);
         couponSendRecord.setSendName(sendAccount.getNickName());
+        //判断赠送状态
+        if((new Date().getTime() - accountCoupon.getEndTime().getTime()) >= 0){
+            couponSendRecord.setStatus("expired");
+        }else if(StringUtils.isEmpty(couponSendRecord.getReceiveAccountId()) && (new Date().getTime() - couponSendRecord.getSendTime().getTime()) >= 24 * 60 * 60 * 1000){
+            couponSendRecord.setStatus("back");
+        }else if(StringUtils.isEmpty(couponSendRecord.getReceiveAccountId())){
+            couponSendRecord.setStatus("normal");
+        }else if(!StringUtils.isEmpty(couponSendRecord.getReceiveAccountId())){
+            couponSendRecord.setStatus("received");
+        }
         return Result.success(couponSendRecord);
 
     }

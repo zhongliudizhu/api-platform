@@ -87,4 +87,7 @@ public class CouponSendRecord {
     @Transient
     private String receiveName;
 
+    @Transient
+    private String status;
+
 }
