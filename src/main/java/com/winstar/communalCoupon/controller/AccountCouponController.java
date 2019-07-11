@@ -106,24 +106,31 @@ public class AccountCouponController {
         //封装话费兑换优惠券
         AccountCouponVo accountCouponVo_cost = new AccountCouponVo();
         accountCouponVo_cost.setType("cost_coupons");
-        List<AccountCoupon> cost = accountCoupons.stream().filter(s -> s.getType().equals("moveCost")).collect(Collectors.toList());
+        List<AccountCoupon> cost = accountCoupons.stream().filter(s -> s.getType().equals(AccountCoupon.TYPE_MOVE_COST)).collect(Collectors.toList());
         accountCouponVo_cost.setAccountCoupons(cost);
         accountCouponVo_cost.setNumber(cost.size());
         accountCouponVos.add(accountCouponVo_cost);
         //封装建行活动优惠券
         AccountCouponVo accountCouponVo_ccb = new AccountCouponVo();
         accountCouponVo_ccb.setType("ccb_coupons");
-        List<AccountCoupon> ccb = accountCoupons.stream().filter(s -> s.getType().equals("ccb")).collect(Collectors.toList());
+        List<AccountCoupon> ccb = accountCoupons.stream().filter(s -> s.getType().equals(AccountCoupon.TYPE_CCB)).collect(Collectors.toList());
         accountCouponVo_ccb.setAccountCoupons(ccb);
         accountCouponVo_ccb.setNumber(ccb.size());
         accountCouponVos.add(accountCouponVo_ccb);
         //封装优驾行活动优惠券
         AccountCouponVo accountCouponVo_yjx = new AccountCouponVo();
         accountCouponVo_yjx.setType("yjx_coupons");
-        List<AccountCoupon> yjx = accountCoupons.stream().filter(s -> s.getType().equals("yjx")).collect(Collectors.toList());
+        List<AccountCoupon> yjx = accountCoupons.stream().filter(s -> s.getType().equals(AccountCoupon.TYPE_YJX)).collect(Collectors.toList());
         accountCouponVo_yjx.setAccountCoupons(yjx);
         accountCouponVo_yjx.setNumber(yjx.size());
         accountCouponVos.add(accountCouponVo_yjx);
+        //封装壳牌补贴优惠券
+        AccountCouponVo accountCouponVo_shell = new AccountCouponVo();
+        accountCouponVo_shell.setType("shell_coupons");
+        List<AccountCoupon> shell = accountCoupons.stream().filter(s -> s.getType().equals(AccountCoupon.TYPE_SHELL)).collect(Collectors.toList());
+        accountCouponVo_shell.setAccountCoupons(shell);
+        accountCouponVo_shell.setNumber(shell.size());
+        accountCouponVos.add(accountCouponVo_shell);
         return accountCouponVos;
     }
 
