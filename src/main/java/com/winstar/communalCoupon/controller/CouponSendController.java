@@ -75,6 +75,14 @@ public class CouponSendController {
             logger.info("优惠券赠送记录不存在！");
             return Result.fail("coupon_send_record_not_found", "优惠券赠送记录不存在！");
         }
+        if(!StringUtils.isEmpty(couponSendRecord.getReceiveAccountId())){
+            logger.info("优惠券已领取！");
+            return Result.fail("coupon_received", "优惠券已领取！");
+        }
+        if(StringUtils.isEmpty(couponSendRecord.getReceiveAccountId()) && (new Date().getTime() - couponSendRecord.getSendTime().getTime()) >= 24 * 60 * 60 * 1000){
+            logger.info("优惠券超时未领取已退回！");
+            return Result.fail("coupon_back", "优惠券超时未领取已退回！");
+        }
         Object switchValue = redisTools.get(couponSendRecord.getTemplateId() + "_switch");
         if (ObjectUtils.isEmpty(switchValue)) {
             logger.info("模板赠送开关值不存在，需要查询数据库！");
