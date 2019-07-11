@@ -157,10 +157,10 @@ public class AccountCouponController {
             receiveAccount = accountRepository.findAccountById(receiveAccountId);
         }
         if (!ObjectUtils.isEmpty(receiveAccount)) {
-            couponSendRecord.setReceiveName(receiveAccount.getRealName());
+            couponSendRecord.setReceiveName(receiveAccount.getNickName());
         }
         couponSendRecord.setAccountCoupon(accountCoupon);
-        couponSendRecord.setSendName(sendAccount.getRealName());
+        couponSendRecord.setSendName(sendAccount.getNickName());
         return Result.success(couponSendRecord);
 
     }
