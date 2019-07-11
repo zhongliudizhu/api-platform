@@ -67,8 +67,8 @@ info:
   authDriverLicense: https://mobile.sxwinstar.net/wechat_access/api/user/auth/auth
   coupon_recover_switch: false
   cost_exchange_server: http://192.168.118.54:11020/
-#  communal_coupon_server: http://192.168.118.28:12002/
-  communal_coupon_server: http://localhost:12002/
+  communal_coupon_server: http://192.168.118.28:12002/
+#  communal_coupon_server: http://localhost:12002/
   takeCouponUrl: ${info.communal_coupon_server}api/v1/coupon/takeCoupons?
   verifyCouponUrl: ${info.communal_coupon_server}api/v1/coupon/verify/verify?
   writeOffCouponUrl: ${info.communal_coupon_server}api/v1/coupon/verify/cancel
