@@ -20,6 +20,11 @@ import java.util.Date;
 @ToString
 public class AccountCoupon {
 
+    public static String TYPE_YJX = "yjx";
+    public static String TYPE_CCB = "ccb";
+    public static String TYPE_MOVE_COST = "moveCost";
+    public static String TYPE_SHELL = "shell";
+
     /**
      * 唯一标识
      */

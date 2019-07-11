@@ -339,6 +339,11 @@ public class OilOrderUtil {
             logger.error("优惠券中有查询不到的优惠券，couponId：" + couponId);
             throw new NotRuleException("coupon_have_invalid.order");
         }
+        Map<String, List<AccountCoupon>> groupAccountCoupon = accountCoupons.stream().collect(Collectors.groupingBy(AccountCoupon::getType));
+        if(groupAccountCoupon.get(AccountCoupon.TYPE_YJX).size() > 1 || groupAccountCoupon.get(AccountCoupon.TYPE_CCB).size() > 1 || groupAccountCoupon.get(AccountCoupon.TYPE_MOVE_COST).size() > 1 || groupAccountCoupon.get(AccountCoupon.TYPE_SHELL).size() > 1){
+            logger.error("每种类型的券只能使用一张，yjx size is {}，ccb size is {}，moveCost size is {}，shell size is {}，", groupAccountCoupon.get(AccountCoupon.TYPE_YJX).size(), groupAccountCoupon.get(AccountCoupon.TYPE_CCB).size(), groupAccountCoupon.get(AccountCoupon.TYPE_MOVE_COST).size(), groupAccountCoupon.get(AccountCoupon.TYPE_SHELL).size());
+            throw new NotRuleException("coupon_type_only_one.order");
+        }
         logger.info(JSON.toJSONString(accountCoupons));
         List<AccountCoupon> normalCoupons = accountCoupons.stream().filter(s -> !s.getState().equals(AccountCouponService.NORMAL)).collect(Collectors.toList());
         if(normalCoupons.size() > 0){
