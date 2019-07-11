@@ -163,14 +163,14 @@ public class AccountCouponController {
         couponSendRecord.setAccountCoupon(accountCoupon);
         couponSendRecord.setSendName(sendAccount.getNickName());
         //判断赠送状态
-        if((new Date().getTime() - accountCoupon.getEndTime().getTime()) >= 0){
-            couponSendRecord.setStatus("expired");
+        if(!StringUtils.isEmpty(couponSendRecord.getReceiveAccountId())){
+            couponSendRecord.setStatus("received");
         }else if(StringUtils.isEmpty(couponSendRecord.getReceiveAccountId()) && (new Date().getTime() - couponSendRecord.getSendTime().getTime()) >= 24 * 60 * 60 * 1000){
             couponSendRecord.setStatus("back");
+        }else if((new Date().getTime() - accountCoupon.getEndTime().getTime()) >= 0){
+            couponSendRecord.setStatus("expired");
         }else if(StringUtils.isEmpty(couponSendRecord.getReceiveAccountId())){
             couponSendRecord.setStatus("normal");
-        }else if(!StringUtils.isEmpty(couponSendRecord.getReceiveAccountId())){
-            couponSendRecord.setStatus("received");
         }
         return Result.success(couponSendRecord);
 
