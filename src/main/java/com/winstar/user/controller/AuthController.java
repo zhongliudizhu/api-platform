@@ -84,6 +84,7 @@ public class AuthController {
             encodedText = "";
         }
         fans.setNickname(encodedText);
+        fans.setOpenid(openId);
         fans.setSex(MapUtils.getString(map, "sex"));
         fans.setCity(MapUtils.getString(map, "city"));
         fans.setProvince(MapUtils.getString(map, "province"));
