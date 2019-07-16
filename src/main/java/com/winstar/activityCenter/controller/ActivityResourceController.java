@@ -1,7 +1,7 @@
-package com.winstar.carActivity.controller;
+package com.winstar.activityCenter.controller;
 
-import com.winstar.carActivity.entity.ActivityResource;
-import com.winstar.carActivity.repository.ActivityResourceRepository;
+import com.winstar.activityCenter.entity.ActivityResource;
+import com.winstar.activityCenter.repository.ActivityResourceRepository;
 import com.winstar.vo.Result;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

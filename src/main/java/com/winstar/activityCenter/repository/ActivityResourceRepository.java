@@ -1,6 +1,6 @@
-package com.winstar.carActivity.repository;
+package com.winstar.activityCenter.repository;
 
-import com.winstar.carActivity.entity.ActivityResource;
+import com.winstar.activityCenter.entity.ActivityResource;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
