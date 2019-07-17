@@ -1,4 +1,4 @@
-package com.winstar.carActivity.entity;
+package com.winstar.activityCenter.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
