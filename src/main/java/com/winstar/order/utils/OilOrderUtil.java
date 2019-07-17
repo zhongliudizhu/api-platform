@@ -340,7 +340,14 @@ public class OilOrderUtil {
             throw new NotRuleException("coupon_have_invalid.order");
         }
         Map<String, List<AccountCoupon>> groupAccountCoupon = accountCoupons.stream().collect(Collectors.groupingBy(AccountCoupon::getType));
-        if(groupAccountCoupon.get(AccountCoupon.TYPE_YJX).size() > 1 || groupAccountCoupon.get(AccountCoupon.TYPE_CCB).size() > 1 || groupAccountCoupon.get(AccountCoupon.TYPE_MOVE_COST).size() > 1 || groupAccountCoupon.get(AccountCoupon.TYPE_SHELL).size() > 1){
+        List<AccountCoupon> yjxCoupons = groupAccountCoupon.get(AccountCoupon.TYPE_YJX);
+        List<AccountCoupon> ccbCoupons = groupAccountCoupon.get(AccountCoupon.TYPE_CCB);
+        List<AccountCoupon> moveCostCoupons = groupAccountCoupon.get(AccountCoupon.TYPE_MOVE_COST);
+        List<AccountCoupon> shellCoupons = groupAccountCoupon.get(AccountCoupon.TYPE_SHELL);
+        if((!ObjectUtils.isEmpty(yjxCoupons) && yjxCoupons.size() > 1) ||
+                (!ObjectUtils.isEmpty(ccbCoupons) && ccbCoupons.size() > 1) ||
+                (!ObjectUtils.isEmpty(moveCostCoupons) && moveCostCoupons.size() > 1) ||
+                (!ObjectUtils.isEmpty(shellCoupons) && shellCoupons.size() > 1)){
             logger.error("每种类型的券只能使用一张，yjx size is {}，ccb size is {}，moveCost size is {}，shell size is {}，", groupAccountCoupon.get(AccountCoupon.TYPE_YJX).size(), groupAccountCoupon.get(AccountCoupon.TYPE_CCB).size(), groupAccountCoupon.get(AccountCoupon.TYPE_MOVE_COST).size(), groupAccountCoupon.get(AccountCoupon.TYPE_SHELL).size());
             throw new NotRuleException("coupon_type_only_one.order");
         }
