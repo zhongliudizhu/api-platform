@@ -204,7 +204,7 @@ public class CouponSendController {
             logger.info("优惠券已经被领取了，不在你名下了！");
             return Result.fail("coupon_not_your_send", "优惠券已经被领取了，不在你名下了！");
         }
-        if(!accountCoupon.getState().equals(AccountCouponService.SENDING)){
+        if(!accountCoupon.getState().equals(AccountCouponService.NORMAL)){
             logger.info("优惠券非赠送状态，不能退回！");
             return Result.fail("coupon_not_send_state", "优惠券非赠送状态，不能退回！");
         }
