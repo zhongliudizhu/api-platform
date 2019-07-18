@@ -166,10 +166,7 @@ public class CouponSendController {
         couponSendRecord.setSendAccountOpenid(openId);
         couponSendRecord.setCouponId(sendCouponVo.getCouponId());
         couponSendRecord.setTemplateId(sendCouponVo.getTemplateId());
-        couponSendRecord.setSendTime(new Date());
-        accountCoupon.setSendTime(new Date());
-        accountCoupon.setState(AccountCouponService.SENDING);
-        CouponSendRecord record = accountCouponService.saveCouponAndRecord(accountCoupon, couponSendRecord);
+        CouponSendRecord record = couponSendRecordRepository.save(couponSendRecord);
         String listKey = "sendCoupons:" + record.getId();
         redisTools.remove(listKey);
         redisTools.rightPush(listKey, "1");
@@ -180,7 +177,7 @@ public class CouponSendController {
     /**
      * 领取优惠券
      */
-    @RequestMapping(value = "nowBack", method = RequestMethod.POST)
+    @RequestMapping(value = "nowSuccess", method = RequestMethod.POST)
     public Result nowBackCoupon(@RequestBody Map map, HttpServletRequest request) throws NotRuleException {
         String recordId = MapUtils.getString(map, "recordId");
         logger.info("未分享出去立即回退优惠券，不能让优惠券不翼而飞！recordId is {}", recordId);
@@ -211,9 +208,10 @@ public class CouponSendController {
             logger.info("优惠券非赠送状态，不能退回！");
             return Result.fail("coupon_not_send_state", "优惠券非赠送状态，不能退回！");
         }
-        accountCoupon.setState(AccountCouponService.NORMAL);
-        accountCoupon.setRemark("优惠券点了赠送又舍不得，直接退回来了！");
-        accountCouponRepository.save(accountCoupon);
+        couponSendRecord.setSendTime(new Date());
+        accountCoupon.setSendTime(new Date());
+        accountCoupon.setState(AccountCouponService.SENDING);
+        accountCouponService.saveCouponAndRecord(accountCoupon, couponSendRecord);
         return Result.success(new HashMap<>());
     }
 
