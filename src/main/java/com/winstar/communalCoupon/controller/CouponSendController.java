@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -175,4 +176,45 @@ public class CouponSendController {
         logger.info("赠送优惠券成功！优惠券id{}" + sendCouponVo.getCouponId());
         return Result.success(record);
     }
+
+    /**
+     * 领取优惠券
+     */
+    @RequestMapping(value = "nowBack", method = RequestMethod.POST)
+    public Result nowBackCoupon(@RequestBody Map map, HttpServletRequest request) throws NotRuleException {
+        String recordId = MapUtils.getString(map, "recordId");
+        logger.info("未分享出去立即回退优惠券，不能让优惠券不翼而飞！recordId is {}", recordId);
+        if (StringUtils.isEmpty(recordId)) {
+            logger.info("赠送记录id不能为空！");
+            return Result.fail("recordId_not_found", "赠送记录id不能为空！");
+        }
+        String accountId = accountService.getAccountId(request);
+        CouponSendRecord couponSendRecord = couponSendRecordRepository.findOne(recordId);
+        if (ObjectUtils.isEmpty(couponSendRecord)) {
+            logger.info("优惠券赠送记录不存在！");
+            return Result.fail("coupon_send_record_not_found", "优惠券赠送记录不存在！");
+        }
+        if(!couponSendRecord.getSendAccountId().equals(accountId)){
+            logger.info("不是你赠送出去的优惠你干嘛调接口退回！");
+            return Result.fail("coupon_not_your_send", "优惠券非你赠送！");
+        }
+        AccountCoupon accountCoupon = accountCouponRepository.findByCouponId(couponSendRecord.getCouponId());
+        if (ObjectUtils.isEmpty(accountCoupon)) {
+            logger.info("优惠券不存在！");
+            return Result.fail("coupon_not_found", "优惠券不存在！");
+        }
+        if(!accountCoupon.getAccountId().equals(accountId)){
+            logger.info("优惠券已经被领取了，不在你名下了！");
+            return Result.fail("coupon_not_your_send", "优惠券已经被领取了，不在你名下了！");
+        }
+        if(!accountCoupon.getState().equals(AccountCouponService.SENDING)){
+            logger.info("优惠券非赠送状态，不能退回！");
+            return Result.fail("coupon_not_send_state", "优惠券非赠送状态，不能退回！");
+        }
+        accountCoupon.setState(AccountCouponService.NORMAL);
+        accountCoupon.setRemark("优惠券点了赠送又舍不得，直接退回来了！");
+        accountCouponRepository.save(accountCoupon);
+        return Result.success(new HashMap<>());
+    }
+
 }

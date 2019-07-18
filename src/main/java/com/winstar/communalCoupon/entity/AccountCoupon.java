@@ -156,4 +156,22 @@ public class AccountCoupon {
     @Column(columnDefinition = "datetime comment '赠送时间'")
     private Date sendTime;
 
+    /**
+     * 备注
+     */
+    @Column(columnDefinition = "varchar(255) comment '备注'")
+    private String remark;
+
+    /**
+     * 微信卡包id
+     */
+    @Column(columnDefinition = "varchar(50) comment '微信卡包id'")
+    private String cardPackageId;
+
+    /**
+     * 微信卡包code
+     */
+    @Column(columnDefinition = "varchar(50) comment '微信卡包code'")
+    private String cardPackageCode;
+
 }
