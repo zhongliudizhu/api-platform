@@ -143,7 +143,7 @@ public class CommunalActivityService {
                 if ("yes".equals(cardable)) {
                     String cardId = getCardId(activityVo.getTemplateId());
                     log.info("template {}cardId is {}", activityVo.getTemplateId(), cardId);
-                    activityVo.setCardId(cardId);
+                    activityVo.setWxCardId(cardId);
                 }
                 BeanUtils.copyProperties(map.get(activityVo.getTemplateId()), activityVo);
             }
