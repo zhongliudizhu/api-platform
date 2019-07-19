@@ -148,6 +148,10 @@ public class ReceiveCouponCenterController {
             log.info("活动尚未开始！");
             return Result.fail("activity_not_begin", "活动尚未开始！");
         }
+        if(!ObjectUtils.isEmpty(activity.getEndDate()) && nowTime > activity.getEndDate().getTime()){
+            log.info("活动已结束！");
+            return Result.fail("activity_end", "活动尚已结束！");
+        }
         if(activity.getStatus().equals("no")){
             log.info("活动未上架！");
             return Result.fail("activity_is_down", "活动未上架！");
@@ -175,7 +179,7 @@ public class ReceiveCouponCenterController {
         Map map = responseEntity.getBody();
         if(MapUtils.getString(map, "code").equals("SUCCESS")){
             log.info("获取优惠券成功！accountId is {} and templateId is {}" , accountId, templateId);
-            List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(JSON.toJSONString(map.get("data")), "yjx", accountId, activityId);
+            List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(JSON.toJSONString(map.get("data")), "yjx", accountId, activityId, redisTools);
             accountCouponRepository.save(accountCoupons);
             log.info("发放优惠券成功！accountId is {} and templateId is {}" , accountId, templateId);
         }

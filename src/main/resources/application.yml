@@ -73,6 +73,17 @@ info:
   writeOffCouponUrl: ${info.communal_coupon_server}api/v1/coupon/verify/cancel
   getTemplateInfoUrl: ${info.communal_coupon_server}api/v1/coupon/template?
 
+pay:
+  wx:
+     base:
+        access-token-url: http://wechat.sxeccellentdriving.com/php-api/wechat_front/ccb/ccb-php/index.php?type=api&fun=getAccessToken_f80863bc_9177_11e6_a05e_9457a5545c84
+        memory-access-token: false
+     jsapi:
+          sign-key: FAmvMI8ARjOhqJTE3vL5d87mFo9VIbDN
+          app-secret: 43dd74d136a23e8467e5866f4757a3ec
+          app-id: wx47a21bee64eb7a6c
+          mch-id: 1504450061
+
 #建行信息卡校验
 bank:
   sms:
@@ -180,3 +191,14 @@ get_random_image_code: http://sms.sxjiashi.com:8030/api/v4/smsSend/getRandomCode
 send_sms_image_url: http://sms.sxjiashi.com:8030/api/v4/smsSend/send
 
 activity_id_fission: 3d15c8ca-83e4-11e8-80dd-9457a5545c84
+
+pay:
+  wx:
+     base:
+        access-token-url: https://mobile.sxwinstar.net/wechat/index.php?type=api&fun=getAccessToken_f80863bc_9177_11e6_a05e_9457a5545c84
+        memory-access-token: false
+     jsapi:
+        signKey: B793c5IPBC7B9wFQ5p55JFpx37S3iNRy
+        mch-id: 1249655701
+        app-id: wxcf71d6832b8e3ebe
+        app-secret: 9401a98f94e021d3f006c3831f8d0e05

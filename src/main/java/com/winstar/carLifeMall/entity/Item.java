@@ -1,16 +1,11 @@
 package com.winstar.carLifeMall.entity;
 
-import com.winstar.user.utils.ServiceManager;
-import groovy.lang.Category;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.loader.custom.Return;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * 名称： Seller
