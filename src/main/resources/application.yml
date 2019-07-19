@@ -77,7 +77,6 @@ pay:
   wx:
      base:
         access-token-url: http://wechat.sxeccellentdriving.com/php-api/wechat_front/ccb/ccb-php/index.php?type=api&fun=getAccessToken_f80863bc_9177_11e6_a05e_9457a5545c84
-        memory-access-token: false
      jsapi:
           sign-key: FAmvMI8ARjOhqJTE3vL5d87mFo9VIbDN
           app-secret: 43dd74d136a23e8467e5866f4757a3ec
@@ -196,7 +195,6 @@ pay:
   wx:
      base:
         access-token-url: https://mobile.sxwinstar.net/wechat/index.php?type=api&fun=getAccessToken_f80863bc_9177_11e6_a05e_9457a5545c84
-        memory-access-token: false
      jsapi:
         signKey: B793c5IPBC7B9wFQ5p55JFpx37S3iNRy
         mch-id: 1249655701

@@ -191,7 +191,7 @@
         <dependency>
             <groupId>com.winstar.cashier</groupId>
             <artifactId>winstar-cashier-wx-stater</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
 
     </dependencies>
