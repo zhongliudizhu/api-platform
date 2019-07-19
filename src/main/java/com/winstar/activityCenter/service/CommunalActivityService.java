@@ -55,7 +55,7 @@ public class CommunalActivityService {
         List<ActivityVo> activityVos = new ArrayList<>();
         Date now = new Date();
         List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountId(accountId);
-        log.info("用户{}已有优惠券列表：{}", accountId, accountCoupons);
+        log.info("用户{}已有优惠券{列表：{}", accountId, accountCoupons);
         Map<String, List<AccountCoupon>> groupAccountCoupons = new HashMap<>();
         accountCoupons
                 .forEach(e -> {
@@ -68,7 +68,6 @@ public class CommunalActivityService {
                 });
         //已上架未删除已到展示时间
         List<CommunalActivity> list = communalActivityRepository.findAllByStatusAndDelAndShowDateBefore("yes", "no", now);
-        log.info("所有已上架未删除已到展示时间的活动：{}", list);
         StringBuilder sb = new StringBuilder();
         for (CommunalActivity communalActivity : list) {
             ActivityVo activityVo = new ActivityVo();
@@ -83,6 +82,7 @@ public class CommunalActivityService {
             if (communalActivity.getStartDate().getTime() > now.getTime()) {
                 activityVo.setStatus("soon");
                 activityVos.add(activityVo);
+                log.info("{}活动{}未开始", communalActivity.getName(),communalActivity.getId());
                 continue;
             }
             //限时限量优惠券判断
@@ -91,10 +91,12 @@ public class CommunalActivityService {
                 activityVo.setReceivedNum(activityReceivedNum);
                 if (activityReceivedNum >= communalActivity.getTotalNum()) {
                     activityVo.setStatus("finished");
+                    log.info("{}活动{}已结束", communalActivity.getName(),communalActivity.getId());
                 }
                 String listKey = "awards:" + communalActivity.getId();
-                if(!redisTools.exists(listKey)){
+                if (!redisTools.exists(listKey)) {
                     activityVo.setStatus("finished");
+                    log.info("{}活动{}已结束", communalActivity.getName(),communalActivity.getId());
                 }
             }
             List<AccountCoupon> activityCoupons = groupAccountCoupons.get(communalActivity.getId());
@@ -104,6 +106,7 @@ public class CommunalActivityService {
                     available = false;
                 } else {
                     activityVo.setStatus("received");
+                    log.info("{}活动{}已被领取", communalActivity.getName(),communalActivity.getId());
                 }
             }
             if (available) {
@@ -130,6 +133,9 @@ public class CommunalActivityService {
             List<CouponTemplateVo> list = getTemplateInfo(templateIds);
             Map<String, CouponTemplateVo> map = list.stream().collect(Collectors.toMap(CouponTemplateVo::getId, CouponTemplateVo::getThis));
             for (ActivityVo activityVo : activityVos) {
+                if ("yes".equals(redisTools.get(activityVo.getTemplateId() + "_cardable"))) {
+                    activityVo.setCardId((String) redisTools.get(activityVo.getTemplateId() + "_cardId"));
+                }
                 BeanUtils.copyProperties(map.get(activityVo.getTemplateId()), activityVo);
             }
         }

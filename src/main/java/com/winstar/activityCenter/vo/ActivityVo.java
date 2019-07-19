@@ -66,6 +66,10 @@ public class ActivityVo {
      * 优惠券金额
      */
     private String amount;
+    /**
+     * 卡包Id
+     */
+    private String cardId;
 
     /**
      * 优惠券条件
