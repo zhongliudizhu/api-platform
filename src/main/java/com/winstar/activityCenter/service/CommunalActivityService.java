@@ -81,21 +81,27 @@ public class CommunalActivityService {
             if (communalActivity.getStartDate().getTime() > now.getTime()) {
                 activityVo.setStatus("soon");
                 activityVos.add(activityVo);
-                log.info("{}活动{}未开始", communalActivity.getName(),communalActivity.getId());
+                log.info("{}活动{}未开始", communalActivity.getName(), communalActivity.getId());
                 continue;
             }
-            //限时限量优惠券判断
+            //下架已结束活动
+            if (!ObjectUtils.isEmpty(communalActivity.getEndDate()) && communalActivity.getEndDate().getTime() < System.currentTimeMillis()) {
+                available = false;
+                communalActivity.setStatus("no");
+                communalActivityRepository.save(communalActivity);
+            }
+            //限量优惠券判断
             if ("2".equals(communalActivity.getType())) {
                 Integer activityReceivedNum = getActivityReceivedNum("activity" + communalActivity.getId());
                 activityVo.setReceivedNum(activityReceivedNum);
                 if (activityReceivedNum >= communalActivity.getTotalNum()) {
                     activityVo.setStatus("finished");
-                    log.info("{}活动{}已结束", communalActivity.getName(),communalActivity.getId());
+                    log.info("{}活动{}已结束", communalActivity.getName(), communalActivity.getId());
                 }
                 String listKey = "awards:" + communalActivity.getId();
                 if (!redisTools.exists(listKey)) {
                     activityVo.setStatus("finished");
-                    log.info("{}活动{}已结束", communalActivity.getName(),communalActivity.getId());
+                    log.info("{}活动{}已结束", communalActivity.getName(), communalActivity.getId());
                 }
             }
             List<AccountCoupon> activityCoupons = groupAccountCoupons.get(communalActivity.getId());
@@ -105,7 +111,7 @@ public class CommunalActivityService {
                     available = false;
                 } else {
                     activityVo.setStatus("received");
-                    log.info("{}活动{}已被领取", communalActivity.getName(),communalActivity.getId());
+                    log.info("{}活动{}已被领取", communalActivity.getName(), communalActivity.getId());
                 }
             }
             if (available) {
