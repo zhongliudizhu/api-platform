@@ -55,7 +55,6 @@ public class CommunalActivityService {
         List<ActivityVo> activityVos = new ArrayList<>();
         Date now = new Date();
         List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountId(accountId);
-        log.info("用户{}已有优惠券{列表：{}", accountId, accountCoupons);
         Map<String, List<AccountCoupon>> groupAccountCoupons = new HashMap<>();
         accountCoupons
                 .forEach(e -> {
@@ -118,7 +117,6 @@ public class CommunalActivityService {
             templateIds = sb.toString().substring(0, sb.toString().length() - 1);
         }
         setTemplateInfo(activityVos, templateIds);
-        log.info("筛选活动结果：{}", activityVos);
         return activityVos;
     }
 
