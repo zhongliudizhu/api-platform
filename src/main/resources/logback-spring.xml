@@ -15,7 +15,7 @@
         </encoder>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>winstar-cbc-platform/logs/winstar-cbc-platform-api-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>logs/winstar-cbc-platform-api-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>100MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>

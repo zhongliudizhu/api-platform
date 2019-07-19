@@ -49,7 +49,7 @@ spring:
       ack-mode: MANUAL_IMMEDIATE
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     show-sql: true
   profiles: default
 

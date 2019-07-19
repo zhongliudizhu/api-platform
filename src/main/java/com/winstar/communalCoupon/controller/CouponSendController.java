@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -165,14 +166,53 @@ public class CouponSendController {
         couponSendRecord.setSendAccountOpenid(openId);
         couponSendRecord.setCouponId(sendCouponVo.getCouponId());
         couponSendRecord.setTemplateId(sendCouponVo.getTemplateId());
-        couponSendRecord.setSendTime(new Date());
-        accountCoupon.setSendTime(new Date());
-        accountCoupon.setState(AccountCouponService.SENDING);
-        CouponSendRecord record = accountCouponService.saveCouponAndRecord(accountCoupon, couponSendRecord);
+        CouponSendRecord record = couponSendRecordRepository.save(couponSendRecord);
         String listKey = "sendCoupons:" + record.getId();
         redisTools.remove(listKey);
         redisTools.rightPush(listKey, "1");
         logger.info("赠送优惠券成功！优惠券id{}" + sendCouponVo.getCouponId());
         return Result.success(record);
     }
+
+    /**
+     * 领取优惠券
+     */
+    @RequestMapping(value = "nowSuccess", method = RequestMethod.POST)
+    public Result nowBackCoupon(@RequestBody Map map, HttpServletRequest request) throws NotRuleException {
+        String recordId = MapUtils.getString(map, "recordId");
+        logger.info("未分享出去立即回退优惠券，不能让优惠券不翼而飞！recordId is {}", recordId);
+        if (StringUtils.isEmpty(recordId)) {
+            logger.info("赠送记录id不能为空！");
+            return Result.fail("recordId_not_found", "赠送记录id不能为空！");
+        }
+        String accountId = accountService.getAccountId(request);
+        CouponSendRecord couponSendRecord = couponSendRecordRepository.findOne(recordId);
+        if (ObjectUtils.isEmpty(couponSendRecord)) {
+            logger.info("优惠券赠送记录不存在！");
+            return Result.fail("coupon_send_record_not_found", "优惠券赠送记录不存在！");
+        }
+        if(!couponSendRecord.getSendAccountId().equals(accountId)){
+            logger.info("不是你赠送出去的优惠你干嘛调接口退回！");
+            return Result.fail("coupon_not_your_send", "优惠券非你赠送！");
+        }
+        AccountCoupon accountCoupon = accountCouponRepository.findByCouponId(couponSendRecord.getCouponId());
+        if (ObjectUtils.isEmpty(accountCoupon)) {
+            logger.info("优惠券不存在！");
+            return Result.fail("coupon_not_found", "优惠券不存在！");
+        }
+        if(!accountCoupon.getAccountId().equals(accountId)){
+            logger.info("优惠券已经被领取了，不在你名下了！");
+            return Result.fail("coupon_not_your_send", "优惠券已经被领取了，不在你名下了！");
+        }
+        if(!accountCoupon.getState().equals(AccountCouponService.NORMAL)){
+            logger.info("优惠券非赠送状态，不能退回！");
+            return Result.fail("coupon_not_send_state", "优惠券非赠送状态，不能退回！");
+        }
+        couponSendRecord.setSendTime(new Date());
+        accountCoupon.setSendTime(new Date());
+        accountCoupon.setState(AccountCouponService.SENDING);
+        accountCouponService.saveCouponAndRecord(accountCoupon, couponSendRecord);
+        return Result.success(new HashMap<>());
+    }
+
 }
