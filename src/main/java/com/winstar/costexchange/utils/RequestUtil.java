@@ -4,10 +4,12 @@ import com.alibaba.fastjson.JSON;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.costexchange.vo.CouponVo;
+import com.winstar.redis.RedisTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -31,7 +33,7 @@ public class RequestUtil {
         return resp.getBody();
     }
 
-    public static List<AccountCoupon> getAccountCoupons(String coupons, String type, String accountId, String activityId) {
+    public static List<AccountCoupon> getAccountCoupons(String coupons, String type, String accountId, String activityId, RedisTools redisTools) {
         List<CouponVo> couponVos = JSON.parseArray(coupons, CouponVo.class);
         List<AccountCoupon> accountCoupons = new ArrayList<>();
         for(CouponVo couponVo : couponVos){
@@ -51,6 +53,10 @@ public class RequestUtil {
             accountCoupon.setType(type);
             accountCoupon.setTemplateId(couponVo.getTemplateId());
             accountCoupon.setActivityId(activityId);
+            String switchCard = (String) redisTools.get(couponVo.getTemplateId() + "_cardable");
+            if(!StringUtils.isEmpty(switchCard) && switchCard.equals("yes")){
+                accountCoupon.setCardPackageId((String) redisTools.get(couponVo.getTemplateId() + "_cardId"));
+            }
             logger.info("优惠券：" + accountCoupon.toString());
             accountCoupons.add(accountCoupon);
         }

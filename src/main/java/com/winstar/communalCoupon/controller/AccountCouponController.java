@@ -14,7 +14,6 @@ import com.winstar.user.entity.Account;
 import com.winstar.user.repository.AccountRepository;
 import com.winstar.utils.WebUitl;
 import com.winstar.vo.Result;
-import groovy.util.logging.Slf4j;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +35,6 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/api/v1/cbc/cost")
-@Slf4j
 @AllArgsConstructor
 public class AccountCouponController {
 

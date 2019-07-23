@@ -69,7 +69,7 @@ public class ActivityVo {
     /**
      * 卡包Id
      */
-    private String cardId;
+    private String wxCardId;
 
     /**
      * 优惠券条件

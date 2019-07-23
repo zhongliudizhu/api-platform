@@ -39,6 +39,18 @@ public class TemplateRule {
     private String giftable;
 
     /**
+     * 是否放入微信卡包 yes放入；no不放入
+     */
+    @Column(columnDefinition = "varchar(10) COMMENT '是否放入微信卡包 yes放入；no不放入'")
+    private String cardable;
+
+    /**
+     * 卡包Id
+     */
+    @Column(columnDefinition = "varchar(50) COMMENT '卡包Id'")
+    private String cardId;
+
+    /**
      * 创建时间
      */
     @Column(columnDefinition = "datetime comment '创建时间'")

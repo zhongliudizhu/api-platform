@@ -1,6 +1,7 @@
 package com.winstar.order.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.winstar.cashier.wx.service.WxMartetTemplate;
 import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.exception.NotFoundException;
 import com.winstar.kafka.Product;
@@ -11,6 +12,7 @@ import com.winstar.order.utils.Constant;
 import com.winstar.order.vo.PayInfoVo;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.GoodsRepository;
+import com.winstar.user.service.AccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,12 @@ public class OilOrderServiceImpl implements OilOrderService {
 
     @Autowired
     Product product;
+
+    @Autowired
+    WxMartetTemplate wxMartetTemplate;
+
+    @Autowired
+    AccountService accountService;
 
     @Value("${spring.kafka.template.default-topic}")
     private String topicName;
@@ -79,6 +87,7 @@ public class OilOrderServiceImpl implements OilOrderService {
                 Goods goods = goodsRepository.findOne(oilOrder.getItemId());
                 accountCouponService.writeOffCoupon(oilOrder.getCouponId(), oilOrder.getItemTotalValue().toString(), goods.getTags());
                 logger.info(oilOrder.getSerialNumber() + "优惠券信息更新完毕！");
+                accountCouponService.consumeWxCard(oilOrder.getAccountId(), oilOrder.getCouponId(), wxMartetTemplate, accountService);
             }
             try {
                 product.sendMessage(topicName, oilOrder.getSerialNumber(), JSON.toJSONString(oilOrder));

@@ -10,7 +10,6 @@ import com.winstar.costexchange.service.CouponSendService;
 import com.winstar.costexchange.utils.RequestUtil;
 import com.winstar.redis.RedisTools;
 import com.winstar.vo.Result;
-import groovy.util.logging.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -32,7 +31,6 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/v1/cbc/cost")
-@Slf4j
 public class SendCouponController {
 
     private static final Logger logger = LoggerFactory.getLogger(SendCouponController.class);
@@ -73,7 +71,7 @@ public class SendCouponController {
             logger.info("订单已经成功，又再次推送！订单号：" + orderNumber);
             return Result.success(new HashMap<>());
         }
-        List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(map.get("coupons").toString(), MapUtils.getString(map, "domain"), exchangeRecord.getAccountId(), null);
+        List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(map.get("coupons").toString(), MapUtils.getString(map, "domain"), exchangeRecord.getAccountId(), null, redisTools);
         exchangeRecord.setState(ExchangeRecord.SUCCESS);
         exchangeRecord.setResultTime(new Date());
         if (!ObjectUtils.isEmpty(accountCoupons)) {

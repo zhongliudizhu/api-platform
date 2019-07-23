@@ -6,7 +6,9 @@ import com.winstar.activityCenter.repository.CommunalActivityRepository;
 import com.winstar.activityCenter.vo.ActivityVo;
 import com.winstar.activityCenter.vo.CouponTemplateVo;
 import com.winstar.communalCoupon.entity.AccountCoupon;
+import com.winstar.communalCoupon.entity.TemplateRule;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
+import com.winstar.communalCoupon.repository.TemplateRuleRepository;
 import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.exception.NotRuleException;
 import com.winstar.redis.RedisTools;
@@ -24,9 +26,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author UU
- * @Classname CommunalActivityService
- * @Description TODO
- * @Date 2019/7/2 11:35
  */
 @Service
 @Slf4j
@@ -34,12 +33,14 @@ public class CommunalActivityService {
     private final CommunalActivityRepository communalActivityRepository;
     private final RedisTools redisTools;
     private final AccountCouponRepository accountCouponRepository;
+    private final TemplateRuleRepository templateRuleRepository;
 
     @Autowired
-    public CommunalActivityService(CommunalActivityRepository communalActivityRepository, RedisTools redisTools, AccountCouponRepository accountCouponRepository) {
+    public CommunalActivityService(CommunalActivityRepository communalActivityRepository, RedisTools redisTools, AccountCouponRepository accountCouponRepository, TemplateRuleRepository templateRuleRepository) {
         this.communalActivityRepository = communalActivityRepository;
         this.redisTools = redisTools;
         this.accountCouponRepository = accountCouponRepository;
+        this.templateRuleRepository = templateRuleRepository;
     }
 
     @Value("${info.getTemplateInfoUrl}")
@@ -55,7 +56,6 @@ public class CommunalActivityService {
         List<ActivityVo> activityVos = new ArrayList<>();
         Date now = new Date();
         List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountId(accountId);
-        log.info("用户{}已有优惠券{列表：{}", accountId, accountCoupons);
         Map<String, List<AccountCoupon>> groupAccountCoupons = new HashMap<>();
         accountCoupons
                 .forEach(e -> {
@@ -82,21 +82,27 @@ public class CommunalActivityService {
             if (communalActivity.getStartDate().getTime() > now.getTime()) {
                 activityVo.setStatus("soon");
                 activityVos.add(activityVo);
-                log.info("{}活动{}未开始", communalActivity.getName(),communalActivity.getId());
+                log.info("{}活动{}未开始", communalActivity.getName(), communalActivity.getId());
                 continue;
             }
-            //限时限量优惠券判断
+            //下架已结束活动
+            if (!ObjectUtils.isEmpty(communalActivity.getEndDate()) && communalActivity.getEndDate().getTime() < System.currentTimeMillis()) {
+                available = false;
+                communalActivity.setStatus("no");
+                communalActivityRepository.save(communalActivity);
+            }
+            //限量优惠券判断
             if ("2".equals(communalActivity.getType())) {
                 Integer activityReceivedNum = getActivityReceivedNum("activity" + communalActivity.getId());
                 activityVo.setReceivedNum(activityReceivedNum);
                 if (activityReceivedNum >= communalActivity.getTotalNum()) {
                     activityVo.setStatus("finished");
-                    log.info("{}活动{}已结束", communalActivity.getName(),communalActivity.getId());
+                    log.info("{}活动{}已结束", communalActivity.getName(), communalActivity.getId());
                 }
                 String listKey = "awards:" + communalActivity.getId();
                 if (!redisTools.exists(listKey)) {
                     activityVo.setStatus("finished");
-                    log.info("{}活动{}已结束", communalActivity.getName(),communalActivity.getId());
+                    log.info("{}活动{}已结束", communalActivity.getName(), communalActivity.getId());
                 }
             }
             List<AccountCoupon> activityCoupons = groupAccountCoupons.get(communalActivity.getId());
@@ -106,7 +112,7 @@ public class CommunalActivityService {
                     available = false;
                 } else {
                     activityVo.setStatus("received");
-                    log.info("{}活动{}已被领取", communalActivity.getName(),communalActivity.getId());
+                    log.info("{}活动{}已被领取", communalActivity.getName(), communalActivity.getId());
                 }
             }
             if (available) {
@@ -118,7 +124,6 @@ public class CommunalActivityService {
             templateIds = sb.toString().substring(0, sb.toString().length() - 1);
         }
         setTemplateInfo(activityVos, templateIds);
-        log.info("筛选活动结果：{}", activityVos);
         return activityVos;
     }
 
@@ -133,12 +138,50 @@ public class CommunalActivityService {
             List<CouponTemplateVo> list = getTemplateInfo(templateIds);
             Map<String, CouponTemplateVo> map = list.stream().collect(Collectors.toMap(CouponTemplateVo::getId, CouponTemplateVo::getThis));
             for (ActivityVo activityVo : activityVos) {
-                if ("yes".equals(redisTools.get(activityVo.getTemplateId() + "_cardable"))) {
-                    activityVo.setCardId((String) redisTools.get(activityVo.getTemplateId() + "_cardId"));
+                String cardable = getCardable(activityVo.getTemplateId());
+                log.info(" template {} cardable is {}", activityVo.getTemplateId(), cardable);
+                if ("yes".equals(cardable)) {
+                    String cardId = getCardId(activityVo.getTemplateId());
+                    log.info("template {}cardId is {}", activityVo.getTemplateId(), cardId);
+                    activityVo.setWxCardId(cardId);
                 }
                 BeanUtils.copyProperties(map.get(activityVo.getTemplateId()), activityVo);
             }
         }
+    }
+
+    /**
+     * 获取cardId
+     */
+    private String getCardId(String templateId) {
+        String cardId = (String) redisTools.get(templateId + "_cardId");
+        if (!ObjectUtils.isEmpty(cardId)) {
+            return cardId;
+        }
+        TemplateRule templateRule = templateRuleRepository.findByTemplateId(templateId);
+        if (!ObjectUtils.isEmpty(templateRule)) {
+            cardId = templateRule.getCardId();
+        }
+        redisTools.set(templateId + "_cardId", cardId);
+        return cardId;
+    }
+
+    /**
+     * 获取cardable
+     */
+    private String getCardable(String templateId) {
+        String cardable = (String) redisTools.get(templateId + "_cardable");
+        if (!ObjectUtils.isEmpty(cardable)) {
+            return cardable;
+        }
+        TemplateRule templateRule = templateRuleRepository.findByTemplateId(templateId);
+        if (!ObjectUtils.isEmpty(templateRule) && !ObjectUtils.isEmpty(templateRule.getCardable())) {
+            cardable = templateRule.getCardable();
+        } else {
+            cardable = "no";
+        }
+        redisTools.set(templateId + "_cardable", cardable);
+        return templateRule.getCardable();
     }
 
     /**

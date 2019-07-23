@@ -1,11 +1,15 @@
 package com.winstar.communalCoupon.service;
 
 import com.alibaba.fastjson.JSON;
+import com.winstar.cashier.wx.entity.card.request.ConsumeCardRequest;
+import com.winstar.cashier.wx.service.WxMartetTemplate;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.entity.CouponSendRecord;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.repository.CouponSendRecordRepository;
 import com.winstar.communalCoupon.util.SignUtil;
+import com.winstar.user.entity.Account;
+import com.winstar.user.service.AccountService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Date;
@@ -173,6 +178,28 @@ public class AccountCouponService {
             }
         }
         accountCouponRepository.save(accountCoupons);
+    }
+
+    @Async
+    public void consumeWxCard(String accountId, String couponIds, WxMartetTemplate wxMartetTemplate, AccountService accountService){
+        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndCouponIdIn(accountId, couponIds.split(","));
+        Account account = accountService.findOne(accountId);
+        for (AccountCoupon accountCoupon : accountCoupons) {
+            log.info("调用微信卡包核销优惠券，cardPackageId is " + accountCoupon.getCardPackageId());
+            if(StringUtils.isEmpty(accountCoupon.getCardPackageId())){
+                continue;
+            }
+            try {
+                ConsumeCardRequest consumeCardRequest = new ConsumeCardRequest();
+                consumeCardRequest.setOpenid(account.getOpenid());
+                consumeCardRequest.setCardId(accountCoupon.getCardPackageId());
+                log.info("请求参数：" + JSON.toJSONString(consumeCardRequest));
+                wxMartetTemplate.consumeCard(consumeCardRequest);
+            }catch (Exception e){
+                log.error("调用微信卡包核销优惠券失败！cardPackageId is " + accountCoupon.getCardPackageId(), e);
+            }
+            log.info(accountCoupon.getCardPackageId() + "<->通知微信卡包核销完毕！");
+        }
     }
 
     @Transactional
