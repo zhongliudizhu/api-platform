@@ -74,7 +74,7 @@ info:
   writeOffCouponUrl: ${info.communal_coupon_server}api/v1/coupon/verify/cancel
   getTemplateInfoUrl: ${info.communal_coupon_server}api/v1/coupon/template?
   handleBusinessUrl: ${info.cost_exchange_server}api/v1/phonebill/giving/handleBusiness
-
+  sendCodeUrl: ${info.cost_exchange_server}api/v1/phonebill/giving/sendVerifyCode
 pay:
   wx:
      base:
@@ -175,7 +175,7 @@ info:
   writeOffCouponUrl: ${info.communal_coupon_server}api/v1/coupon/verify/cancel
   getTemplateInfoUrl: ${info.communal_coupon_server}api/v1/coupon/template?
   handleBusinessUrl: ${info.cost_exchange_server}api/v1/phonebill/giving/handleBusiness
-
+  sendCodeUrl: ${info.cost_exchange_server}api/v1/phonebill/giving/sendVerifyCode
 #建行信息卡校验
 bank:
   sms:
