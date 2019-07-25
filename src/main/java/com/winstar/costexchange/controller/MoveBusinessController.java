@@ -123,6 +123,7 @@ public class MoveBusinessController {
             moveBusinessRecord.setPhone(phone);
             moveBusinessRecord.setCreatedAt(new Date());
             moveBusinessRecordRepository.save(moveBusinessRecord);
+            return true;
         }
         return false;
     }
