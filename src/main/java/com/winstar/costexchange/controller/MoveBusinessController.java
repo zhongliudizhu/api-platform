@@ -44,33 +44,34 @@ public class MoveBusinessController {
     AccountCouponRepository accountCouponRepository;
     private final
     MoveBusinessService moveBusinessService;
-    @Autowired
+    private final
     MoveBusinessRecordRepository moveBusinessRecordRepository;
     @Value("${info.handleBusinessUrl}")
     private String handleBusinessUrl;
-    private final String templateId = "000000006b96f5ca016bb166e6f60001";
+    private static final String templateId = "000000006b96f5ca016bb166e6f60001";
 
     @Autowired
-    public MoveBusinessController(HttpServletRequest request, AccountService accountService, RestTemplate restTemplate, AccountCouponService accountCouponService, AccountCouponRepository accountCouponRepository, MoveBusinessService moveBusinessService) {
+    public MoveBusinessController(HttpServletRequest request, AccountService accountService, RestTemplate restTemplate, AccountCouponService accountCouponService, AccountCouponRepository accountCouponRepository, MoveBusinessService moveBusinessService, MoveBusinessRecordRepository moveBusinessRecordRepository) {
         this.request = request;
         this.accountService = accountService;
         this.restTemplate = restTemplate;
         this.accountCouponService = accountCouponService;
         this.accountCouponRepository = accountCouponRepository;
         this.moveBusinessService = moveBusinessService;
+        this.moveBusinessRecordRepository = moveBusinessRecordRepository;
     }
 
     @RequestMapping(value = "exchange")
     public Result send(@RequestParam String phone, @RequestParam String code) throws NotRuleException {
         String accountId = accountService.getAccountId(request);
-        log.info("开始办理花费业务：accountId is :{}，phone is：{},code is :{}", accountId, phone, code);
+        log.info("开始办理话费业务：accountId is :{}，phone is：{},code is :{}", accountId, phone, code);
         int remainingTimes = moveBusinessService.check(accountId);
         if (remainingTimes <= 0) {
             return Result.fail("user_no_times", "用户无参与资格");
         }
         Map map = handleBusiness(phone, code);
-        if (!"success".equals(MapUtils.getString(map, "code"))) {
-            return Result.fail(MapUtils.getString(map, "code"), MapUtils.getString(map, "msg"));
+        if (!"0000".equals(MapUtils.getString(map, "retCode"))) {
+            return Result.fail(MapUtils.getString(map, "retCode"), MapUtils.getString(map, "retMsg"));
         }
         boolean success = sendCoupon(accountId, phone);
         if (!success) {
