@@ -51,6 +51,11 @@ public interface OilOrderRepository extends JpaRepository<OilOrder, String> {
      */
     List<OilOrder> findByAccountIdAndActivityId(String accountId, String activityId);
 
+    /**
+     * 用户已完成某活动订单
+     */
+    List<OilOrder> findByAccountIdAndActivityIdAndStatus(String accountId, String activityId, String status);
+
     /*
      * 用户一段时间某活动的订单
      * */
@@ -86,5 +91,5 @@ public interface OilOrderRepository extends JpaRepository<OilOrder, String> {
     @Query(value = "SELECT * FROM `cbc_oil_order` WHERE account_id=?1 AND activity_id=?2 AND item_total_value=?3 AND is_available=0", nativeQuery = true)
     List<OilOrder> findByAccountIdAndActivityIdAndItemTotalValue(String accountId, String activityId, Double itemTotalValue);
 
-    List<OilOrder> findByAccountIdAndStatus(String accountId,int status);
+    List<OilOrder> findByAccountIdAndStatus(String accountId, int status);
 }
