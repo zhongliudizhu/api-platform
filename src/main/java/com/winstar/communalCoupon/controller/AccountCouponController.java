@@ -25,6 +25,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -68,6 +69,14 @@ public class AccountCouponController {
         List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountId(accountId);
         accountCoupons.stream().filter(accountCoupon -> accountCoupon.getState().equals(AccountCouponService.SENDING) && (new Date().getTime() - accountCoupon.getSendTime().getTime()) >= 24 * 60 * 60 * 1000).forEach(accountCoupon -> {
             accountCoupon.setState(AccountCouponService.NORMAL);
+            accountCouponRepository.save(accountCoupon);
+        });
+        long time = Long.valueOf(new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
+        accountCoupons.stream().filter(accountCoupon -> accountCoupon.getState().equals(AccountCouponService.LOCKED)
+                && !StringUtils.isEmpty(accountCoupon.getOrderId())
+                && (time - Long.valueOf(accountCoupon.getOrderId().substring(0, 14))) >= 3500).forEach(accountCoupon -> {
+            accountCoupon.setState(AccountCouponService.NORMAL);
+            accountCoupon.setOrderId(null);
             accountCouponRepository.save(accountCoupon);
         });
         accountCoupons.stream().filter(accountCoupon -> AccountCouponService.NORMAL.equals(accountCoupon.getState()) && (new Date().getTime() - accountCoupon.getEndTime().getTime()) >= 0).forEach(accountCoupon -> {
