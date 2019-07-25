@@ -66,12 +66,14 @@ info:
   checkBindLicense: https://mobile.sxwinstar.net/wechat_access/api/user/auth/checkBindLicense
   authDriverLicense: https://mobile.sxwinstar.net/wechat_access/api/user/auth/auth
   coupon_recover_switch: false
-  cost_exchange_server: http://192.168.118.54:11020/
+#  cost_exchange_server: http://192.168.118.54:11020/
+  cost_exchange_server: http://192.168.118.104:11020/
   communal_coupon_server: http://192.168.118.129:12002/
   takeCouponUrl: ${info.communal_coupon_server}api/v1/coupon/takeCoupons?
   verifyCouponUrl: ${info.communal_coupon_server}api/v1/coupon/verify/verify?
   writeOffCouponUrl: ${info.communal_coupon_server}api/v1/coupon/verify/cancel
   getTemplateInfoUrl: ${info.communal_coupon_server}api/v1/coupon/template?
+  handleBusinessUrl: ${info.cost_exchange_server}api/v1/phonebill/giving/handleBusiness
 
 pay:
   wx:
@@ -172,6 +174,8 @@ info:
   verifyCouponUrl: ${info.communal_coupon_server}api/v1/coupon/verify/verify?
   writeOffCouponUrl: ${info.communal_coupon_server}api/v1/coupon/verify/cancel
   getTemplateInfoUrl: ${info.communal_coupon_server}api/v1/coupon/template?
+  handleBusinessUrl: ${info.cost_exchange_server}api/v1/phonebill/giving/handleBusiness
+
 #建行信息卡校验
 bank:
   sms:
