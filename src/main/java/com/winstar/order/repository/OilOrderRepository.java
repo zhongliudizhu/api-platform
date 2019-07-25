@@ -54,7 +54,7 @@ public interface OilOrderRepository extends JpaRepository<OilOrder, String> {
     /**
      * 用户已完成某活动订单
      */
-    List<OilOrder> findByAccountIdAndActivityIdAndStatus(String accountId, String activityId, String status);
+    List<OilOrder> findByAccountIdAndActivityIdAndStatus(String accountId, String activityId, int status);
 
     /*
      * 用户一段时间某活动的订单
