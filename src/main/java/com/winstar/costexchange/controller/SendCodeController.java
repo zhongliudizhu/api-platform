@@ -44,14 +44,14 @@ public class SendCodeController {
         Map codeInfo;
         try {
             codeInfo = restTemplate.getForEntity(sendCodeUrl + "/" + mobile, Map.class).getBody();
-            log.info("+++++codeInfo++++=" + JSON.toJSONString(codeInfo));
-            if (!codeInfo.get("retMsg").equals("成功")) {
+            log.info("{codeInfo}===" + JSON.toJSONString(codeInfo));
+            if (!codeInfo.get("retCode").equals("0000")) {
                 return Result.fail("code_failed", String.valueOf(codeInfo.get("retMsg")));
             }
         } catch (Exception e) {
             return Result.fail("code_failed", "请求验证码失败");
         }
-        return Result.success(codeInfo);
+        return new Result(String.valueOf(codeInfo.get("retCode")), String.valueOf(codeInfo.get("retMsg")), null);
 
     }
 

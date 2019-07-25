@@ -40,4 +40,10 @@ public class Result {
         result.setMessage(message);
         return result;
     }
+
+    public Result(String code, String message, Object data) {
+        this.code = code;
+        this.message = message;
+        this.data = data;
+    }
 }
