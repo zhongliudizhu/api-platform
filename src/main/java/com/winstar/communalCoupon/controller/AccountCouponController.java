@@ -187,7 +187,6 @@ public class AccountCouponController {
             couponSendRecord.setStatus(couponSendRecord.getSendAccountId().equals(accountId) ? "sending" : "normal");
         }
         return Result.success(couponSendRecord);
-
     }
 
 

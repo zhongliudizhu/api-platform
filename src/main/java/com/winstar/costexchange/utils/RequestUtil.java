@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
@@ -53,9 +54,11 @@ public class RequestUtil {
             accountCoupon.setType(type);
             accountCoupon.setTemplateId(couponVo.getTemplateId());
             accountCoupon.setActivityId(activityId);
-            String switchCard = (String) redisTools.get(couponVo.getTemplateId() + "_cardable");
-            if(!StringUtils.isEmpty(switchCard) && switchCard.equals("yes")){
-                accountCoupon.setCardPackageId((String) redisTools.get(couponVo.getTemplateId() + "_cardId"));
+            if (!ObjectUtils.isEmpty(redisTools)){
+                String switchCard = (String) redisTools.get(couponVo.getTemplateId() + "_cardable");
+                if(!StringUtils.isEmpty(switchCard) && switchCard.equals("yes")){
+                    accountCoupon.setCardPackageId((String) redisTools.get(couponVo.getTemplateId() + "_cardId"));
+                }
             }
             logger.info("优惠券：" + accountCoupon.toString());
             accountCoupons.add(accountCoupon);
