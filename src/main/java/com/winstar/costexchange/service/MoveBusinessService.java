@@ -20,9 +20,9 @@ public class MoveBusinessService {
 
     public int check(String accountId) {
         log.info("开始查看用户 {} 资格", accountId);
-        List<OilOrder> orders = oilOrderRepository.findByAccountIdAndActivityIdAndStatus(accountId, "", "3");
+        List<OilOrder> orders = oilOrderRepository.findByAccountIdAndActivityIdAndStatus(accountId, "", 3);
         if (ObjectUtils.isEmpty(orders)) {
-            log.info("用户 {} 未下单，没有资格");
+            log.info("用户 {} 未下单，没有资格",accountId);
             return -1;
         }
         List<MoveBusinessRecord> records = moveBusinessRecordRepository.findByAccountId(accountId);
