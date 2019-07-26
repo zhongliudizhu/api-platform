@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @RestController
 @Slf4j
@@ -61,10 +62,22 @@ public class MoveBusinessController {
         this.moveBusinessRecordRepository = moveBusinessRecordRepository;
     }
 
+    /**
+     * 正则表达式：验证手机号
+     */
+    private static final String REGEX_MOBILE;
+
+    static {
+        REGEX_MOBILE = "^[1][3,4,5,6,7,8,9][0-9]{9}$";
+    }
+
     @RequestMapping(value = "exchange")
     public Result send(@RequestParam String phone, @RequestParam String code) throws NotRuleException {
         String accountId = accountService.getAccountId(request);
         log.info("开始办理话费业务：accountId is :{}，phone is：{},code is :{}", accountId, phone, code);
+        if (!Pattern.matches(REGEX_MOBILE, phone)) {
+            return Result.fail("param_error", "手机号错误");
+        }
         int remainingTimes = moveBusinessService.check(accountId);
         if (remainingTimes <= 0) {
             return Result.fail("user_no_times", "用户无参与资格");
