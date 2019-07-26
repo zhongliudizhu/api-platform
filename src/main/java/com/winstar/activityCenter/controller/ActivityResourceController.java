@@ -5,6 +5,7 @@ import com.winstar.activityCenter.repository.ActivityResourceRepository;
 import com.winstar.vo.Result;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +23,7 @@ public class ActivityResourceController {
 
     @GetMapping("getAllResources")
     public Result getAllResources() {
-        List<ActivityResource> all = resourceRepository.findAll();
+        List<ActivityResource> all = resourceRepository.findAll(new Sort(Sort.Direction.ASC, "type"));
         if (CollectionUtils.isEmpty(all)) {
             return Result.fail(Result.FAIL, "无相应资源");
         }
