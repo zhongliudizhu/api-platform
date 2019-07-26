@@ -138,6 +138,7 @@ public class MoveBusinessController {
             moveBusinessRecordRepository.save(moveBusinessRecord);
             return true;
         }
+        log.error("用户 {} 发放优惠券失败 ！！",accountId);
         return false;
     }
 
