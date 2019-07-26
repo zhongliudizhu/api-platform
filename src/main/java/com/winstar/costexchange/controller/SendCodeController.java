@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.winstar.costexchange.service.MoveBusinessService;
 import com.winstar.vo.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
@@ -46,12 +47,12 @@ public class SendCodeController {
             codeInfo = restTemplate.getForEntity(sendCodeUrl + "/" + mobile, Map.class).getBody();
             log.info("{codeInfo}===" + JSON.toJSONString(codeInfo));
             if (!codeInfo.get("retCode").equals("0000")) {
-                return Result.fail("code_failed", String.valueOf(codeInfo.get("retMsg")));
+                return Result.fail(MapUtils.getString(codeInfo, "retCode"), MapUtils.getString(codeInfo, "retMsg"));
             }
         } catch (Exception e) {
             return Result.fail("code_failed", "请求验证码失败");
         }
-        return new Result(String.valueOf(codeInfo.get("retCode")), String.valueOf(codeInfo.get("retMsg")), null);
+        return Result.success(null);
 
     }
 
