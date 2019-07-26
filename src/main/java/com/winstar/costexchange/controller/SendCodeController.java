@@ -40,7 +40,7 @@ public class SendCodeController {
             return Result.fail("mobile_error", "手机号错误");
         }
         if (moveBusinessService.check(accountId) <= 0) {
-            return Result.fail("account_non_chance", "您无资格享受活动，请先下单");
+            return Result.fail("account_non_chance", "需要先购买加油券，才能参与活动哦");
         }
         Map codeInfo;
         try {
