@@ -82,6 +82,16 @@ public class ActivityVo {
     private String subTitle;
 
     /**
+     * 是否加入每日福利 (yes/no)
+     */
+    private String addWelfare;
+
+    /**
+     * 是否加入违法 (yes/no)
+     */
+    private String addIllegal;
+
+    /**
      * 优惠券模板ID
      */
     @JsonIgnore

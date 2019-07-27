@@ -11,6 +11,7 @@ import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.repository.TemplateRuleRepository;
 import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.exception.NotRuleException;
+import com.winstar.order.utils.DateUtil;
 import com.winstar.redis.RedisTools;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -106,13 +107,21 @@ public class CommunalActivityService {
                 }
             }
             List<AccountCoupon> activityCoupons = groupAccountCoupons.get(communalActivity.getId());
-            //正常活动已领取当天显示
             if (!ObjectUtils.isEmpty(activityCoupons)) {
-                if (getDayEnd(activityCoupons.get(0).getCreatedAt()).getTime() <= now.getTime()) {
-                    available = false;
+                //违法与每日福利活动判断是否当日已领取
+                if ("yes".equals(communalActivity.getAddIllegal()) || "yes".equals(communalActivity.getAddWelfare())) {
+                    for (AccountCoupon accountCoupon : activityCoupons) {
+                        if (DateUtil.getDayBegin().getTime() < accountCoupon.getCreatedAt().getTime())
+                            activityVo.setStatus("received");
+                    }
                 } else {
-                    activityVo.setStatus("received");
-                    log.info("{}活动{}已被领取", communalActivity.getName(), communalActivity.getId());
+                    //正常活动已领取当天显示
+                    if (getDayEnd(activityCoupons.get(0).getCreatedAt()).getTime() <= now.getTime()) {
+                        available = false;
+                    } else {
+                        activityVo.setStatus("received");
+                        log.info("{}活动{}已被领取", communalActivity.getName(), communalActivity.getId());
+                    }
                 }
             }
             if (available) {
