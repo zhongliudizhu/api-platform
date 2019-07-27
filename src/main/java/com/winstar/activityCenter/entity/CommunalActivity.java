@@ -96,5 +96,15 @@ public class CommunalActivity {
     @Column(columnDefinition = "datetime COMMENT '创建时间'")
     private Date createdAt;
 
+    /**
+     * 是否加入每日福利 (yes/no)
+     */
+    @Column(columnDefinition = "varchar(10) COMMENT '是否加入每日福利'")
+    private String addWelfare;
 
+    /**
+     * 是否加入违法 (yes/no)
+     */
+    @Column(columnDefinition = "varchar(10) COMMENT '是否加入违法'")
+    private String addIllegal;
 }
