@@ -49,7 +49,7 @@ public class MoveBusinessController {
     MoveBusinessRecordRepository moveBusinessRecordRepository;
     @Value("${info.handleBusinessUrl}")
     private String handleBusinessUrl;
-    private static final String templateId = "000000006b96f5ca016bb166e6f60001";
+    private static final String templateId = "000000006b96f5ca016c3bb1dc390026";
 
     @Autowired
     public MoveBusinessController(HttpServletRequest request, AccountService accountService, RestTemplate restTemplate, AccountCouponService accountCouponService, AccountCouponRepository accountCouponRepository, MoveBusinessService moveBusinessService, MoveBusinessRecordRepository moveBusinessRecordRepository) {
