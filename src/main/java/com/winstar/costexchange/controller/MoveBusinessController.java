@@ -88,7 +88,7 @@ public class MoveBusinessController {
         }
         boolean success = sendCoupon(accountId, phone);
         if (!success) {
-            throw new NotRuleException("发券失败");
+            return Result.fail("send_coupon_fail", "发券失败");
         }
         return Result.success(null);
     }
@@ -138,7 +138,7 @@ public class MoveBusinessController {
             moveBusinessRecordRepository.save(moveBusinessRecord);
             return true;
         }
-        log.error("用户 {} 发放优惠券失败 ！！",accountId);
+        log.error("用户 {} 发放优惠券失败 ！！", accountId);
         return false;
     }
 
