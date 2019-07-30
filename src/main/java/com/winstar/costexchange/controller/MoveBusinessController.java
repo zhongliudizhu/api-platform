@@ -4,7 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
+import com.winstar.costexchange.entity.FailSendRecord;
 import com.winstar.costexchange.entity.MoveBusinessRecord;
+import com.winstar.costexchange.repository.FailSendRecordRepository;
 import com.winstar.costexchange.repository.MoveBusinessRecordRepository;
 import com.winstar.costexchange.service.MoveBusinessService;
 import com.winstar.costexchange.utils.RequestUtil;
@@ -47,12 +49,14 @@ public class MoveBusinessController {
     MoveBusinessService moveBusinessService;
     private final
     MoveBusinessRecordRepository moveBusinessRecordRepository;
+    private final
+    FailSendRecordRepository failSendRecordRepository;
     @Value("${info.handleBusinessUrl}")
     private String handleBusinessUrl;
     private static final String templateId = "000000006b96f5ca016c3bb1dc390026";
 
     @Autowired
-    public MoveBusinessController(HttpServletRequest request, AccountService accountService, RestTemplate restTemplate, AccountCouponService accountCouponService, AccountCouponRepository accountCouponRepository, MoveBusinessService moveBusinessService, MoveBusinessRecordRepository moveBusinessRecordRepository) {
+    public MoveBusinessController(HttpServletRequest request, AccountService accountService, RestTemplate restTemplate, AccountCouponService accountCouponService, AccountCouponRepository accountCouponRepository, MoveBusinessService moveBusinessService, MoveBusinessRecordRepository moveBusinessRecordRepository, FailSendRecordRepository failSendRecordRepository) {
         this.request = request;
         this.accountService = accountService;
         this.restTemplate = restTemplate;
@@ -60,6 +64,7 @@ public class MoveBusinessController {
         this.accountCouponRepository = accountCouponRepository;
         this.moveBusinessService = moveBusinessService;
         this.moveBusinessRecordRepository = moveBusinessRecordRepository;
+        this.failSendRecordRepository = failSendRecordRepository;
     }
 
     /**
@@ -86,7 +91,13 @@ public class MoveBusinessController {
         if (!"0000".equals(MapUtils.getString(map, "retCode"))) {
             return Result.fail(MapUtils.getString(map, "retCode"), MapUtils.getString(map, "retMsg"));
         }
-        boolean success = sendCoupon(accountId, phone);
+        //记录
+        MoveBusinessRecord moveBusinessRecord = new MoveBusinessRecord();
+        moveBusinessRecord.setAccountId(accountId);
+        moveBusinessRecord.setPhone(phone);
+        moveBusinessRecord.setCreatedAt(new Date());
+        moveBusinessRecordRepository.save(moveBusinessRecord);
+        boolean success = sendCoupon(accountId);
         if (!success) {
             return Result.fail("send_coupon_fail", "发券失败");
         }
@@ -122,7 +133,7 @@ public class MoveBusinessController {
     /**
      * 发放优惠券
      */
-    private boolean sendCoupon(String accountId, String phone) {
+    private boolean sendCoupon(String accountId) {
         log.info("给用户发放优惠券：accountId is {} and templateId is {}", accountId, templateId);
         ResponseEntity<Map> responseEntity = accountCouponService.getCoupon(templateId, "1");
         Map map = responseEntity.getBody();
@@ -131,13 +142,14 @@ public class MoveBusinessController {
             List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(JSON.toJSONString(map.get("data")), "yjx", accountId, null, null);
             accountCouponRepository.save(accountCoupons);
             log.info("发放优惠券成功！accountId is {} and templateId is {}", accountId, templateId);
-            MoveBusinessRecord moveBusinessRecord = new MoveBusinessRecord();
-            moveBusinessRecord.setAccountId(accountId);
-            moveBusinessRecord.setPhone(phone);
-            moveBusinessRecord.setCreatedAt(new Date());
-            moveBusinessRecordRepository.save(moveBusinessRecord);
             return true;
         }
+        FailSendRecord failSendRecord = new FailSendRecord();
+        failSendRecord.setAccountId(accountId);
+        failSendRecord.setTemplateId(templateId);
+        failSendRecord.setCreatedAt(new Date());
+        failSendRecord.setFailMsg(map.toString());
+        failSendRecordRepository.save(failSendRecord);
         log.error("用户 {} 发放优惠券失败 ！！", accountId);
         return false;
     }
