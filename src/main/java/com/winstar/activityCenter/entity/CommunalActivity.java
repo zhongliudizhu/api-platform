@@ -97,14 +97,14 @@ public class CommunalActivity {
     private Date createdAt;
 
     /**
-     * 是否加入每日福利 (yes/no)
+     * 是否首页展示 (yes/no)
      */
-    @Column(columnDefinition = "varchar(10) COMMENT '是否加入每日福利'")
-    private String addWelfare;
+    @Column(columnDefinition = "varchar(10) COMMENT '是否首页展示'")
+    private String showHome;
 
     /**
-     * 是否加入违法 (yes/no)
+     * 是否只有新用户才能领取 (yes/no)
      */
-    @Column(columnDefinition = "varchar(10) COMMENT '是否加入违法'")
-    private String addIllegal;
+    @Column(columnDefinition = "varchar(10) COMMENT '是否只有新用户才能领取'")
+    private String onlyNew;
 }

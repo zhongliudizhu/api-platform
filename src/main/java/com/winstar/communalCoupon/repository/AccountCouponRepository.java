@@ -20,9 +20,11 @@ public interface AccountCouponRepository extends JpaRepository<AccountCoupon, St
     List<AccountCoupon> findByAccountIdAndCouponIdIn(String accountId, String[] couponIds);
 
     List<AccountCoupon> findByAccountId(String accountId);
+
     List<AccountCoupon> findByAccountIdAndActivityId(String accountId, String activityId);
+
     //统计用户未使用的优惠券张数
-    @Query(value = "SELECT COUNT(*) FROM `communal_account_coupon` WHERE account_id=?1 AND state='normal'",nativeQuery = true)
+    @Query(value = "SELECT COUNT(*) FROM `communal_account_coupon` WHERE account_id=?1 AND state='normal'", nativeQuery = true)
     long findByState(String accountId);
 
     AccountCoupon findByCouponId(String couponId);

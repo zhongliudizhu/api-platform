@@ -11,7 +11,6 @@ import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.repository.TemplateRuleRepository;
 import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.exception.NotRuleException;
-import com.winstar.order.utils.DateUtil;
 import com.winstar.redis.RedisTools;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -107,22 +106,17 @@ public class CommunalActivityService {
                 }
             }
             List<AccountCoupon> activityCoupons = groupAccountCoupons.get(communalActivity.getId());
+            //正常活动已领取当天显示
             if (!ObjectUtils.isEmpty(activityCoupons)) {
-                //违法与每日福利活动判断是否当日已领取
-                if ("yes".equals(communalActivity.getAddIllegal()) || "yes".equals(communalActivity.getAddWelfare())) {
-                    for (AccountCoupon accountCoupon : activityCoupons) {
-                        if (DateUtil.getDayBegin().getTime() < accountCoupon.getCreatedAt().getTime())
-                            activityVo.setStatus("received");
-                    }
+                if (getDayEnd(activityCoupons.get(0).getCreatedAt()).getTime() <= now.getTime()) {
+                    available = false;
                 } else {
-                    //正常活动已领取当天显示
-                    if (getDayEnd(activityCoupons.get(0).getCreatedAt()).getTime() <= now.getTime()) {
-                        available = false;
-                    } else {
-                        activityVo.setStatus("received");
-                        log.info("{}活动{}已被领取", communalActivity.getName(), communalActivity.getId());
-                    }
+                    activityVo.setStatus("received");
+                    log.info("{}活动{}已被领取", communalActivity.getName(), communalActivity.getId());
                 }
+            }
+            if ("yes".equals(activityVo.getOnlyNew())) {
+                available = false;
             }
             if (available) {
                 activityVos.add(activityVo);
@@ -142,7 +136,7 @@ public class CommunalActivityService {
      * @param activityVos 活动VOList
      * @param templateIds 模板ID
      */
-    private void setTemplateInfo(List<ActivityVo> activityVos, String templateIds) throws NotRuleException {
+    public void setTemplateInfo(List<ActivityVo> activityVos, String templateIds) throws NotRuleException {
         if (!ObjectUtils.isEmpty(activityVos)) {
             List<CouponTemplateVo> list = getTemplateInfo(templateIds);
             Map<String, CouponTemplateVo> map = list.stream().collect(Collectors.toMap(CouponTemplateVo::getId, CouponTemplateVo::getThis));

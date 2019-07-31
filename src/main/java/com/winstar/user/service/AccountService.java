@@ -2,10 +2,12 @@ package com.winstar.user.service;
 
 import com.alibaba.fastjson.JSON;
 import com.winstar.exception.NotRuleException;
+import com.winstar.user.entity.AccessToken;
 import com.winstar.user.entity.Account;
 import com.winstar.user.param.AccountParam;
 import com.winstar.user.utils.ServiceManager;
 import com.winstar.user.utils.SimpleResult;
+import com.winstar.user.utils.UUIDUtils;
 import com.winstar.user.vo.WinstarAccessToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -73,6 +75,21 @@ public class AccountService {
         return ServiceManager.accountRepository.save(account);
     }
 
+    /**
+     * 获取token信息
+     *
+     * @param account account
+     * @return AccessToken AccessToken
+     */
+    public AccessToken createAccessToken(Account account) {
+        AccessToken accessToken;
+        accessToken = new AccessToken();
+        accessToken.setCreateTime(new Date());
+        accessToken.setTokenId(UUIDUtils.getUUID());
+        accessToken.setAccountId(account.getId());
+        accessToken.setUpdateTime(new Date());
+        return ServiceManager.accessTokenRepository.save(accessToken);
+    }
     /**
      * 从head中获取accountId
      *
