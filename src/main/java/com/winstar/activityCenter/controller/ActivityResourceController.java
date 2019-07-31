@@ -5,10 +5,11 @@ import com.winstar.activityCenter.repository.ActivityResourceRepository;
 import com.winstar.vo.Result;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -22,12 +23,17 @@ public class ActivityResourceController {
     ActivityResourceRepository resourceRepository;
 
     @GetMapping("getAllResources")
-    public Result getAllResources() {
-        List<ActivityResource> all = resourceRepository.findAll(new Sort(Sort.Direction.ASC, "type"));
-        if (CollectionUtils.isEmpty(all)) {
+    public Result getAllResources(@RequestParam(required = false, defaultValue = "") String activityType) {
+        List<ActivityResource> activityResources;
+        if (StringUtils.isEmpty(activityType)) {
+            activityResources = resourceRepository.findByStatusOrderByTypeAsc("normal");
+        } else {
+            activityResources = resourceRepository.findByActivityTypeAndStatusOrderByTypeAsc(activityType, "normal");
+        }
+        if (CollectionUtils.isEmpty(activityResources)) {
             return Result.fail(Result.FAIL, "无相应资源");
         }
-        return Result.success(all);
+        return Result.success(activityResources);
     }
 
 

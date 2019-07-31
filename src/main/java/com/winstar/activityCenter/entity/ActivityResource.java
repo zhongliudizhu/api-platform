@@ -7,6 +7,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -43,9 +44,28 @@ public class ActivityResource implements Serializable {
     private String activityName;
 
     /**
-     * 活动类型 1，建行交安卡 2，移动用户
+     * 排序等级
      */
-    @Column(columnDefinition = "varchar(10) COMMENT '活动类型'")
+    @Column(columnDefinition = "varchar(10) COMMENT '排序等级'")
     private String type;
+
+    /**
+     * del 删除，normal 正常
+     */
+    @Column(columnDefinition = "varchar(20) COMMENT '活动状态'")
+    private String status;
+
+
+    /**
+     * 活动类型
+     */
+    @Column(columnDefinition = "varchar(20) COMMENT '活动类型'")
+    private String activityType;
+
+    /**
+     * 创建时间
+     */
+    @Column(columnDefinition = "datetime COMMENT '创建时间'")
+    private Date createdAt;
 
 }
