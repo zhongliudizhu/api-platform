@@ -26,9 +26,9 @@ public class ActivityResourceController {
     public Result getAllResources(@RequestParam(required = false, defaultValue = "") String activityType) {
         List<ActivityResource> activityResources;
         if (StringUtils.isEmpty(activityType)) {
-            activityResources = resourceRepository.findByStatusOrderByTypeAsc("normal");
+            activityResources = resourceRepository.findByStatusOrderByTypeAsc("yes");
         } else {
-            activityResources = resourceRepository.findByActivityTypeAndStatusOrderByTypeAsc(activityType, "normal");
+            activityResources = resourceRepository.findByActivityTypeAndStatusOrderByTypeAsc(activityType, "yes");
         }
         if (CollectionUtils.isEmpty(activityResources)) {
             return Result.fail(Result.FAIL, "无相应资源");

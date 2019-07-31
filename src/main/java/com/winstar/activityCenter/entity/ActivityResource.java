@@ -50,7 +50,7 @@ public class ActivityResource implements Serializable {
     private String type;
 
     /**
-     * del 删除，normal 正常
+     * yes 上架，no 下架
      */
     @Column(columnDefinition = "varchar(20) COMMENT '活动状态'")
     private String status;
