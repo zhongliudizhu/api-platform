@@ -47,6 +47,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         excludeUrls.add("/api/v1/cbc/cost/sendCoupon");
         excludeUrls.add("/api/v1/cbc/cost/exchangeFail");
         excludeUrls.add("/api/v1/cbc/receive/setNumber");
+        excludeUrls.add("/api/v1/cbc/communalActivity/newUser");
 
 
         excludeUrls.add("/ccb-api/error");
@@ -62,6 +63,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         excludeUrls.add("/ccb-api/api/v1/cbc/cost/sendCoupon");
         excludeUrls.add("/ccb-api/api/v1/cbc/cost/exchangeFail");
         excludeUrls.add("/ccb-api/api/v1/cbc/receive/setNumber");
+        excludeUrls.add("/ccb-api/api/v1/cbc/communalActivity/newUser");
     }
 
     @Override

@@ -82,14 +82,14 @@ public class ActivityVo {
     private String subTitle;
 
     /**
-     * 是否加入每日福利 (yes/no)
+     * 是否首页展示 (yes/no)
      */
-    private String addWelfare;
+    private String showHome;
 
     /**
-     * 是否加入违法 (yes/no)
+     * 是否只有新用户才能领取 (yes/no)
      */
-    private String addIllegal;
+    private String onlyNew;
 
     /**
      * 优惠券模板ID

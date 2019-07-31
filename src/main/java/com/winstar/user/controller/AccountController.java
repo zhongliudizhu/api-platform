@@ -53,11 +53,11 @@ public class AccountController {
         Account account = ServiceManager.accountRepository.findByOpenid(accountParam.getOpenid());
         if (null == account) {
             Account accountSaved = ServiceManager.accountService.createAccount(accountParam);
-            return createAccessToken(accountSaved);
+            return ServiceManager.accountService.createAccessToken(accountSaved);
         }
         AccessToken accessToken = ServiceManager.accessTokenService.findByAccountId(account.getId());
         if (null == accessToken) {
-            return createAccessToken(account);
+            return ServiceManager.accountService.createAccessToken(account);
         }
 
         return accessToken;
@@ -94,21 +94,6 @@ public class AccountController {
         return ServiceManager.accessTokenRepository.save(accessToken);
     }
 
-    /**
-     * 获取token信息
-     *
-     * @param account account
-     * @return AccessToken AccessToken
-     */
-    private AccessToken createAccessToken(Account account) {
-        AccessToken accessToken;
-        accessToken = new AccessToken();
-        accessToken.setCreateTime(new Date());
-        accessToken.setTokenId(UUIDUtils.getUUID());
-        accessToken.setAccountId(account.getId());
-        accessToken.setUpdateTime(new Date());
-        return ServiceManager.accessTokenRepository.save(accessToken);
-    }
 
     private void checkGetTokenRule(@RequestBody AccountParam accountParam) throws NotRuleException {
         if (null == accountParam)
