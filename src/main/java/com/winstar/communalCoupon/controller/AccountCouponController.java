@@ -104,7 +104,7 @@ public class AccountCouponController {
             logger.info("商品不存在！");
             return Result.fail("shop_not_found", "商品不存在！");
         }
-        List<AccountCoupon> couponList = accountCouponService.getAvailableCoupons(accountCoupons, goods.getPrice());
+        List<AccountCoupon> couponList = accountCouponService.getAvailableCoupons(accountCoupons, goods.getPrice(),goods.getTags());
         return Result.success(getAccountCoupons(couponList));
     }
 

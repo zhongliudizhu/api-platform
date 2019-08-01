@@ -28,9 +28,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author UU
- * @Classname AccountCouponService
- * @Description TODO
- * @Date 2019/5/28 17:57
  */
 @Service
 @Slf4j
@@ -88,10 +85,10 @@ public class AccountCouponService {
      * @return List<AccountCoupon>
      */
     @SuppressWarnings("unchecked")
-    public List<AccountCoupon> getAvailableCoupons(List<AccountCoupon> accountCoupons, Double amount) {
+    public List<AccountCoupon> getAvailableCoupons(List<AccountCoupon> accountCoupons, Double amount,String tags) {
         String couponIds = accountCoupons.stream().map(AccountCoupon::getCouponId).collect(Collectors.joining(","));
         log.info("couponIds:" + couponIds);
-        ResponseEntity<Map> resp = checkCoupon(couponIds, amount.toString());
+        ResponseEntity<Map> resp = checkCoupon(couponIds, amount.toString(),tags);
         log.info("map:" + resp.getBody().toString());
         Map map = resp.getBody();
         if (!"SUCCESS".equals(map.get("code"))) {
