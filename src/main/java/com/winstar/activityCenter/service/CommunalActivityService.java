@@ -107,7 +107,7 @@ public class CommunalActivityService {
             }
             List<AccountCoupon> activityCoupons = groupAccountCoupons.get(communalActivity.getId());
             //正常活动已领取当天显示
-            if (!ObjectUtils.isEmpty(activityCoupons)) {
+            if (!ObjectUtils.isEmpty(activityCoupons) && !"yes".equals(activityVo.getShowHome())) {
                 if (getDayEnd(activityCoupons.get(0).getCreatedAt()).getTime() <= now.getTime()) {
                     available = false;
                 } else {
