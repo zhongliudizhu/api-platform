@@ -1,7 +1,6 @@
 package com.winstar.costexchange.controller;
 
 import com.winstar.costexchange.service.MoveBusinessService;
-import com.winstar.exception.NotRuleException;
 import com.winstar.user.service.AccountService;
 import com.winstar.vo.Result;
 import org.apache.commons.collections.MapUtils;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 @RestController
@@ -30,13 +28,7 @@ public class PhoneNumberCheckController {
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
-    public Result phoneNumberCheck(HttpServletRequest request, String phone) throws NotRuleException {
-        String accountId = accountService.getAccountId(request);
-        int remainingTimes = moveBusinessService.check(accountId);
-        if (remainingTimes <= 0) {
-            return Result.fail("user_no_times", "用户无参与资格");
-        }
-        System.out.println("用户是" + accountId);
+    public Result phoneNumberCheck(String phone){
         ResponseEntity<Map> stringResponseEntity = new RestTemplate().getForEntity(phoneNumberCheckUrl + "/" + phone, Map.class);
         System.out.println(stringResponseEntity.getBody());
         if (stringResponseEntity.getBody().get("data") != null) {
