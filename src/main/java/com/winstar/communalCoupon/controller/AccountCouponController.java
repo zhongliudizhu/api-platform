@@ -74,8 +74,10 @@ public class AccountCouponController {
             int hour = DateUtil.getHour(new Date());
             //不在周四权益时高峰时段时再检测是否有赠送超时未领取的优惠券
             if(!week.equals(Week.THURSDAY) || (week.equals(Week.THURSDAY) && hour > 14)){
+                logger.info("检查超时未领取的优惠券状态");
                 accountCouponService.backSendingTimeOutCoupon(accountCoupons);
             }
+            logger.info("检查过期优惠券状态");
             accountCoupons.stream().filter(accountCoupon -> AccountCouponService.NORMAL.equals(accountCoupon.getState()) && (new Date().getTime() - accountCoupon.getEndTime().getTime()) >= 0).forEach(accountCoupon -> {
                 accountCoupon.setState(AccountCouponService.EXPIRED);
                 accountCouponRepository.save(accountCoupon);
