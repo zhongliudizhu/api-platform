@@ -7,6 +7,8 @@ import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.repository.CouponSendRecordRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.costexchange.vo.AccountCouponVo;
+import com.winstar.order.utils.DateUtil;
+import com.winstar.order.utils.Week;
 import com.winstar.redis.RedisTools;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.GoodsRepository;
@@ -25,7 +27,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -65,24 +66,21 @@ public class AccountCouponController {
             return Result.fail("state_not_auth", "状态值错误！");
         }
         String accountId = (String) request.getAttribute("accountId");
-        logger.info("检查优惠券状态，如已过期或赠送超时未领取的券更新数据，用户id is {}", accountId);
-        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountId(accountId);
-        accountCoupons.stream().filter(accountCoupon -> accountCoupon.getState().equals(AccountCouponService.SENDING) && (new Date().getTime() - accountCoupon.getSendTime().getTime()) >= 24 * 60 * 60 * 1000).forEach(accountCoupon -> {
-            accountCoupon.setState(AccountCouponService.NORMAL);
-            accountCouponRepository.save(accountCoupon);
-        });
-        long time = Long.valueOf(new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
-        accountCoupons.stream().filter(accountCoupon -> accountCoupon.getState().equals(AccountCouponService.LOCKED)
-                && !StringUtils.isEmpty(accountCoupon.getOrderId())
-                && (time - Long.valueOf(accountCoupon.getOrderId().substring(0, 14))) >= 3500).forEach(accountCoupon -> {
-            accountCoupon.setState(AccountCouponService.NORMAL);
-            accountCoupon.setOrderId(null);
-            accountCouponRepository.save(accountCoupon);
-        });
-        accountCoupons.stream().filter(accountCoupon -> AccountCouponService.NORMAL.equals(accountCoupon.getState()) && (new Date().getTime() - accountCoupon.getEndTime().getTime()) >= 0).forEach(accountCoupon -> {
-            accountCoupon.setState(AccountCouponService.EXPIRED);
-            accountCouponRepository.save(accountCoupon);
-        });
+        String key = "coupon_checking_" + accountId;
+        if(redisTools.setIfAbsent(key, 1800)){
+            logger.info("检查优惠券状态，如已过期或赠送超时未领取的券更新数据，用户id is {}", accountId);
+            List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountId(accountId);
+            Week week = DateUtil.getWeek(new Date());
+            int hour = DateUtil.getHour(new Date());
+            //不在周四权益时高峰时段时再检测是否有赠送超时未领取的优惠券
+            if(!week.equals(Week.THURSDAY) || (week.equals(Week.THURSDAY) && hour > 14)){
+                accountCouponService.backSendingTimeOutCoupon(accountCoupons);
+            }
+            accountCoupons.stream().filter(accountCoupon -> AccountCouponService.NORMAL.equals(accountCoupon.getState()) && (new Date().getTime() - accountCoupon.getEndTime().getTime()) >= 0).forEach(accountCoupon -> {
+                accountCoupon.setState(AccountCouponService.EXPIRED);
+                accountCouponRepository.save(accountCoupon);
+            });
+        }
         Pageable pageable = WebUitl.buildPageRequest(nextPage, pageSize, null);
         Page<AccountCoupon> accountCouponPage = accountCouponRepository.findByAccountIdAndShowStatusAndState(accountId, "yes", state, pageable);
         return Result.success(accountCouponPage);
