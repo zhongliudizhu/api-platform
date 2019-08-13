@@ -45,5 +45,9 @@ public class InvoiceItem {
      * 售价(计算后)
      */
     private Double salePrice;
+    /**
+     * 订单编号
+     */
+    private String orderId;
 
 }

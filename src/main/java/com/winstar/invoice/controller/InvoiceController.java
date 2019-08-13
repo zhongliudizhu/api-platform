@@ -219,6 +219,7 @@ public class InvoiceController {
             item.setOilId(id);
             BigDecimal p = new BigDecimal(myOilCoupon.getPayPrice());
             item.setSalePrice(p.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            item.setOrderId(myOilCoupon.getOrderId());
             invoiceItemRepository.save(item);
         }
         return in;
