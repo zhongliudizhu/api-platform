@@ -106,15 +106,16 @@ public class CommunalActivityService {
                 }
             }
             List<AccountCoupon> activityCoupons = groupAccountCoupons.get(communalActivity.getId());
-            //正常活动已领取当天显示
-            if (!ObjectUtils.isEmpty(activityCoupons) && !"yes".equals(activityVo.getShowHome())) {
-                if (getDayEnd(activityCoupons.get(0).getCreatedAt()).getTime() <= now.getTime()) {
+            if (!ObjectUtils.isEmpty(activityCoupons)) {
+                //首页活动一直展示 交安卡专享活动一直展示 正常活动已领取当天显示
+                if (getDayEnd(activityCoupons.get(0).getCreatedAt()).getTime() <= now.getTime() && !"yes".equals(activityVo.getShowHome()) && !"ccb".equals(target)) {
                     available = false;
                 } else {
                     activityVo.setStatus("received");
                     log.info("{}活动{}已被领取", communalActivity.getName(), communalActivity.getId());
                 }
             }
+            //新用户活动不在领券中心展示
             if ("yes".equals(activityVo.getOnlyNew())) {
                 available = false;
             }
