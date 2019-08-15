@@ -107,4 +107,11 @@ public class CommunalActivity {
      */
     @Column(columnDefinition = "varchar(10) COMMENT '是否只有新用户才能领取'")
     private String onlyNew;
+
+    /**
+     * 展示处(center/ccb/?/?)
+     */
+    @Column(columnDefinition = "varchar(10) COMMENT ' 展示处'")
+    private String target;
+
 }

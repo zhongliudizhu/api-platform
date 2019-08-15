@@ -50,9 +50,9 @@ public class CommunalActivityController {
     AccountCouponService accountCouponService;
 
     @GetMapping(value = "/availableActivities")
-    public Result getActivities() throws NotRuleException {
+    public Result getActivities(@RequestParam(required = false, defaultValue = "center") String target) throws NotRuleException {
         String accountId = (String) request.getAttribute("accountId");
-        List<ActivityVo> activityVos = communalActivityService.findAvailableActivities(accountId);
+        List<ActivityVo> activityVos = communalActivityService.findAvailableActivities(accountId, target);
         return Result.success(activityVos);
     }
 

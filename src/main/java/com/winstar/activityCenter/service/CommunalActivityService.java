@@ -51,11 +51,23 @@ public class CommunalActivityService {
      * @param accountId 用户ID
      * @return list
      */
-    public List<ActivityVo> findAvailableActivities(String accountId) throws NotRuleException {
+    public List<ActivityVo> findAvailableActivities(String accountId, String target) throws NotRuleException {
         log.info("开始查找活动列表");
+        //返回活动VO
         List<ActivityVo> activityVos = new ArrayList<>();
+        //当前时间
         Date now = new Date();
-        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountId(accountId);
+        //已上架未删除已到展示时间
+        List<CommunalActivity> list = communalActivityRepository.findAllByStatusAndDelAndTargetAndShowDateBefore("yes", "no", target, now);
+        //旧的活动
+        List<CommunalActivity> list2 = communalActivityRepository.findAllByStatusAndDelAndTargetAndShowDateBefore("yes", "no", null, now);
+        //合并
+        list.addAll(list2);
+        //活动Id
+        List<String> activityIds = list.stream().map(CommunalActivity::getId).collect(Collectors.toList());
+        //用户所有活动领取优惠券
+        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndActivityIdIn(accountId, activityIds);
+        //用户优惠券按照活动ID分组
         Map<String, List<AccountCoupon>> groupAccountCoupons = new HashMap<>();
         accountCoupons
                 .forEach(e -> {
@@ -66,8 +78,13 @@ public class CommunalActivityService {
                         groupAccountCoupons.get(e.getActivityId()).add(e);
                     }
                 });
-        //已上架未删除已到展示时间
-        List<CommunalActivity> list = communalActivityRepository.findAllByStatusAndDelAndShowDateBefore("yes", "no", now);
+        //交安卡专享活动
+        if (target.equals("ccb")) {
+            if (!ObjectUtils.isEmpty(accountCoupons)) {
+                String activityId = accountCoupons.get(0).getActivityId();
+                list = list.stream().filter(e -> e.getId().equals(activityId)).collect(Collectors.toList());
+            }
+        }
         StringBuilder sb = new StringBuilder();
         for (CommunalActivity communalActivity : list) {
             ActivityVo activityVo = new ActivityVo();

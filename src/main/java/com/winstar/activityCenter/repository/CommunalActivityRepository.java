@@ -14,7 +14,7 @@ import java.util.List;
  */
 public interface CommunalActivityRepository extends JpaRepository<CommunalActivity, String> {
 
-    List<CommunalActivity> findAllByStatusAndDelAndShowDateBefore(String status, String del, Date showDate);
+    List<CommunalActivity> findAllByStatusAndDelAndTargetAndShowDateBefore(String status, String del, String target, Date showDate);
 
     CommunalActivity findByStatusAndDelAndShowDateBeforeAndOnlyNew(String status, String del, Date showDate, String onlyNew);
 }

@@ -40,7 +40,7 @@ spring:
       batch-size: 10
     template:
       default-topic: order_success_message
-    bootstrap-servers: 192.168.118.101:9092
+    bootstrap-servers: 192.168.118.69:9092
     consumer:
       group-id: myGroup
       auto-offset-reset: earliest
