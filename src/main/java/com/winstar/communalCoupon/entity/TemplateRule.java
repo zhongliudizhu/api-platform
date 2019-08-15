@@ -55,4 +55,10 @@ public class TemplateRule {
      */
     @Column(columnDefinition = "datetime comment '创建时间'")
     private Date createdAt;
+
+    /**
+     * 是否违法赠送 yes/no
+     */
+    @Column(columnDefinition = "varchar(50) COMMENT '是否违法赠送 yes/no'")
+    private String illegalStatus;
 }

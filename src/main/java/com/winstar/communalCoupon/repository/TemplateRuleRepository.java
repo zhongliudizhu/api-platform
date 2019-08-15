@@ -3,6 +3,8 @@ package com.winstar.communalCoupon.repository;
 import com.winstar.communalCoupon.entity.TemplateRule;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 /**
  * @author UU
  * @Classname TemplateRuleRepository
@@ -11,4 +13,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface TemplateRuleRepository extends JpaRepository<TemplateRule, String>{
     TemplateRule findByTemplateId(String templateId);
+
+    List<TemplateRule> findByIllegalStatus(String status);
 }
