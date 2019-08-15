@@ -41,7 +41,7 @@ public class Result {
         return result;
     }
 
-    public Result(String code, String message, Object data) {
+    public Result(String code, String message) {
         this.code = code;
         this.message = message;
         this.data = data;

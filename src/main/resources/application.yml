@@ -76,6 +76,10 @@ info:
   handleBusinessUrl: ${info.cost_exchange_server}api/v1/phonebill/giving/handleBusiness
   phoneNumberCheckUrl: ${info.cost_exchange_server}api/v1/phonebill/giving/phoneValidate
   sendCodeUrl: ${info.cost_exchange_server}api/v1/phonebill/giving/sendVerifyCode
+  account: N9976034
+  password: Ps163a8a
+  sms:
+    sendUrl: http://222.73.117.138:7891/mt
 pay:
   wx:
      base:

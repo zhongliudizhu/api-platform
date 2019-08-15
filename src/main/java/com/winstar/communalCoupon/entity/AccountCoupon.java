@@ -173,5 +173,11 @@ public class AccountCoupon {
      */
     @Column(columnDefinition = "varchar(50) comment '微信卡包code'")
     private String cardPackageCode;
+    /**
+     * 手机号
+     */
+    @Column(columnDefinition = "varchar(20) COMMENT '手机号'")
+    private String phone;
+
 
 }
