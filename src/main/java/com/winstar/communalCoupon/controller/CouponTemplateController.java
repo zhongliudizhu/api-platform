@@ -40,52 +40,60 @@ public class CouponTemplateController {
     @GetMapping(value = "/showTemplateInfo")
     public Result showCouponTemplateInfo() {
         Map<String, Object> dataMap = new HashMap<>();
-        Set<Object> set = redisTools.setMembers("illegalTemplate");
         int sum = 0;
-        if (set.isEmpty()) {
-            return Result.fail("illLegal_redis_not_found", "未发现违法模板信息");
-        }
-        if (set.size() > 0) {
-            List<String> nonValueList = new ArrayList<>();
-            for (Object s : set) {
-                if (redisTools.get(s + "_illegalStatus").equals("yes")) {
+        if (redisTools.exists("illegalTemplate")) {
+            Set<Object> set = redisTools.setMembers("illegalTemplate");
+            if (set.isEmpty()) {
+                return Result.fail("illLegal_redis_not_found", "未发现违法模板信息");
+            } else {
+                Set<String> statusSet = new HashSet<>();
+                for (Object o : set) {
+                    if ("yes".equals(redisTools.get(o + "_illegalStatus"))) {
+                        statusSet.add(o.toString());
+                    }
+                }
+                if (statusSet.isEmpty()) {
+                    return Result.fail("illLegal_status_error", "违法模板状态未开启");
+                }
+                List<String> nonValueList = new ArrayList<>();
+                for (String s : statusSet) {
                     Object value = redisTools.get(s + "_amount");
                     if (value == null) {
-                        nonValueList.add(s.toString());
+                        nonValueList.add(s);
                     } else {
                         sum += Double.valueOf(value.toString());
                     }
                 }
+                if (!CollectionUtils.isEmpty(nonValueList)) {
+                    List<Double> amount = getCouponAmount(nonValueList);
+                    if (CollectionUtils.isEmpty(amount)) {
+                        return Result.fail("amount_code_error", "未找到优惠券模板的面值信息");
+                    }
+                    for (Double d : amount) {
+                        sum += d;
+                    }
+                }
+                dataMap.put("illegalStatus", "yes");
+                dataMap.put("amount", sum);
+                dataMap.put("number", statusSet.size());
             }
-            if (!CollectionUtils.isEmpty(nonValueList)) {
-                List<Double> amount = getCouponAmount(nonValueList);
-                if (CollectionUtils.isEmpty(amount)) {
-                    return Result.fail("amount_code_error", "未找到优惠券模板的面值信息");
-                }
-                for (Double d : amount) {
-                    sum += d;
-                }
+        } else {
+            List<TemplateRule> statusList = templateRuleRepository.findByIllegalStatus("yes");
+            if (CollectionUtils.isEmpty(statusList)) {
+                return Result.fail("illLegal_not_found", "未发现违法模板信息");
+            }
+            List<String> templateIds = getCouponTemplateIds(statusList);
+            List<Double> amountList = getCouponAmount(templateIds);
+            if (CollectionUtils.isEmpty(amountList)) {
+                return Result.fail("code_error", "未找到优惠券面值信息");
+            }
+            for (Double d : amountList) {
+                sum += d;
             }
             dataMap.put("illegalStatus", "yes");
             dataMap.put("amount", sum);
-            dataMap.put("number", set.size());
-            return Result.success(dataMap);
+            dataMap.put("number", amountList.size());
         }
-        List<TemplateRule> statusList = templateRuleRepository.findByIllegalStatus("yes");
-        if (CollectionUtils.isEmpty(statusList)) {
-            return Result.fail("illLegal_not_found", "未发现违法模板信息");
-        }
-        List<String> templateIds = getCouponTemplateIds(statusList);
-        List<Double> amountList = getCouponAmount(templateIds);
-        if (CollectionUtils.isEmpty(amountList)) {
-            return Result.fail("code_error", "未找到优惠券面值信息");
-        }
-        for (Double d : amountList) {
-            sum += d;
-        }
-        dataMap.put("illegalStatus", "yes");
-        dataMap.put("amount", sum);
-        dataMap.put("number", amountList.size());
         return Result.success(dataMap);
 
     }
@@ -101,13 +109,7 @@ public class CouponTemplateController {
         String s = str.substring(0, str.length() - 1);
         reqMap.put("templateIds", s);
         reqMap.put("merchant", SignUtil.merchant);
-        Map map;
-        try {
-            map = restTemplate.getForObject(couponTemplateUrl + SignUtil.getParameters(reqMap), Map.class);
-        } catch (Exception e) {
-            log.error("====出错了======");
-            return null;
-        }
+        Map map = restTemplate.getForObject(couponTemplateUrl + SignUtil.getParameters(reqMap), Map.class);
         if (!"SUCCESS".equals(map.get("code"))) {
             return null;
         }
