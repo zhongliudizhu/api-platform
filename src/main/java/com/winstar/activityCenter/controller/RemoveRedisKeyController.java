@@ -1,6 +1,8 @@
 package com.winstar.activityCenter.controller;
 
 import com.winstar.redis.RedisTools;
+import com.winstar.utils.WsdUtils;
+import com.winstar.vo.Result;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/v1/cbc/")
+@RequestMapping("/api/v1/noAuth/")
 @Slf4j
 public class RemoveRedisKeyController {
 
@@ -24,6 +26,13 @@ public class RemoveRedisKeyController {
     @GetMapping("remove/key")
     public void getAllResources(@RequestParam String id) {
         redisTools.remove(id);
+    }
+
+    @GetMapping("key/get")
+    public Result getKey(){
+        String code = WsdUtils.generateRandomCharAndNumber(10);
+        redisTools.set(code, code, 1800L);
+        return Result.success(code);
     }
 
 }
