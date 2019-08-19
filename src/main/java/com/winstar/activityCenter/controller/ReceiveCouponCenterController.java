@@ -9,7 +9,9 @@ import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.costexchange.utils.RequestUtil;
 import com.winstar.exception.NotRuleException;
 import com.winstar.redis.RedisTools;
+import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
+import com.winstar.user.utils.ServiceManager;
 import com.winstar.vo.ReceiveCouponVo;
 import com.winstar.vo.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -169,7 +172,11 @@ public class ReceiveCouponCenterController {
     public Result ccbReceive(@RequestBody ReceiveCouponVo receiveCouponVo, HttpServletRequest request) throws NotRuleException {
         log.info("优惠券抢购开始==========");
         String accountId = accountService.getAccountId(request);
+        Account account = ServiceManager.accountService.findOne(accountId);
         String activityId = receiveCouponVo.getActivityId();
+        if (null == account || StringUtils.isEmpty(account.getAuthInfoCard())) {
+            return Result.fail("Not_found_user", "用户未认证交安卡！");
+        }
         if (!redisTools.setIfAbsent(activityId + "<->" + accountId, 5)) {
             log.info("5秒之内禁止重复抢购！");
             return Result.fail("click_fast", "请勿频繁点击！");
