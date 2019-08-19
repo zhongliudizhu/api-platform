@@ -8,9 +8,13 @@ import com.winstar.communalCoupon.entity.CouponSendRecord;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.repository.CouponSendRecordRepository;
 import com.winstar.communalCoupon.util.SignUtil;
+import com.winstar.communalCoupon.vo.SendCouponDomain;
+import com.winstar.costexchange.utils.RequestUtil;
+import com.winstar.redis.RedisTools;
 import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -227,6 +231,20 @@ public class AccountCouponService {
             accountCoupon.setOrderId(null);
             accountCouponRepository.save(accountCoupon);
         });
+    }
+
+    public List<AccountCoupon> sendCoupon(SendCouponDomain domain, RedisTools redisTools){
+        log.info("给用户发放优惠券：accountId is {} and templateId is {}", domain.getAccountId(), domain.getTemplateId());
+        ResponseEntity<Map> responseEntity = getCoupon(domain.getTemplateId(), domain.getNum());
+        Map map = responseEntity.getBody();
+        if (MapUtils.getString(map, "code").equals("SUCCESS")) {
+            log.info("获取优惠券成功！accountId is {} and templateId is {}", domain.getAccountId(), domain.getTemplateId());
+            List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(JSON.toJSONString(map.get("data")), domain, redisTools);
+            accountCouponRepository.save(accountCoupons);
+            log.info("发放优惠券成功！accountId is {} and templateId is {}", domain.getAccountId(), domain.getTemplateId());
+            return accountCoupons;
+        }
+        return null;
     }
 
 }

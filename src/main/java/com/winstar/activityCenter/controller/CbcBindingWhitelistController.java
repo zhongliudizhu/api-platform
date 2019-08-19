@@ -1,21 +1,18 @@
 package com.winstar.activityCenter.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.winstar.activityCenter.entity.CbcBinDingWhitelist;
 import com.winstar.activityCenter.repository.CbcBinDingWhitelistRepository;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
-import com.winstar.costexchange.utils.RequestUtil;
+import com.winstar.communalCoupon.vo.SendCouponDomain;
 import com.winstar.exception.NotRuleException;
 import com.winstar.redis.RedisTools;
 import com.winstar.user.service.AccountService;
 import com.winstar.vo.Result;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.MapUtils;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -26,7 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 //绑定交安卡活动10-50元优惠券
@@ -67,7 +63,8 @@ public class CbcBindingWhitelistController {
         }
         List<AccountCoupon> recList = new ArrayList<>();
         for (CbcBinDingWhitelist whitelist : unReceivedList) {
-            List<AccountCoupon> accountCoupons = sendCoupon(whitelist.getCouponId(), accountId, mobile);
+            SendCouponDomain domain = new SendCouponDomain(whitelist.getCouponId(), accountId, AccountCoupon.TYPE_CCB, "1", null, mobile);
+            List<AccountCoupon> accountCoupons = accountCouponService.sendCoupon(domain, null);
             if (!ObjectUtils.isEmpty(accountCoupons)) {
                 recList.addAll(accountCoupons);
                 whitelist.setState("1");
@@ -77,20 +74,4 @@ public class CbcBindingWhitelistController {
         return !ObjectUtils.isEmpty(recList) ? Result.success(recList) : Result.fail("send_error", "发券失败");
     }
 
-    /**
-     * 建行交安卡白名单发放优惠券
-     */
-    private List<AccountCoupon> sendCoupon(String templateId, String accountId, String phone) {
-        log.info("给抢券成功的用户发放优惠券：accountId is {} and templateId is {}", accountId, templateId);
-        ResponseEntity<Map> responseEntity = accountCouponService.getCoupon(templateId, "1");
-        Map map = responseEntity.getBody();
-        if (MapUtils.getString(map, "code").equals("SUCCESS")) {
-            log.info("绑定交安卡活动获取优惠券成功！accountId is {} and templateId is {}", accountId, templateId);
-            List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(JSON.toJSONString(map.get("data")), "ccb", accountId, null, null, phone);
-            accountCouponRepository.save(accountCoupons);
-            log.info("绑定交安卡活动发放优惠券成功！accountId is {} and templateId is {}", accountId, templateId);
-            return accountCoupons;
-        }
-        return null;
-    }
 }

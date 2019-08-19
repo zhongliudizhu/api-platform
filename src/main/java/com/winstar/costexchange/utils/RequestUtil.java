@@ -3,6 +3,7 @@ package com.winstar.costexchange.utils;
 import com.alibaba.fastjson.JSON;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.service.AccountCouponService;
+import com.winstar.communalCoupon.vo.SendCouponDomain;
 import com.winstar.costexchange.vo.CouponVo;
 import com.winstar.redis.RedisTools;
 import org.slf4j.Logger;
@@ -34,11 +35,7 @@ public class RequestUtil {
         return resp.getBody();
     }
 
-    public static List<AccountCoupon> getAccountCoupons(String coupons, String type, String accountId, String activityId, RedisTools redisTools) {
-        return getAccountCoupons(coupons, type, accountId, activityId, redisTools, null);
-    }
-
-    public static List<AccountCoupon> getAccountCoupons(String coupons, String type, String accountId, String activityId, RedisTools redisTools, String phone) {
+    public static List<AccountCoupon> getAccountCoupons(String coupons, SendCouponDomain domain, RedisTools redisTools) {
         List<CouponVo> couponVos = JSON.parseArray(coupons, CouponVo.class);
         List<AccountCoupon> accountCoupons = new ArrayList<>();
         for (CouponVo couponVo : couponVos) {
@@ -54,11 +51,11 @@ public class RequestUtil {
             accountCoupon.setShowStatus(couponVo.getShowStatus());
             accountCoupon.setState(AccountCouponService.NORMAL);
             accountCoupon.setCreatedAt(new Date());
-            accountCoupon.setAccountId(accountId);
-            accountCoupon.setType(type);
-            accountCoupon.setPhone(phone);
+            accountCoupon.setAccountId(domain.getAccountId());
+            accountCoupon.setType(domain.getType());
+            accountCoupon.setPhone(domain.getPhone());
             accountCoupon.setTemplateId(couponVo.getTemplateId());
-            accountCoupon.setActivityId(activityId);
+            accountCoupon.setActivityId(domain.getActivityId());
             if (!ObjectUtils.isEmpty(redisTools)) {
                 String switchCard = (String) redisTools.get(couponVo.getTemplateId() + "_cardable");
                 if (!StringUtils.isEmpty(switchCard) && switchCard.equals("yes")) {

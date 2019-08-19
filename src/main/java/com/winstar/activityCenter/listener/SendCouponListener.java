@@ -1,13 +1,12 @@
 package com.winstar.activityCenter.listener;
 
 
-import com.alibaba.fastjson.JSON;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.entity.TemplateRule;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.repository.TemplateRuleRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
-import com.winstar.costexchange.utils.RequestUtil;
+import com.winstar.communalCoupon.vo.SendCouponDomain;
 import com.winstar.exception.NotRuleException;
 import com.winstar.redis.RedisTools;
 import com.winstar.user.entity.AccessToken;
@@ -18,15 +17,12 @@ import com.winstar.user.service.FansService;
 import com.winstar.user.utils.ServiceManager;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.MapUtils;
-import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -67,7 +63,7 @@ public class SendCouponListener {
         }
         Set<Object> set = getTemplateIds();
         if (!ObjectUtils.isEmpty(set)) {
-            set.forEach(e -> sendCoupon(accountId, e.toString()));
+            set.forEach(e -> accountCouponService.sendCoupon(new SendCouponDomain(e.toString(), accountId, AccountCoupon.TYPE_YJX, "1", null, null), null));
         }
         ack.acknowledge();
     }
@@ -88,18 +84,4 @@ public class SendCouponListener {
         return set;
     }
 
-    /**
-     * 发放优惠券
-     */
-    private void sendCoupon(String accountId, String templateId) {
-        log.info("给用户发放优惠券：accountId is {} and templateId is {}", accountId, templateId);
-        ResponseEntity<Map> responseEntity = accountCouponService.getCoupon(templateId, "1");
-        Map map = responseEntity.getBody();
-        if (MapUtils.getString(map, "code").equals("SUCCESS")) {
-            log.info("违法赠送获取优惠券成功！accountId is {} and templateId is {}", accountId, templateId);
-            List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(JSON.toJSONString(map.get("data")), "yjx", accountId, null, null);
-            accountCouponRepository.save(accountCoupons);
-            log.info("违法赠送发放优惠券成功！accountId is {} and templateId is {}", accountId, templateId);
-        }
-    }
 }

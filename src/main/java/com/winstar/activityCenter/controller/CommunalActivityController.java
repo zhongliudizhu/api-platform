@@ -1,6 +1,5 @@
 package com.winstar.activityCenter.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.winstar.activityCenter.entity.CommunalActivity;
 import com.winstar.activityCenter.repository.CommunalActivityRepository;
 import com.winstar.activityCenter.service.CommunalActivityService;
@@ -8,7 +7,7 @@ import com.winstar.activityCenter.vo.ActivityVo;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
-import com.winstar.costexchange.utils.RequestUtil;
+import com.winstar.communalCoupon.vo.SendCouponDomain;
 import com.winstar.exception.NotRuleException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.user.entity.AccessToken;
@@ -18,8 +17,6 @@ import com.winstar.user.utils.ServiceManager;
 import com.winstar.vo.Result;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.MapUtils;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author UU
@@ -87,26 +83,13 @@ public class CommunalActivityController {
                 return Result.fail("user_has_received", "用户已领取");
             }
         }
-        boolean success = sendCoupon(activity.getCouponTemplateId(), accountId, activity.getId());
-        if (success) {
+        SendCouponDomain domain = new SendCouponDomain(activity.getCouponTemplateId(), accountId, AccountCoupon.TYPE_YJX, "1", activity.getId(), null);
+        List<AccountCoupon> sendCouponResult = accountCouponService.sendCoupon(domain, null);
+        if (!ObjectUtils.isEmpty(sendCouponResult)) {
             return Result.success(null);
         } else {
             return Result.fail("send_coupon_fail", "发券失败");
         }
     }
 
-    private boolean sendCoupon(String templateId, String accountId, String activityId) {
-        log.info("给抢券成功的用户发放优惠券：accountId is {} and templateId is {}", accountId, templateId);
-        ResponseEntity<Map> responseEntity = accountCouponService.getCoupon(templateId, "1");
-        Map map = responseEntity.getBody();
-        if (MapUtils.getString(map, "code").equals("SUCCESS")) {
-            log.info("获取优惠券成功！accountId is {} and templateId is {}", accountId, templateId);
-            List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(JSON.toJSONString(map.get("data")), "yjx", accountId, activityId, null);
-            accountCouponRepository.save(accountCoupons);
-            log.info("发放优惠券成功！accountId is {} and templateId is {}", accountId, templateId);
-            return true;
-        } else {
-            return false;
-        }
-    }
 }

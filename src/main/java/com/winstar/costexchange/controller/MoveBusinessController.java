@@ -1,15 +1,14 @@
 package com.winstar.costexchange.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
+import com.winstar.communalCoupon.vo.SendCouponDomain;
 import com.winstar.costexchange.entity.FailSendRecord;
 import com.winstar.costexchange.entity.MoveBusinessRecord;
 import com.winstar.costexchange.repository.FailSendRecordRepository;
 import com.winstar.costexchange.repository.MoveBusinessRecordRepository;
 import com.winstar.costexchange.service.MoveBusinessService;
-import com.winstar.costexchange.utils.RequestUtil;
 import com.winstar.exception.NotRuleException;
 import com.winstar.user.service.AccountService;
 import com.winstar.vo.Result;
@@ -18,6 +17,7 @@ import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,8 +44,6 @@ public class MoveBusinessController {
     private final
     AccountCouponService accountCouponService;
     private final
-    AccountCouponRepository accountCouponRepository;
-    private final
     MoveBusinessService moveBusinessService;
     private final
     MoveBusinessRecordRepository moveBusinessRecordRepository;
@@ -61,7 +59,6 @@ public class MoveBusinessController {
         this.accountService = accountService;
         this.restTemplate = restTemplate;
         this.accountCouponService = accountCouponService;
-        this.accountCouponRepository = accountCouponRepository;
         this.moveBusinessService = moveBusinessService;
         this.moveBusinessRecordRepository = moveBusinessRecordRepository;
         this.failSendRecordRepository = failSendRecordRepository;
@@ -134,21 +131,16 @@ public class MoveBusinessController {
      * 发放优惠券
      */
     private boolean sendCoupon(String accountId) {
-        log.info("给用户发放优惠券：accountId is {} and templateId is {}", accountId, templateId);
-        ResponseEntity<Map> responseEntity = accountCouponService.getCoupon(templateId, "1");
-        Map map = responseEntity.getBody();
-        if (MapUtils.getString(map, "code").equals("SUCCESS")) {
-            log.info("获取优惠券成功！accountId is {} and templateId is {}", accountId, templateId);
-            List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(JSON.toJSONString(map.get("data")), "yjx", accountId, null, null);
-            accountCouponRepository.save(accountCoupons);
-            log.info("发放优惠券成功！accountId is {} and templateId is {}", accountId, templateId);
+        SendCouponDomain domain = new SendCouponDomain(templateId, accountId, AccountCoupon.TYPE_YJX, "1", null, null);
+        List<AccountCoupon> accountCoupons = accountCouponService.sendCoupon(domain, null);
+        if(!ObjectUtils.isEmpty(accountCoupons)){
             return true;
         }
         FailSendRecord failSendRecord = new FailSendRecord();
         failSendRecord.setAccountId(accountId);
         failSendRecord.setTemplateId(templateId);
         failSendRecord.setCreatedAt(new Date());
-        failSendRecord.setFailMsg(map.toString());
+        failSendRecord.setFailMsg("模板id获取不到优惠券");
         failSendRecordRepository.save(failSendRecord);
         log.error("用户 {} 发放优惠券失败 ！！", accountId);
         return false;

@@ -1,12 +1,11 @@
 package com.winstar.activityCenter.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.winstar.activityCenter.entity.CommunalActivity;
 import com.winstar.activityCenter.repository.CommunalActivityRepository;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
-import com.winstar.costexchange.utils.RequestUtil;
+import com.winstar.communalCoupon.vo.SendCouponDomain;
 import com.winstar.exception.NotRuleException;
 import com.winstar.redis.RedisTools;
 import com.winstar.user.entity.Account;
@@ -15,16 +14,17 @@ import com.winstar.user.utils.ServiceManager;
 import com.winstar.vo.ReceiveCouponVo;
 import com.winstar.vo.Result;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -112,7 +112,8 @@ public class ReceiveCouponCenterController {
                 log.info("该活动用户已经领过券，不能再领取了：accountId is {} and activityId is {}", accountId, activityId);
                 return Result.fail("activity_coupon_receive", "您已经领过券了，不能重复领取！");
             }
-            sendCoupon(activity.getCouponTemplateId(), accountId, activityId);
+            SendCouponDomain domain = new SendCouponDomain(activity.getCouponTemplateId(), accountId, AccountCoupon.TYPE_YJX, "1", activityId, null);
+            accountCouponService.sendCoupon(domain, redisTools);
             String numberKey = "activity" + activityId;
             if (redisTools.exists(numberKey)) {
                 redisTools.set(numberKey, (Integer) redisTools.get(numberKey) + 1);
@@ -164,7 +165,8 @@ public class ReceiveCouponCenterController {
             return Result.fail("activity_coupon_receive", "您已经领过券了，不能重复领取！");
         }
         log.info("该活动用户未领过券，可以领取：accountId is {} and activityId is {}", accountId, activityId);
-        sendCoupon(activity.getCouponTemplateId(), accountId, activityId);
+        SendCouponDomain domain = new SendCouponDomain(activity.getCouponTemplateId(), accountId, AccountCoupon.TYPE_YJX, "1", activityId, null);
+        accountCouponService.sendCoupon(domain, redisTools);
         return Result.success(new HashMap<>());
     }
 
@@ -214,28 +216,12 @@ public class ReceiveCouponCenterController {
             return Result.fail("activity_coupon_receive", "您已经领过交安卡活动专属券了，不能重复领取！");
         }
         log.info("该活动用户未领过券，可以领取：accountId is {} and activityId is {}", accountId, activityId);
-        boolean b = sendCoupon(activity.getCouponTemplateId(), accountId, activityId);
-        if (b) {
+        SendCouponDomain domain = new SendCouponDomain(activity.getCouponTemplateId(), accountId, AccountCoupon.TYPE_YJX, "1", activityId, null);
+        List<AccountCoupon> sendCouponResult = accountCouponService.sendCoupon(domain, redisTools);
+        if (!ObjectUtils.isEmpty(sendCouponResult)) {
             return Result.success(null);
         }
         return Result.fail("send_fail", "发券失败");
-    }
-
-    /**
-     * 通用发放优惠券
-     */
-    private boolean sendCoupon(String templateId, String accountId, String activityId) {
-        log.info("给抢券成功的用户发放优惠券：accountId is {} and templateId is {}", accountId, templateId);
-        ResponseEntity<Map> responseEntity = accountCouponService.getCoupon(templateId, "1");
-        Map map = responseEntity.getBody();
-        if (MapUtils.getString(map, "code").equals("SUCCESS")) {
-            log.info("获取优惠券成功！accountId is {} and templateId is {}", accountId, templateId);
-            List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(JSON.toJSONString(map.get("data")), "yjx", accountId, activityId, redisTools);
-            accountCouponRepository.save(accountCoupons);
-            log.info("发放优惠券成功！accountId is {} and templateId is {}", accountId, templateId);
-            return true;
-        }
-        return false;
     }
 
 }
