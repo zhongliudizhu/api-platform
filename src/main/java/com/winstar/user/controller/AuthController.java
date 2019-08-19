@@ -20,7 +20,6 @@ import com.winstar.user.vo.AuthVerifyCodeMsgResult;
 import com.winstar.user.vo.SendVerifyCodeEntity;
 import com.winstar.user.vo.SendVerifyCodeMsgResult;
 import com.winstar.vo.Result;
-import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +32,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -65,37 +62,13 @@ public class AuthController {
         if (ObjectUtils.isEmpty(openId)) {
             return Result.fail("openId_not_exist", "openId不存在");
         }
-        final Base64.Encoder encoder = Base64.getEncoder();
         Fans fans = fansRepository.findByOpenid(openId);
         if (ObjectUtils.isEmpty(fans)) {
-            fans = new Fans();
+            fans = fansService.saveNewFans(openId);
         }
-        Map map = fansService.getFansInfo(openId, false);
-        if (ObjectUtils.isEmpty(map)) {
+        if (ObjectUtils.isEmpty(fans)) {
             return Result.fail("fans_not_exist", "粉丝信息不存在");
         }
-        fans.setSubscribe(MapUtils.getString(map, "subscribe"));
-        String name = MapUtils.getString(map, "nickname");
-        String encodedText;
-        if (!ObjectUtils.isEmpty(name)) {
-            byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);//编码
-            encodedText = encoder.encodeToString(nameBytes);
-        } else {
-            encodedText = "";
-        }
-        fans.setNickname(encodedText);
-        fans.setOpenid(openId);
-        fans.setSex(MapUtils.getString(map, "sex"));
-        fans.setCity(MapUtils.getString(map, "city"));
-        fans.setProvince(MapUtils.getString(map, "province"));
-        fans.setCountry(MapUtils.getString(map, "country"));
-        fans.setHeadImgUrl(MapUtils.getString(map, "headimgurl"));
-        fans.setSubscribeTime(new Date(1000 * Long.valueOf(MapUtils.getString(map, "subscribe_time"))));
-        fans.setGroupId(MapUtils.getString(map, "groupid"));
-        fans.setTagIdList(MapUtils.getString(map, "tagid_list"));
-        fans.setSubScribeScene(MapUtils.getString(map, "subscribe_scene"));
-        fansRepository.save(fans);
-        fans.setNickname(name);
         return Result.success(fans);
     }
 

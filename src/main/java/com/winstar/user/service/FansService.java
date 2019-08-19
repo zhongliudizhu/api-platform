@@ -1,14 +1,13 @@
 package com.winstar.user.service;
 
 import com.winstar.redis.RedisTools;
+import com.winstar.user.entity.Fans;
 import com.winstar.user.repository.FansRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 
@@ -97,6 +96,38 @@ public class FansService {
             return null;
         }
         return map.getBody();
+    }
+
+    /**
+     * 根据openId查询粉丝信息并保存
+     */
+    public Fans saveNewFans(String openId) {
+        Map map = getFansInfo(openId, false);
+        if (ObjectUtils.isEmpty(map)) {
+            return null;
+        }
+        Fans fans = new Fans();
+        final Base64.Encoder encoder = Base64.getEncoder();
+        String name = MapUtils.getString(map, "nickname");
+        String encodeName = "";
+        if (!ObjectUtils.isEmpty(name)) {
+            encodeName = encoder.encodeToString(name.getBytes(StandardCharsets.UTF_8));
+        }
+        fans.setNickname(encodeName);
+        fans.setSubscribe(MapUtils.getString(map, "subscribe"));
+        fans.setOpenid(openId);
+        fans.setSex(MapUtils.getString(map, "sex"));
+        fans.setCity(MapUtils.getString(map, "city"));
+        fans.setProvince(MapUtils.getString(map, "province"));
+        fans.setCountry(MapUtils.getString(map, "country"));
+        fans.setHeadImgUrl(MapUtils.getString(map, "headimgurl"));
+        fans.setSubscribeTime(new Date(1000 * Long.valueOf(MapUtils.getString(map, "subscribe_time"))));
+        fans.setGroupId(MapUtils.getString(map, "groupid"));
+        fans.setTagIdList(MapUtils.getString(map, "tagid_list"));
+        fans.setSubScribeScene(MapUtils.getString(map, "subscribe_scene"));
+        fansRepository.save(fans);
+        fans.setNickname(name);
+        return fans;
     }
 
 
