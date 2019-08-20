@@ -81,7 +81,7 @@ public class OilOrderServiceImpl implements OilOrderService {
             oilOrder.setFinishTime(time);
             oilOrderRepository.save(oilOrder);
             //更新优惠券的状态为已使用
-            if(!StringUtils.isEmpty(oilOrder.getCouponId()) && oilOrder.getActivityId().equals("2")){
+            if(!StringUtils.isEmpty(oilOrder.getCouponId())){
                 logger.info(oilOrder.getSerialNumber() + "优惠券信息不为空，更新优惠券状态并通知优惠券平台！");
                 accountCouponService.modifyCouponState(oilOrder.getAccountId(), oilOrder.getCouponId(), AccountCouponService.USED, oilOrder.getSerialNumber());
                 Goods goods = goodsRepository.findOne(oilOrder.getItemId());
