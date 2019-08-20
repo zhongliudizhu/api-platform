@@ -81,7 +81,7 @@ public class ReceiveCouponCenterController {
         }
         CommunalActivity activity = communalActivityRepository.findOne(activityId);
         Result validatorResult = activityService.validatorActivity(activity);
-        if(!ObjectUtils.isEmpty(validatorResult)){
+        if (!ObjectUtils.isEmpty(validatorResult)) {
             return validatorResult;
         }
         if (!activity.getType().equals("2")) {
@@ -130,7 +130,7 @@ public class ReceiveCouponCenterController {
         }
         CommunalActivity activity = communalActivityRepository.findOne(activityId);
         Result validatorResult = activityService.validatorActivity(activity);
-        if(!ObjectUtils.isEmpty(validatorResult)){
+        if (!ObjectUtils.isEmpty(validatorResult)) {
             return validatorResult;
         }
         if (!activity.getType().equals("1")) {
@@ -163,7 +163,7 @@ public class ReceiveCouponCenterController {
         }
         CommunalActivity activity = communalActivityRepository.findOne(activityId);
         Result validatorResult = activityService.validatorActivity(activity);
-        if(!ObjectUtils.isEmpty(validatorResult)){
+        if (!ObjectUtils.isEmpty(validatorResult)) {
             return validatorResult;
         }
         if (!activity.getTarget().equals("ccb")) {
@@ -181,7 +181,7 @@ public class ReceiveCouponCenterController {
             return Result.fail("activity_coupon_receive", "您已经领过交安卡活动专属券了，不能重复领取！");
         }
         log.info("该活动用户未领过券，可以领取：accountId is {} and activityId is {}", accountId, activityId);
-        SendCouponDomain domain = new SendCouponDomain(activity.getCouponTemplateId(), accountId, AccountCoupon.TYPE_YJX, "1", activityId, null);
+        SendCouponDomain domain = new SendCouponDomain(activity.getCouponTemplateId(), accountId, AccountCoupon.TYPE_CCB, "1", activityId, null);
         List<AccountCoupon> sendCouponResult = accountCouponService.sendCoupon(domain, redisTools);
         if (!ObjectUtils.isEmpty(sendCouponResult)) {
             return Result.success(null);
