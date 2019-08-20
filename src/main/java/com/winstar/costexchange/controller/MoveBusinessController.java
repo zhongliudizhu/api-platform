@@ -1,7 +1,6 @@
 package com.winstar.costexchange.controller;
 
 import com.winstar.communalCoupon.entity.AccountCoupon;
-import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.communalCoupon.vo.SendCouponDomain;
 import com.winstar.costexchange.entity.FailSendRecord;
@@ -28,7 +27,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
+
+import static com.winstar.utils.ValidatorParameterUtils.isMobile;
 
 @RestController
 @Slf4j
@@ -51,10 +51,10 @@ public class MoveBusinessController {
     FailSendRecordRepository failSendRecordRepository;
     @Value("${info.handleBusinessUrl}")
     private String handleBusinessUrl;
-    private static final String templateId = "000000006b96f5ca016c3bb1dc390026";
+    private static final String[] templateIds = {"000000006b96f5ca016cacf4ad11003c", "000000006b96f5ca016cacf63e46003d", "000000006b96f5ca016cacfbc124003e"};
 
     @Autowired
-    public MoveBusinessController(HttpServletRequest request, AccountService accountService, RestTemplate restTemplate, AccountCouponService accountCouponService, AccountCouponRepository accountCouponRepository, MoveBusinessService moveBusinessService, MoveBusinessRecordRepository moveBusinessRecordRepository, FailSendRecordRepository failSendRecordRepository) {
+    public MoveBusinessController(HttpServletRequest request, AccountService accountService, RestTemplate restTemplate, AccountCouponService accountCouponService, MoveBusinessService moveBusinessService, MoveBusinessRecordRepository moveBusinessRecordRepository, FailSendRecordRepository failSendRecordRepository) {
         this.request = request;
         this.accountService = accountService;
         this.restTemplate = restTemplate;
@@ -64,20 +64,11 @@ public class MoveBusinessController {
         this.failSendRecordRepository = failSendRecordRepository;
     }
 
-    /**
-     * 正则表达式：验证手机号
-     */
-    private static final String REGEX_MOBILE;
-
-    static {
-        REGEX_MOBILE = "^[1][3,4,5,6,7,8,9][0-9]{9}$";
-    }
-
     @RequestMapping(value = "exchange")
     public Result send(@RequestParam String phone, @RequestParam String code) throws NotRuleException {
         String accountId = accountService.getAccountId(request);
         log.info("开始办理话费业务：accountId is :{}，phone is：{},code is :{}", accountId, phone, code);
-        if (!Pattern.matches(REGEX_MOBILE, phone)) {
+        if (!isMobile(phone)) {
             return Result.fail("param_error", "手机号错误");
         }
         int remainingTimes = moveBusinessService.check(accountId);
@@ -94,7 +85,12 @@ public class MoveBusinessController {
         moveBusinessRecord.setPhone(phone);
         moveBusinessRecord.setCreatedAt(new Date());
         moveBusinessRecordRepository.save(moveBusinessRecord);
-        boolean success = sendCoupon(accountId);
+        boolean success = true;
+        for (String templateId : templateIds) {
+            if (!sendCoupon(accountId, templateId)) {
+                success = false;
+            }
+        }
         if (!success) {
             return Result.fail("send_coupon_fail", "发券失败");
         }
@@ -130,10 +126,10 @@ public class MoveBusinessController {
     /**
      * 发放优惠券
      */
-    private boolean sendCoupon(String accountId) {
+    private boolean sendCoupon(String accountId, String templateId) {
         SendCouponDomain domain = new SendCouponDomain(templateId, accountId, AccountCoupon.TYPE_YJX, "1", null, null);
         List<AccountCoupon> accountCoupons = accountCouponService.sendCoupon(domain, null);
-        if(!ObjectUtils.isEmpty(accountCoupons)){
+        if (!ObjectUtils.isEmpty(accountCoupons)) {
             return true;
         }
         FailSendRecord failSendRecord = new FailSendRecord();
