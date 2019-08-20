@@ -62,10 +62,7 @@ public class AuthController {
         if (ObjectUtils.isEmpty(openId)) {
             return Result.fail("openId_not_exist", "openId不存在");
         }
-        Fans fans = fansRepository.findByOpenid(openId);
-        if (ObjectUtils.isEmpty(fans)) {
-            fans = fansService.saveNewFans(openId);
-        }
+        Fans fans = fansService.getByOpenId(openId);
         if (ObjectUtils.isEmpty(fans)) {
             return Result.fail("fans_not_exist", "粉丝信息不存在");
         }

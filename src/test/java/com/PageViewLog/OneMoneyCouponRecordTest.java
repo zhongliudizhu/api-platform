@@ -2,6 +2,10 @@ package com.PageViewLog;
 
 import com.winstar.Application;
 import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
+import com.winstar.communalCoupon.entity.AccountCoupon;
+import com.winstar.communalCoupon.repository.AccountCouponRepository;
+import com.winstar.communalCoupon.service.AccountCouponService;
+import com.winstar.communalCoupon.vo.SendCouponDomain;
 import com.winstar.couponActivity.repository.WhiteListRepository;
 import com.winstar.order.utils.StringFormatUtils;
 import com.winstar.user.param.CCBAuthParam;
@@ -11,21 +15,24 @@ import com.winstar.user.vo.AuthVerifyCodeEntity;
 import com.winstar.user.vo.AuthVerifyCodeMsgResult;
 import com.winstar.user.vo.SendVerifyCodeEntity;
 import com.winstar.user.vo.SendVerifyCodeMsgResult;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  *
  */
-@Log4j
+@Slf4j
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @SpringBootTest(classes = Application.class)
@@ -36,6 +43,34 @@ public class OneMoneyCouponRecordTest {
 
     @Autowired
     EarlyAndEveningMarketConfigService earlyAndEveningMarketConfigService;
+
+
+    @Autowired
+    AccountCouponService accountCouponService;
+
+    @Autowired
+    AccountCouponRepository accountCouponRepository;
+
+    @Test
+    public void sendCoupon() {
+        String templateId = "000000006b96f5ca016bb166e6f60001";
+        String accountId = "ff8080816b6dbd32016b876205b2002c";
+        for (int i = 0; i < 10; i++) {
+
+            ResponseEntity<Map> responseEntity = accountCouponService.getCoupon(templateId, "1");
+            Map map = responseEntity.getBody();
+            if (MapUtils.getString(map, "code").equals("SUCCESS")) {
+                log.info("获取优惠券成功！accountId is {} and templateId is {}", accountId, templateId);
+                SendCouponDomain domain = new SendCouponDomain(templateId, accountId, AccountCoupon.TYPE_YJX, "1", null, null);
+                accountCouponService.sendCoupon(domain, null);
+//                List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(JSON.toJSONString(map.get("data")), "yjx", accountId, null, null);
+//                accountCouponRepository.save(accountCoupons);
+                log.info("发放优惠券成功！accountId is {} and templateId is {}", accountId, templateId);
+            } else {
+                System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            }
+        }
+    }
 
     @Test
     public void test() {

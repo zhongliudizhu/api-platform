@@ -40,13 +40,13 @@ public class SendCouponListener {
     TemplateRuleRepository templateRuleRepository;
 
     @KafkaListener(id = "illegal", topics = "illLegalTopic")
-    public void SendCoupon(String openId , Acknowledgment ack) throws NotRuleException {
+    public void SendCoupon(String openId, Acknowledgment ack) throws NotRuleException {
         log.info("openId is  : {} ", openId);
         String accountId;
         Account account = ServiceManager.accountRepository.findByOpenid(openId);
         if (ObjectUtils.isEmpty(account)) {
             log.info("用户{}不存在，正在创建...", openId);
-            Fans fans = fansService.saveNewFans(openId);
+            Fans fans = fansService.getByOpenId(openId);
             if (ObjectUtils.isEmpty(fans)) {
                 ack.acknowledge();
                 throw new NotRuleException("粉丝信息不存在!!! openId is " + openId);

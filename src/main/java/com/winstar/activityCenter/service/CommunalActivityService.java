@@ -60,10 +60,6 @@ public class CommunalActivityService {
         Date now = new Date();
         //已上架未删除已到展示时间
         List<CommunalActivity> list = communalActivityRepository.findAllByStatusAndDelAndTargetAndShowDateBefore("yes", "no", target, now);
-        //旧的活动
-        List<CommunalActivity> list2 = communalActivityRepository.findAllByStatusAndDelAndTargetAndShowDateBefore("yes", "no", null, now);
-        //合并
-        list.addAll(list2);
         //活动Id
         List<String> activityIds = list.stream().map(CommunalActivity::getId).collect(Collectors.toList());
         //用户所有活动领取优惠券

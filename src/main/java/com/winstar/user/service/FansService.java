@@ -101,13 +101,16 @@ public class FansService {
     /**
      * 根据openId查询粉丝信息并保存
      */
-    public Fans saveNewFans(String openId) {
+    public Fans getByOpenId(String openId) {
+        final Base64.Encoder encoder = Base64.getEncoder();
+        Fans fans = fansRepository.findByOpenid(openId);
+        if (ObjectUtils.isEmpty(fans)) {
+            fans = new Fans();
+        }
         Map map = getFansInfo(openId, false);
         if (ObjectUtils.isEmpty(map)) {
             return null;
         }
-        Fans fans = new Fans();
-        final Base64.Encoder encoder = Base64.getEncoder();
         String name = MapUtils.getString(map, "nickname");
         String encodeName = "";
         if (!ObjectUtils.isEmpty(name)) {
