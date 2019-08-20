@@ -12,6 +12,7 @@ import com.winstar.communalCoupon.repository.TemplateRuleRepository;
 import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.exception.NotRuleException;
 import com.winstar.redis.RedisTools;
+import com.winstar.vo.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -254,6 +255,30 @@ public class CommunalActivityService {
         List<CouponTemplateVo> list = JSON.parseArray(mapResponseEntity.getBody().get("data").toString(), CouponTemplateVo.class);
         log.info("请求优惠券模板信息接口结果：{}", list);
         return list;
+    }
+
+    /**
+     * 校验活动有效性
+     */
+    public Result validatorActivity(CommunalActivity activity){
+        if (ObjectUtils.isEmpty(activity)) {
+            log.info("活动不存在！");
+            return Result.fail("Not_found_activity", "活动不存在！");
+        }
+        long nowTime = System.currentTimeMillis();
+        if (nowTime < activity.getStartDate().getTime()) {
+            log.info("活动尚未开始！");
+            return Result.fail("activity_not_begin", "活动尚未开始！");
+        }
+        if (nowTime > activity.getEndDate().getTime()) {
+            log.info("活动已结束！");
+            return Result.fail("activity_end", "活动尚已结束！");
+        }
+        if (activity.getStatus().equals("no")) {
+            log.info("活动未上架！");
+            return Result.fail("activity_is_down", "活动未上架！");
+        }
+        return null;
     }
 
 }

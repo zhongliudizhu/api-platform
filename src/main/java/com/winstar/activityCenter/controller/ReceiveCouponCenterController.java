@@ -2,6 +2,7 @@ package com.winstar.activityCenter.controller;
 
 import com.winstar.activityCenter.entity.CommunalActivity;
 import com.winstar.activityCenter.repository.CommunalActivityRepository;
+import com.winstar.activityCenter.service.CommunalActivityService;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
@@ -51,6 +52,9 @@ public class ReceiveCouponCenterController {
     @Autowired
     AccountService accountService;
 
+    @Autowired
+    CommunalActivityService activityService;
+
     @RequestMapping(value = "/setNumber", method = RequestMethod.GET)
     public void setNumber(String activityId, Integer number) {
         String listKey = "sendCoupons:" + activityId;
@@ -76,22 +80,9 @@ public class ReceiveCouponCenterController {
             return Result.fail("click_fast", "请勿频繁点击！");
         }
         CommunalActivity activity = communalActivityRepository.findOne(activityId);
-        if (ObjectUtils.isEmpty(activity)) {
-            log.info("活动不存在！");
-            return Result.fail("Not_found_activity", "活动不存在！");
-        }
-        long nowTime = System.currentTimeMillis();
-        if (nowTime < activity.getStartDate().getTime()) {
-            log.info("活动尚未开始！");
-            return Result.fail("activity_not_begin", "活动尚未开始！");
-        }
-        if (nowTime > activity.getEndDate().getTime()) {
-            log.info("活动已结束！");
-            return Result.fail("activity_end", "活动尚已结束！");
-        }
-        if (activity.getStatus().equals("no")) {
-            log.info("活动未上架！");
-            return Result.fail("activity_is_down", "活动未上架！");
+        Result validatorResult = activityService.validatorActivity(activity);
+        if(!ObjectUtils.isEmpty(validatorResult)){
+            return validatorResult;
         }
         if (!activity.getType().equals("2")) {
             log.info("此活动非限量抢购活动！");
@@ -138,22 +129,9 @@ public class ReceiveCouponCenterController {
             return Result.fail("click_fast", "请勿频繁点击！");
         }
         CommunalActivity activity = communalActivityRepository.findOne(activityId);
-        if (ObjectUtils.isEmpty(activity)) {
-            log.info("活动不存在！");
-            return Result.fail("Not_found_activity", "活动不存在！");
-        }
-        long nowTime = System.currentTimeMillis();
-        if (nowTime < activity.getStartDate().getTime()) {
-            log.info("活动尚未开始！");
-            return Result.fail("activity_not_begin", "活动尚未开始！");
-        }
-        if (!ObjectUtils.isEmpty(activity.getEndDate()) && nowTime > activity.getEndDate().getTime()) {
-            log.info("活动已结束！");
-            return Result.fail("activity_end", "活动尚已结束！");
-        }
-        if (activity.getStatus().equals("no")) {
-            log.info("活动未上架！");
-            return Result.fail("activity_is_down", "活动未上架！");
+        Result validatorResult = activityService.validatorActivity(activity);
+        if(!ObjectUtils.isEmpty(validatorResult)){
+            return validatorResult;
         }
         if (!activity.getType().equals("1")) {
             log.info("此活动非长期领券活动！");
@@ -184,22 +162,9 @@ public class ReceiveCouponCenterController {
             return Result.fail("click_fast", "请勿频繁点击！");
         }
         CommunalActivity activity = communalActivityRepository.findOne(activityId);
-        if (ObjectUtils.isEmpty(activity)) {
-            log.info("活动不存在！");
-            return Result.fail("Not_found_activity", "活动不存在！");
-        }
-        long nowTime = System.currentTimeMillis();
-        if (nowTime < activity.getStartDate().getTime()) {
-            log.info("活动尚未开始！");
-            return Result.fail("activity_not_begin", "活动尚未开始！");
-        }
-        if (nowTime > activity.getEndDate().getTime()) {
-            log.info("活动已结束！");
-            return Result.fail("activity_end", "活动尚已结束！");
-        }
-        if (activity.getStatus().equals("no")) {
-            log.info("活动未上架！");
-            return Result.fail("activity_is_down", "活动未上架！");
+        Result validatorResult = activityService.validatorActivity(activity);
+        if(!ObjectUtils.isEmpty(validatorResult)){
+            return validatorResult;
         }
         if (!activity.getTarget().equals("ccb")) {
             log.info("此活动非交安卡用户专享活动！");

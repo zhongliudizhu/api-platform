@@ -9,11 +9,13 @@ import com.winstar.user.utils.ServiceManager;
 import com.winstar.user.utils.SimpleResult;
 import com.winstar.user.utils.UUIDUtils;
 import com.winstar.user.vo.WinstarAccessToken;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestTemplate;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class AccountService {
     @Autowired
     RestTemplate restTemplate;
@@ -175,4 +178,19 @@ public class AccountService {
         ResponseEntity<String> result = restTemplate.exchange(authDriverLicenseUrl, HttpMethod.POST, entity, String.class);
         return result;
     }
+
+    public Account getAccountOrCreateByOpenId(String openId, String nickName, String headImgUrl){
+        Account account = ServiceManager.accountRepository.findByOpenid(openId);
+        if (ObjectUtils.isEmpty(account)) {
+            log.info("用户{}不存在，正在创建...", openId);
+            account = ServiceManager.accountService.createAccount(new AccountParam(openId, nickName, headImgUrl));
+            ServiceManager.accountService.createAccessToken(account);
+        }
+        AccessToken accessToken = ServiceManager.accessTokenService.findByAccountId(account.getId());
+        if (null == accessToken) {
+            ServiceManager.accountService.createAccessToken(account);
+        }
+        return account;
+    }
+
 }

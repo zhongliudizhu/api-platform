@@ -10,9 +10,7 @@ import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.communalCoupon.vo.SendCouponDomain;
 import com.winstar.exception.NotRuleException;
 import com.winstar.order.entity.OilOrder;
-import com.winstar.user.entity.AccessToken;
-import com.winstar.user.entity.Account;
-import com.winstar.user.param.AccountParam;
+import com.winstar.user.service.AccountService;
 import com.winstar.user.utils.ServiceManager;
 import com.winstar.vo.Result;
 import lombok.AllArgsConstructor;
@@ -44,6 +42,7 @@ public class CommunalActivityController {
     HttpServletRequest request;
     AccountCouponRepository accountCouponRepository;
     AccountCouponService accountCouponService;
+    AccountService accountService;
 
     @GetMapping(value = "/availableActivities")
     public Result getActivities(@RequestParam(required = false, defaultValue = "center") String target) throws NotRuleException {
@@ -55,20 +54,7 @@ public class CommunalActivityController {
     @GetMapping(value = "/newUser")
     public Result newUserActivity(@RequestParam String openId, String nickName, String headImgUrl) {
         log.info("openId is {},nickName is {}, headImgUrl is {}", openId, nickName, headImgUrl);
-        String accountId;
-        Account account = ServiceManager.accountRepository.findByOpenid(openId);
-        if (ObjectUtils.isEmpty(account)) {
-            log.info("用户{}不存在，正在创建...", openId);
-            Account accountSaved = ServiceManager.accountService.createAccount(new AccountParam(openId, nickName, headImgUrl));
-            ServiceManager.accountService.createAccessToken(accountSaved);
-            accountId = accountSaved.getId();
-        } else {
-            accountId = account.getId();
-        }
-        AccessToken accessToken = ServiceManager.accessTokenService.findByAccountId(accountId);
-        if (null == accessToken) {
-            ServiceManager.accountService.createAccessToken(account);
-        }
+        String accountId = accountService.getAccountOrCreateByOpenId(openId, nickName, headImgUrl).getId();
         CommunalActivity activity = communalActivityRepository.findByStatusAndDelAndShowDateBeforeAndOnlyNew("yes", "no", new Date(), "yes");
         if (ObjectUtils.isEmpty(activity)) {
             log.error("新用户活动不存在");
