@@ -21,8 +21,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static com.winstar.utils.ValidatorParameterUtils.isMobile;
 
 //建行分期200元优惠券活动
 @RestController
@@ -63,22 +64,6 @@ public class InstallmentController {
             return Result.success(recList);
         }
         return Result.fail("send_error", "发券失败");
-    }
-
-    /**
-     * 正则表达式：验证手机号
-     */
-    private static final String REGEX_MOBILE;
-
-    static {
-        REGEX_MOBILE = "^[1][3,4,5,6,7,8,9][0-9]{9}$";
-    }
-
-    /**
-     * 校验手机号
-     */
-    private static boolean isMobile(String mobile) {
-        return Pattern.matches(REGEX_MOBILE, mobile);
     }
 
     SmsService smsService;
