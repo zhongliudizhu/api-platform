@@ -6,6 +6,7 @@ import com.winstar.vo.Result;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +23,15 @@ public class RemoveRedisKeyController {
 
     @Autowired
     RedisTools redisTools;
+
+    @GetMapping("key/set")
+    public void setKey(@RequestParam String key, @RequestParam String value, @RequestParam(required = false) Long times){
+        if(ObjectUtils.isEmpty(times)){
+            redisTools.set(key, value);
+        }else{
+            redisTools.set(key, value, times);
+        }
+    }
 
     @GetMapping("remove/key")
     public void getAllResources(@RequestParam String id) {
