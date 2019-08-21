@@ -5,7 +5,9 @@ import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.communalCoupon.vo.SendCouponDomain;
 import com.winstar.redis.RedisTools;
 import com.winstar.user.entity.Account;
+import com.winstar.user.entity.Fans;
 import com.winstar.user.service.AccountService;
+import com.winstar.user.service.FansService;
 import com.winstar.vo.Result;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +42,9 @@ public class EducationLearnCouponController {
     @Autowired
     AccountService accountService;
 
+    @Autowired
+    FansService fansService;
+
     @RequestMapping(value = "education/getCoupon", method = RequestMethod.POST)
     public Result getCoupon(@RequestBody Map map){
         String openId = MapUtils.getString(map, "openId");
@@ -58,6 +63,15 @@ public class EducationLearnCouponController {
         }
         String templateId = (String) redisTools.get("education_coupon_templateId");
         log.info("templateId is " + templateId);
+        if(StringUtils.isEmpty(templateId)){
+            log.info("templateId为空！");
+            return Result.fail("templateId_is_null", "templateId为空！");
+        }
+        Fans fans = fansService.getByOpenId(openId);
+        if (ObjectUtils.isEmpty(fans)) {
+            log.info("openId无效！");
+            return Result.fail("openId_is_invalid", "openId无效！");
+        }
         Account account = accountService.getAccountOrCreateByOpenId(openId, null, null);
         SendCouponDomain domain = new SendCouponDomain(templateId, account.getId(), AccountCoupon.TYPE_YJX, "1", null, null);
         List<AccountCoupon> accountCoupons = accountCouponService.sendCoupon(domain, null);
