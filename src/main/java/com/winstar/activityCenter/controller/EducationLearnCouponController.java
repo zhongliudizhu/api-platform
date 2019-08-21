@@ -61,6 +61,7 @@ public class EducationLearnCouponController {
             log.info("verifyCode无效！");
             return Result.fail("verifyCode_is_invalid", "verifyCode无效！");
         }
+        redisTools.remove(verifyCode);
         String templateId = (String) redisTools.get("education_coupon_templateId");
         log.info("templateId is " + templateId);
         if(StringUtils.isEmpty(templateId)){
