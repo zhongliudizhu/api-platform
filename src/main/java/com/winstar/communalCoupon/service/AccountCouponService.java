@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -173,6 +172,12 @@ public class AccountCouponService {
     public void modifyCouponState(String accountId, String couponIds, String state, String serialNumber) {
         List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndCouponIdIn(accountId, couponIds.split(","));
         for (AccountCoupon accountCoupon : accountCoupons) {
+            if(accountCoupon.getState().equals(AccountCouponService.USED)){
+                continue;
+            }
+            if(state.equals(AccountCouponService.NORMAL) && (!accountCoupon.getState().equals(AccountCouponService.LOCKED) || !accountCoupon.getState().equals(AccountCouponService.SENDING))){
+                continue;
+            }
             accountCoupon.setState(state);
             accountCoupon.setOrderId(serialNumber);
             if (state.equals(AccountCouponService.USED)) {
@@ -221,14 +226,6 @@ public class AccountCouponService {
     public void backSendingTimeOutCoupon(List<AccountCoupon> accountCoupons){
         accountCoupons.stream().filter(accountCoupon -> accountCoupon.getState().equals(AccountCouponService.SENDING) && (new Date().getTime() - accountCoupon.getSendTime().getTime()) >= 24 * 60 * 60 * 1000).forEach(accountCoupon -> {
             accountCoupon.setState(AccountCouponService.NORMAL);
-            accountCouponRepository.save(accountCoupon);
-        });
-        long time = Long.valueOf(new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
-        accountCoupons.stream().filter(accountCoupon -> accountCoupon.getState().equals(AccountCouponService.LOCKED)
-                && !StringUtils.isEmpty(accountCoupon.getOrderId())
-                && (time - Long.valueOf(accountCoupon.getOrderId().substring(0, 14))) >= 3500).forEach(accountCoupon -> {
-            accountCoupon.setState(AccountCouponService.NORMAL);
-            accountCoupon.setOrderId(null);
             accountCouponRepository.save(accountCoupon);
         });
     }
