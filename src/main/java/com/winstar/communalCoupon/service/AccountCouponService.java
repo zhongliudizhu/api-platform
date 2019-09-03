@@ -175,7 +175,7 @@ public class AccountCouponService {
             if(accountCoupon.getState().equals(AccountCouponService.USED)){
                 continue;
             }
-            if(state.equals(AccountCouponService.NORMAL) && (!accountCoupon.getState().equals(AccountCouponService.LOCKED) || !accountCoupon.getState().equals(AccountCouponService.SENDING))){
+            if(state.equals(AccountCouponService.NORMAL) && !accountCoupon.getState().equals(AccountCouponService.LOCKED) && !accountCoupon.getState().equals(AccountCouponService.SENDING)){
                 continue;
             }
             accountCoupon.setState(state);
@@ -183,8 +183,8 @@ public class AccountCouponService {
             if (state.equals(AccountCouponService.USED)) {
                 accountCoupon.setUseDate(new Date());
             }
+            accountCouponRepository.save(accountCoupon);
         }
-        accountCouponRepository.save(accountCoupons);
     }
 
     @Async
