@@ -10,6 +10,7 @@ import com.winstar.couponActivity.utils.ActivityIdEnum;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.order.entity.OilOrder;
+import com.winstar.order.service.OilOrderService;
 import com.winstar.order.vo.OilDetailVo;
 import com.winstar.shop.entity.Goods;
 import com.winstar.user.utils.ServiceManager;
@@ -324,11 +325,11 @@ public class OilOrderUtil {
     }
 
     /**
-     * 订单使用优惠券的处理
+     * 订单使用优惠券的处理及下单
      * 2019-05-31
      * zl add
      */
-    public static OilOrder orderUseCoupons(AccountCouponRepository accountCouponRepository, OilOrder oilOrder, Goods goods, Integer activityType, String couponId) throws NotFoundException, NotRuleException{
+    public static OilOrder orderUseCouponsAndSave(AccountCouponRepository accountCouponRepository, OilOrderService oilOrderService, OilOrder oilOrder, Goods goods, Integer activityType, String couponId) throws Exception{
         logger.info(oilOrder.getSerialNumber() + "使用优惠券" +  couponId);
         List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndCouponIdIn(oilOrder.getAccountId(), couponId.split(","));
         if(ObjectUtils.isEmpty(accountCoupons)){
@@ -348,7 +349,11 @@ public class OilOrderUtil {
                 (!ObjectUtils.isEmpty(ccbCoupons) && ccbCoupons.size() > 1) ||
                 (!ObjectUtils.isEmpty(moveCostCoupons) && moveCostCoupons.size() > 1) ||
                 (!ObjectUtils.isEmpty(shellCoupons) && shellCoupons.size() > 1)){
-            logger.error("每种类型的券只能使用一张，yjx size is {}，ccb size is {}，moveCost size is {}，shell size is {}，", groupAccountCoupon.get(AccountCoupon.TYPE_YJX).size(), groupAccountCoupon.get(AccountCoupon.TYPE_CCB).size(), groupAccountCoupon.get(AccountCoupon.TYPE_MOVE_COST).size(), groupAccountCoupon.get(AccountCoupon.TYPE_SHELL).size());
+            logger.error("每种类型的券只能使用一张，yjx size is {}，ccb size is {}，moveCost size is {}，shell size is {}，",
+                    !ObjectUtils.isEmpty(yjxCoupons) ? yjxCoupons.size() : 0,
+                    !ObjectUtils.isEmpty(ccbCoupons) ? ccbCoupons.size() : 0,
+                    !ObjectUtils.isEmpty(moveCostCoupons) ? moveCostCoupons.size() : 0,
+                    !ObjectUtils.isEmpty(shellCoupons) ? shellCoupons.size() : 0);
             throw new NotRuleException("coupon_type_only_one.order");
         }
         logger.info(JSON.toJSONString(accountCoupons));
@@ -376,7 +381,7 @@ public class OilOrderUtil {
             logger.error("优惠后的订单价格不能小于0！");
             throw new NotRuleException("price.order");
         }
-        return oilOrder;
+        return oilOrderService.saveOrderAndCoupon(accountCoupons, oilOrder);
     }
 
 }

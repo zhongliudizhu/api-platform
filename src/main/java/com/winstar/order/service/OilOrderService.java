@@ -1,5 +1,6 @@
 package com.winstar.order.service;
 
+import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.exception.NotFoundException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.vo.PayInfoVo;
@@ -23,4 +24,7 @@ public interface OilOrderService {
      * 根据订单序列号查询订单（不过滤关闭订单）
      * */
      OilOrder getOrder(String serialNumber);
+
+     OilOrder saveOrderAndCoupon(List<AccountCoupon> accountCoupons, OilOrder order) throws Exception;
+
 }

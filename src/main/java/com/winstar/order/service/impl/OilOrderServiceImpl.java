@@ -2,6 +2,8 @@ package com.winstar.order.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.winstar.cashier.wx.service.WxMartetTemplate;
+import com.winstar.communalCoupon.entity.AccountCoupon;
+import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.exception.NotFoundException;
 import com.winstar.kafka.Product;
@@ -18,10 +20,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author shoo on 2017/12/14 9:54.
@@ -39,6 +43,9 @@ public class OilOrderServiceImpl implements OilOrderService {
 
     @Autowired
     AccountCouponService accountCouponService;
+
+    @Autowired
+    AccountCouponRepository accountCouponRepository;
 
     @Autowired
     GoodsRepository goodsRepository;
@@ -123,6 +130,16 @@ public class OilOrderServiceImpl implements OilOrderService {
             }
         }
         return oilOrder;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public OilOrder saveOrderAndCoupon(List<AccountCoupon> accountCoupons, OilOrder order) throws Exception{
+        for (AccountCoupon accountCoupon : accountCoupons) {
+            accountCoupon.setState(AccountCouponService.LOCKED);
+            accountCoupon.setOrderId(order.getSerialNumber());
+            accountCouponRepository.save(accountCoupon);
+        }
+        return oilOrderRepository.save(order);
     }
 
 }

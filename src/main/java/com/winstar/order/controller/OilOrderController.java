@@ -8,6 +8,7 @@ import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
+import com.winstar.order.service.OilOrderService;
 import com.winstar.order.utils.Constant;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.OilOrderUtil;
@@ -48,6 +49,9 @@ public class OilOrderController {
     private OilOrderRepository orderRepository;
 
     @Autowired
+    private OilOrderService oilOrderService;
+
+    @Autowired
     private ShopService shopService;
 
     @Autowired
@@ -76,7 +80,7 @@ public class OilOrderController {
      */
     @PostMapping(produces = "application/json;charset=utf-8")
     @ResponseBody
-    public ResponseEntity addOrder(@RequestParam String itemId, @RequestParam String activityId, @RequestParam(required = false, defaultValue = "") String couponId, HttpServletRequest request) throws NotFoundException, NotRuleException {
+    public ResponseEntity addOrder(@RequestParam String itemId, @RequestParam String activityId, @RequestParam(required = false, defaultValue = "") String couponId, HttpServletRequest request) throws Exception {
         String accountId = accountService.getAccountId(request);
         Account account = accountService.findOne(accountId);
         if(!redisTools.setIfAbsent(accountId + itemId, 2)){
@@ -147,14 +151,10 @@ public class OilOrderController {
         OilOrder oilOrder = new OilOrder(accountId, serialNumber, Constant.ORDER_STATUS_CREATE, Constant.PAY_STATUS_NOT_PAID, new Date(), Constant.REFUND_STATUS_ORIGINAL, itemId, activityId);
         //4.如果优惠券，查询优惠券
         if (!StringUtils.isEmpty(couponId)) {
-            oilOrder = OilOrderUtil.orderUseCoupons(accountCouponRepository, oilOrder, goods, activity.getType(), couponId);
-            if (!StringUtils.isEmpty(oilOrder.getCouponId())) {
-                accountCouponService.modifyCouponState(oilOrder.getAccountId(), oilOrder.getCouponId(), AccountCouponService.LOCKED, oilOrder.getSerialNumber());
-            }
+            oilOrder = OilOrderUtil.orderUseCouponsAndSave(accountCouponRepository, oilOrderService, oilOrder, goods, activity.getType(), couponId);
         }else{
-            oilOrder = OilOrderUtil.initOrder(oilOrder, goods, activity.getType());
+            oilOrder = orderRepository.save(OilOrderUtil.initOrder(oilOrder, goods, activity.getType()));
         }
-        oilOrder = orderRepository.save(oilOrder);
         //6.生成订单
         long endTime = System.currentTimeMillis();
         logger.info("添加订单成功，goodsId：" + goods.getId() + "|总用时: " + (endTime - startTime));
