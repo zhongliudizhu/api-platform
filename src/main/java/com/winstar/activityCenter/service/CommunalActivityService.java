@@ -122,17 +122,17 @@ public class CommunalActivityService {
             List<AccountCoupon> activityCoupons = groupAccountCoupons.get(communalActivity.getId());
             if (!ObjectUtils.isEmpty(activityCoupons)) {
                 //首页活动一直展示 交安卡专享活动一直展示 正常活动已领取当天显示
-                if (getDayEnd(activityCoupons.get(0).getCreatedAt()).getTime() <= now.getTime() && !"yes".equals(activityVo.getShowHome()) && !"ccb".equals(target)) {
+                if (getDayEnd(activityCoupons.get(0).getCreatedAt()).getTime() <= now.getTime() && !"ccb".equals(target)) {
                     available = false;
                 } else {
                     activityVo.setStatus("received");
                     log.info("{}活动{}已被领取", communalActivity.getName(), communalActivity.getId());
                 }
             }
-            //新用户活动不在领券中心展示
-            if ("yes".equals(activityVo.getOnlyNew())) {
-                available = false;
-            }
+//            //新用户活动不在领券中心展示
+//            if ("yes".equals(activityVo.getOnlyNew())) {
+//                available = false;
+//            }
             if (available) {
                 activityVos.add(activityVo);
             }
@@ -256,7 +256,7 @@ public class CommunalActivityService {
     /**
      * 校验活动有效性
      */
-    public Result validatorActivity(CommunalActivity activity){
+    public Result validatorActivity(CommunalActivity activity) {
         if (ObjectUtils.isEmpty(activity)) {
             log.info("活动不存在！");
             return Result.fail("Not_found_activity", "活动不存在！");

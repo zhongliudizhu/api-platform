@@ -128,6 +128,9 @@ public class FansService {
         fans.setGroupId(MapUtils.getString(map, "groupid"));
         fans.setTagIdList(MapUtils.getString(map, "tagid_list"));
         fans.setSubScribeScene(MapUtils.getString(map, "subscribe_scene"));
+        if (ObjectUtils.isEmpty(fans.getCreatedAt())) {
+            fans.setCreatedAt(new Date());
+        }
         fansRepository.save(fans);
         fans.setNickname(name);
         return fans;
