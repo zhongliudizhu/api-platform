@@ -8,10 +8,8 @@ import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.redis.RedisTools;
 import com.winstar.user.repository.AccessTokenRepository;
 import com.winstar.user.repository.AccountRepository;
-import com.winstar.user.repository.PageViewLogRepository;
 import com.winstar.user.service.AccessTokenService;
 import com.winstar.user.service.AccountService;
-import com.winstar.user.service.PageViewLogService;
 import com.winstar.user.service.SmsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,8 +22,6 @@ public class ServiceManager {
 
     public static AccessTokenRepository accessTokenRepository;
     public static AccountRepository accountRepository;
-    public static PageViewLogRepository pageViewLogRepository;
-    public static PageViewLogService pageViewLogService;
     public static AccountService accountService;
     public static OilOrderRepository oilOrderRepository;
     public static SmsService smsService;
@@ -116,15 +112,6 @@ public class ServiceManager {
         ServiceManager.accountRepository = accountRepository;
     }
 
-    @Autowired
-    public void setPageViewLogRepository(PageViewLogRepository pageViewLogRepository) {
-        ServiceManager.pageViewLogRepository = pageViewLogRepository;
-    }
-
-    @Autowired
-    public void setPageViewLogService(PageViewLogService pageViewLogService) {
-        ServiceManager.pageViewLogService = pageViewLogService;
-    }
 
     @Autowired
     public void setAccountService(AccountService accountService) {

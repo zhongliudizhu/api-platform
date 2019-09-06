@@ -10,9 +10,7 @@ import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.ActivityRepository;
 import com.winstar.shop.repository.GoodsRepository;
-import com.winstar.user.entity.PageViewLog;
 import com.winstar.user.service.AccountService;
-import com.winstar.user.utils.ServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,12 +71,6 @@ public class GoodsController {
         if (StringUtils.isEmpty(activityId)) throw new MissingParameterException("activityId");
         String accountId = accountService.getAccountId(request);
         logger.info("accountId=" + accountId);
-        PageViewLog log = new PageViewLog();
-        log.setCreateTime(new Date());
-        log.setAccountId(accountId);
-        log.setActivityId(activityId);
-        log.setUrl(request.getRequestURI());
-        ServiceManager.pageViewLogService.saveAsyncPageViewLog(log);
         Activity activity = activityRepository.findOne(activityId);
         if(activity==null) {
             logger.info("活动不存在！");
