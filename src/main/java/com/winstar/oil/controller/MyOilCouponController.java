@@ -247,7 +247,6 @@ public class MyOilCouponController {
         }
         if(!redisTools.setIfAbsent(id, 10)){
             logger.info("点击过于频繁，请稍后再试！操作Id:" + id);
-            //String message = "正在加载油券，请勿重复操作！";
             throw new NotRuleException("oilCoupon.loading");
         }
         logger.info("时间：" + System.currentTimeMillis() + "，执行的查询id：" + id);
