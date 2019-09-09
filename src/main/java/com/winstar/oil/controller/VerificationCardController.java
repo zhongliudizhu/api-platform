@@ -53,19 +53,19 @@ public class VerificationCardController {
     @RequestMapping(value = "",method = RequestMethod.GET)
     public ResponseEntity checkCard(@RequestParam String pan) throws Exception{
         logger.info("电子券使用进行核销。。。");
+        Result result = new Result();
         String aesPan = AESUtil.encrypt(pan,AESUtil.dekey);
         logger.info("加密后的油券号码：" + aesPan);
         OilCouponVerificationLog oilCouponVerificationLog = new OilCouponVerificationLog();
         oilCouponVerificationLog.setCreateTime(new Date());
         oilCouponVerificationLog.setPan(aesPan);
         oilCouponVerificationLog.setRequestUrl(pan.length() == 20 ? oilSendNewUrl : oilSendUrl);
-        Result result = new Result();
+        oilCouponVerificationLog = oilCouponVerificationLogRepository.save(oilCouponVerificationLog);
         MyOilCoupon myOilCoupon = myOilCouponRepository.findByPan(aesPan);
         if(WsdUtils.isEmpty(myOilCoupon)){
             logger.info(pan + "油券不存在！");
             result.setCode("NOT_FOUND");
             result.setFailMessage(pan + "油券不存在！");
-            oilCouponVerificationLogRepository.save(oilCouponVerificationLog);
             return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
         }
         Map<String, String> map = SearchOilCoupon.verification(pan.length() == 20 ? oilSendNewUrl : oilSendUrl, pan);
