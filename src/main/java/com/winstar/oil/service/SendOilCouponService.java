@@ -16,7 +16,6 @@ import com.winstar.redis.RedisTools;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
 import com.winstar.utils.WsdUtils;
-import lombok.Synchronized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,12 +55,10 @@ public class SendOilCouponService {
 
     public ResponseEntity checkCard(String orderNumber) throws Exception{
         logger.info(orderNumber + "，执行油卡发送操作。。。");
-        if(redisTools.exists(orderNumber)){
-            logger.info("60秒之内不执行同一订单的发券操作！订单号：" + orderNumber);
-            //String message = "60秒之内不执行同一订单的发券操作！";
+        if(!redisTools.setIfAbsent(orderNumber, 600)){
+            logger.info("600秒之内不执行同一订单的发券操作！订单号：" + orderNumber);
             throw new NotRuleException("oilCoupon.loading");
         }
-        redisTools.set(orderNumber, orderNumber, 60L);
         long beginTime = System.currentTimeMillis();
         logger.info("执行发券开始时间：" + beginTime);
         OilOrder oilOrder = orderService.getOrder(orderNumber);
@@ -110,11 +107,10 @@ public class SendOilCouponService {
      */
     public ResponseEntity handlerSendOilCoupon(String orderNumber, String shopId, String accountId) throws Exception{
         logger.info(orderNumber + "，手动执行油卡发送操作。。。");
-        if(redisTools.exists(orderNumber)){
-            logger.info("60秒之内不执行同一订单的发券操作！订单号：" + orderNumber);
+        if(!redisTools.setIfAbsent(orderNumber, 600)){
+            logger.info("600秒之内不执行同一订单的发券操作！订单号：" + orderNumber);
             throw new NotRuleException("oilCoupon.loading");
         }
-        redisTools.set(orderNumber, orderNumber, 60L);
         long beginTime = System.currentTimeMillis();
         logger.info("手动执行发券开始时间：" + beginTime);
         logger.info("orderId:" + orderNumber + "，shopId:" + shopId + "，accountId:" + accountId);
