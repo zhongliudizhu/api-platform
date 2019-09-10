@@ -14,10 +14,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by zl on 2019/5/23
@@ -40,6 +37,7 @@ public class RequestUtil {
         List<AccountCoupon> accountCoupons = new ArrayList<>();
         for (CouponVo couponVo : couponVos) {
             AccountCoupon accountCoupon = new AccountCoupon();
+            accountCoupon.setId(UUID.randomUUID().toString());
             accountCoupon.setCouponId(couponVo.getId());
             accountCoupon.setAmount(couponVo.getAmount());
             accountCoupon.setFullMoney(couponVo.getDoorSkill());

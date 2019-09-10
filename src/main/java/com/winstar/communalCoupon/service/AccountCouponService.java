@@ -10,6 +10,7 @@ import com.winstar.communalCoupon.repository.CouponSendRecordRepository;
 import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.communalCoupon.vo.SendCouponDomain;
 import com.winstar.costexchange.utils.RequestUtil;
+import com.winstar.redis.CouponRedisTools;
 import com.winstar.redis.RedisTools;
 import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
@@ -21,13 +22,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -35,16 +34,21 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@SuppressWarnings("unchecked")
 public class AccountCouponService {
 
     private AccountCouponRepository accountCouponRepository;
 
-    @Autowired
-    private CouponSendRecordRepository couponSendRecordRepository;
+    private final CouponSendRecordRepository couponSendRecordRepository;
+
+    private final CouponRedisTools couponRedisTools;
+
 
     @Autowired
-    public AccountCouponService(AccountCouponRepository accountCouponRepository) {
+    public AccountCouponService(AccountCouponRepository accountCouponRepository, CouponSendRecordRepository couponSendRecordRepository, CouponRedisTools couponRedisTools) {
         this.accountCouponRepository = accountCouponRepository;
+        this.couponSendRecordRepository = couponSendRecordRepository;
+        this.couponRedisTools = couponRedisTools;
     }
 
     public static final String LOCKED = "locked";
@@ -88,11 +92,10 @@ public class AccountCouponService {
      *
      * @return List<AccountCoupon>
      */
-    @SuppressWarnings("unchecked")
-    public List<AccountCoupon> getAvailableCoupons(List<AccountCoupon> accountCoupons, Double amount,String tags) {
+    public List<AccountCoupon> getAvailableCoupons(List<AccountCoupon> accountCoupons, Double amount, String tags) {
         String couponIds = accountCoupons.stream().map(AccountCoupon::getCouponId).collect(Collectors.joining(","));
         log.info("couponIds:" + couponIds);
-        ResponseEntity<Map> resp = checkCoupon(couponIds, amount.toString(),tags);
+        ResponseEntity<Map> resp = checkCoupon(couponIds, amount.toString(), tags);
         log.info("map:" + resp.getBody().toString());
         Map map = resp.getBody();
         if (!"SUCCESS".equals(map.get("code"))) {
@@ -172,10 +175,10 @@ public class AccountCouponService {
     public void modifyCouponState(String accountId, String couponIds, String state, String serialNumber) {
         List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndCouponIdIn(accountId, couponIds.split(","));
         for (AccountCoupon accountCoupon : accountCoupons) {
-            if(accountCoupon.getState().equals(AccountCouponService.USED)){
+            if (accountCoupon.getState().equals(AccountCouponService.USED)) {
                 continue;
             }
-            if(state.equals(AccountCouponService.NORMAL) && !accountCoupon.getState().equals(AccountCouponService.LOCKED) && !accountCoupon.getState().equals(AccountCouponService.SENDING)){
+            if (state.equals(AccountCouponService.NORMAL) && !accountCoupon.getState().equals(AccountCouponService.LOCKED) && !accountCoupon.getState().equals(AccountCouponService.SENDING)) {
                 continue;
             }
             accountCoupon.setState(state);
@@ -188,12 +191,12 @@ public class AccountCouponService {
     }
 
     @Async
-    public void consumeWxCard(String accountId, String couponIds, WxMartetTemplate wxMartetTemplate, AccountService accountService){
+    public void consumeWxCard(String accountId, String couponIds, WxMartetTemplate wxMartetTemplate, AccountService accountService) {
         List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndCouponIdIn(accountId, couponIds.split(","));
         Account account = accountService.findOne(accountId);
         for (AccountCoupon accountCoupon : accountCoupons) {
             log.info("调用微信卡包核销优惠券，cardPackageId is " + accountCoupon.getCardPackageId());
-            if(StringUtils.isEmpty(accountCoupon.getCardPackageId())){
+            if (StringUtils.isEmpty(accountCoupon.getCardPackageId())) {
                 continue;
             }
             try {
@@ -202,7 +205,7 @@ public class AccountCouponService {
                 consumeCardRequest.setCardId(accountCoupon.getCardPackageId());
                 log.info("请求参数：" + JSON.toJSONString(consumeCardRequest));
                 wxMartetTemplate.consumeCard(consumeCardRequest);
-            }catch (Exception e){
+            } catch (Exception e) {
                 log.error("调用微信卡包核销优惠券失败！cardPackageId is " + accountCoupon.getCardPackageId(), e);
             }
             log.info(accountCoupon.getCardPackageId() + "<->通知微信卡包核销完毕！");
@@ -223,27 +226,49 @@ public class AccountCouponService {
     /**
      * 检测优惠券是否有赠送超时未领取的券，有则回库
      */
-    public void backSendingTimeOutCoupon(List<AccountCoupon> accountCoupons){
+    public void backSendingTimeOutCoupon(List<AccountCoupon> accountCoupons) {
         accountCoupons.stream().filter(accountCoupon -> accountCoupon.getState().equals(AccountCouponService.SENDING) && (new Date().getTime() - accountCoupon.getSendTime().getTime()) >= 24 * 60 * 60 * 1000).forEach(accountCoupon -> {
             accountCoupon.setState(AccountCouponService.NORMAL);
             accountCouponRepository.save(accountCoupon);
         });
     }
 
-    public List<AccountCoupon> sendCoupon(SendCouponDomain domain, RedisTools redisTools){
+    public List<AccountCoupon> sendCoupon(SendCouponDomain domain, RedisTools redisTools) {
         log.info("给用户发放优惠券：accountId is {} and templateId is {}", domain.getAccountId(), domain.getTemplateId());
         ResponseEntity<Map> responseEntity = getCoupon(domain.getTemplateId(), domain.getNum());
         Map map = responseEntity.getBody();
         if (MapUtils.getString(map, "code").equals("SUCCESS")) {
             log.info("获取优惠券成功！accountId is {} and templateId is {}", domain.getAccountId(), domain.getTemplateId());
             List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(JSON.toJSONString(map.get("data")), domain, redisTools);
-            accountCouponRepository.save(accountCoupons);
+            for (AccountCoupon coupon : accountCoupons) {
+                String key = "coupon_account_" + domain.getAccountId() + "_" + coupon.getId();
+                long expireTime = coupon.getEndTime().getTime() - System.currentTimeMillis();
+                boolean b = couponRedisTools.set(key, coupon, expireTime);
+                log.info("{} 发券结果： {}", key, b);
+            }
             log.info("发放优惠券成功！accountId is {} and templateId is {}", domain.getAccountId(), domain.getTemplateId());
             return accountCoupons;
         }
         return null;
     }
 
+    /**
+     * 获取用户redis中的优惠券入库并从redis移除
+     *
+     * @param accountId 用户Id
+     */
+    public void getRedisCoupon(String accountId) {
+        String pattern = "coupon_account_" + accountId + "*";
+        Set<String> keys = couponRedisTools.keys(pattern);
+        log.info("keys is {}", keys);
+        for (String key : keys) {
+            AccountCoupon accountCoupon = (AccountCoupon) couponRedisTools.get(key);
+            if (!ObjectUtils.isEmpty(accountCoupon)) {
+                accountCouponRepository.save(accountCoupon);
+            }
+            couponRedisTools.remove(key);
+        }
+    }
 }
 
 

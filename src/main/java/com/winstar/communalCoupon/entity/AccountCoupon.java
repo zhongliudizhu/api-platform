@@ -3,9 +3,12 @@ package com.winstar.communalCoupon.entity;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -18,8 +21,9 @@ import java.util.Date;
 @Entity
 @Table(name = "communal_account_coupon")
 @ToString
-public class AccountCoupon {
+public class AccountCoupon implements Serializable {
 
+    private static final long serialVersionUID = 1162873596142996403L;
     public static String TYPE_YJX = "yjx";
     public static String TYPE_CCB = "ccb";
     public static String TYPE_MOVE_COST = "moveCost";
@@ -29,8 +33,8 @@ public class AccountCoupon {
      * 唯一标识
      */
     @Id
-    @GenericGenerator(name = "idGenerator", strategy = "uuid")
-    @GeneratedValue(generator = "idGenerator")
+//    @GenericGenerator(name = "idGenerator", strategy = "uuid")
+//    @GeneratedValue(generator = "idGenerator")
     @Column(columnDefinition = "varchar(50) comment '主键id'")
     @JSONField(deserialize = false)
     private String id;

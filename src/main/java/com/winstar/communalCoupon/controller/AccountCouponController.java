@@ -9,6 +9,7 @@ import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.costexchange.vo.AccountCouponVo;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.Week;
+import com.winstar.redis.CouponRedisTools;
 import com.winstar.redis.RedisTools;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.GoodsRepository;
@@ -19,7 +20,6 @@ import com.winstar.vo.Result;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.util.ObjectUtils;
@@ -52,8 +52,9 @@ public class AccountCouponController {
 
     AccountRepository accountRepository;
 
-    @Autowired
     RedisTools redisTools;
+
+    CouponRedisTools couponRedisTools;
 
 
     /**
@@ -67,13 +68,13 @@ public class AccountCouponController {
         }
         String accountId = (String) request.getAttribute("accountId");
         String key = "coupon_checking_" + accountId;
-        if(redisTools.setIfAbsent(key, 1800)){
+        if (redisTools.setIfAbsent(key, 1800)) {
             logger.info("检查优惠券状态，如已过期或赠送超时未领取的券更新数据，用户id is {}", accountId);
             List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountId(accountId);
             Week week = DateUtil.getWeek(new Date());
             int hour = DateUtil.getHour(new Date());
             //不在周四权益时高峰时段时再检测是否有赠送超时未领取的优惠券
-            if(!week.equals(Week.THURSDAY) || (week.equals(Week.THURSDAY) && hour > 14)){
+            if (!week.equals(Week.THURSDAY) || (week.equals(Week.THURSDAY) && hour > 14)) {
                 logger.info("检查超时未领取的优惠券状态");
                 accountCouponService.backSendingTimeOutCoupon(accountCoupons);
             }
@@ -83,6 +84,7 @@ public class AccountCouponController {
                 accountCouponRepository.save(accountCoupon);
             });
         }
+        accountCouponService.getRedisCoupon(accountId);
         Pageable pageable = WebUitl.buildPageRequest(nextPage, pageSize, null);
         Page<AccountCoupon> accountCouponPage = accountCouponRepository.findByAccountIdAndShowStatusAndState(accountId, "yes", state, pageable);
         return Result.success(accountCouponPage);
@@ -104,7 +106,7 @@ public class AccountCouponController {
             logger.info("商品不存在！");
             return Result.fail("shop_not_found", "商品不存在！");
         }
-        List<AccountCoupon> couponList = accountCouponService.getAvailableCoupons(accountCoupons, goods.getPrice(),goods.getTags());
+        List<AccountCoupon> couponList = accountCouponService.getAvailableCoupons(accountCoupons, goods.getPrice(), goods.getTags());
         return Result.success(getAccountCoupons(couponList));
     }
 
@@ -177,13 +179,13 @@ public class AccountCouponController {
         couponSendRecord.setAccountCoupon(accountCoupon);
         couponSendRecord.setSendName(sendAccount.getNickName());
         //判断赠送状态
-        if(StringUtils.isEmpty(couponSendRecord.getReceiveAccountId()) && (new Date().getTime() - couponSendRecord.getSendTime().getTime()) >= 24 * 60 * 60 * 1000){
+        if (StringUtils.isEmpty(couponSendRecord.getReceiveAccountId()) && (new Date().getTime() - couponSendRecord.getSendTime().getTime()) >= 24 * 60 * 60 * 1000) {
             couponSendRecord.setStatus("back");
-        }else if(!StringUtils.isEmpty(couponSendRecord.getReceiveAccountId())){
+        } else if (!StringUtils.isEmpty(couponSendRecord.getReceiveAccountId())) {
             couponSendRecord.setStatus("received");
-        }else if((new Date().getTime() - accountCoupon.getEndTime().getTime()) >= 0){
+        } else if ((new Date().getTime() - accountCoupon.getEndTime().getTime()) >= 0) {
             couponSendRecord.setStatus("expired");
-        }else if(StringUtils.isEmpty(couponSendRecord.getReceiveAccountId())){
+        } else if (StringUtils.isEmpty(couponSendRecord.getReceiveAccountId())) {
             couponSendRecord.setStatus(couponSendRecord.getSendAccountId().equals(accountId) ? "sending" : "normal");
         }
         return Result.success(couponSendRecord);
