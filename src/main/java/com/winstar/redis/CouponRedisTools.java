@@ -5,6 +5,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,6 +31,34 @@ public class CouponRedisTools {
             e.printStackTrace();
         }
         return result;
+    }
+
+    /**
+     * 删除对应的value
+     */
+    public void remove(final String key) {
+        if (exists(key)) {
+            redisTemplate.delete(key);
+        }
+    }
+
+    public Set<String> keys(String pattern) {
+        return redisTemplate.keys(pattern);
+    }
+
+    /**
+     * 判断缓存中是否有对应的value
+     */
+    public boolean exists(final String key) {
+        return redisTemplate.hasKey(key);
+    }
+
+    /**
+     * 读取缓存
+     */
+    public Object get(final String key) {
+        ValueOperations<String, Object> operations = redisTemplate.opsForValue();
+        return operations.get(key);
     }
 
 }
