@@ -1,13 +1,11 @@
 package com.winstar.obu.repository;
 
-import com.winstar.couponActivity.entity.WhiteList;
 import com.winstar.obu.entity.ObuWhiteList;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * ObuWhiteListRepository

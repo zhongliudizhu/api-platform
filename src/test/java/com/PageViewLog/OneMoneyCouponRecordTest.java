@@ -6,7 +6,6 @@ import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.communalCoupon.vo.SendCouponDomain;
-import com.winstar.couponActivity.repository.WhiteListRepository;
 import com.winstar.order.utils.StringFormatUtils;
 import com.winstar.user.param.CCBAuthParam;
 import com.winstar.user.param.MsgContent;
@@ -37,9 +36,6 @@ import java.util.Map;
 @WebAppConfiguration
 @SpringBootTest(classes = Application.class)
 public class OneMoneyCouponRecordTest {
-
-    @Autowired
-    WhiteListRepository whiteListRepository;
 
     @Autowired
     EarlyAndEveningMarketConfigService earlyAndEveningMarketConfigService;

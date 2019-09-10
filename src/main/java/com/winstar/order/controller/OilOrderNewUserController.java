@@ -1,11 +1,9 @@
 package com.winstar.order.controller;
 
 import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
-import com.winstar.cashier.construction.utils.Arith;
-import com.winstar.coupon.entity.MyCoupon;
-import com.winstar.coupon.service.CouponService;
 import com.winstar.couponActivity.utils.ActivityIdEnum;
-import com.winstar.exception.*;
+import com.winstar.exception.NotFoundException;
+import com.winstar.exception.NotRuleException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.utils.Constant;
@@ -14,25 +12,18 @@ import com.winstar.order.utils.OilOrderUtil;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
-import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
-import com.winstar.user.utils.ServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
-import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * @author shoo on 2017/7/7 13:52.

@@ -1,5 +1,6 @@
 package com.winstar.oil.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.winstar.ActiveOilCoupon;
 import com.winstar.cashier.comm.EnumType;
@@ -20,11 +21,13 @@ import com.winstar.oil.service.OilCouponUpdateService;
 import com.winstar.oil.service.SendOilCouponService;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
+import com.winstar.redis.OilRedisTools;
 import com.winstar.redis.RedisTools;
 import com.winstar.user.service.AccountService;
 import com.winstar.utils.AESUtil;
 import com.winstar.utils.WsdUtils;
 import com.winstar.vo.OilSetMealVo;
+import net.sf.json.JSONObject;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
@@ -42,6 +45,7 @@ import ws.result.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 名称： MyOilCouponController
@@ -85,6 +89,9 @@ public class MyOilCouponController {
     @Autowired
     RedisTools redisTools;
 
+    @Autowired
+    OilRedisTools oilRedisTools;
+
     @Value("${info.cardUrl}")
     private String oilSendUrl;
 
@@ -93,6 +100,8 @@ public class MyOilCouponController {
 
     @Value("${info.coupon_recover_switch}")
     private boolean couponRecoverSwitch;
+
+    private String prefix = "oil_pan_list_";
 
     @RequestMapping(value = "/sendOilCoupon",method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -274,19 +283,28 @@ public class MyOilCouponController {
             return map;
         }
         long beginTime = System.currentTimeMillis();
-        List<OilCoupon> oilCoupons = oilCouponRepository.findRandomOilCoupons(myOilCoupon.getPanAmt());
-        if(WsdUtils.isEmpty(oilCoupons) || oilCoupons.size() == 0){
+        if(!oilRedisTools.exists(prefix + myOilCoupon.getPanAmt())){
+            logger.info("redis中没有该key值，查询数据库");
+            List<OilCoupon> oilCoupons = oilCouponRepository.findByOilStateAndPanAmt("0", myOilCoupon.getPanAmt());
+            if(!ObjectUtils.isEmpty(oilCoupons)){
+                List<String> oilCouponStrings = oilCoupons.stream().map(JSON::toJSONString).collect(Collectors.toList());
+                oilRedisTools.rightPushAll(prefix + myOilCoupon.getPanAmt(), oilCouponStrings);
+            }
+        }
+        logger.info("集合长度：" + oilRedisTools.size(prefix + myOilCoupon.getPanAmt()));
+        Object popValue = oilRedisTools.leftPop(prefix + myOilCoupon.getPanAmt());
+        if (ObjectUtils.isEmpty(popValue)) {
             logger.info("没有该面值的券码，发券失败！");
             throw new NotRuleException("oilCoupon.null");
         }
-        OilCoupon oilCoupon = oilCoupons.get(new Random().nextInt(oilCoupons.size()));
-        if(!redisTools.setIfAbsent(oilCoupon.getPan(), 60)){
-            oilCoupon = getOilCoupon(oilCoupons);
-        }
+        JSONObject objJson = JSONObject.fromObject(popValue);
+        OilCoupon oilCoupon = (OilCoupon) JSONObject.toBean(objJson, OilCoupon.class);
         if(ObjectUtils.isEmpty(oilCoupon)){
             logger.info("库存不足，分券失败！");
+            oilRedisTools.rightPush(prefix + myOilCoupon.getPanAmt(), JSON.toJSONString(oilCoupon));
             throw new NotRuleException("oilCoupon.sale_over");
         }
+        logger.info("获取的油券编码：" + oilCoupon.getPan());
         Result activeResult = activateOilCoupon(oilCoupon.getPan(), oilCoupon.getPanAmt());
         if(WsdUtils.isNotEmpty(activeResult) && activeResult.getCode().equals("SUCCESS")){
             MyOilCoupon moc = myOilCouponRepository.findOne(id);
@@ -295,6 +313,7 @@ public class MyOilCouponController {
                 Map<String, Object> map = Maps.newHashMap();
                 String pan = AESUtil.decrypt(moc.getPan(), AESUtil.dekey);
                 map.put("result", AESUtil.encrypt(pan, AESUtil.key));
+                oilRedisTools.rightPush(prefix + myOilCoupon.getPanAmt(), JSON.toJSONString(oilCoupon));
                 saveSearchLog(accountId, WsdUtils.getIpAddress(request), moc.getPan(), moc.getOrderId());
                 return map;
             }
@@ -303,6 +322,7 @@ public class MyOilCouponController {
         Map<String,Object> map = Maps.newHashMap();
         if(WsdUtils.isEmpty(myOilCoupon.getPan())){
             logger.info("更新券码没有成功，发券失败！");
+            oilRedisTools.rightPush(prefix + myOilCoupon.getPanAmt(), JSON.toJSONString(oilCoupon));
             throw new NotRuleException("oilCoupon.null");
         }
         long endTime = System.currentTimeMillis();
@@ -310,16 +330,6 @@ public class MyOilCouponController {
         map.put("result", AESUtil.encrypt(AESUtil.decrypt(myOilCoupon.getPan(),AESUtil.dekey),AESUtil.key));
         saveSearchLog(accountId,WsdUtils.getIpAddress(request),myOilCoupon.getPan(),myOilCoupon.getOrderId());
         return map;
-    }
-
-    private OilCoupon getOilCoupon(List<OilCoupon> oilCoupons){
-        for(OilCoupon oilCoupon : oilCoupons){
-            if(redisTools.setIfAbsent(oilCoupon.getPan(), 60)){
-                return oilCoupon;
-            }
-            logger.info(oilCoupon.getPan() + "油券正在进行分配，不能分配给其他用户");
-        }
-        return null;
     }
 
     @Async

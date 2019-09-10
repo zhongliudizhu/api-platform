@@ -1,6 +1,5 @@
 package com.winstar.obu.controller;
 
-import com.winstar.couponActivity.repository.WhiteListRepository;
 import com.winstar.exception.InvalidParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
@@ -65,8 +64,7 @@ public class ObuActivityController {
     ObuAccountRepository obuAccountRepository;
     @Autowired
     ObuTokenService obuTokenService;
-    @Autowired
-    WhiteListRepository whiteListRepository;
+
     @Value("${send_sms_url}")
     String sendSmsUrl;
     @Value("${verify_sms_url}")

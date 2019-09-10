@@ -1,10 +1,15 @@
 package com.winstar.carLifeMall.controller;
 
-import com.winstar.carLifeMall.entity.*;
+import com.winstar.carLifeMall.entity.CarLifeOrders;
+import com.winstar.carLifeMall.entity.Item;
+import com.winstar.carLifeMall.entity.OrdersItems;
+import com.winstar.carLifeMall.entity.Seller;
 import com.winstar.carLifeMall.param.CarLifeOrdersParam;
-import com.winstar.carLifeMall.repository.CarLifeOrdersRepository;
 import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
-import com.winstar.exception.*;
+import com.winstar.exception.InvalidParameterException;
+import com.winstar.exception.MissingParameterException;
+import com.winstar.exception.NotFoundException;
+import com.winstar.exception.NotRuleException;
 import com.winstar.order.utils.Constant;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.OilOrderUtil;
@@ -51,14 +56,9 @@ public class CarLifeOrderController {
         Date begin = DateUtil.addYear(end, -1);
         //查出未付款未关闭的订单
         List<CarLifeOrders> orders = ServiceManager.carLifeOrdersRepository.findByIsAvailableAndStatusAndCreateTimeBetween(0, 1, begin, end);
-        for (CarLifeOrders carLifeOrders : orders
-                ) {
+        for (CarLifeOrders carLifeOrders : orders) {
             carLifeOrders.setIsAvailable(1);
             carLifeOrders.setUpdateTime(new Date());
-            if (!StringUtils.isEmpty(carLifeOrders.getCouponId())) {
-                //1.返还优惠券
-                ServiceManager.couponService.cancelMyCoupon(carLifeOrders.getCouponId());
-            }
         }
         ServiceManager.carLifeOrdersRepository.save(orders);
         logger.info("关闭汽车生活订单数量：" + orders.size());
@@ -272,10 +272,6 @@ public class CarLifeOrderController {
         }
         carLifeCarLifeOrders.setIsAvailable(Integer.valueOf(Constant.IS_NORMAL_CANCELED));
         carLifeCarLifeOrders = ServiceManager.carLifeOrdersRepository.save(carLifeCarLifeOrders);
-        //返还优惠券
-        if (!StringUtils.isEmpty(carLifeCarLifeOrders.getCouponId())) {
-            ServiceManager.couponService.cancelMyCoupon(carLifeCarLifeOrders.getCouponId());
-        }
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 

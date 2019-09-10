@@ -2,8 +2,6 @@ package com.winstar.oil.service;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
-import com.winstar.coupon.service.CouponService;
-import com.winstar.coupon.service.CouponTemplateService;
 import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
@@ -42,12 +40,6 @@ public class SendOilCouponService {
     ShopService shopService;
 
     @Autowired
-    CouponService couponService;
-
-    @Autowired
-    CouponTemplateService couponTemplateService;
-
-    @Autowired
     OilOrderService orderService;
 
     @Autowired
@@ -76,13 +68,6 @@ public class SendOilCouponService {
         if(WsdUtils.isEmpty(accountId)){
             logger.info("accountId为空");
             throw new MissingParameterException("accountId");
-        }
-        if(shopId.equals("8")){
-            couponService.sendCoupon(accountId,"3","8");
-            Map<String,String> resultMap = Maps.newHashMap();
-            logger.info("0.01元抢购发卡成功！");
-            resultMap.put("status","OK");
-            return new ResponseEntity<>(resultMap,HttpStatus.OK);
         }
         //判断是否发过券
         List<MyOilCoupon> myOilCoupons = myOilCouponRepository.findByOrderIdOrderByUseStateAsc(orderNumber);
@@ -125,13 +110,6 @@ public class SendOilCouponService {
         if(WsdUtils.isEmpty(accountId)){
             logger.info("accountId为空");
             throw new MissingParameterException("accountId");
-        }
-        if(shopId.equals("8")){
-            Map<String,String> resultMap = Maps.newHashMap();
-            couponService.sendCoupon(accountId,"3","8");
-            logger.info("0.01元抢购发卡成功！");
-            resultMap.put("status","OK");
-            return new ResponseEntity<>(resultMap,HttpStatus.OK);
         }
         //判断是否发过券
         List<MyOilCoupon> myOilCoupons = myOilCouponRepository.findByOrderIdOrderByUseStateAsc(orderNumber);

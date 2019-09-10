@@ -3,7 +3,6 @@ package com.winstar.user.utils;
 import com.winstar.carLifeMall.repository.*;
 import com.winstar.carLifeMall.service.CarLifeOrdersService;
 import com.winstar.carLifeMall.service.CategoryService;
-import com.winstar.coupon.service.CouponService;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.redis.RedisTools;
 import com.winstar.user.repository.AccessTokenRepository;
@@ -32,7 +31,6 @@ public class ServiceManager {
     public static CategoryService categoryService;
     public static CarLifeOrdersRepository carLifeOrdersRepository;
     public static OrdersItemsRepository ordersItemsRepository;
-    public static CouponService couponService;
     public static CarLifeOrdersService carLifeOrdersService;
     public static AccessTokenService accessTokenService;
     public static RedisTools redisTools;
@@ -55,11 +53,6 @@ public class ServiceManager {
     @Autowired
     public void setCarLifeOrdersService(CarLifeOrdersService carLifeOrdersService) {
         ServiceManager.carLifeOrdersService = carLifeOrdersService;
-    }
-
-    @Autowired
-    public void setCouponService(CouponService couponService) {
-        ServiceManager.couponService = couponService;
     }
 
     @Autowired

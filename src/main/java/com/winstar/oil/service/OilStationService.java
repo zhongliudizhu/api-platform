@@ -1,7 +1,7 @@
-package com.winstar.coupon.service;
+package com.winstar.oil.service;
 
-import com.winstar.coupon.entity.OilStation;
-import com.winstar.coupon.repository.OilStationRepository;
+import com.winstar.oil.entity.OilStation;
+import com.winstar.oil.repository.OilStationRepository;
 import com.winstar.redis.RedisTools;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
