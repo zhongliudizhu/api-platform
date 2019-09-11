@@ -72,6 +72,14 @@ public class CouponRedisTools {
     }
 
     /**
+     * 哈希删除数据
+     */
+    public Object hmRemove(String key, Object hashKey) {
+        HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
+        return hash.delete(key, hashKey);
+    }
+
+    /**
      * 哈希放入数据
      */
     public void hmPut(String key, Object hashKey, Object value, long time) {

@@ -208,7 +208,7 @@ public class OilOrderUtil {
             logger.info("优惠券有非正常的优惠券，非正常优惠券：" + JSON.toJSONString(normalCoupons));
             throw new NotRuleException("coupon_not_use.order");
         }
-        ResponseEntity<Map> resp = AccountCouponService.checkCoupon(couponId, goods.getPrice().toString(), goods.getTags());
+        ResponseEntity<Map> resp = AccountCouponService.checkCoupon(accountCoupons, goods.getPrice().toString(), goods.getTags());
         logger.info("map:" + resp.getBody().toString());
         Map map = resp.getBody();
         if (!"SUCCESS".equals(map.get("code"))) {

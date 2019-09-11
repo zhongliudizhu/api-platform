@@ -16,6 +16,7 @@ import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -95,9 +96,7 @@ public class AccountCouponService {
      * @return List<AccountCoupon>
      */
     public List<AccountCoupon> getAvailableCoupons(List<AccountCoupon> accountCoupons, Double amount, String tags) {
-        String couponIds = accountCoupons.stream().map(AccountCoupon::getCouponId).collect(Collectors.joining(","));
-        log.info("couponIds:" + couponIds);
-        ResponseEntity<Map> resp = checkCoupon(couponIds, amount.toString(), tags);
+        ResponseEntity<Map> resp = checkCoupon(accountCoupons, amount.toString(), tags);
         log.info("map:" + resp.getBody().toString());
         Map map = resp.getBody();
         if (!"SUCCESS".equals(map.get("code"))) {
@@ -112,32 +111,24 @@ public class AccountCouponService {
     /**
      * 检验优惠券
      *
-     * @param couponIds  优惠券id
      * @param itemAmount 商品金额
      * @param tags       商品标签
      * @return ResponseEntity
      */
-    public static ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount, String tags) {
+    public static ResponseEntity<Map> checkCoupon(List<AccountCoupon> accountCoupons, String itemAmount, String tags) {
         log.info("verifyCouponUrl=" + verifyCouponUrl);
+        String[] checkVos = new String[accountCoupons.size()];
+        for (int i = 0; i < accountCoupons.size(); i++) {
+            checkVos[i] = accountCoupons.get(i).getCouponId() + "_" + accountCoupons.get(i).getTemplateId();
+        }
         Map<String, String> reqMap = new HashMap<>();
-        reqMap.put("ids", couponIds);
         reqMap.put("itemAmount", itemAmount);
         reqMap.put("tags", tags);
+        reqMap.put("checkVos", String.join(",", checkVos));
         reqMap.put("merchant", SignUtil.merchant);
         ResponseEntity<Map> mapResponseEntity = new RestTemplate().getForEntity(verifyCouponUrl + SignUtil.getParameters(reqMap), Map.class);
         log.info("请求校验优惠券接口结果：" + mapResponseEntity.getBody().toString());
         return mapResponseEntity;
-    }
-
-    /**
-     * 检验优惠券
-     *
-     * @param couponIds  优惠券id
-     * @param itemAmount 商品金额
-     * @return ResponseEntity
-     */
-    public static ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount) {
-        return checkCoupon(couponIds, itemAmount, null);
     }
 
     /**
@@ -245,11 +236,7 @@ public class AccountCouponService {
         if (MapUtils.getString(map, "code").equals("SUCCESS")) {
             log.info("获取优惠券成功！accountId is {} and templateId is {}", domain.getAccountId(), domain.getTemplateId());
             List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(JSON.toJSONString(map.get("data")), domain, redisTools);
-            for (AccountCoupon coupon : accountCoupons) {
-                String key = PREFIX + coupon.getTemplateId();
-                long expireTime = (coupon.getEndTime().getTime() - System.currentTimeMillis());
-                couponRedisTools.hmPut(key, domain.getAccountId(), coupon, expireTime);
-            }
+            accountCouponRepository.save(accountCoupons);
             log.info("发放优惠券成功！accountId is {} and templateId is {}", domain.getAccountId(), domain.getTemplateId());
             return accountCoupons;
         }
@@ -257,18 +244,22 @@ public class AccountCouponService {
     }
 
     /**
-     * 获取用户redis中的优惠券入库并从redis移除
+     * 获取用户redis中的优惠券入库
      *
      * @param accountId 用户Id
      */
     public void getRedisCoupon(String accountId) {
+        log.info("获取用户redis中的优惠券入库  {}", accountId);
         Set<Object> tIds = couponRedisTools.setMembers(T_KEYS);
         for (Object tId : tIds) {
             String key = PREFIX + tId;
             if (couponRedisTools.exists(key)) {
-                AccountCoupon accountCoupon = (AccountCoupon) couponRedisTools.hmGet(key, accountId);
+                Object obj = couponRedisTools.hmGet(key, accountId);
+                AccountCoupon accountCoupon = new AccountCoupon();
+                BeanUtils.copyProperties(obj, accountCoupon);
                 if (!ObjectUtils.isEmpty(accountCoupon)) {
                     accountCouponRepository.save(accountCoupon);
+                    couponRedisTools.hmRemove(key, accountId);
                 }
             } else {
                 couponRedisTools.removeSetMembers(T_KEYS, tId);
