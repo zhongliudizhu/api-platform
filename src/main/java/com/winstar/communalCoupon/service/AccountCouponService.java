@@ -255,9 +255,9 @@ public class AccountCouponService {
             String key = PREFIX + tId;
             if (couponRedisTools.exists(key)) {
                 Object obj = couponRedisTools.hmGet(key, accountId);
-                AccountCoupon accountCoupon = new AccountCoupon();
-                BeanUtils.copyProperties(obj, accountCoupon);
-                if (!ObjectUtils.isEmpty(accountCoupon)) {
+                if (!ObjectUtils.isEmpty(obj)) {
+                    AccountCoupon accountCoupon = new AccountCoupon();
+                    BeanUtils.copyProperties(obj, accountCoupon);
                     accountCouponRepository.save(accountCoupon);
                     couponRedisTools.hmRemove(key, accountId);
                 }
