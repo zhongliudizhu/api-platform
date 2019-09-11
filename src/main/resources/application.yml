@@ -149,6 +149,26 @@ spring:
     pool.max-idle: 8
     pool.min-idle: 0
     timeout: 10000
+  coupon_redis:
+    database: 1
+    host: 10.0.10.160
+    port: 6379
+    password: winstar
+    pool.max-active: 1000
+    pool.max-wait: -1
+    pool.max-idle: 8
+    pool.min-idle: 0
+    timeout: 10000
+  oil_redis:
+    database: 0
+    host: 10.0.10.160
+    port: 6379
+    password: winstar
+    pool.max-active: 1000
+    pool.max-wait: -1
+    pool.max-idle: 8
+    pool.min-idle: 0
+    timeout: 10000
   kafka:
     producer:
       acks: -1

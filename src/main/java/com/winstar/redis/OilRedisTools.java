@@ -78,4 +78,15 @@ public class OilRedisTools {
         return redisTemplate.opsForHash().get(key, hashKey);
     }
 
+    /**
+     * 是否能把键值放到换缓存中，能放入则同时设置有效时间
+     */
+    public boolean setIfAbsent(final String key, long times){
+        boolean result = redisTemplate.opsForValue().setIfAbsent(key,key);
+        if(result){
+            redisTemplate.opsForValue().getOperations().expire(key, times, TimeUnit.SECONDS);
+        }
+        return result;
+    }
+
 }

@@ -22,7 +22,6 @@ import com.winstar.oil.service.SendOilCouponService;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.redis.OilRedisTools;
-import com.winstar.redis.RedisTools;
 import com.winstar.user.service.AccountService;
 import com.winstar.utils.AESUtil;
 import com.winstar.utils.WsdUtils;
@@ -85,9 +84,6 @@ public class MyOilCouponController {
 
     @Autowired
     LookingUsedCouponRepository lookingUsedCouponRepository;
-
-    @Autowired
-    RedisTools redisTools;
 
     @Autowired
     OilRedisTools oilRedisTools;
@@ -254,7 +250,7 @@ public class MyOilCouponController {
         if(WsdUtils.isEmpty(accountId)){
             throw new MissingParameterException("accountId");
         }
-        if(!redisTools.setIfAbsent(id, 10)){
+        if(!oilRedisTools.setIfAbsent(id, 10)){
             logger.info("点击过于频繁，请稍后再试！操作Id:" + id);
             throw new NotRuleException("oilCoupon.loading");
         }

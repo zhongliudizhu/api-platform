@@ -10,7 +10,7 @@ import com.winstar.oil.repository.MyOilCouponRepository;
 import com.winstar.oil.utils.PriceAndNum;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.service.OilOrderService;
-import com.winstar.redis.RedisTools;
+import com.winstar.redis.OilRedisTools;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.service.ShopService;
 import com.winstar.utils.WsdUtils;
@@ -43,11 +43,11 @@ public class SendOilCouponService {
     OilOrderService orderService;
 
     @Autowired
-    RedisTools redisTools;
+    OilRedisTools oilRedisTools;
 
     public ResponseEntity checkCard(String orderNumber) throws Exception{
         logger.info(orderNumber + "，执行油卡发送操作。。。");
-        if(!redisTools.setIfAbsent(orderNumber, 600)){
+        if(!oilRedisTools.setIfAbsent(orderNumber, 600)){
             logger.info("600秒之内不执行同一订单的发券操作！订单号：" + orderNumber);
             throw new NotRuleException("oilCoupon.loading");
         }
@@ -92,7 +92,7 @@ public class SendOilCouponService {
      */
     public ResponseEntity handlerSendOilCoupon(String orderNumber, String shopId, String accountId) throws Exception{
         logger.info(orderNumber + "，手动执行油卡发送操作。。。");
-        if(!redisTools.setIfAbsent(orderNumber, 600)){
+        if(!oilRedisTools.setIfAbsent(orderNumber, 600)){
             logger.info("600秒之内不执行同一订单的发券操作！订单号：" + orderNumber);
             throw new NotRuleException("oilCoupon.loading");
         }
