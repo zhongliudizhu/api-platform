@@ -6,7 +6,7 @@ import com.winstar.cashier.construction.utils.Arith;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
-import com.winstar.couponActivity.utils.ActivityIdEnum;
+import com.winstar.oil.utils.ActivityIdEnum;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.order.entity.OilOrder;
@@ -26,19 +26,14 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
- * @author shoo on 2017/7/7 14:44.
- *         --  --
+ * @author shoo on 2017/7/7 14:44
  */
 public class OilOrderUtil {
-    public static final Logger logger = LoggerFactory.getLogger(OilOrderUtil.class);
 
+    public static final Logger logger = LoggerFactory.getLogger(OilOrderUtil.class);
 
     /**
      * 随机生成6位数
-     * @Function:geRandomt
-     * @Description:随机生成6位数
-     * @return 6位数
-     * @exception/throws  description
      */
     public static int getRandomNum(int dig) {
         int[] array = {1,2,3,4,5,6,7,8,9};
@@ -58,7 +53,6 @@ public class OilOrderUtil {
 
     /**
      * 生成订单序列号
-     *
      * @return 订单序列号
      */
     public static String getSerialNumber(){
@@ -66,19 +60,6 @@ public class OilOrderUtil {
         int r2 = getRandomNum(5);
         String serialNumber = DateUtil.DateToString(new Date(), "yyyyMMddHHmmss");
         serialNumber = serialNumber + "wxyj"+ String.valueOf(r1) + String.valueOf(r2);
-        return serialNumber;
-    }
-
-    /**
-     * 生成汽车生活订单序列号
-     *
-     * @return 订单序列号
-     */
-    public static String getCarLifeSerialNumber(){
-        int r1=getRandomNum(5);
-        int r2 = getRandomNum(5);
-        String serialNumber = DateUtil.DateToString(new Date(), "yyyyMMddHHmmss");
-        serialNumber = serialNumber + "wxcar"+ String.valueOf(r1) + String.valueOf(r2);
         return serialNumber;
     }
 
@@ -110,50 +91,22 @@ public class OilOrderUtil {
     }
 
     /**
-     * 周四秒杀日
-     * @param order
-     * @param goods
-     * @param activityType
-     * @return
-     */
-    public static OilOrder initOrderSecKill(OilOrder order, Goods goods, Integer activityType){
-
-        order.setPayPrice(Arith.mul(goods.getSaledPrice(),goods.getDisCount()));
-        order.setSalePrice(goods.getSaledPrice());
-        order.setItemTotalValue(goods.getPrice());//油劵总面值
-        order.setOilDetail(getOilDetail(goods));
-        return order;
-    }
-
-
-    public static OilOrder initOrderSubsidy(OilOrder order, Goods goods, Integer activityType){
-
-        order.setPayPrice(Arith.sub(goods.getSaledPrice(),order.getDiscountAmount()));
-        order.setCouponTempletId(goods.getCouponTempletId());
-        order.setSalePrice(goods.getSaledPrice());
-        order.setItemTotalValue(goods.getPrice());//油劵总面值
-        order.setOilDetail(getOilDetail(goods));
-        return order;
-    }
-
-    /**
      * 根据商品信息拼接油券详情  如：100元x1张+50元x2张+200元x5张
      * @return 油券详情字符串
      */
     private static String getOilDetail(Goods goods){
         StringBuilder sb = new StringBuilder();
         List<OilDetailVo> oils = StringFormatUtils.jsonStr2List(goods.getCouponDetail(),OilDetailVo.class);
-        for (OilDetailVo vo:oils
-                ) {
+        for (OilDetailVo vo:oils) {
             sb.append(vo.getPrice()).append("元x").append(vo.getNum()).append("张+");
         }
         sb.deleteCharAt(sb.length()-1);
         return sb.toString();
     }
 
-    /*
-    * 用户是否能购买一分油券
-    * */
+    /**
+     * 用户是否能购买一分油券
+     */
     public static String isEnable(String accountId){
 
         if(todaySold().size()>=Constant.ONE_DAY_MAX){
@@ -167,9 +120,10 @@ public class OilOrderUtil {
         }
         return "ok";
     }
-    /*
-    * 判断用户是否能参加活动  0 可以购买   1 已购买  2 有未关闭订单
-    * */
+
+    /**
+     * 判断用户是否能参加活动  0 可以购买   1 已购买  2 有未关闭订单
+     */
     public static String judgeActivity(String accountId, String activityId){
         List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,DateUtil.getMonthBegin(), DateUtil.getMonthEnd() );
         if(oilOrders.size()<1){
@@ -184,101 +138,9 @@ public class OilOrderUtil {
         }
     }
 
-    /*
-   * 判断用户是否能参加周四秒杀活动  0 可以购买   1 已购买  2 有未关闭订单
-   * */
-    public static String judgeActivitySecKill(String accountId, String activityId){
-        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,DateUtil.getWeekBegin(), DateUtil.getWeekEnd());
-        if(oilOrders.size()<1){
-            return "0";
-
-        }else{
-            for (OilOrder oilOrder:oilOrders) {
-                if(oilOrder.getPayStatus()==1){
-                    return "1";
-                }
-            }
-            return "2";
-        }
-    }
-    /*
-  * 判断用户是否能参加106  0 可以购买   1 已购买  2 有未关闭订单
-  * */
-    public static String judgeActivity2(String accountId, String activityId){
-        Date begin =  DateUtil.getInputDate("2018-09-29 00:00:01");
-        Date end = DateUtil.getInputDate("2019-12-31 00:00:01");
-        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,begin, end);
-        if(oilOrders.size()<1){
-            return "0";
-        }else{
-            for (OilOrder oilOrder:oilOrders) {
-                if(oilOrder.getPayStatus()==1){
-                    return "1";
-                }
-            }
-            return "2";
-        }
-    }
-
-    /*
-       判断用户是否能购买锦鲤活动0 可以购买   1 已购买  2 有未关闭订单
-     */
-    public static String BrocadeCarp(String accountId, String activityId){
-        Date begin =  DateUtil.getInputDate("2019-03-01 00:00:01");
-        Date end = DateUtil.getInputDate("2019-04-01 00:00:01");
-        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityId(accountId, activityId,begin, end);
-        if(oilOrders.size()<1){
-            return "0";
-        }else{
-            for (OilOrder oilOrder:oilOrders) {
-                if(oilOrder.getPayStatus()==1){
-                    return "1";
-                }
-            }
-            return "2";
-        }
-    }
-
     /**
-     *判断用户是否能购买109活动 0可以购买 1已购买 2有未关闭订单(300元商品)
+     * 用户本月20元油券订单
      */
-    public static String couponsPackage300(String accountId,String activityId){
-        //面额300
-        double figure=300;
-        List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndActivityIdAndItemTotalValue(accountId,activityId,figure);
-        if(oilOrders.size()<1){
-            return "0";
-        }else {
-            for (OilOrder oilOrder:oilOrders){
-                if(oilOrder.getPayStatus()==1){
-                    return "1";
-                }
-            }
-            return "2";
-        }
-    }
-    /**
-     *判断用户是否能购买109活动 0可以购买 1已购买 2有未关闭订单(100元商品)
-     */
-    public static String couponsPackage100(String accountId,String activityId){
-        //面额100
-        double denomination=100;
-        List<OilOrder> oilOrdersList = ServiceManager.oilOrderRepository.findByAccountIdAndActivityIdAndItemTotalValue(accountId,activityId,denomination);
-        if(oilOrdersList.size()<2){
-            return "0";
-        }else {
-            for (OilOrder oilOrder:oilOrdersList){
-                if (oilOrder.getPayStatus()!=1){
-                    return "2";
-                }
-            }
-            return "1";
-        }
-    }
-
-    /*
-    * 用户本月20元油券订单
-    * */
     private static String thisMonth(String accountId){
         List<OilOrder> oilOrders = ServiceManager.oilOrderRepository.findByAccountIdAndAndItemId(accountId,Constant.ONE_BUY_ITEMID,DateUtil.getMonthBegin(),DateUtil.getMonthEnd());
         if(oilOrders.size()<=0){
@@ -294,32 +156,16 @@ public class OilOrderUtil {
         }
     }
 
-    /*
-    * 20元油券今天已售数量
-    * */
+    /**
+     * 20元油券今天已售数量
+     */
     private static List<OilOrder> todaySold(){
         return ServiceManager.oilOrderRepository.findByIsAvailableAndItemIdAndCreateTime(Constant.IS_NORMAL_NORMAL,Constant.ONE_BUY_ITEMID,DateUtil.getDayBegin(),DateUtil.getDayEnd());
     }
 
-    /*
-    * 判断时间是否在 7:00——24:00
-    * */
-    private static boolean judgeTime(Date time){
-        return time.after(DateUtil.getDayHour(7)) && time.before(DateUtil.getDayEnd());
-    }
-
-
-    /*
-    * 判断商品数量是否超过一定数量  超过  false
-    * */
-    public static boolean judgeOneDay(String itemId,Integer amount){
-        List<OilOrder> oilOrders =  ServiceManager.oilOrderRepository.findByIsAvailableAndItemIdAndCreateTime(Constant.IS_NORMAL_NORMAL,itemId,DateUtil.getDayBegin(),DateUtil.getDayEnd());
-        return oilOrders.size() <= amount;
-    }
-
-    /*
-    * 查询商品数量
-    * */
+    /**
+     * 查询商品数量
+     */
     public static Integer getSoldAmount( String itemId ,Date startDate, Date endDate ){
         return  ServiceManager.oilOrderRepository.findByItemId(itemId, startDate,endDate).size();
     }

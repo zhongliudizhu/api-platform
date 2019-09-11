@@ -2,8 +2,6 @@ package com.winstar.cashier.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
-import com.winstar.carLifeMall.entity.CarLifeOrders;
-import com.winstar.carLifeMall.service.CarLifeOrdersService;
 import com.winstar.cashier.comm.EnumType;
 import com.winstar.cashier.construction.sample.PayMoney;
 import com.winstar.cashier.creditpay.pay.CreditPay;
@@ -57,9 +55,6 @@ public class WsdPayController {
     @Autowired
     private OilOrderService orderService;
 
-    @Autowired
-    private CarLifeOrdersService carLifeOrdersService;
-
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ResponseEntity payOrderUrl(
         @RequestBody Map map,
@@ -71,32 +66,17 @@ public class WsdPayController {
         String bankCode = MapUtils.getString(payMap,"bankCode");
         String applyUrl = MapUtils.getString(payMap,"applyUrl");
         String ip = MapUtils.getString(payMap,"ip");
-        String orderOwner = MapUtils.getString(payMap, "orderOwner");
         long beginTime = System.currentTimeMillis();
-        Double payPrice;
-        if(orderOwner.equals(EnumType.PAY_SHOPNAME_CARSERVICE.value() + "")){
-            CarLifeOrders carLifeOrders = carLifeOrdersService.getCarLifeOrdersBySerialNo(orderNumber);
-            if(WsdUtils.isEmpty(carLifeOrders)){
-                logger.info(orderNumber + "，汽车服务订单不存在！");
-                throw new NotFoundException("orderNumber");
-            }
-            if(carLifeOrders.getIsAvailable().equals("1")){
-                logger.info(orderNumber + "，汽车服务订单已失效！");
-                throw new NotFoundException("orderNumber");
-            }
-            payPrice = carLifeOrders.getPayPrice();
-        }else{
-            OilOrder oilOrder = orderService.getOneOrder(orderNumber);
-            if(WsdUtils.isEmpty(oilOrder)){
-                logger.info(orderNumber + "，油卡服务订单不存在！");
-                throw new NotFoundException("orderNumber");
-            }
-            if(oilOrder.getIsAvailable().equals("1")){
-                logger.info(orderNumber + "，油卡服务订单已失效！");
-                throw new NotFoundException("orderNumber");
-            }
-            payPrice = oilOrder.getPayPrice();
+        OilOrder oilOrder = orderService.getOneOrder(orderNumber);
+        if(WsdUtils.isEmpty(oilOrder)){
+            logger.info(orderNumber + "，油卡服务订单不存在！");
+            throw new NotFoundException("orderNumber");
         }
+        if(oilOrder.getIsAvailable().equals("1")){
+            logger.info(orderNumber + "，油卡服务订单已失效！");
+            throw new NotFoundException("orderNumber");
+        }
+        Double payPrice = oilOrder.getPayPrice();
         //判断订单是否是否支付成功过
         List<PayOrder> orders = payOrderService.findByOrderNumberAndState(orderNumber, EnumType.PAY_STATE_SUCCESS.valueStr());
         if(WsdUtils.isNotEmpty(orders) && orders.size() > 0){

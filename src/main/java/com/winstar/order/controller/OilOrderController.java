@@ -1,6 +1,5 @@
 package com.winstar.order.controller;
 
-import com.winstar.carLifeMall.service.EarlyAndEveningMarketConfigService;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.exception.MissingParameterException;
@@ -56,9 +55,6 @@ public class OilOrderController {
 
     @Autowired
     private AccountService accountService;
-
-    @Autowired
-    EarlyAndEveningMarketConfigService earlyAndEveningMarketConfigService;
 
     @Autowired
     AccountCouponRepository accountCouponRepository;

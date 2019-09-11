@@ -1,4 +1,4 @@
-package com.winstar.couponActivity.controller;
+package com.winstar.order.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;

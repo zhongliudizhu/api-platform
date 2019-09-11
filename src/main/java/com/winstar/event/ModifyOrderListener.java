@@ -1,7 +1,5 @@
 package com.winstar.event;
 
-import com.alibaba.fastjson.JSON;
-import com.winstar.carLifeMall.service.CarLifeOrdersService;
 import com.winstar.cashier.entity.PayOrder;
 import com.winstar.order.service.OilOrderService;
 import com.winstar.order.vo.PayInfoVo;
@@ -26,9 +24,6 @@ public class ModifyOrderListener implements ApplicationListener<ModifyOrderEvent
     @Autowired
     private OilOrderService orderService;
 
-    @Autowired
-    private CarLifeOrdersService carLifeOrdersService;
-
     @Override
     public void onApplicationEvent(ModifyOrderEvent modifyOrderEvent) {
         logger.info("------------收到修改订单事件-------------" + modifyOrderEvent);
@@ -45,11 +40,7 @@ public class ModifyOrderListener implements ApplicationListener<ModifyOrderEvent
         payInfoVo.setPayState(Integer.valueOf(payOrder.getState()));
         payInfoVo.setPayType(payOrder.getPayWay());
         payInfoVo.setPayTime(new Date());
-        if(payOrder.getOrderNumber().contains("wxcar")){
-            carLifeOrdersService.updateCarLifeOrderCashier(payInfoVo);
-        }else{
-            orderService.updateOrderCashier(payInfoVo);
-        }
+        orderService.updateOrderCashier(payInfoVo);
         long endTime = System.currentTimeMillis();
         logger.info("修改订单消耗时间：" + (endTime - beginTime) + "ms，订单号：" + payOrder.getOrderNumber());
     }
