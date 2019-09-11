@@ -118,13 +118,13 @@ public class AccountCouponController {
     @RequestMapping(value = "getUsableCoupons", method = RequestMethod.GET)
     public Result getMyUsableCoupons(HttpServletRequest request, @RequestParam String shopId) {
         String accountId = (String) request.getAttribute("accountId");
-        //accountCouponService.getRedisCoupon(accountId);
         if(!couponRedisTools.exists(AccountCouponService.COUPON_LIST_PREFIX + accountId)){
             List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndShowStatusAndState(accountId, "yes", AccountCouponService.NORMAL);
             if(!ObjectUtils.isEmpty(accountCoupons)){
                 couponRedisTools.hmPutAll(AccountCouponService.COUPON_LIST_PREFIX + accountId, accountCoupons.stream().collect(Collectors.toMap(AccountCoupon::getCouponId, Function.identity())));
             }
         }
+        accountCouponService.getRedisCoupon(accountId);
         List<AccountCoupon> accountCoupons = accountCouponService.getAccountCouponFromRedisHash(accountId).stream().filter(s -> s.getState().equals(AccountCouponService.NORMAL)).collect(Collectors.toList());
         if (ObjectUtils.isEmpty(accountCoupons)) {
             logger.info("用户无优惠券！");
