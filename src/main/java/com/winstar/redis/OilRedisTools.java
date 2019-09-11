@@ -1,10 +1,13 @@
 package com.winstar.redis;
 
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by zl on 2019/9/10
@@ -57,6 +60,22 @@ public class OilRedisTools {
         if (exists(key)) {
             redisTemplate.delete(key);
         }
+    }
+
+    /**
+     * hash存储
+     */
+    public void setHash(String key, Map<String, Object> map, long times){
+        HashOperations<String, Object, Object> operations = redisTemplate.opsForHash();
+        operations.putAll(key, map);
+        redisTemplate.expire(key, times, TimeUnit.SECONDS);
+    }
+
+    /**
+     * hash取值
+     */
+    public Object getHashValue(String key, Object hashKey){
+        return redisTemplate.opsForHash().get(key, hashKey);
     }
 
 }
