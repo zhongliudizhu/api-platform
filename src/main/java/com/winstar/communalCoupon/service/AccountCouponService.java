@@ -17,7 +17,6 @@ import com.winstar.user.service.AccountService;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.json.JSONObject;
 import org.apache.commons.collections.MapUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -250,9 +249,10 @@ public class AccountCouponService {
             if (couponRedisTools.exists(key)) {
                 Object obj = couponRedisTools.hmGet(key, accountId);
                 if (!ObjectUtils.isEmpty(obj)) {
-                    AccountCoupon accountCoupon = new AccountCoupon();
-                    BeanUtils.copyProperties(obj, accountCoupon);
+                    JSONObject objJson = JSONObject.fromObject(obj);
+                    AccountCoupon accountCoupon = (AccountCoupon) JSONObject.toBean(objJson, AccountCoupon.class);
                     accountCouponRepository.save(accountCoupon);
+                    couponRedisTools.hmPut(COUPON_LIST_PREFIX + accountId, accountCoupon.getCouponId(), accountCoupon, null);
                     couponRedisTools.hmRemove(key, accountId);
                 }
             } else {
@@ -264,10 +264,10 @@ public class AccountCouponService {
     /**
      * 将从hash里面取出的map转化为list
      */
-    public List<AccountCoupon> getAccountCouponFromRedisHash(String accountId){
+    public List<AccountCoupon> getAccountCouponFromRedisHash(String accountId) {
         List<AccountCoupon> accountCoupons = new ArrayList<>();
         Map<Object, Object> map = couponRedisTools.hmGetAll(COUPON_LIST_PREFIX + accountId);
-        for(Map.Entry<Object, Object> entry : map.entrySet()){
+        for (Map.Entry<Object, Object> entry : map.entrySet()) {
             JSONObject objJson = JSONObject.fromObject(entry.getValue());
             AccountCoupon accountCoupon = (AccountCoupon) JSONObject.toBean(objJson, AccountCoupon.class);
             accountCoupons.add(accountCoupon);
