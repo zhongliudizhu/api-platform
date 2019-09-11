@@ -1,7 +1,7 @@
-package com.winstar.text.controller;
+package com.winstar.oil.controller;
 
-import com.winstar.text.entity.OilText;
-import com.winstar.text.repository.OilTextRepository;
+import com.winstar.oil.entity.OilText;
+import com.winstar.oil.repository.OilTextRepository;
 import com.winstar.utils.WsdUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

@@ -1,6 +1,6 @@
-package com.winstar.text.repository;
+package com.winstar.oil.repository;
 
-import com.winstar.text.entity.OilText;
+import com.winstar.oil.entity.OilText;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

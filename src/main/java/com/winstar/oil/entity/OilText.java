@@ -1,4 +1,4 @@
-package com.winstar.text.entity;
+package com.winstar.oil.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
