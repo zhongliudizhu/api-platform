@@ -183,5 +183,4 @@ public class AccountCoupon implements Serializable {
     @Column(columnDefinition = "varchar(20) COMMENT '手机号'")
     private String phone;
 
-
 }

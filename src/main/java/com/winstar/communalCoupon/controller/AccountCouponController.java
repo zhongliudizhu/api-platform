@@ -6,6 +6,7 @@ import com.winstar.communalCoupon.entity.CouponSendRecord;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.repository.CouponSendRecordRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
+import com.winstar.communalCoupon.vo.SendCouponDomain;
 import com.winstar.costexchange.vo.AccountCouponVo;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.Week;
@@ -90,12 +91,23 @@ public class AccountCouponController {
         return Result.success(accountCouponPage);
     }
 
+    @RequestMapping("sendCou")
+    public List<AccountCoupon> send(String accountId, String templateId, String num, String type) {
+        SendCouponDomain domain = new SendCouponDomain();
+        domain.setAccountId(accountId);
+        domain.setNum(num);
+        domain.setTemplateId(templateId);
+        domain.setType(type);
+        return accountCouponService.sendCoupon(domain, null);
+    }
+
     /**
      * 查询我的可用优惠券列表
      */
     @RequestMapping(value = "getUsableCoupons", method = RequestMethod.GET)
     public Result getMyUsableCoupons(HttpServletRequest request, @RequestParam String shopId) {
         String accountId = (String) request.getAttribute("accountId");
+        accountCouponService.getRedisCoupon(accountId);
         List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndShowStatusAndState(accountId, "yes", AccountCouponService.NORMAL);
         if (ObjectUtils.isEmpty(accountCoupons)) {
             logger.info("用户无优惠券！");

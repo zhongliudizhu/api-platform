@@ -51,6 +51,8 @@ public class AccountCouponService {
         this.couponRedisTools = couponRedisTools;
     }
 
+    private static final String T_KEYS = "templateSets";
+    private static final String PREFIX = "coupon_account_";
     public static final String LOCKED = "locked";
     public static final String NORMAL = "normal";
     public static final String USED = "used";
@@ -233,6 +235,9 @@ public class AccountCouponService {
         });
     }
 
+    /**
+     * 发券
+     */
     public List<AccountCoupon> sendCoupon(SendCouponDomain domain, RedisTools redisTools) {
         log.info("给用户发放优惠券：accountId is {} and templateId is {}", domain.getAccountId(), domain.getTemplateId());
         ResponseEntity<Map> responseEntity = getCoupon(domain.getTemplateId(), domain.getNum());
@@ -241,10 +246,9 @@ public class AccountCouponService {
             log.info("获取优惠券成功！accountId is {} and templateId is {}", domain.getAccountId(), domain.getTemplateId());
             List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(JSON.toJSONString(map.get("data")), domain, redisTools);
             for (AccountCoupon coupon : accountCoupons) {
-                String key = "coupon_account_" + domain.getAccountId() + "_" + coupon.getId();
-                long expireTime = coupon.getEndTime().getTime() - System.currentTimeMillis();
-                boolean b = couponRedisTools.set(key, coupon, expireTime);
-                log.info("{} 发券结果： {}", key, b);
+                String key = PREFIX + coupon.getTemplateId();
+                long expireTime = (coupon.getEndTime().getTime() - System.currentTimeMillis());
+                couponRedisTools.hmPut(key, domain.getAccountId(), coupon, expireTime);
             }
             log.info("发放优惠券成功！accountId is {} and templateId is {}", domain.getAccountId(), domain.getTemplateId());
             return accountCoupons;
@@ -258,15 +262,17 @@ public class AccountCouponService {
      * @param accountId 用户Id
      */
     public void getRedisCoupon(String accountId) {
-        String pattern = "coupon_account_" + accountId + "*";
-        Set<String> keys = couponRedisTools.keys(pattern);
-        log.info("keys is {}", keys);
-        for (String key : keys) {
-            AccountCoupon accountCoupon = (AccountCoupon) couponRedisTools.get(key);
-            if (!ObjectUtils.isEmpty(accountCoupon)) {
-                accountCouponRepository.save(accountCoupon);
+        Set<Object> tIds = couponRedisTools.setMembers(T_KEYS);
+        for (Object tId : tIds) {
+            String key = PREFIX + tId;
+            if (couponRedisTools.exists(key)) {
+                AccountCoupon accountCoupon = (AccountCoupon) couponRedisTools.hmGet(key, accountId);
+                if (!ObjectUtils.isEmpty(accountCoupon)) {
+                    accountCouponRepository.save(accountCoupon);
+                }
+            } else {
+                couponRedisTools.removeSetMembers(T_KEYS, tId);
             }
-            couponRedisTools.remove(key);
         }
     }
 }

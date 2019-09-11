@@ -1,6 +1,8 @@
 package com.winstar.redis;
 
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
@@ -59,6 +61,57 @@ public class CouponRedisTools {
     public Object get(final String key) {
         ValueOperations<String, Object> operations = redisTemplate.opsForValue();
         return operations.get(key);
+    }
+
+    /**
+     * 哈希获取数据
+     */
+    public Object hmGet(String key, Object hashKey) {
+        HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
+        return hash.get(key, hashKey);
+    }
+
+    /**
+     * 哈希放入数据
+     */
+    public void hmPut(String key, Object hashKey, Object value, long time) {
+        hmPut(key, hashKey, value);
+        redisTemplate.expire(key, time, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 哈希放入数据
+     */
+    public void hmPut(String key, Object hashKey, Object value) {
+        HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
+        hash.put(key, hashKey, value);
+    }
+
+    /**
+     * 哈希是否存在
+     */
+    public boolean hmContains(String key, Object hashKey) {
+        HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
+        return hash.hasKey(key, hashKey);
+    }
+
+    /**
+     * 集合获取
+     */
+    public Set<Object> setMembers(String key) {
+        SetOperations<String, Object> set = redisTemplate.opsForSet();
+        return set.members(key);
+    }
+
+    /**
+     * 集合删除
+     *
+     * @param key
+     * @return
+     */
+    public Long removeSetMembers(String key, Object... objects) {
+        SetOperations<String, Object> set = redisTemplate.opsForSet();
+        return set.remove(key, objects);
     }
 
 }
