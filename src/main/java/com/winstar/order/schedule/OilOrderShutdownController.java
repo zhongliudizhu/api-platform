@@ -37,8 +37,7 @@ public class OilOrderShutdownController {
         Date begin = DateUtil.addYear(end,-1);
         //查出未付款未关闭的订单
         List<OilOrder> orders = oilOrderRepository.findByIsAvailableAndStatusAndCreateTimeBetween("0", 1,begin,end);
-        for (OilOrder oilOrder:orders
-             ) {
+        for (OilOrder oilOrder:orders) {
             oilOrder.setIsAvailable("1");
             oilOrder.setUpdateTime(new Date());
             if(!StringUtils.isEmpty(oilOrder.getCouponId())){

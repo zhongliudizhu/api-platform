@@ -6,6 +6,7 @@ import com.winstar.communalCoupon.entity.CouponSendRecord;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.repository.CouponSendRecordRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
+import com.winstar.communalCoupon.util.MyPage;
 import com.winstar.communalCoupon.vo.SendCouponDomain;
 import com.winstar.costexchange.vo.AccountCouponVo;
 import com.winstar.order.utils.DateUtil;
@@ -16,21 +17,21 @@ import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.GoodsRepository;
 import com.winstar.user.entity.Account;
 import com.winstar.user.repository.AccountRepository;
-import com.winstar.utils.WebUitl;
 import com.winstar.vo.Result;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -57,7 +58,6 @@ public class AccountCouponController {
 
     CouponRedisTools couponRedisTools;
 
-
     /**
      * 查询优惠券列表
      */
@@ -68,10 +68,20 @@ public class AccountCouponController {
             return Result.fail("state_not_auth", "状态值错误！");
         }
         String accountId = (String) request.getAttribute("accountId");
+        String listKey = AccountCouponService.COUPON_LIST_PREFIX + accountId;
+        couponRedisTools.remove(listKey);
+        if(!couponRedisTools.exists(listKey)){
+            logger.info(accountId + "用户优惠券不在缓存中，查询并放入缓存中");
+            List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndShowStatus(accountId, "yes");
+            if(!ObjectUtils.isEmpty(accountCoupons)){
+                couponRedisTools.hmPutAll(listKey, accountCoupons.stream().collect(Collectors.toMap(AccountCoupon::getCouponId, Function.identity())));
+            }
+        }
+        List<AccountCoupon> accountCoupons = accountCouponService.getAccountCouponFromRedisHash(accountId);
+        logger.info(JSON.toJSONString(accountCoupons));
         String key = "coupon_checking_" + accountId;
-        if (redisTools.setIfAbsent(key, 1800)) {
+        if (couponRedisTools.setIfAbsent(key, 1800)) {
             logger.info("检查优惠券状态，如已过期或赠送超时未领取的券更新数据，用户id is {}", accountId);
-            List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountId(accountId);
             Week week = DateUtil.getWeek(new Date());
             int hour = DateUtil.getHour(new Date());
             //不在周四权益时高峰时段时再检测是否有赠送超时未领取的优惠券
@@ -86,8 +96,9 @@ public class AccountCouponController {
             });
         }
         accountCouponService.getRedisCoupon(accountId);
-        Pageable pageable = WebUitl.buildPageRequest(nextPage, pageSize, null);
-        Page<AccountCoupon> accountCouponPage = accountCouponRepository.findByAccountIdAndShowStatusAndState(accountId, "yes", state, pageable);
+        List<AccountCoupon> accountCouponList = accountCoupons.stream().filter(s -> s.getState().equals(state)).collect(Collectors.toList());
+        Collections.sort(accountCouponList, (p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()));
+        Page<AccountCoupon> accountCouponPage = new MyPage<>(nextPage, pageSize, accountCouponList, ObjectUtils.isEmpty(accountCouponList) ? 0 : accountCouponList.size());
         return Result.success(accountCouponPage);
     }
 
@@ -107,8 +118,14 @@ public class AccountCouponController {
     @RequestMapping(value = "getUsableCoupons", method = RequestMethod.GET)
     public Result getMyUsableCoupons(HttpServletRequest request, @RequestParam String shopId) {
         String accountId = (String) request.getAttribute("accountId");
-        accountCouponService.getRedisCoupon(accountId);
-        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndShowStatusAndState(accountId, "yes", AccountCouponService.NORMAL);
+        //accountCouponService.getRedisCoupon(accountId);
+        if(!couponRedisTools.exists(AccountCouponService.COUPON_LIST_PREFIX + accountId)){
+            List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndShowStatusAndState(accountId, "yes", AccountCouponService.NORMAL);
+            if(!ObjectUtils.isEmpty(accountCoupons)){
+                couponRedisTools.hmPutAll(AccountCouponService.COUPON_LIST_PREFIX + accountId, accountCoupons.stream().collect(Collectors.toMap(AccountCoupon::getCouponId, Function.identity())));
+            }
+        }
+        List<AccountCoupon> accountCoupons = accountCouponService.getAccountCouponFromRedisHash(accountId).stream().filter(s -> s.getState().equals(AccountCouponService.NORMAL)).collect(Collectors.toList());
         if (ObjectUtils.isEmpty(accountCoupons)) {
             logger.info("用户无优惠券！");
             return Result.fail("coupons_not_found", "用户无优惠券！");

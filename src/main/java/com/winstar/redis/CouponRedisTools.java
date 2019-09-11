@@ -5,8 +5,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -27,7 +29,9 @@ public class CouponRedisTools {
         try {
             ValueOperations<String, Object> operations = redisTemplate.opsForValue();
             operations.set(key, value);
-            redisTemplate.expire(key, expireTime, TimeUnit.SECONDS);
+            if(!ObjectUtils.isEmpty(expireTime)){
+                redisTemplate.expire(key, expireTime, TimeUnit.SECONDS);
+            }
             result = true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -80,19 +84,30 @@ public class CouponRedisTools {
     }
 
     /**
-     * 哈希放入数据
+     * 哈希存数据（单个）
      */
-    public void hmPut(String key, Object hashKey, Object value, long time) {
-        hmPut(key, hashKey, value);
-        redisTemplate.expire(key, time, TimeUnit.MILLISECONDS);
+    public void hmPut(String key, Object hashKey, Object value, Long time) {
+        HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
+        hash.put(key, hashKey, value);
+        if(!ObjectUtils.isEmpty(time)){
+            redisTemplate.expire(key, time, TimeUnit.MILLISECONDS);
+        }
     }
 
     /**
-     * 哈希放入数据
+     * 哈希存数据（集合）
      */
-    public void hmPut(String key, Object hashKey, Object value) {
+    public void hmPutAll(String key, Map<String, Object> map) {
         HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
-        hash.put(key, hashKey, value);
+        hash.putAll(key, map);
+    }
+
+    /**
+     * 哈希获取数据
+     */
+    public Map<Object, Object> hmGetAll(String key){
+        HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
+        return hash.entries(key);
     }
 
     /**
@@ -120,6 +135,17 @@ public class CouponRedisTools {
     public Long removeSetMembers(String key, Object... objects) {
         SetOperations<String, Object> set = redisTemplate.opsForSet();
         return set.remove(key, objects);
+    }
+
+    /**
+     * 是否能把键值放到换缓存中，能放入则同时设置有效时间
+     */
+    public boolean setIfAbsent(final String key, long times){
+        boolean result = redisTemplate.opsForValue().setIfAbsent(key,key);
+        if(result){
+            redisTemplate.opsForValue().getOperations().expire(key, times, TimeUnit.SECONDS);
+        }
+        return result;
     }
 
 }

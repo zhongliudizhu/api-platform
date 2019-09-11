@@ -12,6 +12,7 @@ import com.winstar.order.repository.OilOrderRepository;
 import com.winstar.order.service.OilOrderService;
 import com.winstar.order.utils.Constant;
 import com.winstar.order.vo.PayInfoVo;
+import com.winstar.redis.CouponRedisTools;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.GoodsRepository;
 import com.winstar.user.service.AccountService;
@@ -61,6 +62,9 @@ public class OilOrderServiceImpl implements OilOrderService {
 
     @Value("${spring.kafka.template.default-topic}")
     private String topicName;
+
+    @Autowired
+    CouponRedisTools couponRedisTools;
 
     @Override
     public String updateOrderCashier(PayInfoVo payInfo) {
@@ -138,6 +142,7 @@ public class OilOrderServiceImpl implements OilOrderService {
             accountCoupon.setState(AccountCouponService.LOCKED);
             accountCoupon.setOrderId(order.getSerialNumber());
             accountCouponRepository.save(accountCoupon);
+            couponRedisTools.hmRemove(AccountCouponService.COUPON_LIST_PREFIX + order.getAccountId(), accountCoupon.getCouponId());
         }
         return oilOrderRepository.save(order);
     }

@@ -15,6 +15,7 @@ import com.winstar.redis.RedisTools;
 import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.json.JSONObject;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -59,6 +61,8 @@ public class AccountCouponService {
     public static final String USED = "used";
     public static final String EXPIRED = "expired";
     public static final String SENDING = "sending";
+
+    public static final String COUPON_LIST_PREFIX = "coupon_list_";
 
 
     @Value("${info.takeCouponUrl}")
@@ -136,18 +140,6 @@ public class AccountCouponService {
      *
      * @param couponIds  优惠券id
      * @param itemAmount 商品金额
-     * @return ResponseEntity
-     */
-    @Async
-    public ResponseEntity<Map> writeOffCoupon(String couponIds, String itemAmount) {
-        return writeOffCoupon(couponIds, itemAmount, "");
-    }
-
-    /**
-     * 核销优惠券
-     *
-     * @param couponIds  优惠券id
-     * @param itemAmount 商品金额
      * @param tags       商品金额
      * @return ResponseEntity
      */
@@ -181,6 +173,7 @@ public class AccountCouponService {
             }
             accountCouponRepository.save(accountCoupon);
         }
+        couponRedisTools.hmPutAll(AccountCouponService.COUPON_LIST_PREFIX + accountId, accountCoupons.stream().collect(Collectors.toMap(AccountCoupon::getCouponId, Function.identity())));
     }
 
     @Async
@@ -238,6 +231,7 @@ public class AccountCouponService {
             List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(JSON.toJSONString(map.get("data")), domain, redisTools);
             accountCouponRepository.save(accountCoupons);
             log.info("发放优惠券成功！accountId is {} and templateId is {}", domain.getAccountId(), domain.getTemplateId());
+            couponRedisTools.hmPutAll(COUPON_LIST_PREFIX + domain.getAccountId(), accountCoupons.stream().collect(Collectors.toMap(AccountCoupon::getCouponId, Function.identity())));
             return accountCoupons;
         }
         return null;
@@ -266,6 +260,21 @@ public class AccountCouponService {
             }
         }
     }
+
+    /**
+     * 将从hash里面取出的map转化为list
+     */
+    public List<AccountCoupon> getAccountCouponFromRedisHash(String accountId){
+        List<AccountCoupon> accountCoupons = new ArrayList<>();
+        Map<Object, Object> map = couponRedisTools.hmGetAll(COUPON_LIST_PREFIX + accountId);
+        for(Map.Entry<Object, Object> entry : map.entrySet()){
+            JSONObject objJson = JSONObject.fromObject(entry.getValue());
+            AccountCoupon accountCoupon = (AccountCoupon) JSONObject.toBean(objJson, AccountCoupon.class);
+            accountCoupons.add(accountCoupon);
+        }
+        return accountCoupons;
+    }
+
 }
 
 
