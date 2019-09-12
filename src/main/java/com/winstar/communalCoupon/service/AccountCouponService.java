@@ -1,6 +1,7 @@
 package com.winstar.communalCoupon.service;
 
 import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 import com.winstar.cashier.wx.entity.card.request.ConsumeCardRequest;
 import com.winstar.cashier.wx.service.WxMartetTemplate;
 import com.winstar.communalCoupon.entity.AccountCoupon;
@@ -15,7 +16,6 @@ import com.winstar.redis.RedisTools;
 import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.json.JSONObject;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -266,8 +266,8 @@ public class AccountCouponService {
         List<AccountCoupon> accountCoupons = new ArrayList<>();
         Map<Object, Object> map = couponRedisTools.hmGetAll(COUPON_LIST_PREFIX + accountId);
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
-            JSONObject objJson = JSONObject.fromObject(entry.getValue());
-            AccountCoupon accountCoupon = (AccountCoupon) JSONObject.toBean(objJson, AccountCoupon.class);
+            Gson gson = new Gson();
+            AccountCoupon accountCoupon = gson.fromJson(gson.toJson(entry.getValue()), AccountCoupon.class);
             accountCoupons.add(accountCoupon);
         }
         return accountCoupons;
