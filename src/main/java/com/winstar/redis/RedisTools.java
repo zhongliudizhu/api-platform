@@ -118,24 +118,24 @@ public class RedisTools {
         list.rightPush(k, v);
     }
 
-    public void rightPush(String key, Object v){
+    public void rightPush(String key, Object v) {
         redisTemplate.opsForList().rightPush(key, v);
     }
 
-    public void rightPushAll(String key, Collection values){
+    public void rightPushAll(String key, Collection values) {
         redisTemplate.opsForList().rightPushAll(key, values);
     }
 
-    public Object leftPop(String k){
-       return redisTemplate.opsForList().leftPop(k);
+    public Object leftPop(String k) {
+        return redisTemplate.opsForList().leftPop(k);
     }
 
-    public Long size(String key){
+    public Long size(String key) {
         return redisTemplate.opsForList().size(key);
     }
 
-    public Long remove(String key, String value){
-        return redisTemplate.opsForList().remove(key,0,value);
+    public Long remove(String key, String value) {
+        return redisTemplate.opsForList().remove(key, 0, value);
     }
 
     /**
@@ -163,6 +163,14 @@ public class RedisTools {
     }
 
     /**
+     * 集合是否存在
+     */
+    public boolean setExists(String key, Object value) {
+        SetOperations<String, Object> set = redisTemplate.opsForSet();
+        return set.isMember(key, value);
+    }
+
+    /**
      * 有序集合添加
      */
     public void zAdd(String key, Object value, double scoure) {
@@ -181,9 +189,9 @@ public class RedisTools {
     /**
      * 是否能把键值放到换缓存中，能放入则同时设置有效时间
      */
-    public boolean setIfAbsent(final String key, long times){
-        boolean result = redisTemplate.opsForValue().setIfAbsent(key,key);
-        if(result){
+    public boolean setIfAbsent(final String key, long times) {
+        boolean result = redisTemplate.opsForValue().setIfAbsent(key, key);
+        if (result) {
             redisTemplate.opsForValue().getOperations().expire(key, times, TimeUnit.SECONDS);
         }
         return result;

@@ -23,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
@@ -53,7 +52,7 @@ public class AccountCouponService {
         this.couponRedisTools = couponRedisTools;
     }
 
-    private static final String T_KEYS = "templateSets";
+    private static final String T_KEYS = "template_set";
     private static final String PREFIX = "coupon_account_";
     public static final String LOCKED = "locked";
     public static final String NORMAL = "normal";
@@ -99,7 +98,9 @@ public class AccountCouponService {
      * @return List<AccountCoupon>
      */
     public List<AccountCoupon> getAvailableCoupons(List<AccountCoupon> accountCoupons, Double amount, String tags) {
-        ResponseEntity<Map> resp = checkCoupon(accountCoupons, amount.toString(), tags);
+        String couponIds = accountCoupons.stream().map(AccountCoupon::getCouponId).collect(Collectors.joining(","));
+        log.info("couponIds:" + couponIds);
+        ResponseEntity<Map> resp = checkCoupon(couponIds, amount.toString(), tags);
         log.info("map:" + resp.getBody().toString());
         Map map = resp.getBody();
         if (!"SUCCESS".equals(map.get("code"))) {
@@ -114,20 +115,17 @@ public class AccountCouponService {
     /**
      * 检验优惠券
      *
+     * @param couponIds  优惠券id
      * @param itemAmount 商品金额
      * @param tags       商品标签
      * @return ResponseEntity
      */
-    public static ResponseEntity<Map> checkCoupon(List<AccountCoupon> accountCoupons, String itemAmount, String tags) {
+    public static ResponseEntity<Map> checkCoupon(String couponIds, String itemAmount, String tags) {
         log.info("verifyCouponUrl=" + verifyCouponUrl);
-        String[] checkVos = new String[accountCoupons.size()];
-        for (int i = 0; i < accountCoupons.size(); i++) {
-            checkVos[i] = accountCoupons.get(i).getCouponId() + "_" + accountCoupons.get(i).getTemplateId();
-        }
         Map<String, String> reqMap = new HashMap<>();
+        reqMap.put("ids", couponIds);
         reqMap.put("itemAmount", itemAmount);
         reqMap.put("tags", tags);
-        reqMap.put("checkVos", String.join(",", checkVos));
         reqMap.put("merchant", SignUtil.merchant);
         ResponseEntity<Map> mapResponseEntity = new RestTemplate().getForEntity(verifyCouponUrl + SignUtil.getParameters(reqMap), Map.class);
         log.info("请求校验优惠券接口结果：" + mapResponseEntity.getBody().toString());
@@ -245,15 +243,15 @@ public class AccountCouponService {
         log.info("获取用户redis中的优惠券入库  {}", accountId);
         Set<Object> tIds = couponRedisTools.setMembers(T_KEYS);
         for (Object tId : tIds) {
-            String key = PREFIX + tId;
-            if (couponRedisTools.exists(key)) {
-                Object obj = couponRedisTools.hmGet(key, accountId);
-                if (!ObjectUtils.isEmpty(obj)) {
-                    JSONObject objJson = JSONObject.fromObject(obj);
-                    AccountCoupon accountCoupon = (AccountCoupon) JSONObject.toBean(objJson, AccountCoupon.class);
-                    accountCouponRepository.save(accountCoupon);
-                    couponRedisTools.hmPut(COUPON_LIST_PREFIX + accountId, accountCoupon.getCouponId(), accountCoupon, null);
-                    couponRedisTools.hmRemove(key, accountId);
+            if (couponRedisTools.exists(tId.toString())) {
+                if (couponRedisTools.hmContains(tId.toString(), accountId)) {
+                    SendCouponDomain domain = new SendCouponDomain();
+                    domain.setAccountId(accountId);
+                    domain.setNum("1");
+                    domain.setTemplateId(tId.toString());
+                    domain.setType("yjx");
+                    sendCoupon(domain, null);
+                    couponRedisTools.hmRemove(tId.toString(), accountId);
                 }
             } else {
                 couponRedisTools.removeSetMembers(T_KEYS, tId);

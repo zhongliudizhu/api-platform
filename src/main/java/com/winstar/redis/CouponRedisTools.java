@@ -148,4 +148,13 @@ public class CouponRedisTools {
         return result;
     }
 
+
+    /**
+     * 集合是否存在
+     */
+    public boolean setExists(String key, Object value) {
+        SetOperations<String, Object> set = redisTemplate.opsForSet();
+        return set.isMember(key, value);
+    }
+
 }

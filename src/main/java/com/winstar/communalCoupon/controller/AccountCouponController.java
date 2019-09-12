@@ -69,7 +69,7 @@ public class AccountCouponController {
         }
         String accountId = (String) request.getAttribute("accountId");
         String listKey = AccountCouponService.COUPON_LIST_PREFIX + accountId;
-        couponRedisTools.remove(listKey);
+        accountCouponService.getRedisCoupon(accountId);
         if(!couponRedisTools.exists(listKey)){
             logger.info(accountId + "用户优惠券不在缓存中，查询并放入缓存中");
             List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndShowStatus(accountId, "yes");
@@ -95,7 +95,6 @@ public class AccountCouponController {
                 accountCouponRepository.save(accountCoupon);
             });
         }
-        accountCouponService.getRedisCoupon(accountId);
         List<AccountCoupon> accountCouponList = accountCoupons.stream().filter(s -> s.getState().equals(state)).collect(Collectors.toList());
         Collections.sort(accountCouponList, (p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()));
         Page<AccountCoupon> accountCouponPage = new MyPage<>(nextPage, pageSize, accountCouponList, ObjectUtils.isEmpty(accountCouponList) ? 0 : accountCouponList.size());
