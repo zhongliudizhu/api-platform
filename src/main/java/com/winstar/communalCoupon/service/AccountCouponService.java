@@ -265,8 +265,8 @@ public class AccountCouponService {
     public List<AccountCoupon> getAccountCouponFromRedisHash(String accountId) {
         List<AccountCoupon> accountCoupons = new ArrayList<>();
         Map<Object, Object> map = couponRedisTools.hmGetAll(COUPON_LIST_PREFIX + accountId);
+        Gson gson = new Gson();
         for (Map.Entry<Object, Object> entry : map.entrySet()) {
-            Gson gson = new Gson();
             AccountCoupon accountCoupon = gson.fromJson(gson.toJson(entry.getValue()), AccountCoupon.class);
             accountCoupons.add(accountCoupon);
         }

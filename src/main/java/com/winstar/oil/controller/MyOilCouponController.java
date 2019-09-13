@@ -9,15 +9,13 @@ import com.winstar.cashier.repository.PayOrderRepository;
 import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
-import com.winstar.oil.entity.LookingUsedCoupon;
-import com.winstar.oil.entity.MyOilCoupon;
-import com.winstar.oil.entity.OilCoupon;
-import com.winstar.oil.entity.OilCouponSearchLog;
+import com.winstar.oil.entity.*;
 import com.winstar.oil.repository.LookingUsedCouponRepository;
 import com.winstar.oil.repository.MyOilCouponRepository;
 import com.winstar.oil.repository.OilCouponRepository;
 import com.winstar.oil.repository.OilCouponSearchLogRepository;
 import com.winstar.oil.service.OilCouponUpdateService;
+import com.winstar.oil.service.OilStationService;
 import com.winstar.oil.service.SendOilCouponService;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.repository.OilOrderRepository;
@@ -43,6 +41,7 @@ import org.springframework.web.bind.annotation.*;
 import ws.result.Result;
 
 import javax.servlet.http.HttpServletRequest;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -86,6 +85,8 @@ public class MyOilCouponController {
     LookingUsedCouponRepository lookingUsedCouponRepository;
 
     @Autowired
+    OilStationService oilStationService;
+    @Autowired
     OilRedisTools oilRedisTools;
 
     @Value("${info.cardUrl}")
@@ -99,33 +100,33 @@ public class MyOilCouponController {
 
     private String prefix = "oil_pan_list_";
 
-    @RequestMapping(value = "/sendOilCoupon",method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/sendOilCoupon", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     @CrossOrigin
     public ResponseEntity sendOilCoupon(
-        @RequestBody Map map
+            @RequestBody Map map
     ) throws Exception {
-        Map<String,String> resultMap = new HashMap<>();
-        String orderId = MapUtils.getString(map,"orderId");
+        Map<String, String> resultMap = new HashMap<>();
+        String orderId = MapUtils.getString(map, "orderId");
         OilOrder oilOrder = oilOrderRepository.findBySerialNumber(orderId);
-        if(WsdUtils.isEmpty(oilOrder)){
-            resultMap.put("status","FAIL");
+        if (WsdUtils.isEmpty(oilOrder)) {
+            resultMap.put("status", "FAIL");
             resultMap.put("result", "该订单不存在！");
-            return new ResponseEntity<>(resultMap,HttpStatus.OK);
+            return new ResponseEntity<>(resultMap, HttpStatus.OK);
         }
         List<PayOrder> orders = payOrderRepository.findByOrderNumberAndState(orderId, EnumType.PAY_STATE_SUCCESS.valueStr());
-        if(WsdUtils.isEmpty(orders) || orders.size() == 0){
-            resultMap.put("status","FAIL");
+        if (WsdUtils.isEmpty(orders) || orders.size() == 0) {
+            resultMap.put("status", "FAIL");
             resultMap.put("result", "该订单未支付！");
-            return new ResponseEntity<>(resultMap,HttpStatus.OK);
+            return new ResponseEntity<>(resultMap, HttpStatus.OK);
         }
         List<MyOilCoupon> myOilCoupons = myOilCouponRepository.findByOrderIdOrderByUseStateAsc(orderId);
-        if(WsdUtils.isNotEmpty(myOilCoupons) && myOilCoupons.size() > 0){
-            double number = myOilCoupons.get(0).getShopPrice()/100 - myOilCoupons.size();
-            if(number > 0){
+        if (WsdUtils.isNotEmpty(myOilCoupons) && myOilCoupons.size() > 0) {
+            double number = myOilCoupons.get(0).getShopPrice() / 100 - myOilCoupons.size();
+            if (number > 0) {
                 MyOilCoupon mc = myOilCoupons.get(0);
                 List<MyOilCoupon> myOilCouponList = new ArrayList<>();
-                for (int i=0;i<number;i++){
+                for (int i = 0; i < number; i++) {
                     MyOilCoupon myOilCoupon = new MyOilCoupon();
                     myOilCoupon.setAccountId(mc.getAccountId());
                     myOilCoupon.setCreateTime(mc.getCreateTime());
@@ -138,16 +139,16 @@ public class MyOilCouponController {
                     myOilCouponList.add(myOilCoupon);
                 }
                 myOilCouponRepository.save(myOilCouponList);
-                resultMap.put("status","OK");
+                resultMap.put("status", "OK");
                 resultMap.put("result", "该订单已修复！");
-            }else{
-                resultMap.put("status","FAIL");
+            } else {
+                resultMap.put("status", "FAIL");
                 resultMap.put("result", "该订单已发券！");
             }
-            return new ResponseEntity<>(resultMap,HttpStatus.OK);
+            return new ResponseEntity<>(resultMap, HttpStatus.OK);
         }
         //如果订单状态是未支付，则修改为支付成功状态
-        if(oilOrder.getPayStatus()==0){
+        if (oilOrder.getPayStatus() == 0) {
             oilOrder.setBankSerialNo(orders.get(0).getQid());
             oilOrder.setPayTime(orders.get(0).getUpdaedAt());
             oilOrder.setPayType(orders.get(0).getPayWay());
@@ -163,33 +164,33 @@ public class MyOilCouponController {
         return oilCouponService.handlerSendOilCoupon(orderId, oilOrder.getItemId(), oilOrder.getAccountId());
     }
 
-    @RequestMapping(value = "/myOilSetMeal",method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/myOilSetMeal", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<OilSetMealVo> findOilSetMealList(
-        @RequestParam(defaultValue = "0") Integer nextPage,
-        @RequestParam(defaultValue = "1000") Integer pageSize,
-        HttpServletRequest request
+            @RequestParam(defaultValue = "0") Integer nextPage,
+            @RequestParam(defaultValue = "1000") Integer pageSize,
+            HttpServletRequest request
     ) throws Exception {
         String accountId = accountService.getAccountId(request);
-        if(WsdUtils.isEmpty(accountId)){
+        if (WsdUtils.isEmpty(accountId)) {
             throw new NotFoundException("accountId");
         }
         logger.info("accountId===" + accountId);
-        List<OilSetMealVo> oilSetMeals = getOilSetMeals(accountId,nextPage * pageSize,pageSize);
-        if(ObjectUtils.isEmpty(oilSetMeals)){
+        List<OilSetMealVo> oilSetMeals = getOilSetMeals(accountId, nextPage * pageSize, pageSize);
+        if (ObjectUtils.isEmpty(oilSetMeals)) {
             throw new NotFoundException("oil.item");
         }
-        return  oilSetMeals;
+        return oilSetMeals;
     }
 
-    private  List<OilSetMealVo> getOilSetMeals(String accountId,Integer begin,Integer end){
+    private List<OilSetMealVo> getOilSetMeals(String accountId, Integer begin, Integer end) {
         List<OilSetMealVo> oilSetMeals = new ArrayList<>();
-        List<Object[]> objects = myOilCouponRepository.findOilSetMeal(accountId,begin,end);
-        for(Object[] obj : objects){
+        List<Object[]> objects = myOilCouponRepository.findOilSetMeal(accountId, begin, end);
+        for (Object[] obj : objects) {
             OilSetMealVo oilSetMealVo = new OilSetMealVo();
             oilSetMealVo.setTotalNumber(Integer.parseInt(obj[0].toString()));
             oilSetMealVo.setSurplusNumber(Integer.parseInt(obj[1].toString()));
-            oilSetMealVo.setSurplusPrice((Double)obj[2]);
+            oilSetMealVo.setSurplusPrice((Double) obj[2]);
             oilSetMealVo.setTotalPrice((Double) obj[3]);
             oilSetMealVo.setOrderId((String) obj[4]);
             oilSetMealVo.setSendState((String) obj[5]);
@@ -199,24 +200,24 @@ public class MyOilCouponController {
         return oilSetMeals;
     }
 
-    @RequestMapping(value = "/myOilSetMealInfo",method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/myOilSetMealInfo", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public List<MyOilCoupon> findOilSetMealInfo(
             @RequestParam String orderId,
             HttpServletRequest request
     ) throws Exception {
         logger.info("orderId===" + orderId);
-        if(StringUtils.isEmpty(orderId)){
+        if (StringUtils.isEmpty(orderId)) {
             throw new NotRuleException("orderId");
         }
         String accountId = accountService.getAccountId(request);
-        if(WsdUtils.isEmpty(accountId)){
+        if (WsdUtils.isEmpty(accountId)) {
             throw new NotFoundException("accountId");
         }
         logger.info("accountId===" + accountId);
-        List<MyOilCoupon> myOilCoupons=myOilCouponRepository.findByAccountIdAndOrderIdOrderByUseStateAscPanDesc(accountId,orderId);
+        List<MyOilCoupon> myOilCoupons = myOilCouponRepository.findByAccountIdAndOrderIdOrderByUseStateAscPanDesc(accountId, orderId);
 
-        if(WsdUtils.isEmpty(myOilCoupons)){
+        if (WsdUtils.isEmpty(myOilCoupons)) {
             throw new NotFoundException("myOilCoupons");
         }
         for (MyOilCoupon myOilCoupon : myOilCoupons) {
@@ -226,63 +227,63 @@ public class MyOilCouponController {
     }
 
     /**
-     *  返回结果中不需要的字段值置空
+     * 返回结果中不需要的字段值置空
      */
     private List<MyOilCoupon> getResult(List<MyOilCoupon> myOilCoupons) {
-        for(MyOilCoupon myOilCoupon : myOilCoupons){
+        for (MyOilCoupon myOilCoupon : myOilCoupons) {
             myOilCoupon.setShopId(null);
             myOilCoupon.setPan(null);
         }
         return myOilCoupons;
     }
 
-    @RequestMapping(value = "/searchPan/{id}",method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/searchPan/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public Map<String,Object> findList(
-        @PathVariable(name = "id") String id,
-        HttpServletRequest request
+    public Map<String, Object> findList(
+            @PathVariable(name = "id") String id,
+            HttpServletRequest request
     ) throws Exception {
-        if(couponRecoverSwitch){
+        if (couponRecoverSwitch) {
             logger.info("油券正在回收，请稍后！");
             throw new NotRuleException("oilCoupon.null");
         }
         String accountId = accountService.getAccountId(request);
-        if(WsdUtils.isEmpty(accountId)){
+        if (WsdUtils.isEmpty(accountId)) {
             throw new MissingParameterException("accountId");
         }
-        if(!oilRedisTools.setIfAbsent(id, 10)){
+        if (!oilRedisTools.setIfAbsent(id, 10)) {
             logger.info("点击过于频繁，请稍后再试！操作Id:" + id);
             throw new NotRuleException("oilCoupon.loading");
         }
         logger.info("时间：" + System.currentTimeMillis() + "，执行的查询id：" + id);
         MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
-        if(WsdUtils.isEmpty(myOilCoupon)){
+        if (WsdUtils.isEmpty(myOilCoupon)) {
             throw new NotFoundException("oilCoupon.not_found");
         }
-        if(!accountId.equals(myOilCoupon.getAccountId())){
+        if (!accountId.equals(myOilCoupon.getAccountId())) {
             throw new NotRuleException("oilCoupon.not_is_you");
         }
-        if(myOilCoupon.getShopId().equals("8")){
+        if (myOilCoupon.getShopId().equals("8")) {
             logger.info("0.01抢购券，判断有效期");
-            if(!WsdUtils.validatorDate(myOilCoupon.getOpenDate(),myOilCoupon.getEndDate())){
+            if (!WsdUtils.validatorDate(myOilCoupon.getOpenDate(), myOilCoupon.getEndDate())) {
                 logger.info("券码已失效！");
                 throw new NotRuleException("oilCoupon.expired");
             }
         }
-        if(WsdUtils.isNotEmpty(myOilCoupon.getPan())){
+        if (WsdUtils.isNotEmpty(myOilCoupon.getPan())) {
             logger.info("已经分配过券码，直接返回，券码：" + myOilCoupon.getPan());
-            Map<String,Object> map = Maps.newHashMap();
-            String pan = AESUtil.decrypt(myOilCoupon.getPan(),AESUtil.dekey);
-            map.put("result", AESUtil.encrypt(pan,AESUtil.key));
-            saveSearchLog(accountId,WsdUtils.getIpAddress(request),myOilCoupon.getPan(),myOilCoupon.getOrderId());
-            activateOilCoupon(myOilCoupon.getPan(),myOilCoupon.getPanAmt());
+            Map<String, Object> map = Maps.newHashMap();
+            String pan = AESUtil.decrypt(myOilCoupon.getPan(), AESUtil.dekey);
+            map.put("result", AESUtil.encrypt(pan, AESUtil.key));
+            saveSearchLog(accountId, WsdUtils.getIpAddress(request), myOilCoupon.getPan(), myOilCoupon.getOrderId());
+            activateOilCoupon(myOilCoupon.getPan(), myOilCoupon.getPanAmt());
             return map;
         }
         long beginTime = System.currentTimeMillis();
-        if(!oilRedisTools.exists(prefix + myOilCoupon.getPanAmt())){
+        if (!oilRedisTools.exists(prefix + myOilCoupon.getPanAmt())) {
             logger.info("redis中没有该key值，查询数据库");
             List<OilCoupon> oilCoupons = oilCouponRepository.findByOilStateAndPanAmt("0", myOilCoupon.getPanAmt());
-            if(!ObjectUtils.isEmpty(oilCoupons)){
+            if (!ObjectUtils.isEmpty(oilCoupons)) {
                 List<String> oilCouponStrings = oilCoupons.stream().map(JSON::toJSONString).collect(Collectors.toList());
                 oilRedisTools.rightPushAll(prefix + myOilCoupon.getPanAmt(), oilCouponStrings);
             }
@@ -295,14 +296,14 @@ public class MyOilCouponController {
         }
         JSONObject objJson = JSONObject.fromObject(popValue);
         OilCoupon oilCoupon = (OilCoupon) JSONObject.toBean(objJson, OilCoupon.class);
-        if(ObjectUtils.isEmpty(oilCoupon)){
+        if (ObjectUtils.isEmpty(oilCoupon)) {
             logger.info("库存不足，分券失败！");
             oilRedisTools.rightPush(prefix + myOilCoupon.getPanAmt(), JSON.toJSONString(oilCoupon));
             throw new NotRuleException("oilCoupon.sale_over");
         }
         logger.info("获取的油券编码：" + oilCoupon.getPan());
         Result activeResult = activateOilCoupon(oilCoupon.getPan(), oilCoupon.getPanAmt());
-        if(WsdUtils.isNotEmpty(activeResult) && activeResult.getCode().equals("SUCCESS")){
+        if (WsdUtils.isNotEmpty(activeResult) && activeResult.getCode().equals("SUCCESS")) {
             MyOilCoupon moc = myOilCouponRepository.findOne(id);
             if (WsdUtils.isNotEmpty(moc.getPan())) {
                 logger.info("已经分配过券码，直接返回，券码：" + moc.getPan());
@@ -313,23 +314,23 @@ public class MyOilCouponController {
                 saveSearchLog(accountId, WsdUtils.getIpAddress(request), moc.getPan(), moc.getOrderId());
                 return map;
             }
-            updateService.updateOilCoupon(myOilCoupon,oilCoupon);
+            updateService.updateOilCoupon(myOilCoupon, oilCoupon);
         }
-        Map<String,Object> map = Maps.newHashMap();
-        if(WsdUtils.isEmpty(myOilCoupon.getPan())){
+        Map<String, Object> map = Maps.newHashMap();
+        if (WsdUtils.isEmpty(myOilCoupon.getPan())) {
             logger.info("更新券码没有成功，发券失败！");
             oilRedisTools.rightPush(prefix + myOilCoupon.getPanAmt(), JSON.toJSONString(oilCoupon));
             throw new NotRuleException("oilCoupon.null");
         }
         long endTime = System.currentTimeMillis();
         logger.info("执行发券成功，分配的券码为：" + myOilCoupon.getPan() + "，执行分券操作耗时时间：" + (endTime - beginTime) + "ms");
-        map.put("result", AESUtil.encrypt(AESUtil.decrypt(myOilCoupon.getPan(),AESUtil.dekey),AESUtil.key));
-        saveSearchLog(accountId,WsdUtils.getIpAddress(request),myOilCoupon.getPan(),myOilCoupon.getOrderId());
+        map.put("result", AESUtil.encrypt(AESUtil.decrypt(myOilCoupon.getPan(), AESUtil.dekey), AESUtil.key));
+        saveSearchLog(accountId, WsdUtils.getIpAddress(request), myOilCoupon.getPan(), myOilCoupon.getOrderId());
         return map;
     }
 
     @Async
-    private void saveSearchLog(String accountId,String ip,String pan,String orderId){
+    private void saveSearchLog(String accountId, String ip, String pan, String orderId) {
         OilCouponSearchLog log = new OilCouponSearchLog();
         log.setAccountId(accountId);
         log.setCreateTime(new Date());
@@ -339,20 +340,20 @@ public class MyOilCouponController {
         oilCouponSearchLogRepository.save(log);
     }
 
-    @RequestMapping(value = "activate/{id}",method = RequestMethod.GET)
+    @RequestMapping(value = "activate/{id}", method = RequestMethod.GET)
     public ResponseEntity activatePan(@PathVariable String id, HttpServletRequest request) throws Exception {
         String accountId = accountService.getAccountId(request);
-        if(WsdUtils.isEmpty(accountId)){
+        if (WsdUtils.isEmpty(accountId)) {
             throw new MissingParameterException("accountId");
         }
         MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
-        if(WsdUtils.isEmpty(myOilCoupon)){
+        if (WsdUtils.isEmpty(myOilCoupon)) {
             throw new NotFoundException("oilCoupon.not_found");
         }
-        if(!accountId.equals(myOilCoupon.getAccountId())){
+        if (!accountId.equals(myOilCoupon.getAccountId())) {
             throw new NotRuleException("oilCoupon.not_is_you");
         }
-        if(WsdUtils.isEmpty(myOilCoupon.getPan())){
+        if (WsdUtils.isEmpty(myOilCoupon.getPan())) {
             throw new NotRuleException("oilCoupon.not_found");
         }
         return new ResponseEntity<>(activateOilCoupon(myOilCoupon.getPan(), myOilCoupon.getPanAmt()), HttpStatus.OK);
@@ -366,14 +367,14 @@ public class MyOilCouponController {
         logger.info("激活的券码：" + pan + "，明文：" + panText + "，rc:" + MapUtils.getString(map, "rc") + "，rcDetail:" + MapUtils.getString(map, "rcDetail"));
         long endTime = System.currentTimeMillis();
         logger.info("激活消耗时间：" + (endTime - beginTime) + "ms");
-        if(MapUtils.getString(map, "rc").equals("00")){
+        if (MapUtils.getString(map, "rc").equals("00")) {
             logger.info("激活成功！");
-            saveLookingUsedCoupon(pan,"1",beginTime,endTime,map);
+            saveLookingUsedCoupon(pan, "1", beginTime, endTime, map);
             result.setCode("SUCCESS");
             result.setFailMessage("激活成功！");
-        }else{
+        } else {
             logger.info("激活失败！");
-            saveLookingUsedCoupon(pan,"0",beginTime,endTime,map);
+            saveLookingUsedCoupon(pan, "0", beginTime, endTime, map);
             result.setCode("FAIL");
             result.setFailMessage("激活失败！");
         }
@@ -381,14 +382,14 @@ public class MyOilCouponController {
     }
 
     @Async
-    private void saveLookingUsedCoupon(String pan,String activateState, long beginTime, long endTime, Map<String, String> map) throws Exception {
+    private void saveLookingUsedCoupon(String pan, String activateState, long beginTime, long endTime, Map<String, String> map) throws Exception {
         Date useDate = null;
         if (WsdUtils.isNotEmpty(MapUtils.getString(map, "txnDate")) && WsdUtils.isNotEmpty(MapUtils.getString(map, "txnTime"))) {
             useDate = DateUtils.parseDate(MapUtils.getString(map, "txnDate") + MapUtils.getString(map, "txnTime"), "yyyyMMddHHmmss");
         }
         LookingUsedCoupon lookingUsedCoupon = new LookingUsedCoupon();
         lookingUsedCoupon.setPan(pan);
-        lookingUsedCoupon.setPanText(AESUtil.decrypt(pan,AESUtil.dekey));
+        lookingUsedCoupon.setPanText(AESUtil.decrypt(pan, AESUtil.dekey));
         lookingUsedCoupon.setLookDate(new Date());
         lookingUsedCoupon.setUseDate(useDate);
         lookingUsedCoupon.setTId(MapUtils.getString(map, "tid"));
@@ -404,13 +405,13 @@ public class MyOilCouponController {
     @RequestMapping(value = "/modifyOilCoupon", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public void findOilSetMealInfo(
-        @RequestParam(required = false) String id,
-        @RequestParam(required = false) String accountId,
-        @RequestParam(required = false) String shopId,
-        @RequestParam(required = false) String pan,
-        @RequestParam(required = false) String useDate,
-        @RequestParam(required = false) String useState,
-        @RequestParam(required = false) String tid
+            @RequestParam(required = false) String id,
+            @RequestParam(required = false) String accountId,
+            @RequestParam(required = false) String shopId,
+            @RequestParam(required = false) String pan,
+            @RequestParam(required = false) String useDate,
+            @RequestParam(required = false) String useState,
+            @RequestParam(required = false) String tid
     ) {
         MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
         if (WsdUtils.isNotEmpty(myOilCoupon)) {
@@ -428,25 +429,56 @@ public class MyOilCouponController {
     @ResponseStatus(HttpStatus.OK)
     @CrossOrigin
     public void deleteOilCoupon(
-        @RequestParam String id
+            @RequestParam String id
     ) {
         MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
         if (WsdUtils.isNotEmpty(myOilCoupon)) {
             myOilCouponRepository.delete(myOilCoupon);
         }
     }
+
     @RequestMapping(value = "/statisticalOilVolume", method = RequestMethod.POST)
     public Map statisticalOilVolume(HttpServletRequest request) throws NotRuleException {
-        Map<Object,Object> map = new HashMap<>();
+        Map<Object, Object> map = new HashMap<>();
         String accountId = accountService.getAccountId(request);
 
         long num = myOilCouponRepository.findByUseState(accountId);
         Double sum = myOilCouponRepository.findByPanamt(accountId);
-        if (WsdUtils.isEmpty(sum)){
-            sum=0.00;
+        if (WsdUtils.isEmpty(sum)) {
+            sum = 0.00;
         }
         map.put("num", num);
         map.put("sum", sum);
         return map;
     }
+
+    /**
+     * 油券使用详情
+     *
+     */
+    @GetMapping(value = "/mycoupon/info")
+    public com.winstar.vo.Result getInfo(@RequestParam String id) throws Exception {
+        Map<String, String> map = new HashMap<>();
+        MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
+        if (ObjectUtils.isEmpty(myOilCoupon)) {
+            return com.winstar.vo.Result.fail("data_null", "该券不存在");
+        }
+        if (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(myOilCoupon.getCreateTime()).getTime() < 1556640000000L) {
+            return com.winstar.vo.Result.fail("time_error", "无法查看详情");
+        }
+        if ("0".equals(myOilCoupon.getUseState())) {
+            return com.winstar.vo.Result.fail("error", "该油券未使用");
+        }
+        map.put("usedTime", myOilCoupon.getUseDate());
+        OilStation oilStation = oilStationService.getOilStation(myOilCoupon.getTId());
+        if (!ObjectUtils.isEmpty(oilStation)) {
+            map.put("usedLocation", oilStation.getName());
+        } else {
+            map.put("usedLocation", "陕西省");
+        }
+        StringBuilder panCode = new StringBuilder(AESUtil.decrypt(myOilCoupon.getPan(), AESUtil.dekey));
+        map.put("panCode", panCode.replace(2, 16, "** **** **** **** ").toString());
+        return com.winstar.vo.Result.success(map);
+    }
+
 }
