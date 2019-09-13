@@ -203,6 +203,8 @@ public class AccountCouponService {
         log.info("保存优惠券赠送记录：" + JSON.toJSONString(couponSendRecord));
         CouponSendRecord record = couponSendRecordRepository.save(couponSendRecord);
         log.info("保存优惠券赠送记录成功！");
+        couponRedisTools.hmRemove(COUPON_LIST_PREFIX + couponSendRecord.getSendAccountId(), accountCoupon.getCouponId());
+        couponRedisTools.hmPut(COUPON_LIST_PREFIX + accountCoupon.getAccountId(), accountCoupon.getCouponId(), accountCoupon, null);
         return record;
     }
 

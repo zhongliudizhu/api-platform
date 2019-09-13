@@ -98,7 +98,13 @@ public class ReceiveCouponCenterController {
         Long result = redisTools.add("accountId", activityId + "-is-purchase-" + accountId);
         if (result > 0) {
             log.info("抢券成功！");
-            List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndActivityId(accountId, activityId);
+            List<AccountCoupon> accountCouponList = accountCouponService.getAccountCouponFromRedisHash(accountId);
+            List<AccountCoupon> accountCoupons;
+            if(ObjectUtils.isEmpty(accountCouponList)){
+                accountCoupons = accountCouponRepository.findByAccountIdAndActivityId(accountId, activity.getId());
+            }else{
+                accountCoupons = accountCouponList.stream().filter(s -> activity.getId().equals(s.getActivityId())).collect(Collectors.toList());
+            }
             if (!ObjectUtils.isEmpty(accountCoupons)) {
                 log.info("该活动用户已经领过券，不能再领取了：accountId is {} and activityId is {}", accountId, activityId);
                 return Result.fail("activity_coupon_receive", "您已经领过券了，不能重复领取！");
@@ -137,7 +143,13 @@ public class ReceiveCouponCenterController {
             log.info("此活动非长期领券活动！");
             return Result.fail("activity_not_normal", "此活动非长期领券活动！");
         }
-        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndActivityId(accountId, activityId);
+        List<AccountCoupon> accountCouponList = accountCouponService.getAccountCouponFromRedisHash(accountId);
+        List<AccountCoupon> accountCoupons;
+        if(ObjectUtils.isEmpty(accountCouponList)){
+            accountCoupons = accountCouponRepository.findByAccountIdAndActivityId(accountId, activity.getId());
+        }else{
+            accountCoupons = accountCouponList.stream().filter(s -> activity.getId().equals(s.getActivityId())).collect(Collectors.toList());
+        }
         if (!ObjectUtils.isEmpty(accountCoupons)) {
             log.info("该活动用户已经领过券，不能再领取了：accountId is {} and activityId is {}", accountId, activityId);
             return Result.fail("activity_coupon_receive", "您已经领过券了，不能重复领取！");
@@ -175,7 +187,13 @@ public class ReceiveCouponCenterController {
         //交安卡专享活动Id
         List<String> activityIds = ccbActivities.stream().map(CommunalActivity::getId).collect(Collectors.toList());
         //交安卡活动领取的优惠券
-        List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndActivityIdIn(accountId, activityIds);
+        List<AccountCoupon> accountCouponList = accountCouponService.getAccountCouponFromRedisHash(accountId);
+        List<AccountCoupon> accountCoupons;
+        if(ObjectUtils.isEmpty(accountCouponList)){
+            accountCoupons = accountCouponRepository.findByAccountIdAndActivityIdIn(accountId, activityIds);
+        }else{
+            accountCoupons = accountCouponList.stream().filter(s -> activityIds.contains(s.getActivityId())).collect(Collectors.toList());
+        }
         if (!ObjectUtils.isEmpty(accountCoupons)) {
             log.info("交安卡活动用户已经领过券，不能再领取了：accountId is {} and activityId is {}", accountId, accountCoupons.get(0).getActivityId());
             return Result.fail("activity_coupon_receive", "您已经领过交安卡活动专属券了，不能重复领取！");

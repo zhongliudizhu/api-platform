@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author UU
@@ -64,7 +65,13 @@ public class CommunalActivityController {
         if (!ObjectUtils.isEmpty(oilOrders)) {
             return Result.fail("user_not_new", "仅限新用户领取");
         } else {
-            List<AccountCoupon> accountCoupons = accountCouponRepository.findByAccountIdAndActivityId(accountId, activity.getId());
+            List<AccountCoupon> accountCouponList = accountCouponService.getAccountCouponFromRedisHash(accountId);
+            List<AccountCoupon> accountCoupons;
+            if(ObjectUtils.isEmpty(accountCouponList)){
+                accountCoupons = accountCouponRepository.findByAccountIdAndActivityId(accountId, activity.getId());
+            }else{
+                accountCoupons = accountCouponList.stream().filter(s -> activity.getId().equals(s.getActivityId())).collect(Collectors.toList());
+            }
             if (!ObjectUtils.isEmpty(accountCoupons)) {
                 return Result.fail("user_has_received", "用户已领取");
             }
