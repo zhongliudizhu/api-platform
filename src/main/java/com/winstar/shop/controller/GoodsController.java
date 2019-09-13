@@ -1,11 +1,13 @@
 package com.winstar.shop.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.order.service.OilOrderService;
 import com.winstar.order.utils.DateUtil;
+import com.winstar.redis.RedisTools;
 import com.winstar.shop.entity.Activity;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.ActivityRepository;
@@ -16,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -51,6 +54,9 @@ public class GoodsController {
     @Autowired
     OilOrderService oilOrderService;
 
+    @Autowired
+    RedisTools redisTools;
+
     /**
      * 根据活动Id查询商品
      *
@@ -71,7 +77,14 @@ public class GoodsController {
         if (StringUtils.isEmpty(activityId)) throw new MissingParameterException("activityId");
         String accountId = accountService.getAccountId(request);
         logger.info("accountId=" + accountId);
-        Activity activity = activityRepository.findOne(activityId);
+        if(!redisTools.exists("activity_goods_" + activityId)){
+            logger.info("redis中没有活动，从数据库中查询");
+            Activity activity = activityRepository.findOne(activityId);
+            if(!ObjectUtils.isEmpty(activity)){
+                redisTools.set("activity_goods_" + activityId, JSON.toJSONString(activity));
+            }
+        }
+        Activity activity = JSON.parseObject(redisTools.get("activity_goods_" + activityId).toString(), Activity.class);
         if(activity==null) {
             logger.info("活动不存在！");
             throw new NotFoundException("this activity is NotFound");
@@ -85,7 +98,14 @@ public class GoodsController {
             throw new NotFoundException("this activity has no goods");
         }
         JSONArray array= JSONArray.parseArray(activity.getGoods());
-        List<Goods> list=goodsRepository.findByStatusAndIdInOrderByPriceAsc(Status,array);
+        if(!redisTools.exists("activity_goods_list_" + activityId)){
+            logger.info("redis中没有该活动的商品，从数据库中");
+            List<Goods> list = goodsRepository.findByStatusAndIdInOrderByPriceAsc(Status,array);
+            if(!ObjectUtils.isEmpty(list)){
+                redisTools.set("activity_goods_list_" + activityId, JSON.toJSONString(list));
+            }
+        }
+        List<Goods> list = JSON.parseArray(redisTools.get("activity_goods_list_" + activityId).toString(), Goods.class);
         logger.info("商品列表：" + list.size());
         if (list.size() == 0)  throw new NotFoundException("goods");
         return list;
