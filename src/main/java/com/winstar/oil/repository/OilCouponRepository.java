@@ -1,13 +1,8 @@
 package com.winstar.oil.repository;
 
 import com.winstar.oil.entity.OilCoupon;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
-
-import java.util.List;
 
 /**
  * 名称： OilCouponRepository
@@ -17,11 +12,6 @@ import java.util.List;
  **/
 public interface OilCouponRepository extends JpaSpecificationExecutor<OilCoupon>,JpaRepository<OilCoupon,String> {
 
-    Page<OilCoupon> findByPanAmtAndOilState(Double panAmt, String oilState, Pageable pageable);
-
-    @Query(value = "SELECT * FROM (SELECT * FROM cbc_oil_coupon where oil_state=0 and pan_amt=?1) t ORDER BY RAND() LIMIT 50", nativeQuery = true)
-    List<OilCoupon> findRandomOilCoupons(Double panAmt);
-
-    List<OilCoupon> findByOilStateAndPanAmt(String oilState, Double panAmt);
+    OilCoupon findByPan(String pan);
 
 }

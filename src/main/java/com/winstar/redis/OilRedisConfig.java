@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
  * Created by zl on 2019/9/9
@@ -51,6 +53,9 @@ public class OilRedisConfig extends RedisConfig {
         RedisTemplate template = new RedisTemplate();
         template.setConnectionFactory(oilRedisConnectionFactory());
         redisTemplate(template);
+        RedisSerializer<String> redisSerializer = new StringRedisSerializer();
+        template.setKeySerializer(redisSerializer);
+        template.setHashKeySerializer(redisSerializer);
         template.afterPropertiesSet();
         return template;
     }

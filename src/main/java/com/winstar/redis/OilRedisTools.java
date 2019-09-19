@@ -1,12 +1,10 @@
 package com.winstar.redis;
 
-import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -19,31 +17,10 @@ public class OilRedisTools {
     private RedisTemplate<String, Object> redisTemplate;
 
     /**
-     * 从右边向list列表里面添加元素(集合)
-     */
-    public void rightPushAll(String key, Collection values){
-        redisTemplate.opsForList().rightPushAll(key, values);
-    }
-
-    /**
-     * 从右边向list列表里面添加元素(单个)
-     */
-    public void rightPush(String key, Object value){
-        redisTemplate.opsForList().rightPush(key, value);
-    }
-
-    /**
      * 获取list列表里面元素数量
      */
     public Long size(String key){
         return redisTemplate.opsForList().size(key);
-    }
-
-    /**
-     * 从左边获取list里面的第一个元素并列表中移除
-     */
-    public Object leftPop(String k){
-        return redisTemplate.opsForList().leftPop(k);
     }
 
     /**
@@ -63,19 +40,25 @@ public class OilRedisTools {
     }
 
     /**
-     * hash存储
+     * set存储
      */
-    public void setHash(String key, Map<String, Object> map, long times){
-        HashOperations<String, Object, Object> operations = redisTemplate.opsForHash();
-        operations.putAll(key, map);
-        redisTemplate.expire(key, times, TimeUnit.SECONDS);
+    public void addSet(String key, Object... values){
+        SetOperations<String, Object> operations = redisTemplate.opsForSet();
+        operations.add(key, values);
     }
 
     /**
-     * hash取值
+     * set随机取值
      */
-    public Object getHashValue(String key, Object hashKey){
-        return redisTemplate.opsForHash().get(key, hashKey);
+    public Object getRandomKeyFromSet(String key){
+        return redisTemplate.opsForSet().pop(key);
+    }
+
+    /**
+     * set随机取值
+     */
+    public Long getSetSize(String key){
+        return redisTemplate.opsForSet().size(key);
     }
 
     /**
