@@ -82,7 +82,6 @@ public class AccountCouponController {
             logger.info("用户无优惠券！");
             return Result.fail("coupons_not_found", "用户无优惠券！");
         }
-        logger.info(JSON.toJSONString(accountCoupons));
         String key = "coupon_checking_" + accountId;
         if (couponRedisTools.setIfAbsent(key, 1800)) {
             logger.info("检查优惠券状态，如已过期或赠送超时未领取的券更新数据，用户id is {}", accountId);
