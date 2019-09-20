@@ -4,6 +4,8 @@ import com.winstar.oil.entity.OilCouponSearchLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.List;
+
 /**
  * 名称： OilCouponSearchLogRepository
  * 作者： sky
@@ -11,5 +13,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
  * 描述：
  **/
 public interface OilCouponSearchLogRepository extends JpaRepository<OilCouponSearchLog,String>,JpaSpecificationExecutor<OilCouponSearchLog> {
+
+    List<OilCouponSearchLog> findByPan(String pan);
 
 }
