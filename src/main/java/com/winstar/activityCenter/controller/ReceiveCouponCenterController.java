@@ -189,11 +189,12 @@ public class ReceiveCouponCenterController {
         //交安卡活动领取的优惠券
         List<AccountCoupon> accountCouponList = accountCouponService.getAccountCouponFromRedisHash(accountId);
         List<AccountCoupon> accountCoupons;
-        if(ObjectUtils.isEmpty(accountCouponList)){
+        if (ObjectUtils.isEmpty(accountCouponList)) {
             accountCoupons = accountCouponRepository.findByAccountIdAndActivityIdIn(accountId, activityIds);
-        }else{
+        } else {
             accountCoupons = accountCouponList.stream().filter(s -> activityIds.contains(s.getActivityId())).collect(Collectors.toList());
         }
+        log.info("accountCoupons is {}", accountCoupons);
         if (!ObjectUtils.isEmpty(accountCoupons)) {
             log.info("交安卡活动用户已经领过券，不能再领取了：accountId is {} and activityId is {}", accountId, accountCoupons.get(0).getActivityId());
             return Result.fail("activity_coupon_receive", "您已经领过交安卡活动专属券了，不能重复领取！");

@@ -10,6 +10,8 @@ import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.repository.CouponSendRecordRepository;
 import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.communalCoupon.vo.SendCouponDomain;
+import com.winstar.costexchange.entity.FailSendRecord;
+import com.winstar.costexchange.repository.FailSendRecordRepository;
 import com.winstar.costexchange.utils.RequestUtil;
 import com.winstar.redis.CouponRedisTools;
 import com.winstar.redis.RedisTools;
@@ -23,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
@@ -44,12 +47,14 @@ public class AccountCouponService {
 
     private final CouponRedisTools couponRedisTools;
 
+    private final FailSendRecordRepository failSendRecordRepository;
 
     @Autowired
-    public AccountCouponService(AccountCouponRepository accountCouponRepository, CouponSendRecordRepository couponSendRecordRepository, CouponRedisTools couponRedisTools) {
+    public AccountCouponService(AccountCouponRepository accountCouponRepository, CouponSendRecordRepository couponSendRecordRepository, CouponRedisTools couponRedisTools, FailSendRecordRepository failSendRecordRepository) {
         this.accountCouponRepository = accountCouponRepository;
         this.couponSendRecordRepository = couponSendRecordRepository;
         this.couponRedisTools = couponRedisTools;
+        this.failSendRecordRepository = failSendRecordRepository;
     }
 
     private static final String T_KEYS = "template_set";
@@ -231,6 +236,17 @@ public class AccountCouponService {
             accountCouponRepository.save(accountCoupons);
             log.info("发放优惠券成功！accountId is {} and templateId is {}", domain.getAccountId(), domain.getTemplateId());
             couponRedisTools.hmPutAll(COUPON_LIST_PREFIX + domain.getAccountId(), accountCoupons.stream().collect(Collectors.toMap(AccountCoupon::getCouponId, Function.identity())));
+            accountCoupons.forEach(e -> {
+                if (ObjectUtils.isEmpty(couponRedisTools.hmGet(COUPON_LIST_PREFIX + domain.getAccountId(), e.getCouponId()))) {
+                    log.info("redis写入失败 --" + e.getCouponId());
+                    FailSendRecord failSendRecord = new FailSendRecord();
+                    failSendRecord.setAccountId(domain.getAccountId());
+                    failSendRecord.setTemplateId(domain.getTemplateId());
+                    failSendRecord.setFailMsg("redis写入失败 --" + e.getCouponId());
+                    failSendRecord.setCreatedAt(new Date());
+                    failSendRecordRepository.save(failSendRecord);
+                }
+            });
             return accountCoupons;
         }
         return null;

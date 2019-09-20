@@ -7,6 +7,7 @@ import com.winstar.activityCenter.vo.ActivityVo;
 import com.winstar.activityCenter.vo.CouponTemplateVo;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.entity.TemplateRule;
+import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.repository.TemplateRuleRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.communalCoupon.util.SignUtil;
@@ -34,15 +35,15 @@ public class CommunalActivityService {
     private final CommunalActivityRepository communalActivityRepository;
     private final RedisTools redisTools;
     private final TemplateRuleRepository templateRuleRepository;
-
-
+    private final AccountCouponRepository accountCouponRepository;
     private final AccountCouponService accountCouponService;
 
     @Autowired
-    public CommunalActivityService(CommunalActivityRepository communalActivityRepository, RedisTools redisTools, TemplateRuleRepository templateRuleRepository, AccountCouponService accountCouponService) {
+    public CommunalActivityService(CommunalActivityRepository communalActivityRepository, RedisTools redisTools, TemplateRuleRepository templateRuleRepository, AccountCouponRepository accountCouponRepository, AccountCouponService accountCouponService) {
         this.communalActivityRepository = communalActivityRepository;
         this.redisTools = redisTools;
         this.templateRuleRepository = templateRuleRepository;
+        this.accountCouponRepository = accountCouponRepository;
         this.accountCouponService = accountCouponService;
     }
 
@@ -65,11 +66,15 @@ public class CommunalActivityService {
         //活动Id
         List<String> activityIds = list.stream().map(CommunalActivity::getId).collect(Collectors.toList());
         //用户所有活动领取优惠券
-        List<AccountCoupon> accountCoupons = accountCouponService.
-                getAccountCouponFromRedisHash(accountId)
-                .stream()
-                .filter(e -> activityIds.contains(e.getActivityId()))
-                .collect(Collectors.toList());
+        List<AccountCoupon> List = accountCouponService.getAccountCouponFromRedisHash(accountId);
+        List<AccountCoupon> accountCoupons;
+        if (ObjectUtils.isEmpty(List)) {
+            accountCoupons = accountCouponRepository.findByAccountIdAndActivityIdIn(accountId, activityIds);
+        } else {
+            accountCoupons = List.stream()
+                    .filter(e -> activityIds.contains(e.getActivityId()))
+                    .collect(Collectors.toList());
+        }
         //用户优惠券按照活动ID分组
         Map<String, List<AccountCoupon>> groupAccountCoupons = new HashMap<>();
         accountCoupons
@@ -157,7 +162,7 @@ public class CommunalActivityService {
      * @param activityVos 活动VOList
      * @param templateIds 模板ID
      */
-    public void setTemplateInfo(List<ActivityVo> activityVos, String templateIds) throws NotRuleException {
+    private void setTemplateInfo(List<ActivityVo> activityVos, String templateIds) throws NotRuleException {
         if (!ObjectUtils.isEmpty(activityVos)) {
             List<CouponTemplateVo> list = getTemplateInfo(templateIds);
             Map<String, CouponTemplateVo> map = list.stream().collect(Collectors.toMap(CouponTemplateVo::getId, CouponTemplateVo::getThis));

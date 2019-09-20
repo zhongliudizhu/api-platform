@@ -86,6 +86,7 @@ public class RedisConfig {
         om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
         jackson2JsonRedisSerializer.setObjectMapper(om);
         template.setValueSerializer(jackson2JsonRedisSerializer);
+        template.setHashValueSerializer(jackson2JsonRedisSerializer);
         template.afterPropertiesSet();
         return template;
     }
