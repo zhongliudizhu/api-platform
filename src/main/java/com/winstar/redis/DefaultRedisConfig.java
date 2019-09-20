@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
  * Created by zl on 2019/9/9
@@ -42,7 +43,8 @@ public class DefaultRedisConfig extends RedisConfig {
      */
     @Bean(name = "defaultRedisTemplate")
     public RedisTemplate defaultRedisTemplate() {
-        return redisTemplate(defaultRedisConnectionFactory());
+        StringRedisTemplate template = new StringRedisTemplate(defaultRedisConnectionFactory());
+        return redisTemplate(template);
     }
 
 }

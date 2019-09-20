@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
  * Created by zl on 2019/9/9
@@ -47,7 +49,12 @@ public class CouponRedisConfig extends RedisConfig {
      */
     @Bean(name = "couponRedisTemplate")
     public RedisTemplate cacheRedisTemplate() {
-        return redisTemplate(couponRedisConnectionFactory());
+        RedisTemplate template = new RedisTemplate();
+        template.setConnectionFactory(couponRedisConnectionFactory());
+        RedisSerializer<String> redisSerializer = new StringRedisSerializer();
+        template.setKeySerializer(redisSerializer);
+        template.setHashKeySerializer(redisSerializer);
+        return redisTemplate(template);
     }
 
 }
