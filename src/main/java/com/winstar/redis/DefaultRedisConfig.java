@@ -42,11 +42,7 @@ public class DefaultRedisConfig extends RedisConfig {
      */
     @Bean(name = "defaultRedisTemplate")
     public RedisTemplate defaultRedisTemplate() {
-        RedisTemplate template = new RedisTemplate();
-        template.setConnectionFactory(defaultRedisConnectionFactory());
-        redisTemplate(template);
-        template.afterPropertiesSet();
-        return template;
+        return redisTemplate(defaultRedisConnectionFactory());
     }
 
 }
