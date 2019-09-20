@@ -248,22 +248,25 @@ public class MyOilCouponController {
         if (WsdUtils.isEmpty(accountId)) {
             throw new MissingParameterException("accountId");
         }
-        if (!oilRedisTools.setIfAbsent(id, 10)) {
+        if (!oilRedisTools.setIfAbsent(id, 300)) {
             logger.info("点击过于频繁，请稍后再试！操作Id:" + id);
             throw new NotRuleException("oilCoupon.loading");
         }
         logger.info("时间：" + System.currentTimeMillis() + "，执行的查询id：" + id);
         MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
         if (WsdUtils.isEmpty(myOilCoupon)) {
+            oilRedisTools.remove(id);
             throw new NotFoundException("oilCoupon.not_found");
         }
         if (!accountId.equals(myOilCoupon.getAccountId())) {
+            oilRedisTools.remove(id);
             throw new NotRuleException("oilCoupon.not_is_you");
         }
         if (myOilCoupon.getShopId().equals("8")) {
             logger.info("0.01抢购券，判断有效期");
             if (!WsdUtils.validatorDate(myOilCoupon.getOpenDate(), myOilCoupon.getEndDate())) {
                 logger.info("券码已失效！");
+                oilRedisTools.remove(id);
                 throw new NotRuleException("oilCoupon.expired");
             }
         }
@@ -274,17 +277,25 @@ public class MyOilCouponController {
             map.put("result", AESUtil.encrypt(pan, AESUtil.key));
             saveSearchLog(accountId, WsdUtils.getIpAddress(request), myOilCoupon.getPan(), myOilCoupon.getOrderId());
             activateOilCoupon(myOilCoupon.getPan(), myOilCoupon.getPanAmt());
+            oilRedisTools.remove(id);
             return map;
         }
         long beginTime = System.currentTimeMillis();
         if (!oilRedisTools.exists(prefix + myOilCoupon.getPanAmt())) {
-            logger.info("redis中没有该key值，查询数据库");
+            logger.info("redis中没有该key值");
+            oilRedisTools.remove(id);
             throw new NotRuleException("oilCoupon.null");
         }
-        logger.info("集合长度：" + oilRedisTools.getSetSize(prefix + myOilCoupon.getPanAmt()));
-        Object popValue = oilRedisTools.getRandomKeyFromSet(prefix + myOilCoupon.getPanAmt());
+        Object popValue = null;
+        try{
+            logger.info("集合长度：" + oilRedisTools.getSetSize(prefix + myOilCoupon.getPanAmt()));
+            popValue = oilRedisTools.getRandomKeyFromSet(prefix + myOilCoupon.getPanAmt());
+        }catch (Exception e){
+            logger.error("redis异常！", e);
+        }
         if (ObjectUtils.isEmpty(popValue)) {
             logger.info("没有该面值的券码，发券失败！");
+            oilRedisTools.remove(id);
             throw new NotRuleException("oilCoupon.null");
         }
         logger.info("获取的油券编码：" + popValue);
@@ -298,19 +309,27 @@ public class MyOilCouponController {
                 map.put("result", AESUtil.encrypt(pan, AESUtil.key));
                 oilRedisTools.addSet(prefix + myOilCoupon.getPanAmt(), popValue);
                 saveSearchLog(accountId, WsdUtils.getIpAddress(request), moc.getPan(), moc.getOrderId());
+                oilRedisTools.remove(id);
                 return map;
             }
             OilCoupon oilCoupon = oilCouponRepository.findByPan(popValue.toString());
-            updateService.updateOilCoupon(myOilCoupon, oilCoupon);
+            myOilCoupon = updateService.updateOilCoupon(myOilCoupon, oilCoupon);
+            if(ObjectUtils.isEmpty(myOilCoupon)){
+                logger.info("油券有问题！没有执行更新操作！");
+                oilRedisTools.remove(id);
+                throw new NotRuleException("oilCoupon.null");
+            }
         }
         Map<String, Object> map = Maps.newHashMap();
         if (WsdUtils.isEmpty(myOilCoupon.getPan())) {
             logger.info("更新券码没有成功，发券失败！");
+            oilRedisTools.remove(id);
             throw new NotRuleException("oilCoupon.null");
         }
         long endTime = System.currentTimeMillis();
         logger.info("执行发券成功，分配的券码为：" + myOilCoupon.getPan() + "，执行分券操作耗时时间：" + (endTime - beginTime) + "ms");
         map.put("result", AESUtil.encrypt(AESUtil.decrypt(myOilCoupon.getPan(), AESUtil.dekey), AESUtil.key));
+        oilRedisTools.remove(id);
         saveSearchLog(accountId, WsdUtils.getIpAddress(request), myOilCoupon.getPan(), myOilCoupon.getOrderId());
         return map;
     }

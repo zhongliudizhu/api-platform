@@ -72,4 +72,11 @@ public class OilRedisTools {
         return result;
     }
 
+    /**
+     * 是否能把键值放到换缓存中
+     */
+    public boolean setIfAbsent(final String key){
+        return redisTemplate.opsForValue().setIfAbsent(key,key);
+    }
+
 }
