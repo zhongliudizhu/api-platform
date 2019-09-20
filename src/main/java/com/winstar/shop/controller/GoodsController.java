@@ -85,7 +85,7 @@ public class GoodsController {
             }
         }
         Activity activity = JSON.parseObject(redisTools.get("activity_goods_" + activityId).toString(), Activity.class);
-        if(activity==null) {
+        if(ObjectUtils.isEmpty(activity)) {
             logger.info("活动不存在！");
             throw new NotFoundException("this activity is NotFound");
         }
@@ -105,7 +105,11 @@ public class GoodsController {
                 redisTools.set("activity_goods_list_" + activityId, JSON.toJSONString(list));
             }
         }
-        List<Goods> list = JSON.parseArray(redisTools.get("activity_goods_list_" + activityId).toString(), Goods.class);
+        Object object = redisTools.get("activity_goods_list_" + activityId);
+        if(ObjectUtils.isEmpty(object)){
+            throw new NotFoundException("goods");
+        }
+        List<Goods> list = JSON.parseArray(object.toString(), Goods.class);
         logger.info("商品列表：" + list.size());
         if (list.size() == 0)  throw new NotFoundException("goods");
         return list;
