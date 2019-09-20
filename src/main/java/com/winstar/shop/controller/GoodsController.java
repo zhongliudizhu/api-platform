@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -103,6 +104,8 @@ public class GoodsController {
             List<Goods> list = goodsRepository.findByStatusAndIdInOrderByPriceAsc(Status,array);
             if(!ObjectUtils.isEmpty(list)){
                 redisTools.set("activity_goods_list_" + activityId, JSON.toJSONString(list));
+            }else{
+                redisTools.set("activity_goods_list_" + activityId, JSON.toJSONString(new ArrayList<>()));
             }
         }
         Object object = redisTools.get("activity_goods_list_" + activityId);
