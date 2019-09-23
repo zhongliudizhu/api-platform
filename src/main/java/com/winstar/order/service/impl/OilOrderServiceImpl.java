@@ -142,7 +142,7 @@ public class OilOrderServiceImpl implements OilOrderService {
             accountCoupon.setState(AccountCouponService.LOCKED);
             accountCoupon.setOrderId(order.getSerialNumber());
             accountCouponRepository.save(accountCoupon);
-            couponRedisTools.hmRemove(AccountCouponService.COUPON_LIST_PREFIX + order.getAccountId(), accountCoupon.getCouponId());
+            couponRedisTools.hmPut(AccountCouponService.COUPON_LIST_PREFIX + order.getAccountId(), accountCoupon.getCouponId(), accountCoupon, null);
         }
         return oilOrderRepository.save(order);
     }
