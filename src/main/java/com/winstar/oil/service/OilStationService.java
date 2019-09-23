@@ -2,7 +2,7 @@ package com.winstar.oil.service;
 
 import com.winstar.oil.entity.OilStation;
 import com.winstar.oil.repository.OilStationRepository;
-import com.winstar.redis.CouponRedisTools;
+import com.winstar.redis.OilRedisTools;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -17,13 +17,13 @@ import org.springframework.util.ObjectUtils;
 @AllArgsConstructor
 public class OilStationService {
     private OilStationRepository oilStationRepository;
-    private CouponRedisTools couponRedisTools;
+    private OilRedisTools oilRedisTools;
 
     public OilStation getOilStation(String id) {
-        OilStation oilStation = (OilStation) couponRedisTools.get("OilStation" + id);
+        OilStation oilStation = (OilStation) oilRedisTools.get("OilStation" + id);
         if (ObjectUtils.isEmpty(oilStation)) {
             oilStation = oilStationRepository.findOne(id);
-            couponRedisTools.set("OilStation" + id, oilStation, null);
+            oilRedisTools.set("OilStation" + id, oilStation, null);
         }
         return oilStation;
     }

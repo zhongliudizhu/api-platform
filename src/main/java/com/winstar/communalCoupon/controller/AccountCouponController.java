@@ -12,7 +12,6 @@ import com.winstar.costexchange.vo.AccountCouponVo;
 import com.winstar.order.utils.DateUtil;
 import com.winstar.order.utils.Week;
 import com.winstar.redis.CouponRedisTools;
-import com.winstar.redis.RedisTools;
 import com.winstar.shop.entity.Goods;
 import com.winstar.shop.repository.GoodsRepository;
 import com.winstar.user.entity.Account;
@@ -53,8 +52,6 @@ public class AccountCouponController {
     CouponSendRecordRepository sendRecordRepository;
 
     AccountRepository accountRepository;
-
-    RedisTools redisTools;
 
     CouponRedisTools couponRedisTools;
 

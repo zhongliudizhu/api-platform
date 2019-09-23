@@ -2,7 +2,9 @@ package com.winstar.redis;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
@@ -77,6 +79,31 @@ public class OilRedisTools {
      */
     public boolean setIfAbsent(final String key){
         return redisTemplate.opsForValue().setIfAbsent(key,key);
+    }
+
+    /**
+     * 读取缓存
+     */
+    public Object get(final String key) {
+        ValueOperations<String, Object> operations = redisTemplate.opsForValue();
+        return operations.get(key);
+    }
+
+    /**
+     * 写入缓存设置时效时间(指定redis数据源)
+     */
+    public boolean set(final String key, Object value, Long expireTime) {
+        try {
+            ValueOperations<String, Object> operations = redisTemplate.opsForValue();
+            operations.set(key, value);
+            if(!ObjectUtils.isEmpty(expireTime)){
+                redisTemplate.expire(key, expireTime, TimeUnit.SECONDS);
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
 }
