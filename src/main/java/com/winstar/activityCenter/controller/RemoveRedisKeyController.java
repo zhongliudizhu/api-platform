@@ -33,10 +33,10 @@ public class RemoveRedisKeyController {
     CouponRedisTools couponRedisTools;
 
     @GetMapping("key/set")
-    public void setKey(@RequestParam String key, @RequestParam String value, @RequestParam(required = false) Long times){
-        if(ObjectUtils.isEmpty(times)){
+    public void setKey(@RequestParam String key, @RequestParam String value, @RequestParam(required = false) Long times) {
+        if (ObjectUtils.isEmpty(times)) {
             redisTools.set(key, value);
-        }else{
+        } else {
             redisTools.set(key, value, times);
         }
     }
@@ -47,19 +47,26 @@ public class RemoveRedisKeyController {
     }
 
     @GetMapping("key/get")
-    public Result getKey(){
+    public Result getKey() {
         String code = WsdUtils.generateRandomCharAndNumber(10);
         redisTools.set(code, code, 1800L);
         return Result.success(code);
     }
 
+    @GetMapping("key/exists")
+    public Result existsKey(@RequestParam String key) {
+        boolean b = couponRedisTools.exists(key);
+        log.info("couponRedisTools.exists(key)  is {}" ,b);
+        return Result.success(b);
+    }
+
     @GetMapping("remove/oil/key")
-    public void removeOilKey(@RequestParam String id){
+    public void removeOilKey(@RequestParam String id) {
         oilRedisTools.remove(id);
     }
 
     @GetMapping("remove/coupon/key")
-    public void removeCouponKey(@RequestParam String id){
+    public void removeCouponKey(@RequestParam String id) {
         couponRedisTools.remove(id);
     }
 

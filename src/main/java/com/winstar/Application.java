@@ -76,31 +76,4 @@ public class Application extends WebMvcConfigurerAdapter {
         return objectMapper;
     }
 
-//    @ConditionalOnMissingBean(name = "kafkaListenerContainerFactory")
-//    @Bean
-//    public KafkaListenerContainerFactory kafkaListenerContainerFactory() {
-//        return new ConcurrentKafkaListenerContainerFactory();
-//    }
-    // LISTENER 1
-//    @Bean
-//    @ConditionalOnMissingBean(name = "yourListenerFactory1")
-//    public ConsumerFactory<String, SendCouponListener> yourConsumerFactory1() {
-//        Map<String, Object> props = new HashMap<>();
-//        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "192.168.118.69:9092");
-//        props.put(ConsumerConfig.GROUP_ID_CONFIG, "myGroup");
-//        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(),
-//                new JsonDeserializer<>(SendCouponListener.class));
-//    }
-//
-//
-//    @Bean(name = "yourListenerFactory1")
-//    public ConcurrentKafkaListenerContainerFactory<String, SendCouponListener>
-//    yourListenerFactory1() {
-//        ConcurrentKafkaListenerContainerFactory<String, SendCouponListener> factory =
-//                new ConcurrentKafkaListenerContainerFactory<>();
-//        factory.setConsumerFactory(yourConsumerFactory1());
-//        ContainerProperties containerProperties = factory.getContainerProperties();
-//        containerProperties.setAckMode(AbstractMessageListenerContainer.AckMode.MANUAL_IMMEDIATE);
-//        return factory;
-//    }
 }
