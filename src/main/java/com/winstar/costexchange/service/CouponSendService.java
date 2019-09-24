@@ -42,7 +42,10 @@ public class CouponSendService {
         logger.info("更新的兑换记录：" + JSON.toJSONString(exchangeRecord));
         exchangeRepository.save(exchangeRecord);
         logger.info("更新兑换记录成功！");
-        couponRedisTools.hmPutAll(AccountCouponService.COUPON_LIST_PREFIX + exchangeRecord.getAccountId(), accountCoupons.stream().collect(Collectors.toMap(AccountCoupon::getCouponId, Function.identity())));
+        String key = AccountCouponService.COUPON_LIST_PREFIX + exchangeRecord.getAccountId();
+        if(couponRedisTools.exists(key)){
+            couponRedisTools.hmPutAll(key, accountCoupons.stream().collect(Collectors.toMap(AccountCoupon::getCouponId, Function.identity())));
+        }
     }
 
 }
