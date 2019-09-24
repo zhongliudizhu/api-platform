@@ -265,19 +265,21 @@ public class AccountCouponService {
     public void getRedisCoupon(String accountId) {
         log.info("获取用户redis中的优惠券入库  {}", accountId);
         Set<Object> tIds = couponRedisTools.setMembers(T_KEYS);
-        for (Object tId : tIds) {
-            if (couponRedisTools.exists(tId.toString())) {
-                if (couponRedisTools.hmContains(tId.toString(), accountId)) {
-                    SendCouponDomain domain = new SendCouponDomain();
-                    domain.setAccountId(accountId);
-                    domain.setNum("1");
-                    domain.setTemplateId(tId.toString());
-                    domain.setType("yjx");
-                    sendCoupon(domain, null);
-                    couponRedisTools.hmRemove(tId.toString(), accountId);
+        if (couponRedisTools.setIfAbsent("getting_coupon_" + accountId, 10)) {
+            for (Object tId : tIds) {
+                if (couponRedisTools.exists(tId.toString())) {
+                    if (couponRedisTools.hmContains(tId.toString(), accountId)) {
+                        SendCouponDomain domain = new SendCouponDomain();
+                        domain.setAccountId(accountId);
+                        domain.setNum("1");
+                        domain.setTemplateId(tId.toString());
+                        domain.setType("yjx");
+                        sendCoupon(domain, null);
+                        couponRedisTools.hmRemove(tId.toString(), accountId);
+                    }
+                } else {
+                    couponRedisTools.removeSetMembers(T_KEYS, tId.toString());
                 }
-            } else {
-                couponRedisTools.removeSetMembers(T_KEYS, tId);
             }
         }
     }
