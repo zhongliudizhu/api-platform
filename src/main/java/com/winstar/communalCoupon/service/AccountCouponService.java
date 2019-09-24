@@ -234,10 +234,15 @@ public class AccountCouponService {
             log.info("获取优惠券成功！accountId is {} and templateId is {}", domain.getAccountId(), domain.getTemplateId());
             List<AccountCoupon> accountCoupons = RequestUtil.getAccountCoupons(JSON.toJSONString(map.get("data")), domain, redisTools);
             accountCouponRepository.save(accountCoupons);
+            String key = COUPON_LIST_PREFIX + domain.getAccountId();
             log.info("发放优惠券成功！accountId is {} and templateId is {}", domain.getAccountId(), domain.getTemplateId());
-            couponRedisTools.hmPutAll(COUPON_LIST_PREFIX + domain.getAccountId(), accountCoupons.stream().collect(Collectors.toMap(AccountCoupon::getCouponId, Function.identity())));
+            if (couponRedisTools.exists(key)) {
+                couponRedisTools.hmPutAll(key, accountCoupons.stream().collect(Collectors.toMap(AccountCoupon::getCouponId, Function.identity())));
+            } else {
+                log.info("redis不存在key: {}", key);
+            }
             accountCoupons.forEach(e -> {
-                if (ObjectUtils.isEmpty(couponRedisTools.hmGet(COUPON_LIST_PREFIX + domain.getAccountId(), e.getCouponId()))) {
+                if (ObjectUtils.isEmpty(couponRedisTools.hmGet(key, e.getCouponId()))) {
                     log.info("redis写入失败 --" + e.getCouponId());
                     FailSendRecord failSendRecord = new FailSendRecord();
                     failSendRecord.setAccountId(domain.getAccountId());
