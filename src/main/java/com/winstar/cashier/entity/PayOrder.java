@@ -150,4 +150,22 @@ public class PayOrder{
     @Column(length = 3)
     private String subPayWay;
 
+    /**
+     * 微信代金券id
+     */
+    @Column(length = 50)
+    private String couponId;
+
+    /**
+     * 微信代金券优惠金额
+     */
+    @Column(length = 10)
+    private String couponFee;
+
+    /**
+     * 微信支付方式：零钱/银行卡
+     */
+    @Column(length = 20)
+    private String bankType;
+
 }

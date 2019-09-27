@@ -14,6 +14,7 @@ import com.winstar.event.ModifyOrderEvent;
 import com.winstar.event.SendOilCouponEvent;
 import com.winstar.utils.WsdUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,6 +144,15 @@ public class NotifyController {
                 payOrder.setState(MapUtils.getString(respMap,"result_code").equalsIgnoreCase("SUCCESS") ? EnumType.PAY_STATE_SUCCESS.valueStr() : EnumType.PAY_STATE_FAIL.valueStr());
                 payOrder.setQid(MapUtils.getString(respMap, "transaction_id"));
                 payOrder.setUpdaedAt(DateUtil.parseTime(MapUtils.getString(respMap, "time_end")));
+                String couponId = MapUtils.getString(respMap, "coupon_id_0");
+                if(!StringUtils.isEmpty(couponId)){
+                    payOrder.setCouponId(couponId);
+                }
+                String couponFee = MapUtils.getString(respMap, "coupon_fee");
+                if(!StringUtils.isEmpty(couponFee)){
+                    payOrder.setCouponFee(couponFee);
+                }
+                payOrder.setBankType(MapUtils.getString(respMap, "bank_type"));
                 payOrderService.save(payOrder);
                 logger.info("订单支付成功...");
                 savePayLog(respMap,"OK","订单支付成功",request);
