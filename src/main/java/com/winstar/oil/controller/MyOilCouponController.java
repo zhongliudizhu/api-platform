@@ -299,7 +299,14 @@ public class MyOilCouponController {
             throw new NotRuleException("oilCoupon.null");
         }
         logger.info("获取的油券编码：" + popValue);
-        Result activeResult = activateOilCoupon(popValue.toString(), myOilCoupon.getPanAmt());
+        Result activeResult = null;
+        try{
+            activeResult = activateOilCoupon(popValue.toString(), myOilCoupon.getPanAmt());
+        }catch (Exception e){
+            logger.error("易通激活接口异常，拿出的券回归缓存中");
+            oilRedisTools.addSet(prefix + myOilCoupon.getPanAmt(), popValue);
+            oilRedisTools.remove(id);
+        }
         if (WsdUtils.isNotEmpty(activeResult) && activeResult.getCode().equals("SUCCESS")) {
             MyOilCoupon moc = myOilCouponRepository.findOne(id);
             if (WsdUtils.isNotEmpty(moc.getPan())) {
