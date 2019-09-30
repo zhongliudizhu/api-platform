@@ -56,8 +56,7 @@ public class ReceiveCouponCenterController {
     CommunalActivityService activityService;
 
     @RequestMapping(value = "/setNumber", method = RequestMethod.GET)
-    public void setNumber(String activityId, Integer number) {
-        String listKey = "sendCoupons:" + activityId;
+    public void setNumber(String listKey, Integer number) {
         redisTools.remove(listKey);
         List<Object> list = new ArrayList<>();
         for (int i = 0; i < number; i++) {
