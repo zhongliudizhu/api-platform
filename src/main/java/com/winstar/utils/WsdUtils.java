@@ -3,9 +3,7 @@ package com.winstar.utils;
 import com.google.common.collect.Maps;
 
 import javax.servlet.http.HttpServletRequest;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
@@ -127,19 +125,6 @@ public class WsdUtils {
             }
         }
         return sb.toString();
-    }
-
-    public static String getLastDayOfMonth(){
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-        return new SimpleDateFormat("yyyy-MM-dd").format(calendar.getTime());
-    }
-
-    public static boolean validatorDate(String beginTime,String endTime) throws ParseException {
-        long begin = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(beginTime + " 00:00:00").getTime();
-        long end = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endTime + " 23:59:59").getTime();
-        long now = new Date().getTime();
-        return begin <= now && now <= end;
     }
 
 }

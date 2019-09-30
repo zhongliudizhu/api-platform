@@ -262,14 +262,6 @@ public class MyOilCouponController {
             oilRedisTools.remove(id);
             throw new NotRuleException("oilCoupon.not_is_you");
         }
-        if (myOilCoupon.getShopId().equals("8")) {
-            logger.info("0.01抢购券，判断有效期");
-            if (!WsdUtils.validatorDate(myOilCoupon.getOpenDate(), myOilCoupon.getEndDate())) {
-                logger.info("券码已失效！");
-                oilRedisTools.remove(id);
-                throw new NotRuleException("oilCoupon.expired");
-            }
-        }
         if (WsdUtils.isNotEmpty(myOilCoupon.getPan())) {
             logger.info("已经分配过券码，直接返回，券码：" + myOilCoupon.getPan());
             Map<String, Object> map = Maps.newHashMap();
@@ -281,14 +273,9 @@ public class MyOilCouponController {
             return map;
         }
         long beginTime = System.currentTimeMillis();
-        if (!oilRedisTools.exists(prefix + myOilCoupon.getPanAmt())) {
-            logger.info("redis中没有该key值");
-            oilRedisTools.remove(id);
-            throw new NotRuleException("oilCoupon.null");
-        }
         Object popValue = null;
         try{
-            logger.info("集合长度：" + oilRedisTools.getSetSize(prefix + myOilCoupon.getPanAmt()));
+            logger.info("剩余油券数量：" + oilRedisTools.getSetSize(prefix + myOilCoupon.getPanAmt()));
             popValue = oilRedisTools.getRandomKeyFromSet(prefix + myOilCoupon.getPanAmt());
         }catch (Exception e){
             logger.error("redis异常！", e);
@@ -320,12 +307,7 @@ public class MyOilCouponController {
                 return map;
             }
             OilCoupon oilCoupon = oilCouponRepository.findByPan(popValue.toString());
-            myOilCoupon = updateService.updateOilCoupon(myOilCoupon, oilCoupon);
-            if(ObjectUtils.isEmpty(myOilCoupon)){
-                logger.info("油券有问题！没有执行更新操作！");
-                oilRedisTools.remove(id);
-                throw new NotRuleException("oilCoupon.null");
-            }
+            updateService.updateOilCoupon(myOilCoupon, oilCoupon);
         }
         Map<String, Object> map = Maps.newHashMap();
         if (WsdUtils.isEmpty(myOilCoupon.getPan())) {
