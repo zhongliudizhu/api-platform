@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -42,11 +43,8 @@ public class ActivityResourceController {
         } else {
             activityResources = resourceRepository.findByActivityTypeAndStatusOrderByTypeAsc(activityType, "yes");
         }
-        if (CollectionUtils.isEmpty(activityResources)) {
-            return Result.fail(Result.FAIL, "无相应资源");
-        }
         log.info("数据库中查询的资源放入缓存中！！！");
-        redisTools.set("activity_resource_home_" + activityType, JSON.toJSONString(activityResources));
+        redisTools.set("activity_resource_home_" + activityType, CollectionUtils.isEmpty(activityResources) ? JSON.toJSONString(new ArrayList<>()) : JSON.toJSONString(activityResources));
         return Result.success(activityResources);
     }
 
