@@ -105,6 +105,11 @@ public class MyOilCouponController {
     ) throws Exception {
         Map<String, String> resultMap = new HashMap<>();
         String orderId = MapUtils.getString(map, "orderId");
+        if(orderId.startsWith("2018")){
+            resultMap.put("status", "FAIL");
+            resultMap.put("result", "2018年的订单不允许手动发券！");
+            return new ResponseEntity<>(resultMap, HttpStatus.OK);
+        }
         OilOrder oilOrder = oilOrderRepository.findBySerialNumber(orderId);
         if (WsdUtils.isEmpty(oilOrder)) {
             resultMap.put("status", "FAIL");
