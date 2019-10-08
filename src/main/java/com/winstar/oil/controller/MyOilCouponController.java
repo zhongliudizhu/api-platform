@@ -105,9 +105,9 @@ public class MyOilCouponController {
     ) throws Exception {
         Map<String, String> resultMap = new HashMap<>();
         String orderId = MapUtils.getString(map, "orderId");
-        if(orderId.startsWith("2018")){
+        if(Integer.valueOf(new SimpleDateFormat("yyyyMM").format(new Date())) - Integer.valueOf(orderId.substring(0,6)) > 3){
             resultMap.put("status", "FAIL");
-            resultMap.put("result", "2018年的订单不允许手动发券！");
+            resultMap.put("result", "3个月之前的订单不允许手动发券！");
             return new ResponseEntity<>(resultMap, HttpStatus.OK);
         }
         OilOrder oilOrder = oilOrderRepository.findBySerialNumber(orderId);
