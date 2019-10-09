@@ -1,6 +1,9 @@
 package com.winstar.oilOutPlatform.controller;
 
+import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.exception.NotRuleException;
+import com.winstar.oil.controller.MyOilCouponController;
+import com.winstar.oil.service.OilStationService;
 import com.winstar.oilOutPlatform.entity.OutOilCoupon;
 import com.winstar.oilOutPlatform.entity.OutOilCouponLog;
 import com.winstar.oilOutPlatform.repository.OutOilCouponLogRepository;
@@ -8,20 +11,25 @@ import com.winstar.oilOutPlatform.repository.OutOilCouponRepository;
 import com.winstar.oilOutPlatform.vo.ActiveParams;
 import com.winstar.oilOutPlatform.vo.AssignedParams;
 import com.winstar.oilOutPlatform.vo.CouponVo;
+import com.winstar.oilOutPlatform.vo.OutOilCouponVo;
 import com.winstar.redis.OilRedisTools;
+import com.winstar.utils.AESUtil;
 import com.winstar.vo.Result;
 import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
+import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import javax.validation.Valid;
+import java.util.*;
 
 /**
  * Created by zl on 2019/10/9
@@ -42,11 +50,19 @@ public class OutOilCouponController {
     @Autowired
     OutOilCouponLogRepository outOilCouponLogRepository;
 
+    @Autowired
+    ApplicationContext applicationContext;
+
+    @Autowired
+    OilStationService stationService;
+
     private static String oilCouponStockKey = "out_platform_oil_pan_list";
 
     private static String order_pan_suffix = "_pan_list";
 
     private static String lock_suffix = "_locking";
+
+    private static String findOilCouponUrl = "";
 
     /**
      * 查询油券详情
@@ -54,8 +70,39 @@ public class OutOilCouponController {
      * 返回：id，金额，名称，销售状态，销售时间，使用状态，使用时间，使用油站id，使用油站名称
      */
     @RequestMapping(value = "getOilCoupon", method = RequestMethod.GET)
-    public Result getOilCoupon(@RequestParam String oilId){
-        return null;
+    public Result getOilCoupon(@RequestParam String oilId, @RequestParam String merchant,
+                               @RequestParam String sign) throws Exception {
+      /*  Map<String, String> sigMap = new HashMap<>();
+        sigMap.put("merchant", merchant);
+        sigMap.put("sign", sign);
+        sigMap.put("oilId", oilId);
+        if (!SignUtil.checkSign(sigMap)) {
+            logger.info("验证签名失败！");
+            return Result.fail("sign_fail", "验证签名失败！");
+        }
+       */
+        OutOilCoupon oilCoupon = outOilCouponRepository.findOne(oilId);
+        if (ObjectUtils.isEmpty(oilCoupon)) {
+            return Result.fail("missing oilCoupon", "查询油券不存在");
+        }
+        String useState = oilCoupon.getUseState();
+        if (!StringUtils.isEmpty(useState) && useState.equals("0")) {
+            String panText = AESUtil.decrypt(oilCoupon.getPan(), AESUtil.dekey);
+            Map map = new RestTemplate().getForObject(findOilCouponUrl + "/" + panText, Map.class);
+            if (MapUtils.getString(map, "rc").equals("00") && MapUtils.getString(map, "cardStatus").equals("1")) {
+                oilCoupon.setUseState("1");
+                String txnDate = MapUtils.getString(map, "txnDate");
+                String txnTime = MapUtils.getString(map, "txnTime");
+                oilCoupon.setUseDate(txnDate + txnTime);
+            }
+        }
+        OutOilCouponVo oilCouponVo = new OutOilCouponVo();
+        BeanUtils.copyProperties(oilCoupon, oilCouponVo);
+        if (StringUtils.isEmpty(oilCoupon.getTId())) {
+            String otlName = stationService.getOilStation(oilCoupon.getTId()).getName();
+            oilCouponVo.setTName(otlName);
+        }
+        return Result.success(oilCouponVo);
     }
 
     /**
@@ -193,8 +240,56 @@ public class OutOilCouponController {
      * 返回：id，券码
      */
     @RequestMapping(value = "active", method = RequestMethod.POST)
-    public Result activeOilCoupon(@RequestParam ActiveParams activeParams){
-        return null;
+    public Result activeOilCoupon(@RequestBody @Valid ActiveParams activeParams) throws Exception {
+        String oilId = activeParams.getOilId();
+        String orderId = activeParams.getOrderId();
+        /*
+        Map<String, String> signMap = new HashMap<>();
+        signMap.put("merchant", activeParams.getMerchant());
+        signMap.put("sign", activeParams.getSign());
+        signMap.put("oilId",oilId);
+        signMap.put("orderId",orderId);
+        if (!SignUtil.checkSign(signMap)) {
+            logger.info("验证签名失败！");
+            return Result.fail("sign_fail", "验证签名失败！");
+        }
+         */
+        List<OutOilCouponLog> oilCouponLogs = outOilCouponLogRepository.findByOilIdAndOrderId(oilId, orderId);
+        if (!CollectionUtils.isEmpty(oilCouponLogs) && oilCouponLogs.get(0).getCode().equals("success")) {
+            return Result.fail("active_failed", "油券已激活，请勿重复激活");
+        }
+        OutOilCoupon outOilCoupon = outOilCouponRepository.findOne(oilId);
+        if (ObjectUtils.isEmpty(outOilCoupon)) {
+            return Result.fail("coupon_not_exist", "油券不存在");
+        }
+        ws.result.Result result = applicationContext.getBean(MyOilCouponController.class).activateOilCoupon(outOilCoupon.getPan(), outOilCoupon.getPanAmt());
+        saveOutOilCouponLog(outOilCoupon, result);
+        if (!result.getCode().equalsIgnoreCase("SUCCESS")) {
+            logger.info("激活失败！");
+            return Result.fail("active_failed", "激活失败");
+        }
+        logger.info("===激活油券成功===");
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", oilId);
+        map.put("pan", outOilCoupon.getPan());
+        return Result.success(map);
     }
+
+    @Async
+    public void saveOutOilCouponLog(OutOilCoupon outOilCoupon, ws.result.Result result) {
+        OutOilCouponLog log = new OutOilCouponLog();
+        log.setOilId(outOilCoupon.getId());
+        log.setOrderId(outOilCoupon.getOrderId());
+        log.setCreateTime(new Date());
+        log.setNumber("1");
+        log.setType("active");
+        if (result.getCode().equalsIgnoreCase("SUCCESS")) {
+            log.setCode("success");
+        } else {
+            log.setCode("failed");
+        }
+        outOilCouponLogRepository.save(log);
+    }
+
 
 }
