@@ -35,7 +35,9 @@ public class OutOilCouponController {
 
     private static String oilCouponStockKey = "out_platform_oil_pan_list";
 
-    private static String suffix = "_pan_list";
+    private static String order_pan_suffix = "_pan_list";
+
+    private static String lock_suffix = "_locking";
 
     /**
      * 查询油券详情
@@ -66,10 +68,10 @@ public class OutOilCouponController {
             return Result.success(new HashMap<>().put("result", false));
         }
         if(lock.equals("on")){
-            if(oilRedisTools.setIfAbsent(orderId + "_locking", 5)){
+            if(oilRedisTools.setIfAbsent(orderId + lock_suffix)){
                 for(int i=0;i<number;i++){
                     Object popValue = oilRedisTools.getRandomKeyFromSet(oilCouponStockKey);
-                    oilRedisTools.addSetExpire(orderId + suffix, 3600L, popValue);
+                    oilRedisTools.addSetExpire(orderId + order_pan_suffix, 3600L, popValue);
                 }
                 logger.info("剩余库存：" + oilRedisTools.getSetSize(oilCouponStockKey));
             }else{
