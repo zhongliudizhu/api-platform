@@ -94,4 +94,10 @@ public class OutOilCoupon {
     @Column(columnDefinition = "varchar(20) comment '油站id'")
     private String tId;
 
+    /**
+     * 订单号
+     */
+    @Column(columnDefinition = "varchar(50) comment '订单号'")
+    private String orderId;
+
 }
