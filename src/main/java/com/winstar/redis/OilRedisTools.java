@@ -50,6 +50,17 @@ public class OilRedisTools {
     }
 
     /**
+     * set存储 有效期
+     */
+    public void addSetExpire(String key, Long times, Object... values){
+        SetOperations<String, Object> operations = redisTemplate.opsForSet();
+        operations.add(key, values);
+        if(!ObjectUtils.isEmpty(times)){
+            operations.getOperations().expire(key, times, TimeUnit.SECONDS);
+        }
+    }
+
+    /**
      * set随机取值
      */
     public Object getRandomKeyFromSet(String key){

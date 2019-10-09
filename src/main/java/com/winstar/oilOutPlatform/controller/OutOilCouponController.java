@@ -6,8 +6,13 @@ import com.winstar.oilOutPlatform.vo.ActiveParams;
 import com.winstar.oilOutPlatform.vo.AssignedParams;
 import com.winstar.redis.OilRedisTools;
 import com.winstar.vo.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 
 /**
  * Created by zl on 2019/10/9
@@ -17,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/cbc/outPlatform")
 public class OutOilCouponController {
 
+    private static final Logger logger = LoggerFactory.getLogger(OutOilCouponController.class);
+
     @Autowired
     OilRedisTools oilRedisTools;
 
@@ -25,6 +32,10 @@ public class OutOilCouponController {
 
     @Autowired
     OutOilCouponLogRepository outOilCouponLogRepository;
+
+    private static String oilCouponStockKey = "out_platform_oil_pan_list";
+
+    private static String suffix = "_pan_list";
 
     /**
      * 查询油券详情
@@ -42,8 +53,30 @@ public class OutOilCouponController {
      * 返回：true/false
      */
     @RequestMapping(value = "judgeStock", method = RequestMethod.GET)
-    public Result judgeStock(@RequestParam AssignedParams assignedParams){
-        return null;
+    public Result judgeStock(@RequestParam Long number, @RequestParam(required = false, defaultValue = "off") String lock, @RequestParam(required = false) String orderId){
+        logger.info("入参：number is {}, lock is {}, orderId is {}", number, lock, orderId);
+        if(lock.equals("on") && StringUtils.isEmpty(orderId)){
+            logger.info("锁定油券时必须传订单号");
+            return Result.fail("missing_param_orderId", "锁定油券时必须传订单号！");
+        }
+        Long stock = oilRedisTools.getSetSize(oilCouponStockKey);
+        logger.info("库存：" + stock);
+        if(stock < number){
+            logger.info("库存不足，剩余数量：" + stock);
+            return Result.success(new HashMap<>().put("result", false));
+        }
+        if(lock.equals("on")){
+            if(oilRedisTools.setIfAbsent(orderId + "_locking", 5)){
+                for(int i=0;i<number;i++){
+                    Object popValue = oilRedisTools.getRandomKeyFromSet(oilCouponStockKey);
+                    oilRedisTools.addSetExpire(orderId + suffix, 3600L, popValue);
+                }
+                logger.info("剩余库存：" + oilRedisTools.getSetSize(oilCouponStockKey));
+            }else{
+                logger.info("订单" + orderId + "正在锁定库存，请稍后！！！");
+            }
+        }
+        return Result.success(new HashMap<>().put("result", true));
     }
 
     /**
