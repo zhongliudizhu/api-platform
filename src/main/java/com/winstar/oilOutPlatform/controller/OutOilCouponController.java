@@ -107,6 +107,17 @@ public class OutOilCouponController {
     }
 
     /**
+     * 测试用
+     */
+    @RequestMapping("send")
+    public String sendRedis() {
+        List<OutOilCoupon> outOilCoupons = outOilCouponRepository.findByOilState("0");
+        outOilCoupons.forEach(e -> oilRedisTools.addSet(oilCouponStockKey, e.getPan()));
+        long stock = oilRedisTools.getSetSize(oilCouponStockKey);
+        return stock + "";
+    }
+
+    /**
      * 售油
      * 验证签名
      * 返回：id，金额，名称，销售状态
@@ -115,20 +126,31 @@ public class OutOilCouponController {
     public Result saleOilCoupon(@RequestBody AssignedParams assignedParams) throws NotRuleException {
         String orderId = assignedParams.getOrderId();
         long number = assignedParams.getNumber();
-        logger.info("merchant is {} and orderId is {} and number is {}", assignedParams.getMerchant(), orderId, number);
+        String merchant = assignedParams.getMerchant();
+        String sign = assignedParams.getSign();
+        logger.info("merchant is {} and orderId is {} and number is {} and sign is {}", merchant, orderId, number, sign);
         List<CouponVo> couponVos;
         List<OutOilCoupon> coupons;
         OutOilCouponLog outOilCouponLog;
-        OutOilCouponLog log = outOilCouponLogRepository.findByOrderId(assignedParams.getOrderId());
-        if (!ObjectUtils.isEmpty(log)) {
+/*        Map<String, String> map = new HashMap<>();
+        map.put("merchant", merchant);
+        map.put("sign", sign);
+        map.put("number", String.valueOf(number));
+        map.put("orderId", orderId);
+        if (!SignUtil.checkSign(map)) {
+            logger.info("验证签名失败！");
+            return Result.fail("sign_fail", "验证签名失败！");
+        }*/
+        List<OutOilCouponLog> logs = outOilCouponLogRepository.findByOrderId(assignedParams.getOrderId());
+        if (!ObjectUtils.isEmpty(logs)) {
             logger.info("油券已分配");
             coupons = outOilCouponRepository.findByOrderId(orderId);
         } else {
             Set<Object> set = oilRedisTools.setMembers(orderId + order_pan_suffix);
             logger.info("redis获取的券码为:{}", set);
             if (set.size() == 0) {
-                logger.info("订单已过期");
-                return Result.fail("orderId_not_exists", "订单已过期");
+                logger.info("订单不存在或已过期");
+                return Result.fail("orderId_not_exists", "订单不存在或已过期");
             }
             if (set.size() != number) {
                 logger.info("入参数量为：{} ，redis获取数量为：{}", number, set.size());
