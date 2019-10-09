@@ -24,6 +24,16 @@ public class OutOilCouponController {
     }
 
     /**
+     * 判断油券库存
+     * 验证签名
+     * 返回：true/false
+     */
+    @RequestMapping(value = "judgeStock", method = RequestMethod.GET)
+    public Result judgeStock(@RequestParam String number){
+        return null;
+    }
+
+    /**
      * 售油
      * 验证签名
      * 返回：id，金额，名称，销售状态
