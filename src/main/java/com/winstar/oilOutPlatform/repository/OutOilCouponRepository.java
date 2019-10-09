@@ -13,6 +13,8 @@ public interface OutOilCouponRepository extends JpaRepository<OutOilCoupon, Stri
 
     List<OutOilCoupon> findByOrderId(String orderId);
 
+    List<OutOilCoupon> findByOilState(String oilState);
+
     List<OutOilCoupon> findByOilStateAndPanIn(String state,Set<Object> pans);
 
 }
