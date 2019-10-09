@@ -18,7 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by zl on 2019/10/9
@@ -61,17 +64,33 @@ public class OutOilCouponController {
      * 返回：true/false
      */
     @RequestMapping(value = "judgeStock", method = RequestMethod.GET)
-    public Result judgeStock(@RequestParam Long number, @RequestParam(required = false, defaultValue = "off") String lock, @RequestParam(required = false) String orderId){
-        logger.info("入参：number is {}, lock is {}, orderId is {}", number, lock, orderId);
+    public Result judgeStock(
+        @RequestParam String merchant,
+        @RequestParam String sign,
+        @RequestParam Long number,
+        @RequestParam(required = false, defaultValue = "off") String lock,
+        @RequestParam(required = false) String orderId
+    ){
+        logger.info("入参：merchant is {}, sign is {}, number is {}, lock is {}, orderId is {}", merchant, sign, number, lock, orderId);
         if(lock.equals("on") && StringUtils.isEmpty(orderId)){
             logger.info("锁定油券时必须传订单号");
             return Result.fail("missing_param_orderId", "锁定油券时必须传订单号！");
         }
+        /*Map<String, String> map = new HashMap<>();
+        map.put("merchant", merchant);
+        map.put("sign", sign);
+        map.put("number", number.toString());
+        map.put("lock", lock);
+        map.put("orderId", orderId);
+        if (!SignUtil.checkSign(map)) {
+            logger.info("验证签名失败！");
+            return Result.fail("sign_fail", "验证签名失败！");
+        }*/
         Long stock = oilRedisTools.getSetSize(oilCouponStockKey);
         logger.info("库存：" + stock);
         if(stock < number){
             logger.info("库存不足，剩余数量：" + stock);
-            return Result.success(new HashMap<>().put("result", false));
+            return Result.success(false);
         }
         if(lock.equals("on")){
             if(oilRedisTools.setIfAbsent(orderId + lock_suffix)){
@@ -84,7 +103,7 @@ public class OutOilCouponController {
                 logger.info("订单" + orderId + "正在锁定库存，请稍后！！！");
             }
         }
-        return Result.success(new HashMap<>().put("result", true));
+        return Result.success(true);
     }
 
     /**
