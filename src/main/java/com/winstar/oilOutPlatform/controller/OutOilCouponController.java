@@ -1,8 +1,12 @@
 package com.winstar.oilOutPlatform.controller;
 
+import com.winstar.oilOutPlatform.repository.OutOilCouponLogRepository;
+import com.winstar.oilOutPlatform.repository.OutOilCouponRepository;
 import com.winstar.oilOutPlatform.vo.ActiveParams;
 import com.winstar.oilOutPlatform.vo.AssignedParams;
+import com.winstar.redis.OilRedisTools;
 import com.winstar.vo.Result;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -12,6 +16,15 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/cbc/outPlatform")
 public class OutOilCouponController {
+
+    @Autowired
+    OilRedisTools oilRedisTools;
+
+    @Autowired
+    OutOilCouponRepository outOilCouponRepository;
+
+    @Autowired
+    OutOilCouponLogRepository outOilCouponLogRepository;
 
     /**
      * 查询油券详情
@@ -29,7 +42,7 @@ public class OutOilCouponController {
      * 返回：true/false
      */
     @RequestMapping(value = "judgeStock", method = RequestMethod.GET)
-    public Result judgeStock(@RequestParam String number){
+    public Result judgeStock(@RequestParam AssignedParams assignedParams){
         return null;
     }
 
