@@ -15,6 +15,11 @@ import lombok.Setter;
 public class ActiveParams {
 
     /**
+     * 商户号
+     */
+    private String merchant;
+
+    /**
      * 订单号
      */
     private String orderId;

@@ -10,5 +10,7 @@ import java.util.List;
  */
 public interface OutOilCouponLogRepository extends JpaRepository<OutOilCouponLog, String> {
 
+    OutOilCouponLog findByOrderId(String orderId);
+
     List<OutOilCouponLog> findByOilIdAndOrderId(String oilId,String orderId);
 }

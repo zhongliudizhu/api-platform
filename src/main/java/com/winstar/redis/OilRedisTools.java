@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -58,6 +59,15 @@ public class OilRedisTools {
         if(!ObjectUtils.isEmpty(times)){
             operations.getOperations().expire(key, times, TimeUnit.SECONDS);
         }
+    }
+
+
+    /**
+     * set 获取全部
+     */
+    public Set<Object> setMembers(String key) {
+        SetOperations<String, Object> set = redisTemplate.opsForSet();
+        return set.members(key);
     }
 
     /**
