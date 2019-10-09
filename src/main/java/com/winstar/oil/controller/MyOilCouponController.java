@@ -358,7 +358,7 @@ public class MyOilCouponController {
         return new ResponseEntity<>(activateOilCoupon(myOilCoupon.getPan(), myOilCoupon.getPanAmt()), HttpStatus.OK);
     }
 
-    private Result activateOilCoupon(String pan, Double panAmt) throws Exception {
+    public Result activateOilCoupon(String pan, Double panAmt) throws Exception {
         Result result = new Result();
         String panText = AESUtil.decrypt(pan, AESUtil.dekey);
         long beginTime = System.currentTimeMillis();
