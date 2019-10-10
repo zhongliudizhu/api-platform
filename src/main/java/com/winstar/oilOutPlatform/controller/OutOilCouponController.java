@@ -62,7 +62,7 @@ public class OutOilCouponController {
 
     private static String lock_suffix = "_locking";
 
-    private static String findOilCouponUrl = "";
+    private static String findOilCouponUrl = "https://mobile.sxwinstar.net/wechat_access/api/v1/items/verification/cards/onlySearch";
 
     /**
      * 查询油券详情
