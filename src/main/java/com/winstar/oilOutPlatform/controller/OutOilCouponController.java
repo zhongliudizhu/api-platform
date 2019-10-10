@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -95,7 +97,7 @@ public class OutOilCouponController {
                 oilCoupon.setUseState("1");
                 String txnDate = MapUtils.getString(map, "txnDate");
                 String txnTime = MapUtils.getString(map, "txnTime");
-                oilCoupon.setUseDate(txnDate + txnTime);
+                oilCoupon.setUseDate(formatTxnDateAndTime(txnDate, txnTime));
                 outOilCouponRepository.save(oilCoupon);
             }
         }
@@ -107,6 +109,7 @@ public class OutOilCouponController {
         }
         return Result.success(oilCouponVo);
     }
+
 
     /**
      * 判断油券库存
@@ -358,5 +361,17 @@ public class OutOilCouponController {
         outOilCouponLogRepository.save(log);
     }
 
+
+    private static String formatTxnDateAndTime(String txnDate, String txnTime) {
+        SimpleDateFormat simple = new SimpleDateFormat("yyyyMMddHHmmss");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = null;
+        try {
+            date = simple.parse(txnDate + txnTime);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return simpleDateFormat.format(date);
+    }
 
 }
