@@ -89,6 +89,7 @@ info:
 #  cost_exchange_server: http://192.168.118.54:11020/
   cost_exchange_server: http://192.168.118.104:11020/
   communal_coupon_server: http://192.168.118.129:12002/
+#  communal_coupon_server: http://127.0.0.1:12002/
   takeCouponUrl: ${info.communal_coupon_server}api/v1/coupon/takeCoupons?
   verifyCouponUrl: ${info.communal_coupon_server}api/v1/coupon/verify/verify?
   writeOffCouponUrl: ${info.communal_coupon_server}api/v1/coupon/verify/cancel
