@@ -39,7 +39,7 @@ public class AssignedParams {
      * 数量
      */
     @NotNull(message = "number 不能为空！！")
-    private long number;
+    private String number;
 
     /**
      * 签名

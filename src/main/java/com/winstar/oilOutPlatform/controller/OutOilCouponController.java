@@ -1,5 +1,6 @@
 package com.winstar.oilOutPlatform.controller;
 
+import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.exception.NotRuleException;
 import com.winstar.oil.controller.MyOilCouponController;
 import com.winstar.oil.service.OilStationService;
@@ -74,7 +75,7 @@ public class OutOilCouponController {
                                @RequestParam String sign) throws Exception {
 
         logger.info("入参：merchant is {}, sign is {}, oilId is {}", merchant, sign, oilId);
-      /*  Map<String, String> sigMap = new HashMap<>();
+        Map<String, String> sigMap = new HashMap<>();
         sigMap.put("merchant", merchant);
         sigMap.put("sign", sign);
         sigMap.put("oilId", oilId);
@@ -82,7 +83,6 @@ public class OutOilCouponController {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
         }
-       */
         OutOilCoupon oilCoupon = outOilCouponRepository.findOne(oilId);
         if (ObjectUtils.isEmpty(oilCoupon)) {
             return Result.fail("missing oilCoupon", "查询油券不存在");
@@ -117,7 +117,7 @@ public class OutOilCouponController {
     public Result judgeStock(
         @RequestParam String merchant,
         @RequestParam String sign,
-        @RequestParam Long number,
+        @RequestParam String number,
         @RequestParam(required = false, defaultValue = "off") String lock,
         @RequestParam(required = false) String orderId
     ){
@@ -126,7 +126,8 @@ public class OutOilCouponController {
             logger.info("锁定油券时必须传订单号");
             return Result.fail("missing_param_orderId", "锁定油券时必须传订单号！");
         }
-        /*Map<String, String> map = new HashMap<>();
+        Long num = Long.valueOf(number);
+        Map<String, String> map = new HashMap<>();
         map.put("merchant", merchant);
         map.put("sign", sign);
         map.put("number", number.toString());
@@ -135,16 +136,16 @@ public class OutOilCouponController {
         if (!SignUtil.checkSign(map)) {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
-        }*/
+        }
         Long stock = oilRedisTools.getSetSize(oilCouponStockKey);
         logger.info("库存：" + stock);
-        if(stock < number){
+        if(stock < num){
             logger.info("库存不足，剩余数量：" + stock);
             return Result.success(false);
         }
         if(lock.equals("on")){
             if(oilRedisTools.setIfAbsent(orderId + lock_suffix)){
-                for(int i=0;i<number;i++){
+                for(int i=0;i<num;i++){
                     Object popValue = oilRedisTools.getRandomKeyFromSet(oilCouponStockKey);
                     oilRedisTools.addSet(orderId + order_pan_suffix, popValue);
                 }
@@ -176,14 +177,14 @@ public class OutOilCouponController {
     public Result saleOilCoupon(@RequestBody @Valid AssignedParams assignedParams) throws NotRuleException {
         String orderId = assignedParams.getOrderId();
         String outUserId = assignedParams.getOutUserId();
-        long number = assignedParams.getNumber();
+        long number = Long.valueOf(assignedParams.getNumber());
         String merchant = assignedParams.getMerchant();
         String sign = assignedParams.getSign();
         logger.info("merchant is {} and orderId is {} and number is {} and sign is {} and outUserId is {}", merchant, orderId, number, sign, outUserId);
         List<CouponVo> couponVos;
         List<OutOilCoupon> coupons;
         OutOilCouponLog outOilCouponLog;
-/*        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
         map.put("merchant", merchant);
         map.put("sign", sign);
         map.put("number", String.valueOf(number));
@@ -192,7 +193,7 @@ public class OutOilCouponController {
         if (!SignUtil.checkSign(map)) {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
-        }*/
+        }
         List<OutOilCouponLog> logs = outOilCouponLogRepository.findByOrderId(assignedParams.getOrderId());
         if (!ObjectUtils.isEmpty(logs)) {
             logger.info("油券已分配");
@@ -261,16 +262,14 @@ public class OutOilCouponController {
             @RequestParam(required = false) String orderId
     ) {
         logger.info("入参：merchant is {}, sign is {}, orderId is {}", merchant, sign, orderId);
-        /*Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
         map.put("merchant", merchant);
         map.put("sign", sign);
         map.put("orderId", orderId);
         if (!SignUtil.checkSign(map)) {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
-        }*/
-        Long stock = oilRedisTools.getSetSize(oilCouponStockKey);
-        logger.info("库存：" + stock);
+        }
         Set<Object> set = oilRedisTools.setMembers(orderId + order_pan_suffix);
         if (oilRedisTools.exists(orderId + allocation_suffix)) {
             oilRedisTools.remove(orderId + allocation_suffix);
@@ -307,7 +306,6 @@ public class OutOilCouponController {
         String orderId = activeParams.getOrderId();
         String userId = activeParams.getOutUserId();
         logger.info("merchant is {} and orderId is {} and oilId is {} and sign is {} and userId is {}", activeParams.getMerchant(), orderId, oilId, activeParams.getSign(), userId);
-        /*
         Map<String, String> signMap = new HashMap<>();
         signMap.put("merchant", activeParams.getMerchant());
         signMap.put("sign", activeParams.getSign());
@@ -318,7 +316,6 @@ public class OutOilCouponController {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
         }
-         */
         OutOilCoupon outOilCoupon = outOilCouponRepository.findOne(oilId);
         if (ObjectUtils.isEmpty(outOilCoupon)) {
             return Result.fail("coupon_not_exist", "油券不存在");
