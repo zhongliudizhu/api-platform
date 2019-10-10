@@ -31,7 +31,7 @@ public class OutOilCoupon {
     /**
      * 加油券编号
      */
-    @Column(columnDefinition = "varchar(50) comment '加油券编号'")
+    @Column(columnDefinition = "varchar(100) comment '加油券编号'")
     private String pan;
 
     /**
