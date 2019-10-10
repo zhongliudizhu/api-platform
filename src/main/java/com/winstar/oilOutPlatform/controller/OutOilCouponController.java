@@ -14,7 +14,6 @@ import com.winstar.oilOutPlatform.vo.OutOilCouponVo;
 import com.winstar.redis.OilRedisTools;
 import com.winstar.utils.AESUtil;
 import com.winstar.vo.Result;
-import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -300,13 +300,15 @@ public class OutOilCouponController {
     public Result activeOilCoupon(@RequestBody @Valid ActiveParams activeParams) throws Exception {
         String oilId = activeParams.getOilId();
         String orderId = activeParams.getOrderId();
-        logger.info("merchant is {} and orderId is {} and oilId is {} and sign is {}", activeParams.getMerchant(), orderId, oilId, activeParams.getSign());
+        String userId = activeParams.getOutUserId();
+        logger.info("merchant is {} and orderId is {} and oilId is {} and sign is {} and userId is {}", activeParams.getMerchant(), orderId, oilId, activeParams.getSign(), userId);
         /*
         Map<String, String> signMap = new HashMap<>();
         signMap.put("merchant", activeParams.getMerchant());
         signMap.put("sign", activeParams.getSign());
         signMap.put("oilId",oilId);
         signMap.put("orderId",orderId);
+        signMap.put("outUserId",userId);
         if (!SignUtil.checkSign(signMap)) {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
@@ -315,6 +317,9 @@ public class OutOilCouponController {
         OutOilCoupon outOilCoupon = outOilCouponRepository.findOne(oilId);
         if (ObjectUtils.isEmpty(outOilCoupon)) {
             return Result.fail("coupon_not_exist", "油券不存在");
+        }
+        if (!outOilCoupon.getOutUserId().equals(userId)) {
+            return Result.fail("coupon_non_belong_user", "油券不属于此用户");
         }
         List<OutOilCouponLog> oilCouponLogs = outOilCouponLogRepository.findByOilIdAndOrderId(oilId, orderId);
         if (oilCouponLogs.stream().noneMatch(e -> e.getCode().equals("success"))) {

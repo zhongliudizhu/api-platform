@@ -33,11 +33,17 @@ public class ActiveParams {
     @NotBlank(message = "油券id不能为空！！")
     private String oilId;
 
-
     /**
      * 签名
      */
     @NotBlank(message = "签名不能为空！！")
     private String sign;
+
+
+    /**
+     * 输出平台用户Id
+     */
+    @NotBlank(message = "outUserId 不能为空！！")
+    private String outUserId;
 
 }
