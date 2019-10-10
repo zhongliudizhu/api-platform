@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -72,6 +73,8 @@ public class OutOilCouponController {
     @RequestMapping(value = "getOilCoupon", method = RequestMethod.GET)
     public Result getOilCoupon(@RequestParam String oilId, @RequestParam String merchant,
                                @RequestParam String sign) throws Exception {
+
+        logger.info("入参：merchant is {}, sign is {}, oilId is {}", merchant, sign, oilId);
       /*  Map<String, String> sigMap = new HashMap<>();
         sigMap.put("merchant", merchant);
         sigMap.put("sign", sign);
@@ -94,6 +97,7 @@ public class OutOilCouponController {
                 String txnDate = MapUtils.getString(map, "txnDate");
                 String txnTime = MapUtils.getString(map, "txnTime");
                 oilCoupon.setUseDate(txnDate + txnTime);
+                outOilCouponRepository.save(oilCoupon);
             }
         }
         OutOilCouponVo oilCouponVo = new OutOilCouponVo();
@@ -243,6 +247,7 @@ public class OutOilCouponController {
     public Result activeOilCoupon(@RequestBody @Valid ActiveParams activeParams) throws Exception {
         String oilId = activeParams.getOilId();
         String orderId = activeParams.getOrderId();
+        logger.info("merchant is {} and orderId is {} and oilId is {} and sign is {}", activeParams.getMerchant(), orderId, oilId, activeParams.getSign());
         /*
         Map<String, String> signMap = new HashMap<>();
         signMap.put("merchant", activeParams.getMerchant());
@@ -254,21 +259,20 @@ public class OutOilCouponController {
             return Result.fail("sign_fail", "验证签名失败！");
         }
          */
-        List<OutOilCouponLog> oilCouponLogs = outOilCouponLogRepository.findByOilIdAndOrderId(oilId, orderId);
-        if (!CollectionUtils.isEmpty(oilCouponLogs) && oilCouponLogs.get(0).getCode().equals("success")) {
-            return Result.fail("active_failed", "油券已激活，请勿重复激活");
-        }
         OutOilCoupon outOilCoupon = outOilCouponRepository.findOne(oilId);
         if (ObjectUtils.isEmpty(outOilCoupon)) {
             return Result.fail("coupon_not_exist", "油券不存在");
         }
-        ws.result.Result result = applicationContext.getBean(MyOilCouponController.class).activateOilCoupon(outOilCoupon.getPan(), outOilCoupon.getPanAmt());
-        saveOutOilCouponLog(outOilCoupon, result);
-        if (!result.getCode().equalsIgnoreCase("SUCCESS")) {
-            logger.info("激活失败！");
-            return Result.fail("active_failed", "激活失败");
+        List<OutOilCouponLog> oilCouponLogs = outOilCouponLogRepository.findByOilIdAndOrderId(oilId, orderId);
+        if (oilCouponLogs.stream().noneMatch(e -> e.getCode().equals("success"))) {
+            ws.result.Result result = applicationContext.getBean(MyOilCouponController.class).activateOilCoupon(outOilCoupon.getPan(), outOilCoupon.getPanAmt());
+            saveOutOilCouponLog(outOilCoupon, result);
+            if (!result.getCode().equalsIgnoreCase("SUCCESS")) {
+                logger.info("激活失败！");
+                return Result.fail("active_failed", "激活失败");
+            }
+            logger.info("===激活油券成功===");
         }
-        logger.info("===激活油券成功===");
         Map<String, Object> map = new HashMap<>();
         map.put("id", oilId);
         map.put("pan", outOilCoupon.getPan());
@@ -281,7 +285,6 @@ public class OutOilCouponController {
         log.setOilId(outOilCoupon.getId());
         log.setOrderId(outOilCoupon.getOrderId());
         log.setCreateTime(new Date());
-        log.setNumber("1");
         log.setType("active");
         if (result.getCode().equalsIgnoreCase("SUCCESS")) {
             log.setCode("success");
