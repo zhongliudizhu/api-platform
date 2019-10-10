@@ -101,7 +101,7 @@ public class OutOilCouponController {
         }
         OutOilCouponVo oilCouponVo = new OutOilCouponVo();
         BeanUtils.copyProperties(oilCoupon, oilCouponVo);
-        if (StringUtils.isEmpty(oilCoupon.getTId())) {
+        if (!StringUtils.isEmpty(oilCoupon.getTId())) {
             String otlName = stationService.getOilStation(oilCoupon.getTId()).getName();
             oilCouponVo.setTName(otlName);
         }
