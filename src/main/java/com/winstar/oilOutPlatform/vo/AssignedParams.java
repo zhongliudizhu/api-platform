@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.NotBlank;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Created by zl on 2019/10/9
  */
@@ -36,7 +38,7 @@ public class AssignedParams {
     /**
      * 数量
      */
-    @NotBlank(message = "number 不能为空！！")
+    @NotNull(message = "number 不能为空！！")
     private long number;
 
     /**

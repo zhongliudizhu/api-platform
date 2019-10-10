@@ -173,7 +173,7 @@ public class OutOilCouponController {
      * 返回：id，金额，名称，销售状态
      */
     @RequestMapping(value = "assigned", method = RequestMethod.POST)
-    public Result saleOilCoupon(@RequestBody AssignedParams assignedParams) throws NotRuleException {
+    public Result saleOilCoupon(@RequestBody @Valid AssignedParams assignedParams) throws NotRuleException {
         String orderId = assignedParams.getOrderId();
         String outUserId = assignedParams.getOutUserId();
         long number = assignedParams.getNumber();
@@ -194,26 +194,29 @@ public class OutOilCouponController {
             return Result.fail("sign_fail", "验证签名失败！");
         }*/
         List<OutOilCouponLog> logs = outOilCouponLogRepository.findByOrderId(assignedParams.getOrderId());
-        if (!oilRedisTools.setIfAbsent(orderId + allocation_suffix)) {
-            return Result.fail("order_allocating", "订单正在分配油券！");
-        }
         if (!ObjectUtils.isEmpty(logs)) {
             logger.info("油券已分配");
             coupons = outOilCouponRepository.findByOrderId(orderId);
         } else {
+            if (!oilRedisTools.setIfAbsent(orderId + allocation_suffix)) {
+                return Result.fail("order_allocating", "订单正在分配油券！");
+            }
             Set<Object> set = oilRedisTools.setMembers(orderId + order_pan_suffix);
             logger.info("redis获取的券码为:{}", set);
             if (set.size() == 0) {
                 logger.info("订单不存在或已过期");
+                oilRedisTools.remove(orderId + allocation_suffix);
                 return Result.fail("orderId_not_exists", "订单不存在或已过期");
             }
             if (set.size() != number) {
                 logger.info("入参数量为：{} ，redis获取数量为：{}", number, set.size());
+                oilRedisTools.remove(orderId + allocation_suffix);
                 return Result.fail("number_wrong", "订单对应数量错误");
             }
             coupons = outOilCouponRepository.findByOilStateAndPanIn("0", set);
             if (coupons.size() != set.size()) {
                 logger.error("分配券码异常！！ ");
+                oilRedisTools.remove(orderId + allocation_suffix);
                 throw new NotRuleException("分配券码异常！！");
             }
             coupons.forEach(e -> {
@@ -230,7 +233,7 @@ public class OutOilCouponController {
         }
         couponVos = new ArrayList<>();
         for (OutOilCoupon coupon : coupons) {
-            if (outUserId.equals(coupon.getOutUserId())) {
+            if (!outUserId.equals(coupon.getOutUserId())) {
                 return Result.fail("user_not_this", "油券非此用户！！");
             }
             CouponVo couponVo = new CouponVo();
@@ -243,7 +246,6 @@ public class OutOilCouponController {
         outOilCouponLog.setType("sale");
         outOilCouponLog.setCreateTime(new Date());
         outOilCouponLogRepository.save(outOilCouponLog);
-        oilRedisTools.remove(orderId + allocation_suffix);
         return Result.success(couponVos);
     }
 
@@ -271,6 +273,7 @@ public class OutOilCouponController {
         logger.info("库存：" + stock);
         Set<Object> set = oilRedisTools.setMembers(orderId + order_pan_suffix);
         if (oilRedisTools.exists(orderId + allocation_suffix)) {
+            oilRedisTools.remove(orderId + allocation_suffix);
             return Result.fail("order_allocating", "订单正在分配油券！");
         }
         logger.info("redis获取的券码为:{}", set);
@@ -278,6 +281,7 @@ public class OutOilCouponController {
             List<OutOilCouponLog> logs = outOilCouponLogRepository.findByOrderId(orderId);
             if (!ObjectUtils.isEmpty(logs)) {
                 logger.info("订单" + orderId + "订单已完成！！");
+                oilRedisTools.remove(orderId + allocation_suffix);
                 return Result.fail("order_finished", "订单已完成！！！");
             }
             logger.info("订单" + orderId + "不存在！！");
@@ -288,6 +292,7 @@ public class OutOilCouponController {
             oilRedisTools.remove(orderId + order_pan_suffix);
             oilRedisTools.remove(orderId + lock_suffix);
         }
+        oilRedisTools.remove(orderId + allocation_suffix);
         return Result.success(true);
     }
 
