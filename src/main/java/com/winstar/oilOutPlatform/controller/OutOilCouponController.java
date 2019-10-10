@@ -334,6 +334,7 @@ public class OutOilCouponController {
         Map<String, Object> map = new HashMap<>();
         map.put("id", oilId);
         map.put("pan", outOilCoupon.getPan());
+        map.put("outUserId", userId);
         return Result.success(map);
     }
 
