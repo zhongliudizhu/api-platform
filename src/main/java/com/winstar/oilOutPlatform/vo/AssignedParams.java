@@ -28,6 +28,12 @@ public class AssignedParams {
     private String orderId;
 
     /**
+     * 输出平台用户Id
+     */
+    @NotBlank(message = "outUserId 不能为空！！")
+    private String outUserId;
+
+    /**
      * 数量
      */
     @NotBlank(message = "number 不能为空！！")

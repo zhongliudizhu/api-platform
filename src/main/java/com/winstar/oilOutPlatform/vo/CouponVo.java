@@ -13,4 +13,6 @@ public class CouponVo {
 
     private String oilState;
 
+    private String outUserId;
+
 }

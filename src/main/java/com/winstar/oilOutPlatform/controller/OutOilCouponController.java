@@ -1,6 +1,5 @@
 package com.winstar.oilOutPlatform.controller;
 
-import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.exception.NotRuleException;
 import com.winstar.oil.controller.MyOilCouponController;
 import com.winstar.oil.service.OilStationService;
@@ -23,13 +22,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -62,6 +59,8 @@ public class OutOilCouponController {
     private static String order_pan_suffix = "_pan_list";
 
     private static String lock_suffix = "_locking";
+
+    private static String allocation_suffix = "_allocating";
 
     private static String findOilCouponUrl = "https://mobile.sxwinstar.net/wechat_access/api/v1/items/verification/cards/onlySearch";
 
@@ -147,7 +146,7 @@ public class OutOilCouponController {
             if(oilRedisTools.setIfAbsent(orderId + lock_suffix)){
                 for(int i=0;i<number;i++){
                     Object popValue = oilRedisTools.getRandomKeyFromSet(oilCouponStockKey);
-                    oilRedisTools.addSetExpire(orderId + order_pan_suffix, 3600L, popValue);
+                    oilRedisTools.addSet(orderId + order_pan_suffix, popValue);
                 }
                 logger.info("剩余库存：" + oilRedisTools.getSetSize(oilCouponStockKey));
             }else{
@@ -176,10 +175,11 @@ public class OutOilCouponController {
     @RequestMapping(value = "assigned", method = RequestMethod.POST)
     public Result saleOilCoupon(@RequestBody AssignedParams assignedParams) throws NotRuleException {
         String orderId = assignedParams.getOrderId();
+        String outUserId = assignedParams.getOutUserId();
         long number = assignedParams.getNumber();
         String merchant = assignedParams.getMerchant();
         String sign = assignedParams.getSign();
-        logger.info("merchant is {} and orderId is {} and number is {} and sign is {}", merchant, orderId, number, sign);
+        logger.info("merchant is {} and orderId is {} and number is {} and sign is {} and outUserId is {}", merchant, orderId, number, sign, outUserId);
         List<CouponVo> couponVos;
         List<OutOilCoupon> coupons;
         OutOilCouponLog outOilCouponLog;
@@ -188,11 +188,15 @@ public class OutOilCouponController {
         map.put("sign", sign);
         map.put("number", String.valueOf(number));
         map.put("orderId", orderId);
+        map.put("outUserId", outUserId);
         if (!SignUtil.checkSign(map)) {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
         }*/
         List<OutOilCouponLog> logs = outOilCouponLogRepository.findByOrderId(assignedParams.getOrderId());
+        if (!oilRedisTools.setIfAbsent(orderId + allocation_suffix)) {
+            return Result.fail("order_allocating", "订单正在分配油券！");
+        }
         if (!ObjectUtils.isEmpty(logs)) {
             logger.info("油券已分配");
             coupons = outOilCouponRepository.findByOrderId(orderId);
@@ -216,6 +220,7 @@ public class OutOilCouponController {
                 e.setOilState("1");
                 e.setSaleTime(new Date());
                 e.setUseState("0");
+                e.setOutUserId(outUserId);
                 e.setOrderId(orderId);
             });
             outOilCouponRepository.save(coupons);
@@ -224,18 +229,66 @@ public class OutOilCouponController {
             logger.info("分配成功！！");
         }
         couponVos = new ArrayList<>();
-        coupons.forEach(e -> {
+        for (OutOilCoupon coupon : coupons) {
+            if (outUserId.equals(coupon.getOutUserId())) {
+                return Result.fail("user_not_this", "油券非此用户！！");
+            }
             CouponVo couponVo = new CouponVo();
-            BeanUtils.copyProperties(e, couponVo);
+            BeanUtils.copyProperties(coupon, couponVo);
             couponVos.add(couponVo);
-        });
+        }
         outOilCouponLog = new OutOilCouponLog();
         outOilCouponLog.setOrderId(orderId);
         outOilCouponLog.setNumber(String.valueOf(number));
         outOilCouponLog.setType("sale");
         outOilCouponLog.setCreateTime(new Date());
         outOilCouponLogRepository.save(outOilCouponLog);
+        oilRedisTools.remove(orderId + allocation_suffix);
         return Result.success(couponVos);
+    }
+
+    /**
+     * 解除订单锁定库存
+     * 验证签名
+     * 返回：true/false
+     */
+    @RequestMapping(value = "unStock", method = RequestMethod.GET)
+    public Result unStock(
+            @RequestParam String merchant,
+            @RequestParam String sign,
+            @RequestParam(required = false) String orderId
+    ) {
+        logger.info("入参：merchant is {}, sign is {}, orderId is {}", merchant, sign, orderId);
+        /*Map<String, String> map = new HashMap<>();
+        map.put("merchant", merchant);
+        map.put("sign", sign);
+        map.put("orderId", orderId);
+        if (!SignUtil.checkSign(map)) {
+            logger.info("验证签名失败！");
+            return Result.fail("sign_fail", "验证签名失败！");
+        }*/
+        Long stock = oilRedisTools.getSetSize(oilCouponStockKey);
+        logger.info("库存：" + stock);
+        Set<Object> set = oilRedisTools.setMembers(orderId + order_pan_suffix);
+        if (oilRedisTools.exists(orderId + allocation_suffix)) {
+            return Result.fail("order_allocating", "订单正在分配油券！");
+        }
+        logger.info("redis获取的券码为:{}", set);
+        if (ObjectUtils.isEmpty(set)) {
+            List<OutOilCouponLog> logs = outOilCouponLogRepository.findByOrderId(orderId);
+            if (!ObjectUtils.isEmpty(logs)) {
+                logger.info("订单" + orderId + "订单已完成！！");
+                return Result.fail("order_finished", "订单已完成！！！");
+            }
+            logger.info("订单" + orderId + "不存在！！");
+            return Result.fail("order_not_exists", "订单不存在！！！");
+        } else {
+            set.forEach(e -> oilRedisTools.addSet(oilCouponStockKey, e));
+            logger.info("剩余库存：" + oilRedisTools.getSetSize(oilCouponStockKey));
+            oilRedisTools.remove(orderId + order_pan_suffix);
+            oilRedisTools.remove(orderId + lock_suffix);
+        }
+        return Result.success(true);
     }
 
     /**
