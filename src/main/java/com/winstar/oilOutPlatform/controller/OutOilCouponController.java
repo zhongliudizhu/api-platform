@@ -126,14 +126,14 @@ public class OutOilCouponController {
      */
     @RequestMapping(value = "judgeStock", method = RequestMethod.GET)
     public Result judgeStock(
-        @RequestParam String merchant,
-        @RequestParam String sign,
-        @RequestParam String number,
-        @RequestParam(required = false, defaultValue = "off") String lock,
-        @RequestParam(required = false) String orderId
+            @RequestParam String merchant,
+            @RequestParam String sign,
+            @RequestParam String number,
+            @RequestParam(required = false, defaultValue = "off") String lock,
+            @RequestParam(required = false) String orderId
     ){
         logger.info("入参：merchant is {}, sign is {}, number is {}, lock is {}, orderId is {}", merchant, sign, number, lock, orderId);
-        if(lock.equals("on") && StringUtils.isEmpty(orderId)){
+        if (lock.equals("on") && StringUtils.isEmpty(orderId)) {
             logger.info("锁定油券时必须传订单号");
             return Result.fail("missing_param_orderId", "锁定油券时必须传订单号！");
         }
@@ -150,18 +150,18 @@ public class OutOilCouponController {
         }
         Long stock = oilRedisTools.getSetSize(oilCouponStockKey);
         logger.info("库存：" + stock);
-        if(stock < num){
+        if (stock < num) {
             logger.info("库存不足，剩余数量：" + stock);
             return Result.success(false);
         }
-        if(lock.equals("on")){
-            if(oilRedisTools.setIfAbsent(orderId + lock_suffix)){
-                for(int i=0;i<num;i++){
+        if (lock.equals("on")) {
+            if (oilRedisTools.setIfAbsent(orderId + lock_suffix)) {
+                for (int i = 0; i < num; i++) {
                     Object popValue = oilRedisTools.getRandomKeyFromSet(oilCouponStockKey);
                     oilRedisTools.addSet(orderId + order_pan_suffix, popValue);
                 }
                 logger.info("剩余库存：" + oilRedisTools.getSetSize(oilCouponStockKey));
-            }else{
+            } else {
                 logger.info("订单" + orderId + "正在锁定库存，请稍后！！！");
             }
         }
@@ -313,23 +313,23 @@ public class OutOilCouponController {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
         }
-        OutOilCoupon outOilCoupon = outOilCouponRepository.findOne(oilId);
+        OutOilCoupon outOilCoupon = outOilCouponRepository.findByIdAndOrderId(oilId, orderId);
         if (ObjectUtils.isEmpty(outOilCoupon)) {
             return Result.fail("coupon_not_exist", "油券不存在");
+        }
+        if (StringUtils.isEmpty(outOilCoupon.getOutUserId())) {
+            return Result.fail("coupon_userId_null", "油券用户id为空");
         }
         if (!outOilCoupon.getOutUserId().equals(activeParams.getOutUserId())) {
             return Result.fail("coupon_non_belong_user", "油券不属于此用户");
         }
-        List<OutOilCouponLog> oilCouponLogs = outOilCouponLogRepository.findByOilIdAndOrderId(oilId, orderId);
-        if (oilCouponLogs.stream().noneMatch(e -> e.getCode().equals("success"))) {
-            ws.result.Result result = applicationContext.getBean(MyOilCouponController.class).activateOilCoupon(outOilCoupon.getPan(), outOilCoupon.getPanAmt());
-            saveOutOilCouponLog(outOilCoupon, result);
-            if (!result.getCode().equalsIgnoreCase("SUCCESS")) {
-                logger.info("激活失败！");
-                return Result.fail("active_failed", "激活失败");
-            }
-            logger.info("===激活油券成功===");
+        ws.result.Result result = applicationContext.getBean(MyOilCouponController.class).activateOilCoupon(outOilCoupon.getPan(), outOilCoupon.getPanAmt());
+        saveOutOilCouponLog(outOilCoupon, result);
+        if (!result.getCode().equalsIgnoreCase("SUCCESS")) {
+            logger.info("激活失败！");
+            return Result.fail("active_failed", "激活失败");
         }
+        logger.info("===激活油券成功===");
         Map<String, Object> map = new HashMap<>();
         map.put("id", oilId);
         map.put("pan", outOilCoupon.getPan());
