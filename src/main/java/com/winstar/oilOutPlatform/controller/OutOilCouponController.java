@@ -82,7 +82,6 @@ public class OutOilCouponController {
     @RequestMapping(value = "getOilCoupon", method = RequestMethod.GET)
     public Result getOilCoupon(@RequestParam String oilId, @RequestParam String merchant,
                                @RequestParam String sign) throws Exception {
-
         logger.info("入参：merchant is {}, sign is {}, oilId is {}", merchant, sign, oilId);
         Map<String, String> sigMap = new HashMap<>();
         sigMap.put("oilId", oilId);
@@ -128,8 +127,9 @@ public class OutOilCouponController {
      * 验证签名
      * 返回：id，金额，名称，销售状态，销售时间，使用状态，使用时间，使用油站id，使用油站名称
      */
-    @RequestMapping(value = "getOilCoupon", method = RequestMethod.GET)
-    public Result getOilCouponByOutId(@RequestParam String outId, @RequestParam String merchant,
+    @RequestMapping(value = "getCouponInfo", method = RequestMethod.GET)
+    public Result getOilCouponByOutId(@RequestParam String outId,
+                                      @RequestParam String merchant,
                                       @RequestParam String sign) throws Exception {
         logger.info("入参：merchant is {}, sign is {}, outId is {}", merchant, sign, outId);
         Map<String, String> sigMap = new HashMap<>();
@@ -169,7 +169,7 @@ public class OutOilCouponController {
         Map<String, String> map = new HashMap<>();
         map.put("merchant", merchant);
         map.put("sign", sign);
-        map.put("number", number.toString());
+        map.put("number", number);
         map.put("lock", lock);
         map.put("orderId", orderId);
         if (!SignUtil.checkSign(map)) {
