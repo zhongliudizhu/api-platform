@@ -250,6 +250,7 @@ public class OutOilCouponController {
         outOilCouponLog.setType("sale");
         outOilCouponLog.setCreateTime(new Date());
         outOilCouponLogRepository.save(outOilCouponLog);
+        oilRedisTools.remove(orderId + allocation_suffix);
         return Result.success(couponVos);
     }
 
@@ -275,7 +276,6 @@ public class OutOilCouponController {
         }
         Set<Object> set = oilRedisTools.setMembers(orderId + order_pan_suffix);
         if (oilRedisTools.exists(orderId + allocation_suffix)) {
-            oilRedisTools.remove(orderId + allocation_suffix);
             return Result.fail("order_allocating", "订单正在分配油券！");
         }
         logger.info("redis获取的券码为:{}", set);
@@ -283,7 +283,6 @@ public class OutOilCouponController {
             List<OutOilCouponLog> logs = outOilCouponLogRepository.findByOrderId(orderId);
             if (!ObjectUtils.isEmpty(logs)) {
                 logger.info("订单" + orderId + "订单已完成！！");
-                oilRedisTools.remove(orderId + allocation_suffix);
                 return Result.fail("order_finished", "订单已完成！！！");
             }
             logger.info("订单" + orderId + "不存在！！");
@@ -294,7 +293,6 @@ public class OutOilCouponController {
             oilRedisTools.remove(orderId + order_pan_suffix);
             oilRedisTools.remove(orderId + lock_suffix);
         }
-        oilRedisTools.remove(orderId + allocation_suffix);
         return Result.success(true);
     }
 
