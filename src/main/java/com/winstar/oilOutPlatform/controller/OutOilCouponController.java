@@ -96,6 +96,11 @@ public class OutOilCouponController {
         if (ObjectUtils.isEmpty(oilCoupon)) {
             return Result.fail("missing oilCoupon", "查询油券不存在");
         }
+        return Result.success(getOutOilCouponVo(oilCoupon));
+    }
+
+
+    private OutOilCouponVo getOutOilCouponVo(OutOilCoupon oilCoupon) throws Exception {
         String useState = oilCoupon.getUseState();
         if (!StringUtils.isEmpty(useState) && useState.equals("0")) {
             String panText = AESUtil.decrypt(oilCoupon.getPan(), AESUtil.dekey);
@@ -115,9 +120,32 @@ public class OutOilCouponController {
             String otlName = stationService.getOilStation(oilCoupon.getTId()).getName();
             oilCouponVo.setTName(otlName);
         }
-        return Result.success(oilCouponVo);
+        return oilCouponVo;
     }
 
+    /**
+     * 查询油券详情
+     * 验证签名
+     * 返回：id，金额，名称，销售状态，销售时间，使用状态，使用时间，使用油站id，使用油站名称
+     */
+    @RequestMapping(value = "getOilCoupon", method = RequestMethod.GET)
+    public Result getOilCouponByOutId(@RequestParam String outId, @RequestParam String merchant,
+                                      @RequestParam String sign) throws Exception {
+        logger.info("入参：merchant is {}, sign is {}, outId is {}", merchant, sign, outId);
+        Map<String, String> sigMap = new HashMap<>();
+        sigMap.put("outId", outId);
+        sigMap.put("sign", sign);
+        sigMap.put("merchant", merchant);
+        if (!SignUtil.checkSign(sigMap)) {
+            logger.info("验证签名失败！");
+            return Result.fail("sign_fail", "验证签名失败！");
+        }
+        OutOilCoupon oilCoupon = outOilCouponRepository.findByOutId(outId);
+        if (!ObjectUtils.isEmpty(oilCoupon)) {
+            return Result.success(getOutOilCouponVo(oilCoupon));
+        }
+        return Result.fail("missing oilCoupon", "查询油券不存在");
+    }
 
     /**
      * 判断油券库存
