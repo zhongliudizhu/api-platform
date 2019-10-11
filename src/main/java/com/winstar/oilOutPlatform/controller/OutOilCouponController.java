@@ -14,6 +14,7 @@ import com.winstar.oilOutPlatform.vo.CouponVo;
 import com.winstar.oilOutPlatform.vo.OutOilCouponVo;
 import com.winstar.redis.OilRedisTools;
 import com.winstar.utils.AESUtil;
+import com.winstar.utils.WsdUtils;
 import com.winstar.vo.Result;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
@@ -187,12 +188,7 @@ public class OutOilCouponController {
         List<CouponVo> couponVos;
         List<OutOilCoupon> coupons;
         OutOilCouponLog outOilCouponLog;
-        Map<String, String> map = new HashMap<>();
-        map.put("merchant", merchant);
-        map.put("sign", sign);
-        map.put("number", String.valueOf(number));
-        map.put("orderId", orderId);
-        map.put("outUserId", outUserId);
+        Map<String, String> map = WsdUtils.objectToMap(assignedParams);
         if (!SignUtil.checkSign(map)) {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
