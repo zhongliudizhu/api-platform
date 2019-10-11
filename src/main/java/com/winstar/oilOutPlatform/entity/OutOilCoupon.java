@@ -106,4 +106,10 @@ public class OutOilCoupon {
     @Column(columnDefinition = "varchar(50) comment '输出平台用户Id'")
     private String outUserId;
 
+    /**
+     * 输出平台油券Id
+     */
+    @Column(columnDefinition = "varchar(100) comment '输出平台油券Id'")
+    private String outId;
+
 }

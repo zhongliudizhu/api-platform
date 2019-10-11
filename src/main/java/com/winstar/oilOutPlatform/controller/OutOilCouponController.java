@@ -337,6 +337,75 @@ public class OutOilCouponController {
         return Result.success(map);
     }
 
+
+    /**
+     * 获取pan
+     * 验证签名
+     * 返回：pan
+     */
+    @RequestMapping(value = "getPan", method = RequestMethod.GET)
+    public Result saleOil(@RequestParam String merchant, @RequestParam String outId, @RequestParam String sign) throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("merchant", merchant);
+        map.put("outId", outId);
+        map.put("sign", sign);
+        if (!SignUtil.checkSign(map)) {
+            logger.info("验证签名失败！");
+            return Result.fail("sign_fail", "验证签名失败！");
+        }
+        if (!oilRedisTools.setIfAbsent(outId, 300)) {
+            logger.info("点击过于频繁，请稍后再试！操作Id:" + outId);
+            return Result.fail("oilCoupon_loading", "点击过于频繁，请稍后再试!");
+        }
+        OutOilCoupon oilCoupon = outOilCouponRepository.findByOutId(outId);
+        if (ObjectUtils.isEmpty(oilCoupon)) {
+            long beginTime = System.currentTimeMillis();
+            Object popValue = null;
+            try {
+                logger.info("剩余油券数量：" + oilRedisTools.getSetSize(oilCouponStockKey));
+                popValue = oilRedisTools.getRandomKeyFromSet(oilCouponStockKey);
+            } catch (Exception e) {
+                logger.error("redis异常！", e);
+            }
+            if (ObjectUtils.isEmpty(popValue)) {
+                logger.info("没有该面值的券码，发券失败！");
+                oilRedisTools.remove(outId);
+                throw new NotRuleException("oilCoupon.null");
+            }
+            logger.info("获取的油券编码：" + popValue);
+            oilCoupon = outOilCouponRepository.findByPan(popValue.toString());
+            if (!ObjectUtils.isEmpty(oilCoupon.getOutId())) {
+                throw new NotRuleException("oil_allocated_again");
+            }
+            oilCoupon.setOutId(outId);
+            oilCoupon.setSaleTime(new Date());
+            oilCoupon.setUseState("0");
+            oilCoupon.setOilState("1");
+            outOilCouponRepository.save(oilCoupon);
+            logger.info("执行发券成功，分配的券码为：" + oilCoupon.getPan() + "，执行分券操作耗时时间：" + (System.currentTimeMillis() - beginTime) + "ms");
+        }
+        ws.result.Result activeResult = null;
+        try {
+            activeResult = new ws.result.Result();
+            activeResult.setCode("SUCCESS");
+//            activeResult = applicationContext.getBean(MyOilCouponController.class).activateOilCoupon(oilCoupon.getPan(), oilCoupon.getPanAmt());
+            saveOutOilCouponLog(oilCoupon, activeResult);
+        } catch (Exception e) {
+            logger.error("易通激活接口异常，拿出的券回归缓存中");
+            oilRedisTools.addSet(oilCouponStockKey);
+            oilRedisTools.remove(outId);
+        }
+        if (!ObjectUtils.isEmpty(activeResult) && "SUCCESS".equals(activeResult.getCode())) {
+            logger.info("===激活油券成功===");
+        } else {
+            logger.info("激活失败！");
+            return Result.fail("active_failed", "激活失败");
+        }
+        oilRedisTools.remove(outId);
+        return Result.success(AESUtil.encrypt(AESUtil.decrypt(oilCoupon.getPan(), AESUtil.dekey), AESUtil.key));
+    }
+
+
     @Async
     public void saveOutOilCouponLog(OutOilCoupon outOilCoupon, ws.result.Result result) {
         OutOilCouponLog log = new OutOilCouponLog();
@@ -344,7 +413,7 @@ public class OutOilCouponController {
         log.setOrderId(outOilCoupon.getOrderId());
         log.setCreateTime(new Date());
         log.setType("active");
-        if (result.getCode().equalsIgnoreCase("SUCCESS")) {
+        if (!ObjectUtils.isEmpty(result) && "SUCCESS".equals(result.getCode())) {
             log.setCode("success");
         } else {
             log.setCode("failed");
@@ -365,4 +434,7 @@ public class OutOilCouponController {
         return simpleDateFormat.format(date);
     }
 
+    public static void main(String[] args) {
+        // TODO: 2019.10.11 确认油券激活改为线上方式后删除
+    }
 }
