@@ -398,7 +398,7 @@ public class OutOilCouponController {
             if (ObjectUtils.isEmpty(popValue)) {
                 logger.info("没有该面值的券码，发券失败！");
                 oilRedisTools.remove(outId);
-                throw new NotRuleException("oilCoupon.null");
+                return Result.success(null);
             }
             logger.info("获取的油券编码：" + popValue);
             oilCoupon = outOilCouponRepository.findByPan(popValue.toString());
