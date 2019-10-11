@@ -1,11 +1,13 @@
 package com.winstar.utils;
 
 import com.google.common.collect.Maps;
+import org.springframework.cglib.beans.BeanMap;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -125,6 +127,20 @@ public class WsdUtils {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * 对象转化为Map
+     */
+    public static Map<String, String> objectToMap(Object obj){
+        Map<String, String> map = new HashMap<>();
+        if(obj != null){
+            BeanMap beanMap = BeanMap.create(obj);
+            for(Object key : beanMap.keySet()){
+                map.put(key.toString(), (String) beanMap.get(key));
+            }
+        }
+        return map;
     }
 
 }
