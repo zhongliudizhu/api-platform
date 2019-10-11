@@ -1,5 +1,7 @@
 package com.winstar.oilOutPlatform.controller;
 
+import com.alibaba.fastjson.JSON;
+import com.winstar.SearchOilCoupon;
 import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.exception.NotRuleException;
 import com.winstar.oil.controller.MyOilCouponController;
@@ -21,12 +23,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
 import java.text.ParseException;
@@ -66,7 +68,11 @@ public class OutOilCouponController {
 
     private static String allocation_suffix = "_allocating";
 
-    private static String findOilCouponUrl = "https://mobile.sxwinstar.net/wechat_access/api/v1/items/verification/cards/onlySearch";
+    @Value("${info.cardUrl}")
+    private String oilSendUrl;
+
+    @Value("${info.cardUrl_new}")
+    private String oilSendNewUrl;
 
     /**
      * 查询油券详情
@@ -79,9 +85,9 @@ public class OutOilCouponController {
 
         logger.info("入参：merchant is {}, sign is {}, oilId is {}", merchant, sign, oilId);
         Map<String, String> sigMap = new HashMap<>();
+        sigMap.put("oilId", oilId);
         sigMap.put("merchant", merchant);
         sigMap.put("sign", sign);
-        sigMap.put("oilId", oilId);
         if (!SignUtil.checkSign(sigMap)) {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
@@ -93,9 +99,10 @@ public class OutOilCouponController {
         String useState = oilCoupon.getUseState();
         if (!StringUtils.isEmpty(useState) && useState.equals("0")) {
             String panText = AESUtil.decrypt(oilCoupon.getPan(), AESUtil.dekey);
-            Map map = new RestTemplate().getForObject(findOilCouponUrl + "/" + panText, Map.class);
+            Map map = SearchOilCoupon.verification(panText.length() == 20 ? oilSendNewUrl : oilSendUrl, panText);
             if (MapUtils.getString(map, "rc").equals("00") && MapUtils.getString(map, "cardStatus").equals("1")) {
-                oilCoupon.setUseState("1");
+                oilCoupon.setUseState(MapUtils.getString(map, "cardStatus"));
+                oilCoupon.setTId(MapUtils.getString(map, "tid"));
                 String txnDate = MapUtils.getString(map, "txnDate");
                 String txnTime = MapUtils.getString(map, "txnTime");
                 oilCoupon.setUseDate(formatTxnDateAndTime(txnDate, txnTime));
@@ -299,17 +306,10 @@ public class OutOilCouponController {
      */
     @RequestMapping(value = "active", method = RequestMethod.POST)
     public Result activeOilCoupon(@RequestBody @Valid ActiveParams activeParams) throws Exception {
+        logger.info("入参为" + JSON.toJSONString(activeParams));
         String oilId = activeParams.getOilId();
         String orderId = activeParams.getOrderId();
-        String userId = activeParams.getOutUserId();
-        logger.info("merchant is {} and orderId is {} and oilId is {} and sign is {} and userId is {}", activeParams.getMerchant(), orderId, oilId, activeParams.getSign(), userId);
-        Map<String, String> signMap = new HashMap<>();
-        signMap.put("merchant", activeParams.getMerchant());
-        signMap.put("sign", activeParams.getSign());
-        signMap.put("oilId",oilId);
-        signMap.put("orderId",orderId);
-        signMap.put("outUserId",userId);
-        if (!SignUtil.checkSign(signMap)) {
+        if (!SignUtil.checkSign(WsdUtils.objectToMap(activeParams))) {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
         }
@@ -317,7 +317,7 @@ public class OutOilCouponController {
         if (ObjectUtils.isEmpty(outOilCoupon)) {
             return Result.fail("coupon_not_exist", "油券不存在");
         }
-        if (!outOilCoupon.getOutUserId().equals(userId)) {
+        if (!outOilCoupon.getOutUserId().equals(activeParams.getOutUserId())) {
             return Result.fail("coupon_non_belong_user", "油券不属于此用户");
         }
         List<OutOilCouponLog> oilCouponLogs = outOilCouponLogRepository.findByOilIdAndOrderId(oilId, orderId);
@@ -333,7 +333,7 @@ public class OutOilCouponController {
         Map<String, Object> map = new HashMap<>();
         map.put("id", oilId);
         map.put("pan", outOilCoupon.getPan());
-        map.put("outUserId", userId);
+        map.put("outUserId", activeParams.getOutUserId());
         return Result.success(map);
     }
 
