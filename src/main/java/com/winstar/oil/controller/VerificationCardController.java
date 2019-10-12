@@ -7,6 +7,9 @@ import com.winstar.oil.entity.OilCouponVerificationLog;
 import com.winstar.oil.repository.MyOilCouponRepository;
 import com.winstar.oil.repository.OilCouponRepository;
 import com.winstar.oil.repository.OilCouponVerificationLogRepository;
+import com.winstar.oilOutPlatform.Service.OutOilCouponService;
+import com.winstar.oilOutPlatform.entity.OutOilCoupon;
+import com.winstar.oilOutPlatform.repository.OutOilCouponRepository;
 import com.winstar.utils.AESUtil;
 import com.winstar.utils.WsdUtils;
 import org.apache.commons.collections.MapUtils;
@@ -16,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,6 +48,12 @@ public class VerificationCardController {
     @Autowired
     OilCouponVerificationLogRepository oilCouponVerificationLogRepository;
 
+    @Autowired
+    OutOilCouponService outOilCouponService;
+
+    @Autowired
+    OutOilCouponRepository outOilCouponRepository;
+
     @Value("${info.cardUrl}")
     private String oilSendUrl;
 
@@ -62,6 +72,10 @@ public class VerificationCardController {
         oilCouponVerificationLog.setRequestUrl(pan.length() == 20 ? oilSendNewUrl : oilSendUrl);
         oilCouponVerificationLog = oilCouponVerificationLogRepository.save(oilCouponVerificationLog);
         MyOilCoupon myOilCoupon = myOilCouponRepository.findByPan(aesPan);
+        OutOilCoupon outOilCoupon= outOilCouponRepository.findByPan(aesPan);
+        if (!ObjectUtils.isEmpty(outOilCoupon)) {
+            return outOilCouponService.checkOutCard(outOilCoupon);
+        }
         if(WsdUtils.isEmpty(myOilCoupon)){
             logger.info(pan + "油券不存在！");
             result.setCode("NOT_FOUND");

@@ -97,6 +97,7 @@ info:
   handleBusinessUrl: ${info.cost_exchange_server}api/v1/phonebill/giving/handleBusiness
   phoneNumberCheckUrl: ${info.cost_exchange_server}api/v1/phonebill/giving/phoneValidate
   sendCodeUrl: ${info.cost_exchange_server}api/v1/phonebill/giving/sendVerifyCode
+  outNotifyUrl: http://192.168.118.104:20007/api/v1/oil/notify
   account: N9976034
   password: Ps163a8a
   sms:
@@ -216,6 +217,7 @@ info:
   coupon_recover_switch: ${couponRecoverSwitch}
   cost_exchange_server: ${costExchangeServer}
   communal_coupon_server: ${communalCouponServer}
+  out_platform__notify_server: ${outPlatformNotifyServer}
   takeCouponUrl: ${info.communal_coupon_server}api/v1/coupon/takeCoupons?
   verifyCouponUrl: ${info.communal_coupon_server}api/v1/coupon/verify/verify?
   writeOffCouponUrl: ${info.communal_coupon_server}api/v1/coupon/verify/cancel
@@ -223,6 +225,7 @@ info:
   handleBusinessUrl: ${info.cost_exchange_server}api/v1/phonebill/giving/handleBusiness
   phoneNumberCheckUrl: ${info.cost_exchange_server}api/v1/phonebill/giving/phoneValidate
   sendCodeUrl: ${info.cost_exchange_server}api/v1/phonebill/giving/sendVerifyCode
+  outNotifyUrl: ${outPlatformNotifyServer}api/v1/oil/notify
   account: N9976034
   password: Ps163a8a
   sms:

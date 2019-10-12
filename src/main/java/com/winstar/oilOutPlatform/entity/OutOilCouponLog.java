@@ -50,7 +50,7 @@ public class OutOilCouponLog {
      * 日志类型
      * active/sale
      */
-    @Column(columnDefinition = "varchar(10) comment '日志类型：active/sale'")
+    @Column(columnDefinition = "varchar(10) comment '日志类型：active/sale/verification'")
     private String type;
 
     /**
