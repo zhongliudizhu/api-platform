@@ -71,11 +71,11 @@ public class VerificationCardController {
         oilCouponVerificationLog.setPan(aesPan);
         oilCouponVerificationLog.setRequestUrl(pan.length() == 20 ? oilSendNewUrl : oilSendUrl);
         oilCouponVerificationLog = oilCouponVerificationLogRepository.save(oilCouponVerificationLog);
-        MyOilCoupon myOilCoupon = myOilCouponRepository.findByPan(aesPan);
         OutOilCoupon outOilCoupon= outOilCouponRepository.findByPan(aesPan);
         if (!ObjectUtils.isEmpty(outOilCoupon)) {
             return outOilCouponService.checkOutCard(outOilCoupon);
         }
+        MyOilCoupon myOilCoupon = myOilCouponRepository.findByPan(aesPan);
         if(WsdUtils.isEmpty(myOilCoupon)){
             logger.info(pan + "油券不存在！");
             result.setCode("NOT_FOUND");
