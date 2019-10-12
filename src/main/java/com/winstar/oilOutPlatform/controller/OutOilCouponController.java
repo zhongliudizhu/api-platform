@@ -68,6 +68,9 @@ public class OutOilCouponController {
 
     private static String allocation_suffix = "_allocating";
 
+    private static String merchant = "61045811001";
+    private static String secret = "5aGO539qO7F91733O13d1XZT1953hoI1pP9mgLDD9M9AI3g99MYw1zL35n1793Ps";
+
     @Value("${info.cardUrl}")
     private String oilSendUrl;
 
@@ -87,7 +90,7 @@ public class OutOilCouponController {
         sigMap.put("oilId", oilId);
         sigMap.put("merchant", merchant);
         sigMap.put("sign", sign);
-        if (!SignUtil.checkSign(sigMap)) {
+        if (!SignUtil.checkSign(sigMap, secret)) {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
         }
@@ -136,7 +139,7 @@ public class OutOilCouponController {
         sigMap.put("outId", outId);
         sigMap.put("sign", sign);
         sigMap.put("merchant", merchant);
-        if (!SignUtil.checkSign(sigMap)) {
+        if (!SignUtil.checkSign(sigMap, secret)) {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
         }
@@ -172,7 +175,7 @@ public class OutOilCouponController {
         map.put("number", number);
         map.put("lock", lock);
         map.put("orderId", orderId);
-        if (!SignUtil.checkSign(map)) {
+        if (!SignUtil.checkSign(map, secret)) {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
         }
@@ -224,7 +227,7 @@ public class OutOilCouponController {
         List<OutOilCoupon> coupons;
         OutOilCouponLog outOilCouponLog;
         Map<String, String> map = WsdUtils.objectToMap(assignedParams);
-        if (!SignUtil.checkSign(map)) {
+        if (!SignUtil.checkSign(map, secret)) {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
         }
@@ -301,7 +304,7 @@ public class OutOilCouponController {
         map.put("merchant", merchant);
         map.put("sign", sign);
         map.put("orderId", orderId);
-        if (!SignUtil.checkSign(map)) {
+        if (!SignUtil.checkSign(map, secret)) {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
         }
@@ -337,7 +340,7 @@ public class OutOilCouponController {
         logger.info("入参为" + JSON.toJSONString(activeParams));
         String oilId = activeParams.getOilId();
         String orderId = activeParams.getOrderId();
-        if (!SignUtil.checkSign(WsdUtils.objectToMap(activeParams))) {
+        if (!SignUtil.checkSign(WsdUtils.objectToMap(activeParams), secret)) {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
         }
@@ -377,7 +380,7 @@ public class OutOilCouponController {
         map.put("merchant", merchant);
         map.put("outId", outId);
         map.put("sign", sign);
-        if (!SignUtil.checkSign(map)) {
+        if (!SignUtil.checkSign(map, secret)) {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
         }

@@ -1,6 +1,7 @@
 package com.winstar.costexchange.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.costexchange.entity.CostShop;
 import com.winstar.costexchange.entity.ExchangeRecord;
@@ -99,9 +100,9 @@ public class ExchangeController {
         reqMap.put("orderId", exchangeRecord.getOrderNumber());
         reqMap.put("mobileId", exchangeRecord.getMobile());
         reqMap.put("couponId", exchangeRecord.getTemplateId());
-        reqMap.put("merId", SignUtil.merchant);
+        reqMap.put("merId", AccountCouponService.merchant);
         reqMap.put("domain", "moveCost");
-        reqMap.put("sign", SignUtil.sign(reqMap));
+        reqMap.put("sign", SignUtil.sign(reqMap, AccountCouponService.secret));
         Map map = RequestUtil.post(sendCodeUrl + "api/v1/phonebill/exchange/add", reqMap);
         logger.info("请求发送验证码返回结果：" + JSON.toJSONString(map));
         if(MapUtils.getString(map, "retCode").equals("0000")){
@@ -137,8 +138,8 @@ public class ExchangeController {
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("orderId", orderNumber);
         reqMap.put("verifyCode", code);
-        reqMap.put("merId", SignUtil.merchant);
-        reqMap.put("sign", SignUtil.sign(reqMap));
+        reqMap.put("merId", AccountCouponService.merchant);
+        reqMap.put("sign", SignUtil.sign(reqMap, AccountCouponService.secret));
         long beginTime = System.currentTimeMillis();
         Map map = RequestUtil.post(sendCodeUrl + "api/v1/phonebill/exchange/sendIdentifyingCode", reqMap);
         long endTime = System.currentTimeMillis();

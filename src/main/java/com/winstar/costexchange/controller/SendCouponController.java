@@ -3,6 +3,7 @@ package com.winstar.costexchange.controller;
 import com.alibaba.fastjson.JSON;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
+import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.communalCoupon.vo.SendCouponDomain;
 import com.winstar.costexchange.entity.ExchangeRecord;
@@ -130,7 +131,7 @@ public class SendCouponController {
             logger.info("缺失domain参数！");
             return Result.fail("Missing_parameter_domain", "缺失domain参数！");
         }
-        if (!SignUtil.checkSign(map)) {
+        if (!SignUtil.checkSign(map, AccountCouponService.secret)) {
             logger.info("验证签名失败！");
             return Result.fail("sign_fail", "验证签名失败！");
         }

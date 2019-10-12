@@ -67,6 +67,8 @@ public class AccountCouponService {
 
     public static final String COUPON_LIST_PREFIX = "coupon_list_";
 
+    public static String merchant = "61045834521";
+    public static String secret = "6abab93252ea1a93c6c36a4585075da1b7116c6cdc0dccc8c8fe14e633289305";
 
     @Value("${info.takeCouponUrl}")
     private String takeCouponUrl;
@@ -90,8 +92,8 @@ public class AccountCouponService {
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("templateId", templateId);
         reqMap.put("num", num);
-        reqMap.put("merchant", SignUtil.merchant);
-        ResponseEntity<Map> stringResponseEntity = new RestTemplate().getForEntity(takeCouponUrl + SignUtil.getParameters(reqMap), Map.class);
+        reqMap.put("merchant", merchant);
+        ResponseEntity<Map> stringResponseEntity = new RestTemplate().getForEntity(takeCouponUrl + SignUtil.getParameters(reqMap, secret), Map.class);
         log.info("请求获取优惠券接口结果：" + stringResponseEntity.getBody());
         return stringResponseEntity;
     }
@@ -131,8 +133,8 @@ public class AccountCouponService {
         reqMap.put("ids", couponIds);
         reqMap.put("itemAmount", itemAmount);
         reqMap.put("tags", tags);
-        reqMap.put("merchant", SignUtil.merchant);
-        ResponseEntity<Map> mapResponseEntity = new RestTemplate().getForEntity(verifyCouponUrl + SignUtil.getParameters(reqMap), Map.class);
+        reqMap.put("merchant", merchant);
+        ResponseEntity<Map> mapResponseEntity = new RestTemplate().getForEntity(verifyCouponUrl + SignUtil.getParameters(reqMap, secret), Map.class);
         log.info("请求校验优惠券接口结果：" + mapResponseEntity.getBody().toString());
         return mapResponseEntity;
     }
@@ -150,9 +152,9 @@ public class AccountCouponService {
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("ids", couponIds);
         reqMap.put("itemAmount", itemAmount);
-        reqMap.put("merchant", SignUtil.merchant);
+        reqMap.put("merchant", merchant);
         reqMap.put("tags", tags);
-        reqMap.put("sign", SignUtil.sign(reqMap));
+        reqMap.put("sign", SignUtil.sign(reqMap, secret));
         ResponseEntity<Map> mapResponseEntity = new RestTemplate().postForEntity(writeOffCouponUrl, reqMap, Map.class);
         log.info("请求核销优惠券接口结果：" + mapResponseEntity.getBody().toString());
         return mapResponseEntity;

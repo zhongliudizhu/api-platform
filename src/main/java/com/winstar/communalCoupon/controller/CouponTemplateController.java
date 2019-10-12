@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.winstar.communalCoupon.entity.TemplateRule;
 import com.winstar.communalCoupon.repository.TemplateRuleRepository;
+import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.communalCoupon.util.SignUtil;
 import com.winstar.redis.RedisTools;
 import com.winstar.vo.Result;
@@ -99,8 +100,8 @@ public class CouponTemplateController {
         }
         String s = str.substring(0, str.length() - 1);
         reqMap.put("templateIds", s);
-        reqMap.put("merchant", SignUtil.merchant);
-        Map map = restTemplate.getForObject(couponTemplateUrl + SignUtil.getParameters(reqMap), Map.class);
+        reqMap.put("merchant", AccountCouponService.merchant);
+        Map map = restTemplate.getForObject(couponTemplateUrl + SignUtil.getParameters(reqMap, AccountCouponService.secret), Map.class);
         if (!"SUCCESS".equals(map.get("code"))) {
             return null;
         }

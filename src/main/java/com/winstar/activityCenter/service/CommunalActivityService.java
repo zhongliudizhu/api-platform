@@ -253,8 +253,8 @@ public class CommunalActivityService {
     private List<CouponTemplateVo> getTemplateInfo(String templateIds) throws NotRuleException {
         Map<String, String> reqMap = new HashMap<>();
         reqMap.put("templateIds", templateIds);
-        reqMap.put("merchant", SignUtil.merchant);
-        ResponseEntity<Map> mapResponseEntity = new RestTemplate().getForEntity(getTemplateInfoUrl + SignUtil.getParameters(reqMap), Map.class);
+        reqMap.put("merchant", AccountCouponService.merchant);
+        ResponseEntity<Map> mapResponseEntity = new RestTemplate().getForEntity(getTemplateInfoUrl + SignUtil.getParameters(reqMap, AccountCouponService.secret), Map.class);
         log.info("请求优惠券模板信息接口结果：{}", mapResponseEntity.getBody().toString());
         if ("data_null".equals(mapResponseEntity.getBody().get("code"))) {
             throw new NotRuleException("template_not_exist");
