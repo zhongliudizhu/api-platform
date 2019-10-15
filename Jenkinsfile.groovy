@@ -31,18 +31,25 @@ pipeline {
                 sh 'mvn clean package -Dmaven.test.skip=true'
             }
         }
-         stage('Run') {
+        stage('Run') {
             steps {
                 echo 'Running'
-                sh 'JENKINS_NODE_COOKIE=dontKillMe sh service.sh start&'
-            }
-        }
-
-         stage('upload') {
-            steps {
-                echo 'uploading'
-                sh 'scp ./target/*.jar  root@192.168.118.129:/home/winstar/servers/'
-                echo 'upload over'
+                sh 'JENKINS_NODE_COOKIE=dontKillMe' +
+                        'APP_GREP=winstar-cbc-platform-api\n' +
+                        '  cd ./target' +
+                        '    n=`ps -ef|grep $APP_GREP|grep -v grep|wc -l`\n' +
+                        '    if [ 0 -ne $n ];then\n' +
+                        '        kill -9 `ps -ef | grep $APP_GREP|grep -v grep| awk  \'{print $2}\'`\n' +
+                        '    fi\n' +
+                        '  if [ -f *.jar ];then\n' +
+                        '    APP=$(ls *.jar)\n' +
+                        '  else\n' +
+                        '    echo "APP NOT FOUND!"\n' +
+                        '    exit 1\n' +
+                        '  fi\n' +
+                        '    nohup java -jar $APP > ./cbc.log &\n' +
+                        '    sleep 2\n' +
+                        '    echo -e \'starting  ............... [ ok ]\' '
             }
         }
     }
