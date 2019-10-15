@@ -64,7 +64,7 @@ public class OutOilCouponService {
         Map<String, String> map = SearchOilCoupon.verification(pan.length() == 20 ? oilSendNewUrl : oilSendUrl, pan);
         OutOilCouponLog oilCouponLog = new OutOilCouponLog();
         oilCouponLog.setCreateTime(new Date());
-        oilCouponLog.setType("verification");
+        oilCouponLog.setType("verify");
         oilCouponLog.setNumber("1");
         oilCouponLog.setOilId(outOilCoupon.getId());
         log.info(aesPan + "核销结果:" + JSON.toJSONString(map));
@@ -83,7 +83,7 @@ public class OutOilCouponService {
                 outOilCoupon.setTId(tId);
                 result.setCode("SUCCESS");
                 String tName = oilStationService.getOilStation(tId).getName();
-                if (!notifyOut(new OutNotifyVo(outPan, tId, tName, "1", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(useDate)), oilCouponLog)) {
+                if (!notifyOut(new OutNotifyVo(outPan, tId, tName, "1", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(useDate).getTime()), oilCouponLog)) {
                     log.error("输出平台通知核销失败！！");
                 }
             } else if ("0".equals(MapUtils.getString(map, "cardStatus"))) {
