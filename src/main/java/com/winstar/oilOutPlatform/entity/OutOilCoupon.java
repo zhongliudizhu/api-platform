@@ -101,15 +101,15 @@ public class OutOilCoupon {
     private String orderId;
 
     /**
-     * 输出平台用户Id
-     */
-    @Column(columnDefinition = "varchar(50) comment '输出平台用户Id'")
-    private String outUserId;
-
-    /**
      * 输出平台油券Id
      */
     @Column(columnDefinition = "varchar(100) comment '输出平台油券Id'")
     private String outId;
+
+    /**
+     * 商户号
+     */
+    @Column(columnDefinition = "varchar(50) comment '商户号'")
+    private String merchant;
 
 }

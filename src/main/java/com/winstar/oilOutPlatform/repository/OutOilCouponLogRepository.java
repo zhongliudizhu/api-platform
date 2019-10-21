@@ -12,5 +12,4 @@ public interface OutOilCouponLogRepository extends JpaRepository<OutOilCouponLog
 
     List<OutOilCouponLog> findByOrderId(String orderId);
 
-    List<OutOilCouponLog> findByOilIdAndOrderId(String oilId, String orderId);
 }

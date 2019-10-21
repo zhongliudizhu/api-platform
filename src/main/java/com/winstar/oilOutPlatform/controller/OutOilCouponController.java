@@ -218,11 +218,10 @@ public class OutOilCouponController {
     @RequestMapping(value = "assigned", method = RequestMethod.POST)
     public Result saleOilCoupon(@RequestBody @Valid AssignedParams assignedParams) throws NotRuleException {
         String orderId = assignedParams.getOrderId();
-        String outUserId = assignedParams.getOutUserId();
         long number = Long.valueOf(assignedParams.getNumber());
         String merchant = assignedParams.getMerchant();
         String sign = assignedParams.getSign();
-        logger.info("merchant is {} and orderId is {} and number is {} and sign is {} and outUserId is {}", merchant, orderId, number, sign, outUserId);
+        logger.info("merchant is {} and orderId is {} and number is {} and sign is {}", merchant, orderId, number, sign);
         List<CouponVo> couponVos;
         List<OutOilCoupon> coupons;
         OutOilCouponLog outOilCouponLog;
@@ -261,7 +260,6 @@ public class OutOilCouponController {
                 e.setOilState("1");
                 e.setSaleTime(new Date());
                 e.setUseState("0");
-                e.setOutUserId(outUserId);
                 e.setOrderId(orderId);
             });
             outOilCouponRepository.save(coupons);
@@ -271,9 +269,6 @@ public class OutOilCouponController {
         }
         couponVos = new ArrayList<>();
         for (OutOilCoupon coupon : coupons) {
-            if (!outUserId.equals(coupon.getOutUserId())) {
-                return Result.fail("user_not_this", "油券非此用户！！");
-            }
             CouponVo couponVo = new CouponVo();
             BeanUtils.copyProperties(coupon, couponVo);
             couponVos.add(couponVo);
@@ -348,12 +343,6 @@ public class OutOilCouponController {
         if (ObjectUtils.isEmpty(outOilCoupon)) {
             return Result.fail("coupon_not_exist", "油券不存在");
         }
-        if (StringUtils.isEmpty(outOilCoupon.getOutUserId())) {
-            return Result.fail("coupon_userId_null", "油券用户id为空");
-        }
-        if (!outOilCoupon.getOutUserId().equals(activeParams.getOutUserId())) {
-            return Result.fail("coupon_non_belong_user", "油券不属于此用户");
-        }
         ws.result.Result result = applicationContext.getBean(MyOilCouponController.class).activateOilCoupon(outOilCoupon.getPan(), outOilCoupon.getPanAmt());
         saveOutOilCouponLog(outOilCoupon, result);
         if (!result.getCode().equalsIgnoreCase("SUCCESS")) {
@@ -364,7 +353,6 @@ public class OutOilCouponController {
         Map<String, Object> map = new HashMap<>();
         map.put("id", oilId);
         map.put("pan", outOilCoupon.getPan());
-        map.put("outUserId", activeParams.getOutUserId());
         return Result.success(map);
     }
 
@@ -408,7 +396,7 @@ public class OutOilCouponController {
             if (!ObjectUtils.isEmpty(oilCoupon.getOutId())) {
                 throw new NotRuleException("oil_allocated_again");
             }
-            saveOilAndLog(oilCoupon, outId, new OutOilCouponLog());
+            saveOilAndLog(oilCoupon, outId, merchant, new OutOilCouponLog());
             logger.info("执行发券成功，分配的券码为：" + oilCoupon.getPan() + "，执行分券操作耗时时间：" + (System.currentTimeMillis() - beginTime) + "ms");
         }
         ws.result.Result activeResult = null;
@@ -430,11 +418,12 @@ public class OutOilCouponController {
         return Result.success(AESUtil.encrypt(AESUtil.decrypt(oilCoupon.getPan(), AESUtil.dekey), AESUtil.key));
     }
 
-    public void saveOilAndLog(OutOilCoupon oilCoupon, String outId, OutOilCouponLog outOilCouponLog) {
+    private void saveOilAndLog(OutOilCoupon oilCoupon, String outId, String merchant, OutOilCouponLog outOilCouponLog) {
         oilCoupon.setOutId(outId);
         oilCoupon.setSaleTime(new Date());
         oilCoupon.setUseState("0");
         oilCoupon.setOilState("1");
+        oilCoupon.setMerchant(merchant);
         outOilCouponRepository.save(oilCoupon);
         outOilCouponLog.setNumber("1");
         outOilCouponLog.setOilId(oilCoupon.getId());
