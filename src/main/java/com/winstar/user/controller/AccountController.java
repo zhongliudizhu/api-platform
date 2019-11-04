@@ -1,6 +1,6 @@
 package com.winstar.user.controller;
 
-import com.winstar.exception.*;
+import com.winstar.exception.NotRuleException;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.user.entity.AccessToken;
 import com.winstar.user.entity.Account;
@@ -9,12 +9,15 @@ import com.winstar.user.utils.ServiceManager;
 import com.winstar.user.utils.SimpleResult;
 import com.winstar.user.utils.UUIDUtils;
 import com.winstar.vo.Result;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Date;
 import java.util.List;
@@ -24,7 +27,17 @@ import java.util.List;
  **/
 @RestController
 @RequestMapping("/api/v1/cbc/account")
+@Slf4j
 public class AccountController {
+
+    private final RestTemplate restTemplate;
+
+    @Autowired
+    public AccountController(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    private static final String url = "https://mobile.sxwinstar.net/wechat/index.php?type=api&fun=getUinfo_1b823440_9178_11e6_a05e_9457a5545c84&openid=";
 
     @GetMapping(value = "userHasBoughtOil")
     public Result userHasBoughtOil(@RequestParam String openId) {
@@ -52,6 +65,9 @@ public class AccountController {
         checkGetTokenRule(accountParam);
         Account account = ServiceManager.accountRepository.findByOpenid(accountParam.getOpenid());
         if (null == account) {
+            if (!checkOpenId(accountParam.getOpenid())) {
+                throw new NotRuleException("openId!!!");
+            }
             Account accountSaved = ServiceManager.accountService.createAccount(accountParam);
             return ServiceManager.accountService.createAccessToken(accountSaved);
         }
@@ -61,6 +77,12 @@ public class AccountController {
         }
 
         return accessToken;
+    }
+
+    private boolean checkOpenId(String openId) {
+        ResponseEntity<String> res = restTemplate.getForEntity(url + openId, String.class);
+        log.info("获取粉丝信息接口结果：" + res.getBody());
+        return !"40003".equals(res.getBody());
     }
 
     /**
