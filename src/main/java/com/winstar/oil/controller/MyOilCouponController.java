@@ -92,8 +92,6 @@ public class MyOilCouponController {
     @Value("${info.cardUrl_new}")
     private String oilSendNewUrl;
 
-    @Value("${info.coupon_recover_switch}")
-    private boolean couponRecoverSwitch;
 
     private String prefix = "oil_pan_list_";
 
@@ -245,10 +243,6 @@ public class MyOilCouponController {
             @PathVariable(name = "id") String id,
             HttpServletRequest request
     ) throws Exception {
-        if (couponRecoverSwitch) {
-            logger.info("油券正在回收，请稍后！");
-            throw new NotRuleException("oilCoupon.null");
-        }
         String accountId = accountService.getAccountId(request);
         if (WsdUtils.isEmpty(accountId)) {
             throw new MissingParameterException("accountId");
@@ -276,6 +270,11 @@ public class MyOilCouponController {
             activateOilCoupon(myOilCoupon.getPan(), myOilCoupon.getPanAmt());
             oilRedisTools.remove(id);
             return map;
+        }
+        if (!getCouponSwitch()) {
+            logger.info("查看油券功能已关闭！！");
+            oilRedisTools.remove(id);
+            throw new NotRuleException("oilCoupon.null");
         }
         long beginTime = System.currentTimeMillis();
         Object popValue = null;
@@ -326,6 +325,12 @@ public class MyOilCouponController {
         oilRedisTools.remove(id);
         saveSearchLog(accountId, WsdUtils.getIpAddress(request), myOilCoupon.getPan(), myOilCoupon.getOrderId());
         return map;
+    }
+
+
+    private boolean getCouponSwitch() {
+        String coupon_switch = (String) oilRedisTools.get("cbc_coupon_switch");
+        return "on".equals(coupon_switch);
     }
 
     @Async
