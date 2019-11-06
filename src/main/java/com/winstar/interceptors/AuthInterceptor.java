@@ -33,11 +33,33 @@ public class AuthInterceptor implements HandlerInterceptor {
     private List<String> excludeUrls = new ArrayList<>();
 
     public AuthInterceptor() {
+
+        excludeUrls.add("/error");
+        excludeUrls.add("/api/v1/cbc/OneMoneyCouponRecord/save");
+        excludeUrls.add("/api/v1/cbc/payCallback");
+        excludeUrls.add("/api/v1/cbc/wxPay/notify");
+        excludeUrls.add("/api/v1/cbc/creditPay/notify");
+        excludeUrls.add("/api/v1/orders/invoice/callBack");
+        excludeUrls.add("/api/v1/cbc/mycoupon/giveCoupon");
+        excludeUrls.add("/api/v1/cbc/valuations");
+        excludeUrls.add("/api/v1/cbc/time/nowTime");
+        excludeUrls.add("/api/v1/cbc/couponActivities/queryLog");
+        excludeUrls.add("/api/v1/cbc/cost/sendCoupon");
+        excludeUrls.add("/api/v1/cbc/cost/exchangeFail");
+        excludeUrls.add("/api/v1/cbc/receive/setNumber");
+        excludeUrls.add("/api/v1/cbc/communalActivity/newUser");
+
+
         excludeUrls.add("/ccb-api/error");
+        excludeUrls.add("/ccb-api/api/v1/cbc/OneMoneyCouponRecord/save");
         excludeUrls.add("/ccb-api/api/v1/cbc/payCallback");
         excludeUrls.add("/ccb-api/api/v1/cbc/wxPay/notify");
         excludeUrls.add("/ccb-api/api/v1/cbc/creditPay/notify");
+        excludeUrls.add("/ccb-api/api/v1/orders/invoice/callBack");
+        excludeUrls.add("/ccb-api/api/v1/cbc/mycoupon/giveCoupon");
+        excludeUrls.add("/ccb-api/api/v1/cbc/valuations");
         excludeUrls.add("/ccb-api/api/v1/cbc/time/nowTime");
+        excludeUrls.add("/ccb-api/api/v1/cbc/couponActivities/queryLog");
         excludeUrls.add("/ccb-api/api/v1/cbc/cost/sendCoupon");
         excludeUrls.add("/ccb-api/api/v1/cbc/cost/exchangeFail");
         excludeUrls.add("/ccb-api/api/v1/cbc/receive/setNumber");
@@ -49,7 +71,8 @@ public class AuthInterceptor implements HandlerInterceptor {
         if(request.getRequestURI().contains("/api/v1/noAuth")){
             return true;
         }
-        if (excludeUrls.contains(request.getRequestURI()) || request.getRequestURI().contains("/api/v1/cbc/account") || request.getRequestURI().startsWith("/api/v1/cbc/verification")) {
+        if (excludeUrls.contains(request.getRequestURI()) || request.getRequestURI().contains("/api/v1/cbc/account") || request.getRequestURI().contains("/api/v1/cbc/valuations") || request.getRequestURI().startsWith("/api/v1/cbc/verification")
+                || request.getRequestURI().contains("/api/v1/cbc/obuActivity")) {
             return true;
         }
 
