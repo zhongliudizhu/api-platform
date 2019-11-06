@@ -110,7 +110,6 @@ public class InvoiceController {
 //        Date startTime = calendar.getTime();
 
         Page<MyOilCoupon> page = myOilCouponService.findUsedCoupon(accountId, endTime, ids, pageable);
-//        Page<MyOilCoupon> page = myOilCouponService.findUsedCoupon(accountId,ids, pageable);
         List<MyOilCoupon> list = page.getContent();
 
         if (list.size() == 0) throw new NotFoundException("MyOilCoupon");
@@ -157,7 +156,6 @@ public class InvoiceController {
         if(invoiceType==null){
             invoiceType=1;
         }
-
         if(invoiceType==2){
             if(recipients==null)throw new MissingParameterException("recipients");
             if(consigneePhone==null)throw new MissingParameterException("consigneePhone");
@@ -183,6 +181,7 @@ public class InvoiceController {
             MyOilCoupon myOilCoupon = myOilCouponService.findOne(id);
             if (myOilCoupon == null) throw new NotFoundException(id);
             myOilCoupon = this.reckon(myOilCoupon, myOilCoupon.getOrderId());
+            //把油券的订单号 放入到一个集合去
             list.add(myOilCoupon.getOrderId());
             BigDecimal p = new BigDecimal(myOilCoupon.getPayPrice());
             price = price.add(p);
@@ -190,7 +189,10 @@ public class InvoiceController {
         //订单编号保存到List 然后去重
         Set<String> middleHashSet = new HashSet<String>(list);
         List<String> invoiceOrderList = new ArrayList<String>(middleHashSet);
+        //开票原价(新加字段)
+        int originalPrice=ids.length*100;
 
+        invoice.setOriginalPrice(originalPrice);
         invoice.setInvoiceOrder(invoiceOrderList.toString());
         invoice.setPrice(price.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
         invoice.setAccountId(accountId);
@@ -205,6 +207,7 @@ public class InvoiceController {
         invoice.setConsigneeAddress(consigneeAddress);
         invoice.setConsigneePhone(consigneePhone);
         invoice.setDetailedAddress(detailedAddress);
+
         if (!StringUtils.isEmpty(telephone)) invoice.setTelephone(telephone);
         if (!StringUtils.isEmpty(companyAddress)) invoice.setCompanyAddress(companyAddress);
         if (!StringUtils.isEmpty(depositBank)) invoice.setDepositBank(depositBank);
@@ -223,7 +226,6 @@ public class InvoiceController {
             invoiceItemRepository.save(item);
         }
         return in;
-
     }
 
     /**

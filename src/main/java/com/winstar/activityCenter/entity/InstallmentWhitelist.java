@@ -7,7 +7,10 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Date;
-
+/**
+ * Created by qyc on 2019/08/14.
+ * 建行活动分期白名单
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "cbc_installment_white")
