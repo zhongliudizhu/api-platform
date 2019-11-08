@@ -121,9 +121,12 @@ public class InvoiceController {
     }
 
     public MyOilCoupon reckon(MyOilCoupon myOilCoupon, String orderId) throws NotFoundException {
-        List<MyOilCoupon> oils = myOilCouponService.findByOrderId(orderId);
-        Integer num = oils.size();
+//        List<MyOilCoupon> oils = myOilCouponService.findByOrderId(orderId);
+//        OilOrder order = oilOrderService.getOneOrder(orderId);
+
         OilOrder order = oilOrderService.getOneOrder(orderId);
+        double num = order.getItemTotalValue()/myOilCoupon.getPanAmt();
+
         BigDecimal payprice = new BigDecimal(order.getPayPrice());
         BigDecimal p = new BigDecimal(num);
         BigDecimal payPrice = payprice.divide(p, 2, BigDecimal.ROUND_HALF_UP);
