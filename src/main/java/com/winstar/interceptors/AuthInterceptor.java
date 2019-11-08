@@ -33,7 +33,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     private List<String> excludeUrls = new ArrayList<>();
 
     public AuthInterceptor() {
-
+        //线上使用，不可删除！！！！
         excludeUrls.add("/error");
         excludeUrls.add("/api/v1/cbc/OneMoneyCouponRecord/save");
         excludeUrls.add("/api/v1/cbc/payCallback");

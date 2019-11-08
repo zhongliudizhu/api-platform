@@ -135,6 +135,10 @@ public class Invoice {
      */
     private String detailedAddress;
     /**
+     * 原价
+     */
+    private Integer originalPrice;
+    /**
      * 操作人
      */
     @Column(length = 50)

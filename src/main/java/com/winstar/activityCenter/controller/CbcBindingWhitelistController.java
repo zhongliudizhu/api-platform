@@ -25,7 +25,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-//绑定交安卡活动10-50元优惠券
+/**
+ * Created by qyc on 2019/08/14.
+ * 建行活动绑定白名单
+ */
 @RestController
 @RequestMapping("/api/v1/cbc/binding")
 @Slf4j

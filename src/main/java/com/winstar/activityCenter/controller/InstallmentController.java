@@ -25,7 +25,10 @@ import java.util.stream.Collectors;
 
 import static com.winstar.utils.ValidatorParameterUtils.isMobile;
 
-//建行分期200元优惠券活动
+/**
+ * Created by qyc on 2019/08/14.
+ * 建行活动分期白名单
+ */
 @RestController
 @RequestMapping("/api/v1/cbc/installment")
 @Slf4j
