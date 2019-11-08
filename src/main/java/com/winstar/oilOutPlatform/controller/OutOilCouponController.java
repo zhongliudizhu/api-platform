@@ -57,12 +57,6 @@ public class OutOilCouponController {
 
     private static String secret = "5aGO539qO7F91733O13d1XZT1953hoI1pP9mgLDD9M9AI3g99MYw1zL35n1793Ps";
 
-    @Value("${info.cardUrl}")
-    private String oilSendUrl;
-
-    @Value("${info.cardUrl_new}")
-    private String oilSendNewUrl;
-
     @Autowired
     public OutOilCouponController(OilRedisTools oilRedisTools, OutOilCouponRepository outOilCouponRepository, OutOilCouponLogRepository outOilCouponLogRepository, ApplicationContext applicationContext, OutOilCouponService outOilCouponService) {
         this.oilRedisTools = oilRedisTools;
@@ -294,7 +288,6 @@ public class OutOilCouponController {
         map.put("id", oilId);
         map.put("pan", outOilCoupon.getPan());
         return Result.success(map);
-
-
     }
+
 }

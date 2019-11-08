@@ -13,7 +13,6 @@ import com.winstar.vo.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,12 +44,6 @@ public class OverSoldController {
     private static final String oilCouponStockKey = "out_platform_oil_pan_list";
 
     private static final String secret = "5aGO539qO7F91733O13d1XZT1953hoI1pP9mgLDD9M9AI3g99MYw1zL35n1793Ps";
-
-    @Value("${info.cardUrl}")
-    private String oilSendUrl;
-
-    @Value("${info.cardUrl_new}")
-    private String oilSendNewUrl;
 
     @Autowired
     public OverSoldController(OilRedisTools oilRedisTools, OutOilCouponRepository outOilCouponRepository, ApplicationContext applicationContext, OutOilCouponService outOilCouponService) {
