@@ -1,6 +1,7 @@
 package com.winstar.activityCenter.controller;
 
 import com.winstar.communalCoupon.entity.AccountCoupon;
+import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.communalCoupon.vo.SendCouponDomain;
 import com.winstar.redis.RedisTools;
@@ -45,6 +46,9 @@ public class EducationLearnCouponController {
     @Autowired
     FansService fansService;
 
+    @Autowired
+    AccountCouponRepository accountCouponRepository;
+
     @RequestMapping(value = "education/getCoupon", method = RequestMethod.POST)
     public Result getCoupon(@RequestBody Map map){
         String openId = MapUtils.getString(map, "openId");
@@ -74,6 +78,14 @@ public class EducationLearnCouponController {
             return Result.fail("openId_is_invalid", "openId无效！");
         }
         Account account = accountService.getAccountOrCreateByOpenId(openId, null, null);
+        //七天内只发一次券
+        List<AccountCoupon> accountCouponList = accountCouponRepository.findByTemplateIdAndAccountIdOrderByCreatedAtDesc(templateId, account.getId());
+        if (!ObjectUtils.isEmpty(accountCouponList)) {
+            if (System.currentTimeMillis() - accountCouponList.get(0).getCreatedAt().getTime() < 604800000L) {
+                log.info("七天内已有领取安全文明奖励金，直接返回。");
+                return Result.success(new AccountCoupon());
+            }
+        }
         SendCouponDomain domain = new SendCouponDomain(templateId, account.getId(), AccountCoupon.TYPE_YJX, "1", null, null);
         List<AccountCoupon> accountCoupons = accountCouponService.sendCoupon(domain, null);
         if(ObjectUtils.isEmpty(accountCoupons)){
