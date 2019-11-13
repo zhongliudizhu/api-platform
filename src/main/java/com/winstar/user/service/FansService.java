@@ -72,6 +72,7 @@ public class FansService {
 //        if (= (String) redisTools.get("access_token"))
         if (flush || ObjectUtils.isEmpty(access_token)) {
             String url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wxcf71d6832b8e3ebe&secret=9401a98f94e021d3f006c3831f8d0e05";
+//            String url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx47a21bee64eb7a6c&secret=43dd74d136a23e8467e5866f4757a3ec";
             ResponseEntity<Map> map = new RestTemplate().getForEntity(url, Map.class);
             log.info(map.getBody().toString());
             access_token = (String) map.getBody().get("access_token");
@@ -95,6 +96,7 @@ public class FansService {
         if (!ObjectUtils.isEmpty(map.getBody().get("errcode")) && 40003 == (int) map.getBody().get("errcode")) {
             return null;
         }
+        log.info("map.getBody() is {}", map.getBody());
         return map.getBody();
     }
 
@@ -108,7 +110,7 @@ public class FansService {
             fans = new Fans();
         }
         Map map = getFansInfo(openId, false);
-        if (ObjectUtils.isEmpty(map)) {
+        if (ObjectUtils.isEmpty(map) || "0".equals(map.get("subscribe").toString())) {
             return null;
         }
         String name = MapUtils.getString(map, "nickname");
@@ -124,7 +126,7 @@ public class FansService {
         fans.setProvince(MapUtils.getString(map, "province"));
         fans.setCountry(MapUtils.getString(map, "country"));
         fans.setHeadImgUrl(MapUtils.getString(map, "headimgurl"));
-        fans.setSubscribeTime(new Date(1000 * Long.valueOf(MapUtils.getString(map, "subscribe_time"))));
+        fans.setSubscribeTime(new Date(1000 * MapUtils.getLongValue(map, "subscribe_time")));
         fans.setGroupId(MapUtils.getString(map, "groupid"));
         fans.setTagIdList(MapUtils.getString(map, "tagid_list"));
         fans.setSubScribeScene(MapUtils.getString(map, "subscribe_scene"));

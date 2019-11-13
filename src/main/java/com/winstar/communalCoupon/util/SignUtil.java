@@ -54,7 +54,9 @@ public class SignUtil {
     public static boolean checkSign(Map<String, String> parameters, String secret) {
         String sign = MapUtils.getString(parameters, "sign");
         parameters.remove("sign");
-        return sign.equals(sign(parameters, secret));
+        String s = sign(parameters, secret);
+        logger.info("sign is {}", s);
+        return sign.equals(s);
     }
 
     private static String encodeMd5(byte[] source) {

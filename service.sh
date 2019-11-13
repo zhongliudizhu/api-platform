@@ -5,7 +5,9 @@ APP_GREP=winstar-cbc-platform-api
 function start(){
   cd $DIR
     n=`ps -ef|grep $APP_GREP|grep -v grep|wc -l`
+    echo &n
     if [ 0 -ne $n ];then
+        ps -ef | grep $APP_GREP|grep -v grep| awk  '{print $2}'
         kill -9 `ps -ef | grep $APP_GREP|grep -v grep| awk  '{print $2}'`
     fi
   if [ -f *.jar ];then

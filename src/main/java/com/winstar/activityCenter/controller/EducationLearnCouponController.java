@@ -6,7 +6,6 @@ import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.communalCoupon.vo.SendCouponDomain;
 import com.winstar.redis.RedisTools;
 import com.winstar.user.entity.Account;
-import com.winstar.user.entity.Fans;
 import com.winstar.user.service.AccountService;
 import com.winstar.user.service.FansService;
 import com.winstar.vo.Result;
@@ -72,10 +71,14 @@ public class EducationLearnCouponController {
             log.info("templateId为空！");
             return Result.fail("templateId_is_null", "templateId为空！");
         }
-        Fans fans = fansService.getByOpenId(openId);
+        Map fans = fansService.getFansInfo(openId, false);
         if (ObjectUtils.isEmpty(fans)) {
             log.info("openId无效！");
             return Result.fail("openId_is_invalid", "openId无效！");
+        }
+        if ("0".equals(fans.get("subscribe").toString())) {
+            log.info("用户未关注！");
+            return Result.fail("user_not_subscribe", "用户未关注！");
         }
         Account account = accountService.getAccountOrCreateByOpenId(openId, null, null);
         //七天内只发一次券
