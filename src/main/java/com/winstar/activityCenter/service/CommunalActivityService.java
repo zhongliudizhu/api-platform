@@ -219,7 +219,7 @@ public class CommunalActivityService {
      * @param date 时间
      * @return date
      */
-    private static Date getDayEnd(Date date) {
+    public Date getDayEnd(Date date) {
         Calendar currentDate = new GregorianCalendar();
         currentDate.setTime(date);
         currentDate.set(Calendar.HOUR_OF_DAY, 23);

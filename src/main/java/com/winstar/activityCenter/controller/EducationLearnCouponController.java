@@ -1,5 +1,6 @@
 package com.winstar.activityCenter.controller;
 
+import com.winstar.activityCenter.service.CommunalActivityService;
 import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
@@ -40,6 +41,9 @@ public class EducationLearnCouponController {
     AccountCouponService accountCouponService;
 
     @Autowired
+    CommunalActivityService communalActivityService;
+
+    @Autowired
     AccountService accountService;
 
     @Autowired
@@ -52,6 +56,7 @@ public class EducationLearnCouponController {
     public Result getCoupon(@RequestBody Map map){
         String openId = MapUtils.getString(map, "openId");
         String verifyCode = MapUtils.getString(map, "verifyCode");
+        log.info("openId is {} and verifyCode is {}", openId, verifyCode);
         if(StringUtils.isEmpty(openId)){
             log.info("openId参数为空！");
             return Result.fail("missing_parameter_openId", "openId参数为空！");
@@ -81,12 +86,21 @@ public class EducationLearnCouponController {
             return Result.fail("user_not_subscribe", "用户未关注！");
         }
         Account account = accountService.getAccountOrCreateByOpenId(openId, null, null);
-        //七天内只发一次券
+        //一天内只发一次券
         List<AccountCoupon> accountCouponList = accountCouponRepository.findByTemplateIdAndAccountIdOrderByCreatedAtDesc(templateId, account.getId());
         if (!ObjectUtils.isEmpty(accountCouponList)) {
-            if (System.currentTimeMillis() - accountCouponList.get(0).getCreatedAt().getTime() < 604800000L) {
-                log.info("七天内已有领取安全文明奖励金，直接返回。");
-                return Result.success(new AccountCoupon());
+            AccountCoupon accountCoupon = accountCouponList.get(0);
+            //当天已领取优惠券
+            if (communalActivityService.getDayEnd(accountCoupon.getCreatedAt()).getTime() > System.currentTimeMillis()) {
+                //未使用则返回优惠券
+                if (AccountCouponService.NORMAL.equals(accountCoupon.getState())) {
+                    log.info("当天已领取安全文明奖励金，直接返回。");
+                    accountCoupon.setState("again");
+                    return Result.success(accountCoupon);
+                } else {
+                    log.info("当天领取安全文明奖励金已使用，不再发放！");
+                    return Result.success(accountCoupon);
+                }
             }
         }
         SendCouponDomain domain = new SendCouponDomain(templateId, account.getId(), AccountCoupon.TYPE_YJX, "1", null, null);
