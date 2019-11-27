@@ -52,10 +52,10 @@ public class CbcWhiteListController {
     @RequestMapping(value = "/receiveCoupons", method = RequestMethod.POST)
     public Result giveCoupons(HttpServletRequest request, @RequestBody @Valid CbcWhiteListVo cbcWhiteListVo) throws NotRuleException {
         String accountId = accountService.getAccountId(request);
-        /*String code = (String) redisTools.get(cbcWhiteListVo.getMobile() + "randCode");
+        String code = (String) redisTools.get(cbcWhiteListVo.getMobile() + "randCode");
         if (ObjectUtils.isEmpty(code) || !code.equals(cbcWhiteListVo.getRandCode())) {
             return Result.fail("code_error", "短信验证码错误");
-        }*/
+        }
         List<CbcWhiteList> list = cbcWhiteListRepository.findByPhoneAndActivityCode(cbcWhiteListVo.getMobile(), cbcWhiteListVo.getActivityCode());
         if (ObjectUtils.isEmpty(list)) {
             return Result.fail("user_not_here", "用户无法领取");
