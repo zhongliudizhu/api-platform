@@ -13,10 +13,11 @@ import java.util.Date;
  */
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "cbc_binding_white")
+@Table(name = "cbc_white_list")
 @Data
 @Entity
-public class CbcBinDingWhitelist {
+public class CbcWhiteList {
+
     /**
      * 主键Id
      */
@@ -25,34 +26,47 @@ public class CbcBinDingWhitelist {
     @GeneratedValue(generator = "idGenerator")
     @Column(columnDefinition = "varchar(50) COMMENT '主键id'")
     private String id;
+
     /**
      * 手机号
      */
     @Column(columnDefinition = "varchar(20) COMMENT '手机号'")
     private String phone;
+
     /**
      * 有效时间
      */
     @Column(columnDefinition = "datetime COMMENT '有效时间'")
     private Date validTime;
+
     /**
      * 优惠券模板id
      */
     @Column(columnDefinition = "varchar(100) COMMENT '优惠券模板id'")
     private String couponId;
+
+    /**
+     * 活动code
+     */
+    @Column(columnDefinition = "varchar(50) COMMENT '活动code'")
+    private String activityCode;
+
+    /**
+     * 活动名称
+     */
+    @Column(columnDefinition = "varchar(50) COMMENT '活动名称'")
+    private String activityName;
+
     /**
      * 认证状态 0 未认证 1 已认证
      */
     @Column(columnDefinition = "varchar(2) COMMENT '认证状态'")
     private String state;
-    /**
-     * 面值
-     */
-    @Column(columnDefinition = "varchar(2) COMMENT '面值'")
-    private String faceValue;
+
     /**
      * 创建时间
      */
     @Column(columnDefinition = "datetime COMMENT '创建时间'")
     private Date createTime;
+
 }
