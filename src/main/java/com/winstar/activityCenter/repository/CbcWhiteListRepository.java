@@ -10,4 +10,8 @@ public interface CbcWhiteListRepository extends JpaRepository<CbcWhiteList, Stri
 
     List<CbcWhiteList> findByPhoneAndActivityCode(String phone, String activityCode);
 
+    List<CbcWhiteList> findByActivityCodeAndCardNumberEndingWith(String activityCode, String cardNumber);
+
+    List<CbcWhiteList> findByActivityCodeAndPhoneAndCardNumberEndingWith(String activityCode, String phone, String cardNumber);
+
 }

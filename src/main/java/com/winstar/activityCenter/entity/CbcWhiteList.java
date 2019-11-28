@@ -34,6 +34,12 @@ public class CbcWhiteList {
     private String phone;
 
     /**
+     * 身份证号
+     */
+    @Column(columnDefinition = "varchar(20) COMMENT '身份证号'")
+    private String cardNumber;
+
+    /**
      * 有效时间
      */
     @Column(columnDefinition = "datetime COMMENT '有效时间'")

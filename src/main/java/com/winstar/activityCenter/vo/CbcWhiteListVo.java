@@ -12,13 +12,16 @@ public class CbcWhiteListVo {
     /**
      * 手机号
      */
-    @NotBlank(message = "手机号不能为空！")
     private String mobile;
+
+    /**
+     * 身份证号
+     */
+    private String cardNumber;
 
     /**
      * 验证码
      */
-    @NotBlank(message = "验证码不能为空！")
     private String randCode;
 
     /**

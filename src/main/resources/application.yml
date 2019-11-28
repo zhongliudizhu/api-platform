@@ -70,7 +70,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-#    show-sql: true
+    show-sql: true
   profiles: default
 
 info:
