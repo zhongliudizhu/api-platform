@@ -13,7 +13,7 @@ import java.util.Date;
  */
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "cbc_white_list")
+@Table(name = "cbc_common_white_list")
 @Data
 @Entity
 public class CbcWhiteList {
