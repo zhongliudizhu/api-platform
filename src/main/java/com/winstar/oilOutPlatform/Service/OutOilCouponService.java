@@ -3,6 +3,7 @@ package com.winstar.oilOutPlatform.Service;
 
 import com.alibaba.fastjson.JSON;
 import com.winstar.SearchOilCoupon;
+import com.winstar.oil.entity.OilStation;
 import com.winstar.oil.service.OilStationService;
 import com.winstar.oilOutPlatform.entity.OutOilCoupon;
 import com.winstar.oilOutPlatform.entity.OutOilCouponLog;
@@ -99,7 +100,11 @@ public class OutOilCouponService {
                 outOilCoupon.setUseDate(useDate);
                 outOilCoupon.setTId(tId);
                 result.setCode("SUCCESS");
-                String tName = oilStationService.getOilStation(tId).getName();
+                OilStation oilStation = oilStationService.getOilStation(tId);
+                String tName = "陕西省";
+                if (!ObjectUtils.isEmpty(oilStation)) {
+                    tName = oilStationService.getOilStation(tId).getName();
+                }
                 if (notifyOut(new OutNotifyVo(outPan, tId, tName, "1", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(useDate).getTime()), oilCouponLog)) {
                     log.error("输出平台通知核销成功！！");
                 } else {
