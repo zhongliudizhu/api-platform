@@ -71,9 +71,9 @@ public class CbcWhiteListController {
         }
         List<CbcWhiteList> list = null;
         if(!StringUtils.isEmpty(cbcWhiteListVo.getCardNumber()) && !StringUtils.isEmpty(cbcWhiteListVo.getMobile())){
-            list = cbcWhiteListRepository.findByActivityCodeAndPhoneAndCardNumberEndingWith(cbcWhiteListVo.getActivityCode(), cbcWhiteListVo.getMobile(), cbcWhiteListVo.getCardNumber());
+            list = cbcWhiteListRepository.findByActivityCodeAndPhoneAndCardNumberIgnoreCase(cbcWhiteListVo.getActivityCode(), cbcWhiteListVo.getMobile(), cbcWhiteListVo.getCardNumber());
         }else if(!StringUtils.isEmpty(cbcWhiteListVo.getCardNumber())){
-            list = cbcWhiteListRepository.findByActivityCodeAndCardNumberEndingWith(cbcWhiteListVo.getActivityCode(), cbcWhiteListVo.getCardNumber());
+            list = cbcWhiteListRepository.findByActivityCodeAndCardNumberIgnoreCase(cbcWhiteListVo.getActivityCode(), cbcWhiteListVo.getCardNumber());
         }else if(!StringUtils.isEmpty(cbcWhiteListVo.getMobile())){
             list = cbcWhiteListRepository.findByPhoneAndActivityCode(cbcWhiteListVo.getMobile(), cbcWhiteListVo.getActivityCode());
         }
