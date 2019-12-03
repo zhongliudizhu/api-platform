@@ -80,7 +80,7 @@ public class VerificationCardController {
             logger.info(pan + "油券不存在！");
             result.setCode("NOT_FOUND");
             result.setFailMessage(pan + "油券不存在！");
-            return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(result, HttpStatus.OK);
         }
         Map<String, String> map = SearchOilCoupon.verification(pan.length() == 20 ? oilSendNewUrl : oilSendUrl, pan);
         logger.info(aesPan + "核销结果:" + JSON.toJSONString(map));
