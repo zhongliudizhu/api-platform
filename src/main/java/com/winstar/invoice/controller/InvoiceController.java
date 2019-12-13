@@ -1,5 +1,8 @@
 package com.winstar.invoice.controller;
 
+import com.winstar.cashier.comm.EnumType;
+import com.winstar.cashier.entity.PayOrder;
+import com.winstar.cashier.repository.PayOrderRepository;
 import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
@@ -14,6 +17,7 @@ import com.winstar.oil.service.MyOilCouponService;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.service.OilOrderService;
 import com.winstar.user.service.AccountService;
+import com.winstar.utils.WsdUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +50,8 @@ public class InvoiceController {
 
     @Autowired
     AccountService accountService;
-
+    @Autowired
+    PayOrderRepository payOrderRepository;
     @Autowired
     InvoiceItemRepository invoiceItemRepository;
     @Autowired
@@ -125,9 +130,15 @@ public class InvoiceController {
 //        OilOrder order = oilOrderService.getOneOrder(orderId);
 
         OilOrder order = oilOrderService.getOneOrder(orderId);
-        double num = order.getItemTotalValue()/myOilCoupon.getPanAmt();
-
-        BigDecimal payprice = new BigDecimal(order.getPayPrice());
+        double num = order.getItemTotalValue() / myOilCoupon.getPanAmt();
+        Double knockGold = null;
+        if (order.getPayType() == 2) {
+            List<PayOrder> payOrders = payOrderRepository.findByOrderNumberAndState(order.getSerialNumber(), EnumType.PAY_STATE_SUCCESS.valueStr());
+            if (WsdUtils.isNotEmpty(payOrders)) {
+                knockGold = Double.parseDouble(payOrders.get(0).getCouponFee())/100;
+            }
+        }
+        BigDecimal payprice = new BigDecimal(order.getPayPrice()-knockGold);
         BigDecimal p = new BigDecimal(num);
         BigDecimal payPrice = payprice.divide(p, 2, BigDecimal.ROUND_HALF_UP);
         myOilCoupon.setPayPrice(payPrice.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
@@ -144,7 +155,7 @@ public class InvoiceController {
             HttpServletRequest request,
             String[] ids, Integer type, String name, String oilType, String email, String phone, String companyName,
             String taxpayerNumber, String companyAddress, String telephone, String depositBank, String bankAccount,
-            Integer invoiceType,String recipients,String consigneePhone,String consigneeAddress,String detailedAddress
+            Integer invoiceType, String recipients, String consigneePhone, String consigneeAddress, String detailedAddress
     ) throws MissingParameterException, NotRuleException, NotFoundException {
         checkInvoiceStock();
         String accountId = accountService.getAccountId(request);
@@ -156,14 +167,14 @@ public class InvoiceController {
         if (email == null) throw new MissingParameterException("email");
         if (phone == null) throw new MissingParameterException("phone");
         Invoice invoice = new Invoice();
-        if(invoiceType==null){
-            invoiceType=1;
+        if (invoiceType == null) {
+            invoiceType = 1;
         }
-        if(invoiceType==2){
-            if(recipients==null)throw new MissingParameterException("recipients");
-            if(consigneePhone==null)throw new MissingParameterException("consigneePhone");
-            if(consigneeAddress==null)throw new MissingParameterException("consigneeAddress");
-            if(detailedAddress==null)throw new MissingParameterException("detailedAddress");
+        if (invoiceType == 2) {
+            if (recipients == null) throw new MissingParameterException("recipients");
+            if (consigneePhone == null) throw new MissingParameterException("consigneePhone");
+            if (consigneeAddress == null) throw new MissingParameterException("consigneeAddress");
+            if (detailedAddress == null) throw new MissingParameterException("detailedAddress");
         }
         if (type == 1) {
             if (name == null) throw new MissingParameterException("name");
@@ -193,7 +204,7 @@ public class InvoiceController {
         Set<String> middleHashSet = new HashSet<String>(list);
         List<String> invoiceOrderList = new ArrayList<String>(middleHashSet);
         //开票原价(新加字段)
-        int originalPrice=ids.length*100;
+        int originalPrice = ids.length * 100;
 
         invoice.setOriginalPrice(originalPrice);
         invoice.setInvoiceOrder(invoiceOrderList.toString());
