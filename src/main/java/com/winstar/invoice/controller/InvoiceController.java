@@ -131,14 +131,14 @@ public class InvoiceController {
 
         OilOrder order = oilOrderService.getOneOrder(orderId);
         double num = order.getItemTotalValue() / myOilCoupon.getPanAmt();
-        Double knockGold = null;
+        Double knockGold = 0.0;
         if (order.getPayType() == 2) {
             List<PayOrder> payOrders = payOrderRepository.findByOrderNumberAndState(order.getSerialNumber(), EnumType.PAY_STATE_SUCCESS.valueStr());
-            if (WsdUtils.isNotEmpty(payOrders)) {
-                knockGold = Double.parseDouble(payOrders.get(0).getCouponFee())/100;
+            if (WsdUtils.isNotEmpty(payOrders.get(0).getCouponFee())) {
+                knockGold = Double.parseDouble(payOrders.get(0).getCouponFee()) / 100;
             }
         }
-        BigDecimal payprice = new BigDecimal(order.getPayPrice()-knockGold);
+        BigDecimal payprice = new BigDecimal(order.getPayPrice() - knockGold);
         BigDecimal p = new BigDecimal(num);
         BigDecimal payPrice = payprice.divide(p, 2, BigDecimal.ROUND_HALF_UP);
         myOilCoupon.setPayPrice(payPrice.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
