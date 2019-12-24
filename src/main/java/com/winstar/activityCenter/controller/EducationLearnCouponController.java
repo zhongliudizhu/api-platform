@@ -5,6 +5,7 @@ import com.winstar.communalCoupon.entity.AccountCoupon;
 import com.winstar.communalCoupon.repository.AccountCouponRepository;
 import com.winstar.communalCoupon.service.AccountCouponService;
 import com.winstar.communalCoupon.vo.SendCouponDomain;
+import com.winstar.exception.NotRuleException;
 import com.winstar.redis.RedisTools;
 import com.winstar.user.entity.Account;
 import com.winstar.user.service.AccountService;
@@ -14,13 +15,13 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,22 +35,16 @@ import java.util.Map;
 @Slf4j
 public class EducationLearnCouponController {
 
-    @Autowired
     RedisTools redisTools;
 
-    @Autowired
     AccountCouponService accountCouponService;
 
-    @Autowired
     CommunalActivityService communalActivityService;
 
-    @Autowired
     AccountService accountService;
 
-    @Autowired
     FansService fansService;
 
-    @Autowired
     AccountCouponRepository accountCouponRepository;
 
     @RequestMapping(value = "education/getCoupon", method = RequestMethod.POST)
@@ -70,12 +65,13 @@ public class EducationLearnCouponController {
             return Result.fail("verifyCode_is_invalid", "verifyCode无效！");
         }
         redisTools.remove(verifyCode);
-        String templateId = (String) redisTools.get("education_coupon_templateId");
-        log.info("templateId is " + templateId);
-        if(StringUtils.isEmpty(templateId)){
+        String templateIds = (String) redisTools.get("education_coupon_templateId");
+        log.info("templateIds is " + templateIds);
+        if (StringUtils.isEmpty(templateIds)) {
             log.info("templateId为空！");
             return Result.fail("templateId_is_null", "templateId为空！");
         }
+        String[] ids = templateIds.split(",");
         Map fans = fansService.getFansInfo(openId, false);
         if (ObjectUtils.isEmpty(fans)) {
             log.info("openId无效！");
@@ -86,30 +82,47 @@ public class EducationLearnCouponController {
             return Result.fail("user_not_subscribe", "用户未关注！");
         }
         Account account = accountService.getAccountOrCreateByOpenId(openId, null, null);
-        //一天内只发一次券
-        List<AccountCoupon> accountCouponList = accountCouponRepository.findByTemplateIdAndAccountIdOrderByCreatedAtDesc(templateId, account.getId());
-        if (!ObjectUtils.isEmpty(accountCouponList)) {
-            AccountCoupon accountCoupon = accountCouponList.get(0);
-            //当天已领取优惠券
-            if (communalActivityService.getDayEnd(accountCoupon.getCreatedAt()).getTime() > System.currentTimeMillis()) {
-                //未使用则返回优惠券
-                if (AccountCouponService.NORMAL.equals(accountCoupon.getState())) {
-                    log.info("当天已领取安全文明奖励金，直接返回。");
-                    accountCoupon.setState("again");
-                    return Result.success(accountCoupon);
+
+        List<AccountCoupon> coupons = new ArrayList<>();
+        for (String templateId : ids) {
+            List<AccountCoupon> accountCouponList = accountCouponRepository.findByTemplateIdAndAccountIdOrderByCreatedAtDesc(templateId, account.getId());
+            if (!ObjectUtils.isEmpty(accountCouponList)) {
+                AccountCoupon accountCoupon = accountCouponList.get(0);
+                //当天已领取优惠券
+                if (communalActivityService.getDayEnd(accountCoupon.getCreatedAt()).getTime() > System.currentTimeMillis()) {
+                    //未使用则返回优惠券
+                    if (AccountCouponService.NORMAL.equals(accountCoupon.getState())) {
+                        log.info("当天已领取该安全文明奖励金 {}", templateId);
+                        accountCoupon.setState("again");
+                        coupons.add(accountCoupon);
+                    } else {
+                        log.info("当天领取该安全文明奖励金已使用{}", templateId);
+                    }
+                }
+            } else {
+                //未领取则发放优惠券
+                SendCouponDomain domain = new SendCouponDomain(templateId, account.getId(), AccountCoupon.TYPE_YJX, "1", null, null);
+                log.info("发放优惠券 。。 templateId is{}", templateId);
+                List<AccountCoupon> accountCoupons = accountCouponService.sendCoupon(domain, null);
+                if (ObjectUtils.isEmpty(accountCoupons)) {
+                    log.info("发券失败！");
+                    return Result.fail("send_coupon_fail", "发券失败！");
                 } else {
-                    log.info("当天领取安全文明奖励金已使用，不再发放！");
-                    return Result.success(accountCoupon);
+                    coupons.add(accountCoupons.get(0));
                 }
             }
         }
-        SendCouponDomain domain = new SendCouponDomain(templateId, account.getId(), AccountCoupon.TYPE_YJX, "1", null, null);
-        List<AccountCoupon> accountCoupons = accountCouponService.sendCoupon(domain, null);
-        if(ObjectUtils.isEmpty(accountCoupons)){
-            log.info("发券失败！");
-            return Result.fail("send_coupon_fail", "发券失败！");
-        }
-        return Result.success(accountCoupons.get(0));
+        return Result.success(coupons);
     }
+
+    @RequestMapping(value = "education/getAmount", method = RequestMethod.GET)
+    public Result getAmount() throws NotRuleException {
+        String amount = (String) redisTools.get("education_coupon_amount");
+        if (!ObjectUtils.isEmpty(amount)) {
+            return Result.success(amount);
+        }
+        throw new NotRuleException("系统异常");
+    }
+
 
 }
