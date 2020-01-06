@@ -40,6 +40,12 @@ public class Shop {
     private Double price;
 
     /**
+     * 商品状态（0：下架 1：上架）
+     */
+    @Column(columnDefinition = "double comment '商品状态'")
+    private Integer status;
+
+    /**
      * 商品详情json  eg：[{unitPrice:'6', number:'5'},{unitPrice:'3', number:'6'}]
      */
     @Column(columnDefinition = "varchar(255) comment '商品详情json'")
