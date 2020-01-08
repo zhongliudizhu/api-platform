@@ -1,5 +1,6 @@
 package com.winstar.breakfast.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -43,6 +44,7 @@ public class Shop {
      * 商品状态（0：下架 1：上架）
      */
     @Column(columnDefinition = "double comment '商品状态'")
+    @JsonIgnore
     private Integer status;
 
     /**
