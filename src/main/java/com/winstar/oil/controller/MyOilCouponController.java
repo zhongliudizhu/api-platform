@@ -92,8 +92,9 @@ public class MyOilCouponController {
     @Value("${info.cardUrl_new}")
     private String oilSendNewUrl;
 
-
     private String prefix = "oil_pan_list_";
+
+    private String click_limit = "cbc_oil_click_limit";
 
     @RequestMapping(value = "/sendOilCoupon", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -275,6 +276,15 @@ public class MyOilCouponController {
             logger.info("查看油券功能已关闭！！");
             oilRedisTools.remove(id);
             throw new NotRuleException("oilCoupon.null");
+        }
+        Integer clickNumber = (Integer) oilRedisTools.get(click_limit);
+        if(!ObjectUtils.isEmpty(clickNumber) && clickNumber > 0){
+            List<MyOilCoupon> myOilCoupons = myOilCouponRepository.findByOrderIdAndUseStateAndPanNotNull(myOilCoupon.getOrderId(), "0");
+            if(myOilCoupons.size() >= clickNumber){
+                logger.info("点开未使用的已经达到上限！！");
+                oilRedisTools.remove(id);
+                throw new NotRuleException("oilCoupon.click.limited");
+            }
         }
         long beginTime = System.currentTimeMillis();
         Object popValue = null;
