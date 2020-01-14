@@ -96,6 +96,7 @@ public class CbcWhiteListController {
             if (!ObjectUtils.isEmpty(accountCoupons)) {
                 recList.addAll(accountCoupons);
                 whiteList.setState("1");
+                whiteList.setReceiveCouponId(accountCoupons.get(0).getCouponId());
                 cbcWhiteListRepository.save(whiteList);
             }
         }

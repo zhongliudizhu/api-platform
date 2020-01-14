@@ -75,4 +75,10 @@ public class CbcWhiteList {
     @Column(columnDefinition = "datetime COMMENT '创建时间'")
     private Date createTime;
 
+    /**
+     * 领取的优惠券id
+     */
+    @Column(columnDefinition = "varchar(50) COMMENT '领取的优惠券id'")
+    private String receiveCouponId;
+
 }

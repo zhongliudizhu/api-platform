@@ -71,6 +71,22 @@ public class OilRedisTools {
     }
 
     /**
+     * 集合删除
+     */
+    public Long removeSetMembers(String key, Object... objects) {
+        SetOperations<String, Object> set = redisTemplate.opsForSet();
+        return set.remove(key, objects);
+    }
+
+    /**
+     * 集合是否存在
+     */
+    public boolean setExists(String key, Object value) {
+        SetOperations<String, Object> set = redisTemplate.opsForSet();
+        return set.isMember(key, value);
+    }
+
+    /**
      * set随机取值
      */
     public Object getRandomKeyFromSet(String key){

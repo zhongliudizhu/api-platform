@@ -432,6 +432,7 @@ public class MyOilCouponController {
             if (WsdUtils.isNotEmpty(accountId)) myOilCoupon.setAccountId(accountId);
             if (WsdUtils.isNotEmpty(shopId)) myOilCoupon.setShopId(shopId);
             myOilCoupon.setPan(WsdUtils.isNotEmpty(pan) ? pan : null);
+            if(oilRedisTools.setExists(prefix + myOilCoupon.getPanAmt(), pan)) oilRedisTools.removeSetMembers(prefix + myOilCoupon.getPanAmt(), pan);
             myOilCoupon.setUseDate(WsdUtils.isNotEmpty(useDate) ? useDate : null);
             myOilCoupon.setUseState(WsdUtils.isNotEmpty(useState) ? useState : "0");
             myOilCoupon.setTId(WsdUtils.isNotEmpty(tid) ? tid : null);
