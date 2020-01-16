@@ -1,11 +1,14 @@
 package com.winstar.oil.controller;
 
+import com.winstar.oil.entity.OilBlackList;
 import com.winstar.oil.entity.OilCoupon;
+import com.winstar.oil.repository.OilBlackListRepository;
 import com.winstar.oil.repository.OilCouponRepository;
 import com.winstar.redis.OilRedisTools;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +28,9 @@ public class CouponController {
     OilCouponRepository oilCouponRepository;
 
     @Autowired
+    OilBlackListRepository oilBlackListRepository;
+
+    @Autowired
     OilRedisTools oilRedisTools;
 
     @GetMapping("getOilCouponToRedis")
@@ -36,6 +42,19 @@ public class CouponController {
             List<String> pans = oilCouponList.stream().map(OilCoupon::getPan).collect(Collectors.toList());
             oilRedisTools.addSet(key, pans.toArray());
             log.info("放入缓存成功！");
+        }
+    }
+
+    @GetMapping("getOilBlackOrVipToRedis")
+    public void getBlackList(String accountId, String tag){
+        if(!StringUtils.isEmpty(accountId)){
+            oilRedisTools.addSet(tag.equals("no") ? "cbc_oil_black_list" : "cbc_oil_vip_list", accountId);
+        }else{
+            List<OilBlackList> blackLists = oilBlackListRepository.findByVip(tag);
+            if(!ObjectUtils.isEmpty(blackLists)){
+                List<String> accountIds = blackLists.stream().map(OilBlackList::getAccountId).collect(Collectors.toList());
+                oilRedisTools.addSet(tag.equals("no") ? "cbc_oil_black_list" : "cbc_oil_vip_list", accountIds.toArray());
+            }
         }
     }
 

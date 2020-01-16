@@ -351,13 +351,6 @@ public class MyOilCouponController {
         if(oilRedisTools.setExists(blackList, accountId)){
             logger.info("您是黑名单用户，请联系客服！accountId：" + accountId);
             return true;
-        }else{
-            OilBlackList oilBlackList = oilBlackListRepository.findByAccountId(accountId);
-            if(!ObjectUtils.isEmpty(oilBlackList) && "no".equals(oilBlackList.getVip())){
-                oilRedisTools.addSet(blackList, accountId);
-                logger.info("您是黑名单用户，请联系客服！accountId：" + accountId);
-                return true;
-            }
         }
         return false;
     }
@@ -366,13 +359,6 @@ public class MyOilCouponController {
         if(oilRedisTools.setExists(vipList, accountId)){
             logger.info("您是VIP用户，请通行！accountId：" + accountId);
             return true;
-        }else{
-            OilBlackList oilBlackList = oilBlackListRepository.findByAccountId(accountId);
-            if(!ObjectUtils.isEmpty(oilBlackList) && "yes".equals(oilBlackList.getVip())){
-                oilRedisTools.addSet(vipList, accountId);
-                logger.info("您是VIP用户，请通行！accountId：" + accountId);
-                return true;
-            }
         }
         return false;
     }
