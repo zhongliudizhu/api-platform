@@ -41,9 +41,21 @@ public class OilBlackList {
     private String openId;
 
     /**
+     * 是否是白名单用户  yes/no
+     */
+    @Column(columnDefinition = "varchar(5) comment 'vip'")
+    private String vip;
+
+    /**
      * 创建时间
      */
     @Column(columnDefinition = "datetime comment '用户id'")
     private Date createTime;
+
+    /**
+     * 加入原因
+     */
+    @Column(columnDefinition = "varchar(255) comment '加入黑名单原因'")
+    private String mark;
 
 }

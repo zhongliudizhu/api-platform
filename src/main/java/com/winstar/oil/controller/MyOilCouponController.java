@@ -9,10 +9,7 @@ import com.winstar.exception.MissingParameterException;
 import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.oil.entity.*;
-import com.winstar.oil.repository.LookingUsedCouponRepository;
-import com.winstar.oil.repository.MyOilCouponRepository;
-import com.winstar.oil.repository.OilCouponRepository;
-import com.winstar.oil.repository.OilCouponSearchLogRepository;
+import com.winstar.oil.repository.*;
 import com.winstar.oil.service.OilCouponUpdateService;
 import com.winstar.oil.service.OilStationService;
 import com.winstar.oil.service.SendOilCouponService;
@@ -82,6 +79,9 @@ public class MyOilCouponController {
     LookingUsedCouponRepository lookingUsedCouponRepository;
 
     @Autowired
+    OilBlackListRepository oilBlackListRepository;
+
+    @Autowired
     OilStationService oilStationService;
     @Autowired
     OilRedisTools oilRedisTools;
@@ -95,6 +95,10 @@ public class MyOilCouponController {
     private String prefix = "oil_pan_list_";
 
     private String click_limit = "cbc_oil_click_limit";
+
+    private String blackList = "cbc_oil_black_list";
+
+    private String vipList = "cbc_oil_vip_list";
 
     @RequestMapping(value = "/sendOilCoupon", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -252,6 +256,10 @@ public class MyOilCouponController {
             logger.info("点击过于频繁，请稍后再试！操作Id:" + id);
             throw new NotRuleException("oilCoupon.loading");
         }
+        if(isBlack(accountId)){
+            oilRedisTools.remove(id);
+            throw new NotRuleException("your_is_black");
+        }
         logger.info("时间：" + System.currentTimeMillis() + "，执行的查询id：" + id);
         MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
         if (WsdUtils.isEmpty(myOilCoupon)) {
@@ -272,18 +280,20 @@ public class MyOilCouponController {
             oilRedisTools.remove(id);
             return map;
         }
-        if (!getCouponSwitch()) {
-            logger.info("查看油券功能已关闭！！");
-            oilRedisTools.remove(id);
-            throw new NotRuleException("oilCoupon.null");
-        }
-        Integer clickNumber = (Integer) oilRedisTools.get(click_limit);
-        if(!ObjectUtils.isEmpty(clickNumber) && clickNumber > 0){
-            List<MyOilCoupon> myOilCoupons = myOilCouponRepository.findByOrderIdAndUseStateAndPanNotNull(myOilCoupon.getOrderId(), "0");
-            if(myOilCoupons.size() >= clickNumber){
-                logger.info("点开未使用的已经达到上限！！");
+        if(!isVip(accountId)){
+            if (!getCouponSwitch()) {
+                logger.info("查看油券功能已关闭！！");
                 oilRedisTools.remove(id);
-                throw new NotRuleException("oilCoupon.click.limited");
+                throw new NotRuleException("oilCoupon.null");
+            }
+            Integer clickNumber = (Integer) oilRedisTools.get(click_limit);
+            if(!ObjectUtils.isEmpty(clickNumber) && clickNumber > 0){
+                List<MyOilCoupon> myOilCoupons = myOilCouponRepository.findByOrderIdAndUseStateAndPanNotNull(myOilCoupon.getOrderId(), "0");
+                if(myOilCoupons.size() >= clickNumber){
+                    logger.info("点开未使用的已经达到上限！！");
+                    oilRedisTools.remove(id);
+                    throw new NotRuleException("oilCoupon.click.limited");
+                }
             }
         }
         long beginTime = System.currentTimeMillis();
@@ -337,6 +347,35 @@ public class MyOilCouponController {
         return map;
     }
 
+    private boolean isBlack(String accountId) {
+        if(oilRedisTools.setExists(blackList, accountId)){
+            logger.info("您是黑名单用户，请联系客服！accountId：" + accountId);
+            return true;
+        }else{
+            OilBlackList oilBlackList = oilBlackListRepository.findByAccountId(accountId);
+            if(!ObjectUtils.isEmpty(oilBlackList) && "no".equals(oilBlackList.getVip())){
+                oilRedisTools.addSet(blackList, accountId);
+                logger.info("您是黑名单用户，请联系客服！accountId：" + accountId);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isVip(String accountId){
+        if(oilRedisTools.setExists(vipList, accountId)){
+            logger.info("您是VIP用户，请通行！accountId：" + accountId);
+            return true;
+        }else{
+            OilBlackList oilBlackList = oilBlackListRepository.findByAccountId(accountId);
+            if(!ObjectUtils.isEmpty(oilBlackList) && "yes".equals(oilBlackList.getVip())){
+                oilRedisTools.addSet(vipList, accountId);
+                logger.info("您是VIP用户，请通行！accountId：" + accountId);
+                return true;
+            }
+        }
+        return false;
+    }
 
     private boolean getCouponSwitch() {
         String coupon_switch = (String) oilRedisTools.get("cbc_coupon_switch");
