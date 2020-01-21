@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 名称： OilCouponRepository
@@ -17,5 +18,7 @@ public interface OilCouponRepository extends JpaSpecificationExecutor<OilCoupon>
     OilCoupon findByPan(String pan);
 
     List<OilCoupon> findByOilStateAndPanAmt(String oilState, Double panAmt);
+
+    List<OilCoupon> findByPanIn(Set<String> pans);
 
 }

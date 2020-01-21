@@ -2,11 +2,15 @@ package com.winstar.oil.service;
 
 import com.winstar.oil.entity.MyOilCoupon;
 import com.winstar.oil.repository.MyOilCouponRepository;
+import com.winstar.order.entity.OilOrder;
+import com.winstar.order.repository.OilOrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -25,6 +29,8 @@ public class MyOilCouponService {
 
     @Autowired
     MyOilCouponRepository myOilCouponRepository;
+    @Autowired
+    OilOrderRepository oilOrderRepository;
 
 //    public Page<MyOilCoupon> findUsedCoupon(String accountId, List<String> ids, Pageable pageable){
 //        return myOilCouponRepository.findByAccountIdAndUseStateAndIdNotIn(accountId,"1",ids,pageable);
@@ -70,6 +76,13 @@ public class MyOilCouponService {
             }
         }, pageable);
         return  page;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void saveOrderAndMyOilCoupon(List<MyOilCoupon> myOilCoupons, OilOrder oilOrder) {
+        myOilCouponRepository.save(myOilCoupons);
+        oilOrderRepository.save(oilOrder);
+
     }
 
 }
