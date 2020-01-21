@@ -50,4 +50,6 @@ public interface MyOilCouponRepository extends JpaSpecificationExecutor<MyOilCou
 
     MyOilCoupon findByPanAndOrderId(String pan, String orderId);
 
+    List<MyOilCoupon> findByAccountId(String accountId);
+
 }
