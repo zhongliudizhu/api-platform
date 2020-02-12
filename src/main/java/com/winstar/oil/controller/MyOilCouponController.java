@@ -10,6 +10,7 @@ import com.winstar.exception.NotFoundException;
 import com.winstar.exception.NotRuleException;
 import com.winstar.oil.entity.*;
 import com.winstar.oil.repository.*;
+import com.winstar.oil.service.KDTree;
 import com.winstar.oil.service.OilCouponUpdateService;
 import com.winstar.oil.service.OilStationService;
 import com.winstar.oil.service.SendOilCouponService;
@@ -243,6 +244,7 @@ public class MyOilCouponController {
     @ResponseStatus(HttpStatus.OK)
     public Map<String, Object> findList(
             @PathVariable(name = "id") String id,
+            @RequestParam double[] pos,
             HttpServletRequest request
     ) throws Exception {
         String accountId = accountService.getAccountId(request);
@@ -263,6 +265,17 @@ public class MyOilCouponController {
             oilRedisTools.remove(id);
             throw new NotRuleException(limitUserCode);
         }
+
+        KDTree tree = oilStationService.getOilStationTree();
+
+        double[] res = tree.query(pos);
+        double distance = oilStationService.getDistance(pos[1], pos[0], res[1], res[0]);
+        if (distance > 1000) {
+            logger.error("加油站离您较远，请先行驶至加油站后使用加油券 distance is {} ", distance);
+            oilRedisTools.remove(id);
+            throw new NotRuleException("distance.far");
+        }
+
         logger.info("时间：" + System.currentTimeMillis() + "，执行的查询id：" + id);
         MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
         if (WsdUtils.isEmpty(myOilCoupon)) {
