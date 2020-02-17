@@ -244,7 +244,7 @@ public class MyOilCouponController {
     @ResponseStatus(HttpStatus.OK)
     public Map<String, Object> findList(
             @PathVariable(name = "id") String id,
-            @RequestParam double[] pos,
+            @RequestParam(required = false) double[] pos,
             HttpServletRequest request
     ) throws Exception {
         String accountId = accountService.getAccountId(request);
@@ -265,15 +265,19 @@ public class MyOilCouponController {
             oilRedisTools.remove(id);
             throw new NotRuleException(limitUserCode);
         }
-
-        KDTree tree = oilStationService.getOilStationTree();
-
-        double[] res = tree.query(pos);
-        double distance = oilStationService.getDistance(pos[1], pos[0], res[1], res[0]);
-        if (distance > 1000) {
-            logger.error("加油站离您较远，请先行驶至加油站后使用加油券 distance is {} ", distance);
-            oilRedisTools.remove(id);
-            throw new NotRuleException("distance.far");
+        if ("yes".equals(oilRedisTools.get("check_pos_switch"))) {
+            logger.info("电子围栏功能已开启");
+            if (ObjectUtils.isEmpty(pos)) {
+                throw new NotRuleException("pos.null");
+            }
+            KDTree tree = oilStationService.getOilStationTree();
+            double[] res = tree.query(pos);
+            double distance = oilStationService.getDistance(pos[1], pos[0], res[1], res[0]);
+            if (distance > 1000) {
+                logger.error("加油站离您较远，请先行驶至加油站后使用加油券 distance is {} ", distance);
+                oilRedisTools.remove(id);
+                throw new NotRuleException("distance.far");
+            }
         }
 
         logger.info("时间：" + System.currentTimeMillis() + "，执行的查询id：" + id);
