@@ -240,6 +240,20 @@ public class MyOilCouponController {
         return myOilCoupons;
     }
 
+    /**
+     * 查看电子围栏功能开关
+     */
+    @RequestMapping("/oilSwitch")
+    public com.winstar.vo.Result checkSwitch() {
+        String posSwitch = (String) oilRedisTools.get("check_pos_switch");
+        if (ObjectUtils.isEmpty(posSwitch)) {
+            posSwitch = "no";
+            oilRedisTools.set("check_pos_switch", posSwitch, null);
+        }
+        logger.info("posSwitch is {}", posSwitch);
+        return com.winstar.vo.Result.success(posSwitch);
+    }
+
     @RequestMapping(value = "/searchPan/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public Map<String, Object> findList(
