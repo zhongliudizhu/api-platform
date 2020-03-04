@@ -310,7 +310,12 @@ public class MyOilCouponController {
             String pan = AESUtil.decrypt(myOilCoupon.getPan(), AESUtil.dekey);
             map.put("result", AESUtil.encrypt(pan, AESUtil.key));
             saveSearchLog(accountId, WsdUtils.getIpAddress(request), myOilCoupon.getPan(), myOilCoupon.getOrderId());
-            activateOilCoupon(myOilCoupon.getPan(), myOilCoupon.getPanAmt());
+            try {
+                activateOilCoupon(myOilCoupon.getPan(), myOilCoupon.getPanAmt());
+            } catch (Exception e) {
+                logger.info("易通接口激活异常！！！");
+                throw new NotRuleException("yitong.error");
+            }
             oilRedisTools.remove(id);
             return map;
         }
