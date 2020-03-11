@@ -94,12 +94,12 @@ public class VerificationCardController {
                 }else{
                     useDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
                 }
-                updateOilCoupon(myOilCoupon,"1",useDate,MapUtils.getString(map, "tid"));
+                updateOilCoupon(myOilCoupon,"1",useDate,MapUtils.getString(map, "tid"),MapUtils.getString(map, "memo"));
                 result.setCode("SUCCESS");
                 oilCouponVerificationLog.setType(1);
             }else if("0".equals(MapUtils.getString(map, "cardStatus"))){
                 logger.info(aesPan + "撤销成功！");
-                updateOilCoupon(myOilCoupon,"0",null,null);
+                updateOilCoupon(myOilCoupon,"0",null,null,null);
                 result.setCode("SUCCESS");
                 oilCouponVerificationLog.setType(2);
             }else{
@@ -116,11 +116,12 @@ public class VerificationCardController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    private void updateOilCoupon(MyOilCoupon myOilCoupon,String useState,String useDate,String tId) {
+    private void updateOilCoupon(MyOilCoupon myOilCoupon,String useState,String useDate,String tId, String memo) {
         if(WsdUtils.isNotEmpty(myOilCoupon)){
             myOilCoupon.setUseState(useState);
             myOilCoupon.setUseDate(useDate);
             myOilCoupon.setTId(tId);
+            myOilCoupon.setMemo(memo);
             myOilCouponRepository.save(myOilCoupon);
             logger.info("电子券状态修改成功！");
         }

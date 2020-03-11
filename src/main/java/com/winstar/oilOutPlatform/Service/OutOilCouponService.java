@@ -99,6 +99,7 @@ public class OutOilCouponService {
                 outOilCoupon.setUseState("1");
                 outOilCoupon.setUseDate(useDate);
                 outOilCoupon.setTId(tId);
+                outOilCoupon.setMemo(MapUtils.getString(map, "memo"));
                 result.setCode("SUCCESS");
                 OilStation oilStation = oilStationService.getOilStation(tId);
                 String tName = "陕西省";

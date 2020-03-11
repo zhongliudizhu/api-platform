@@ -100,4 +100,10 @@ public class MyOilCoupon {
     @Transient
     private Double payPrice;
 
+    /**
+     * 加油油品
+     */
+    @Column(columnDefinition = "varchar(50) comment '加油油品'")
+    private String memo;
+
 }

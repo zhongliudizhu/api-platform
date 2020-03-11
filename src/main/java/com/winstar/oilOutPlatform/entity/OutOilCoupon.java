@@ -112,4 +112,10 @@ public class OutOilCoupon {
     @Column(columnDefinition = "varchar(50) comment '商户号'")
     private String merchant;
 
+    /**
+     * 加油油品
+     */
+    @Column(columnDefinition = "varchar(50) comment '加油油品'")
+    private String memo;
+
 }
