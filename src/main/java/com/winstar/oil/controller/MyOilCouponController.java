@@ -269,19 +269,16 @@ public class MyOilCouponController {
             logger.info("点击过于频繁，请稍后再试！操作Id:" + id);
             throw new NotRuleException("oilCoupon.loading");
         }
+        //第一层：判断是否是黑名单，是黑名单直接返回
         if(OilCouponUseLimitUtils.isBlack(accountId)){
             oilRedisTools.remove(id);
             throw new NotRuleException("your_is_black");
         }
-        String limitUserCode = OilCouponUseLimitUtils.isLimitUser(id, accountId);
-        if(!StringUtils.isEmpty(limitUserCode)){
-            logger.info("您是受限制用户，已经达到规定的限制，code：" + limitUserCode);
-            oilRedisTools.remove(id);
-            throw new NotRuleException(limitUserCode);
-        }
-        if ("yes".equals(oilRedisTools.get("check_pos_switch"))) {
+        //第二层：判断电子围栏是否开启（vip不受影响），如果开启判断是否距离油站1公里以内，不在直接返回
+        if (!OilCouponUseLimitUtils.isVip(accountId) && "yes".equals(oilRedisTools.get("check_pos_switch"))) {
             logger.info("电子围栏功能已开启");
             if (ObjectUtils.isEmpty(pos)) {
+                oilRedisTools.remove(id);
                 throw new NotRuleException("pos.null");
             }
             KDTree tree = oilStationService.getOilStationTree();
@@ -293,7 +290,13 @@ public class MyOilCouponController {
                 throw new NotRuleException("distance.far");
             }
         }
-
+        //第三层：判断是否是受限制用户，如果是判断是否达到限制，达到直接返回
+        String limitUserCode = OilCouponUseLimitUtils.isLimitUser(id, accountId);
+        if(!StringUtils.isEmpty(limitUserCode)){
+            logger.info("您是受限制用户，已经达到规定的限制，code：" + limitUserCode);
+            oilRedisTools.remove(id);
+            throw new NotRuleException(limitUserCode);
+        }
         logger.info("时间：" + System.currentTimeMillis() + "，执行的查询id：" + id);
         MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
         if (WsdUtils.isEmpty(myOilCoupon)) {
@@ -319,6 +322,7 @@ public class MyOilCouponController {
             oilRedisTools.remove(id);
             return map;
         }
+        //第四层：判断是否是vip用户，如果是vip不受油券库存开关的影响
         if(!OilCouponUseLimitUtils.isVip(accountId)){
             if (!OilCouponUseLimitUtils.getCouponSwitch()) {
                 logger.info("查看油券功能已关闭！！");
