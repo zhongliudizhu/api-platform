@@ -132,7 +132,7 @@ public class InvoiceController {
         OilOrder order = oilOrderService.getOneOrder(orderId);
         double num = order.getItemTotalValue() / myOilCoupon.getPanAmt();
         Double knockGold = 0.0;
-        if (order.getPayType() == 2) {
+        if (2 == order.getPayType()) {
             List<PayOrder> payOrders = payOrderRepository.findByOrderNumberAndState(order.getSerialNumber(), EnumType.PAY_STATE_SUCCESS.valueStr());
             if (WsdUtils.isNotEmpty(payOrders.get(0).getCouponFee())) {
                 knockGold = Double.parseDouble(payOrders.get(0).getCouponFee()) / 100;
