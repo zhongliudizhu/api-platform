@@ -13,6 +13,7 @@ import com.winstar.invoice.repository.InvoiceItemRepository;
 import com.winstar.invoice.repository.InvoiceRepository;
 import com.winstar.invoice.repository.InvoiceStockSwitchRepository;
 import com.winstar.oil.entity.MyOilCoupon;
+import com.winstar.oil.repository.MyOilCouponRepository;
 import com.winstar.oil.service.MyOilCouponService;
 import com.winstar.order.entity.OilOrder;
 import com.winstar.order.service.OilOrderService;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author shoo on 2017/10/23 15:16.
@@ -47,6 +49,8 @@ public class InvoiceController {
 
     @Autowired
     MyOilCouponService myOilCouponService;
+    @Autowired
+    MyOilCouponRepository myOilCouponRepository;
 
     @Autowired
     AccountService accountService;
@@ -110,29 +114,23 @@ public class InvoiceController {
         calendar.add(Calendar.DATE, -3);//三天前
         Date endTime = calendar.getTime();
 
-//        calendar.setTime(now);
-//        calendar.add(Calendar.MONTH, -3);//三月前
-//        Date startTime = calendar.getTime();
-
         Page<MyOilCoupon> page = myOilCouponService.findUsedCoupon(accountId, endTime, ids, pageable);
-        List<MyOilCoupon> list = page.getContent();
+        List<MyOilCoupon> list = page.getContent().stream().filter(e -> !e.getOrderId().contains("赠")).collect(Collectors.toList());
 
         if (list.size() == 0) throw new NotFoundException("MyOilCoupon");
+//        list.removeIf(e -> e.getOrderId().contains("赠"));
         for (MyOilCoupon coupon : list) {
-            coupon = this.reckon(coupon, coupon.getOrderId());
+            reckon(coupon, coupon.getOrderId());
         }
-
         return list;
     }
 
     public MyOilCoupon reckon(MyOilCoupon myOilCoupon, String orderId) throws NotFoundException {
-//        List<MyOilCoupon> oils = myOilCouponService.findByOrderId(orderId);
-//        OilOrder order = oilOrderService.getOneOrder(orderId);
 
         OilOrder order = oilOrderService.getOneOrder(orderId);
         double num = order.getItemTotalValue() / myOilCoupon.getPanAmt();
         Double knockGold = 0.0;
-        if (2 == order.getPayType()) {
+        if (order.getPayType() == 2) {
             List<PayOrder> payOrders = payOrderRepository.findByOrderNumberAndState(order.getSerialNumber(), EnumType.PAY_STATE_SUCCESS.valueStr());
             if (WsdUtils.isNotEmpty(payOrders.get(0).getCouponFee())) {
                 knockGold = Double.parseDouble(payOrders.get(0).getCouponFee()) / 100;
