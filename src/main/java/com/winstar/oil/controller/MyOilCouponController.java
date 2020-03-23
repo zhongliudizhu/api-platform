@@ -326,7 +326,7 @@ public class MyOilCouponController {
             smsService.sendSms("15398091830", "张林，易通激活接口异常，5分钟内已经激活失败10次以上，请赶紧联系相关人员处理！");
             smsService.sendSms("15202487994", "刘优，易通激活接口异常，5分钟内已经激活失败10次以上，请赶紧联系相关人员处理！");
             smsService.sendSms("18789427822", "王莉莉，易通激活接口异常，5分钟内已经激活失败10次以上，请赶紧联系相关人员处理！");
-            smsService.sendSms("18754067867", "宋丽莹，易通激活接口异常，5分钟内已经激活失败10次以上，请赶紧联系相关人员处理！");
+            smsService.sendSms("18629660839", "宋丽莹，易通激活接口异常，5分钟内已经激活失败10次以上，请赶紧联系相关人员处理！");
             smsService.sendSms("18700861981", "浩哥，易通激活接口异常，5分钟内已经激活失败10次以上，请赶紧联系相关人员处理！");
         }
         if (WsdUtils.isNotEmpty(myOilCoupon.getPan())) {
