@@ -2,6 +2,7 @@ package com.winstar.oil.controller;
 
 import com.google.common.collect.Maps;
 import com.winstar.ActiveOilCoupon;
+import com.winstar.activityCenter.service.SmsService;
 import com.winstar.cashier.comm.EnumType;
 import com.winstar.cashier.entity.PayOrder;
 import com.winstar.cashier.repository.PayOrderRepository;
@@ -88,6 +89,9 @@ public class MyOilCouponController {
     @Autowired
     OilRedisTools oilRedisTools;
 
+    @Autowired
+    SmsService smsService;
+
     @Value("${info.cardUrl}")
     private String oilSendUrl;
 
@@ -97,6 +101,8 @@ public class MyOilCouponController {
     private String prefix = "oil_pan_list_";
 
     private String click_limit = "cbc_oil_click_limit";
+
+    private String active_error = "cbc_oil_active_error";
 
     @RequestMapping(value = "/sendOilCoupon", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -271,10 +277,27 @@ public class MyOilCouponController {
         }
         //第一层：判断是否是黑名单，是黑名单直接返回
         if(OilCouponUseLimitUtils.isBlack(accountId)){
+            logger.info(accountId + "是黑名单用户！");
             oilRedisTools.remove(id);
             throw new NotRuleException("your_is_black");
         }
-        //第二层：判断电子围栏是否开启（vip不受影响），如果开启判断是否距离油站1公里以内，不在直接返回
+        logger.info("时间：" + System.currentTimeMillis() + "，执行的查询id：" + id);
+        MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
+        if (WsdUtils.isEmpty(myOilCoupon)) {
+            oilRedisTools.remove(id);
+            throw new NotFoundException("oilCoupon.not_found");
+        }
+        if (!accountId.equals(myOilCoupon.getAccountId())) {
+            oilRedisTools.remove(id);
+            throw new NotRuleException("oilCoupon.not_is_you");
+        }
+        //第二层：库存是否有或者库存开关是否开启
+        if((!OilCouponUseLimitUtils.getCouponSwitch() || oilRedisTools.getSetSize(prefix + myOilCoupon.getPanAmt()) <= 0) && WsdUtils.isEmpty(myOilCoupon.getPan())){
+            logger.info("未点开油券，库存开关关闭或者无库存。开关：" + OilCouponUseLimitUtils.getCouponSwitch() + ",库存：" + oilRedisTools.getSetSize(prefix + myOilCoupon.getPanAmt()));
+            oilRedisTools.remove(id);
+            throw new NotRuleException("oilCoupon.null");
+        }
+        //第三层：判断电子围栏是否开启（vip不受影响），如果开启判断是否距离油站1公里以内，不在直接返回
         if (!OilCouponUseLimitUtils.isVip(accountId) && "yes".equals(oilRedisTools.get("check_pos_switch"))) {
             logger.info("电子围栏功能已开启");
             if (ObjectUtils.isEmpty(pos)) {
@@ -290,22 +313,21 @@ public class MyOilCouponController {
                 throw new NotRuleException("distance.far");
             }
         }
-        //第三层：判断是否是受限制用户，如果是判断是否达到限制，达到直接返回
+        //第四层：判断是否是受限制用户（后台添加限制名单和点击数量），如果是判断是否达到限制，达到直接返回
         String limitUserCode = OilCouponUseLimitUtils.isLimitUser(id, accountId);
         if(!StringUtils.isEmpty(limitUserCode)){
             logger.info("您是受限制用户，已经达到规定的限制，code：" + limitUserCode);
             oilRedisTools.remove(id);
             throw new NotRuleException(limitUserCode);
         }
-        logger.info("时间：" + System.currentTimeMillis() + "，执行的查询id：" + id);
-        MyOilCoupon myOilCoupon = myOilCouponRepository.findOne(id);
-        if (WsdUtils.isEmpty(myOilCoupon)) {
-            oilRedisTools.remove(id);
-            throw new NotFoundException("oilCoupon.not_found");
-        }
-        if (!accountId.equals(myOilCoupon.getAccountId())) {
-            oilRedisTools.remove(id);
-            throw new NotRuleException("oilCoupon.not_is_you");
+        //判断油券激活是否异常
+        Integer activeErrorNumber = ObjectUtils.isEmpty(oilRedisTools.get(active_error)) ? 0 : (Integer) oilRedisTools.get(active_error);
+        if(activeErrorNumber > 10 && oilRedisTools.setIfAbsent("active_error_send_message_limit", 1800L)){
+            smsService.sendSms("15398091830", "张林，易通激活接口异常，5分钟内已经激活失败10次以上，请赶紧联系相关人员处理！");
+            smsService.sendSms("15202487994", "刘优，易通激活接口异常，5分钟内已经激活失败10次以上，请赶紧联系相关人员处理！");
+            smsService.sendSms("18789427822", "王莉莉，易通激活接口异常，5分钟内已经激活失败10次以上，请赶紧联系相关人员处理！");
+            smsService.sendSms("18754067867", "宋丽莹，易通激活接口异常，5分钟内已经激活失败10次以上，请赶紧联系相关人员处理！");
+            smsService.sendSms("18700861981", "浩哥，易通激活接口异常，5分钟内已经激活失败10次以上，请赶紧联系相关人员处理！");
         }
         if (WsdUtils.isNotEmpty(myOilCoupon.getPan())) {
             logger.info("已经分配过券码，直接返回，券码：" + myOilCoupon.getPan());
@@ -317,6 +339,7 @@ public class MyOilCouponController {
                 activateOilCoupon(myOilCoupon.getPan(), myOilCoupon.getPanAmt());
             } catch (Exception e) {
                 logger.info("易通接口激活异常！！！");
+                oilRedisTools.set(active_error, activeErrorNumber + 1, 300L);
                 throw new NotRuleException("yitong.error");
             }
             oilRedisTools.remove(id);
@@ -329,6 +352,7 @@ public class MyOilCouponController {
                 oilRedisTools.remove(id);
                 throw new NotRuleException("oilCoupon.null");
             }
+            //第五层：点开未使用的是否达到上限（不受用户影响）
             Integer clickNumber = (Integer) oilRedisTools.get(click_limit);
             if(!ObjectUtils.isEmpty(clickNumber) && clickNumber > 0){
                 List<MyOilCoupon> myOilCoupons = myOilCouponRepository.findByOrderIdAndUseStateAndPanNotNull(myOilCoupon.getOrderId(), "0");
@@ -359,6 +383,7 @@ public class MyOilCouponController {
         }catch (Exception e){
             logger.error("易通激活接口异常，拿出的券回归缓存中");
             oilRedisTools.addSet(prefix + myOilCoupon.getPanAmt(), popValue);
+            oilRedisTools.set(active_error, activeErrorNumber + 1, 300L);
             oilRedisTools.remove(id);
         }
         if (WsdUtils.isNotEmpty(activeResult) && activeResult.getCode().equals("SUCCESS")) {
