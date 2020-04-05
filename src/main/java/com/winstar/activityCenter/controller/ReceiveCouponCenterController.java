@@ -71,26 +71,34 @@ public class ReceiveCouponCenterController {
     }
 
     @RequestMapping(value = "/setYbsNumber", method = RequestMethod.GET)
-    public void setYbsNumber(String templateIds, String switchStr, Integer number){
+    public String setYbsNumber(String templateIds, String switchStr, Integer number, String query){
         if(!StringUtils.isEmpty(switchStr)){
             redisTools.set(ybsStockSwitch, switchStr);
         }
-        if(number <= 0){
-            redisTools.remove(ybsListKey);
-            redisTools.remove(ybsTemplateSet);
+        StringBuilder str = new StringBuilder();
+        str.append("当前开关状态：").append(switchStr);
+        if(!StringUtils.isEmpty(query)){
+           str.append("，剩余数量：").append(redisTools.size(ybsListKey));
         }else{
-            redisTools.remove(ybsListKey);
-            redisTools.remove(ybsTemplateSet);
-            List<Object> list = new ArrayList<>();
-            for (int i = 0; i < number; i++) {
-                list.add("1");
+            if(number <= 0){
+                redisTools.remove(ybsListKey);
+                redisTools.remove(ybsTemplateSet);
+            }else{
+                redisTools.remove(ybsListKey);
+                redisTools.remove(ybsTemplateSet);
+                List<Object> list = new ArrayList<>();
+                for (int i = 0; i < number; i++) {
+                    list.add("1");
+                }
+                redisTools.rightPushAll(ybsListKey, list);
+                for(String s : templateIds.split(",")){
+                    redisTools.add(ybsTemplateSet, s);
+                }
+                log.info(ybsListKey + "的集合长度：" + redisTools.size(ybsListKey));
             }
-            redisTools.rightPushAll(ybsListKey, list);
-            for(String s : templateIds.split(",")){
-                redisTools.add(ybsTemplateSet, s);
-            }
-            log.info(ybsListKey + "的集合长度：" + redisTools.size(ybsListKey));
+            str.append("，设置数量为：").append(redisTools.size(ybsListKey));
         }
+        return str.toString();
     }
 
     /**
