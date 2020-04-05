@@ -238,11 +238,7 @@ public class AccountCouponService {
             accountCouponRepository.save(accountCoupons);
             String key = COUPON_LIST_PREFIX + domain.getAccountId();
             log.info("发放优惠券成功！accountId is {} and templateId is {}", domain.getAccountId(), domain.getTemplateId());
-            if (couponRedisTools.exists(key)) {
-                couponRedisTools.hmPutAll(key, accountCoupons.stream().collect(Collectors.toMap(AccountCoupon::getCouponId, Function.identity())));
-            } else {
-                log.info("redis不存在key: {}", key);
-            }
+            couponRedisTools.hmPutAll(key, accountCoupons.stream().collect(Collectors.toMap(AccountCoupon::getCouponId, Function.identity())));
             accountCoupons.forEach(e -> {
                 if (ObjectUtils.isEmpty(couponRedisTools.hmGet(key, e.getCouponId()))) {
                     log.info("redis写入失败 --" + e.getCouponId());

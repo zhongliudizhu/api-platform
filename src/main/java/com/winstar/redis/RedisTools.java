@@ -163,6 +163,14 @@ public class RedisTools {
     }
 
     /**
+     * 集合删除
+     */
+    public Long removeSet(String key, String value) {
+        SetOperations<String, Object> set = redisTemplate.opsForSet();
+        return set.remove(key, value);
+    }
+
+    /**
      * 集合是否存在
      */
     public boolean setExists(String key, Object value) {

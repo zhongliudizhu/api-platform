@@ -86,7 +86,9 @@ public class ReceiveCouponCenterController {
                 list.add("1");
             }
             redisTools.rightPushAll(ybsListKey, list);
-            redisTools.add(ybsTemplateSet, templateIds.split(","));
+            for(String s : templateIds.split(",")){
+                redisTools.add(ybsTemplateSet, s);
+            }
             log.info(ybsListKey + "的集合长度：" + redisTools.size(ybsListKey));
         }
     }
@@ -132,24 +134,30 @@ public class ReceiveCouponCenterController {
         Long result = redisTools.add("ysbsc_accountId", "ybssc-is-purchase-" + accountId);
         if (result > 0) {
             log.info("抢券成功！");
-            List<AccountCoupon> accountCouponList = accountCouponService.getAccountCouponFromRedisHash(accountId);
-            List<AccountCoupon> accountCoupons;
-            Set<Object> tIds = redisTools.setMembers(ybsTemplateSet);
-            for (Object tId : tIds) {
-                if (redisTools.setIfAbsent("getting_coupon_" + tId + "_" + accountId, 10)) {
-                    if(ObjectUtils.isEmpty(accountCouponList)){
-                        accountCoupons = accountCouponRepository.findByAccountIdAndTemplateId(accountId, tId.toString());
-                    }else{
-                        accountCoupons = accountCouponList.stream().filter(s -> tId.toString().equals(s.getTemplateId())).collect(Collectors.toList());
+            try {
+                List<AccountCoupon> accountCouponList = accountCouponService.getAccountCouponFromRedisHash(accountId);
+                List<AccountCoupon> accountCoupons;
+                Set<Object> tIds = redisTools.setMembers(ybsTemplateSet);
+                for (Object tId : tIds) {
+                    if (redisTools.setIfAbsent("getting_coupon_" + tId + "_" + accountId, 10)) {
+                        if(ObjectUtils.isEmpty(accountCouponList)){
+                            accountCoupons = accountCouponRepository.findByAccountIdAndTemplateId(accountId, tId.toString());
+                        }else{
+                            accountCoupons = accountCouponList.stream().filter(s -> tId.toString().equals(s.getTemplateId())).collect(Collectors.toList());
+                        }
+                        if (!ObjectUtils.isEmpty(accountCoupons)) {
+                            log.info("该用户已经领过杨博士说车优惠券，不能再领取了：accountId is {} and templateId is {}", accountId, tId);
+                            return Result.fail("activity_coupon_receive", "您已经领过券了，不能重复领取！");
+                        }
+                        SendCouponDomain domain = new SendCouponDomain(tId.toString(), accountId, AccountCoupon.TYPE_YJX, "1", null, null);
+                        accountCouponService.sendCoupon(domain, redisTools);
+                        return Result.success(new HashMap<>());
                     }
-                    if (!ObjectUtils.isEmpty(accountCoupons)) {
-                        log.info("该用户已经领过杨博士说车优惠券，不能再领取了：accountId is {} and templateId is {}", accountId, tId);
-                        return Result.fail("activity_coupon_receive", "您已经领过券了，不能重复领取！");
-                    }
-                    SendCouponDomain domain = new SendCouponDomain(tId.toString(), accountId, AccountCoupon.TYPE_YJX, "1", null, null);
-                    accountCouponService.sendCoupon(domain, redisTools);
-                    return Result.success(new HashMap<>());
                 }
+            } catch (Exception e){
+                redisTools.remove("ysbsc_accountId", "ybssc-is-purchase-" + accountId);
+                redisTools.rightPush(ybsListKey, 1);
+                log.info("发放优惠券异常！", e);
             }
         }
         log.info("已经抢过一次了，把占用的名额恢复到待抢列表中！");
