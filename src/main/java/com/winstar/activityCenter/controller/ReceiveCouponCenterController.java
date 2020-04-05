@@ -147,13 +147,13 @@ public class ReceiveCouponCenterController {
                         }
                         if (!ObjectUtils.isEmpty(accountCoupons)) {
                             log.info("该用户已经领过杨博士说车优惠券，不能再领取了：accountId is {} and templateId is {}", accountId, tId);
-                            return Result.fail("activity_coupon_receive", "您已经领过券了，不能重复领取！");
+                            continue;
                         }
                         SendCouponDomain domain = new SendCouponDomain(tId.toString(), accountId, AccountCoupon.TYPE_YJX, "1", null, null);
                         accountCouponService.sendCoupon(domain, redisTools);
-                        return Result.success(new HashMap<>());
                     }
                 }
+                return Result.success(new HashMap<>());
             } catch (Exception e){
                 redisTools.remove("ysbsc_accountId", "ybssc-is-purchase-" + accountId);
                 redisTools.rightPush(ybsListKey, 1);
