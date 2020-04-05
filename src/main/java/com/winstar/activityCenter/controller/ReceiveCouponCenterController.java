@@ -55,13 +55,18 @@ public class ReceiveCouponCenterController {
 
     @RequestMapping(value = "/setNumber", method = RequestMethod.GET)
     public void setNumber(String listKey, Integer number) {
-        redisTools.remove(listKey);
-        List<Object> list = new ArrayList<>();
-        for (int i = 0; i < number; i++) {
-            list.add("1");
+        if(number <= 0){
+            redisTools.remove(listKey);
+            log.info(listKey + "已删除！");
+        }else{
+            redisTools.remove(listKey);
+            List<Object> list = new ArrayList<>();
+            for (int i = 0; i < number; i++) {
+                list.add("1");
+            }
+            redisTools.rightPushAll(listKey, list);
+            log.info(listKey + "的集合长度：" + redisTools.size(listKey));
         }
-        redisTools.rightPushAll(listKey, list);
-        log.info(listKey + "的集合长度：" + redisTools.size(listKey));
     }
 
     /**
