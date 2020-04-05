@@ -54,7 +54,8 @@ public class ReceiveCouponCenterController {
     CommunalActivityService activityService;
 
     @RequestMapping(value = "/setNumber", method = RequestMethod.GET)
-    public void setNumber(String listKey, Integer number) {
+    public void setNumber(String listKey, String switchStr, Integer number) {
+        redisTools.set(listKey + "_switch", switchStr);
         if(number <= 0){
             redisTools.remove(listKey);
             log.info(listKey + "已删除！");
@@ -74,8 +75,12 @@ public class ReceiveCouponCenterController {
      */
     @RequestMapping(value = "/haveStock", method = RequestMethod.GET)
     public Result getStock(String templateId){
+        String switchStr = (String) redisTools.get("ysbsc_stock_" + templateId + "_switch");
+        if(StringUtils.isEmpty(switchStr) || "off".equals(switchStr)){
+            return Result.success(false);
+        }
         Long size = redisTools.size("ysbsc_stock_" + templateId);
-        if(size > 0){
+        if("on".equals(switchStr) && size > 0){
             return Result.success(true);
         }
         return Result.success(false);
