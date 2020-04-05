@@ -15,6 +15,7 @@ import com.winstar.user.utils.ServiceManager;
 import com.winstar.vo.ReceiveCouponVo;
 import com.winstar.vo.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -22,10 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -64,6 +62,69 @@ public class ReceiveCouponCenterController {
         }
         redisTools.rightPushAll(listKey, list);
         log.info(listKey + "的集合长度：" + redisTools.size(listKey));
+    }
+
+    /**
+     * 判断限时抢购的库存
+     */
+    @RequestMapping(value = "/haveStock", method = RequestMethod.GET)
+    public Result getStock(String templateId){
+        Long size = redisTools.size("ysbsc_stock_" + templateId);
+        if(size > 0){
+            return Result.success(true);
+        }
+        return Result.success(false);
+    }
+
+    /**
+     * 通过openId抢购领券
+     */
+    @RequestMapping(value = "/coupon/byOpenId", method = RequestMethod.POST)
+    public Result purchaseCouponByOpenId(@RequestBody Map map){
+        log.info("通过openId抢购优惠券开始==========");
+        String openId = MapUtils.getString(map, "openId");
+        if(ObjectUtils.isEmpty(openId)){
+            log.info("openId不能为空！");
+            return Result.fail("missing_param_openId", "openId不能为空！");
+        }
+        String templateId = MapUtils.getString(map, "templateId");
+        if(ObjectUtils.isEmpty(templateId)){
+            log.info("templateId不能为空！");
+            return Result.fail("missing_param_templateId", "templateId不能为空！");
+        }
+        String accountId = accountService.findAccountIdByOpenid(openId);
+        if (!redisTools.setIfAbsent("ybssc_" + accountId, 1)) {
+            log.info("1秒之内禁止重复抢购！");
+            return Result.fail("click_fast", "请勿频繁点击！");
+        }
+        String listKey = "ysbsc_stock_" + templateId;
+        Object popValue = redisTools.leftPop(listKey);
+        if (ObjectUtils.isEmpty(popValue)) {
+            log.info("券已经被抢完了，没有了，下次再来吧！");
+            redisTools.remove(listKey);
+            return Result.fail("coupon_over", "券已经被抢完了，没有了，下次再来吧！");
+        }
+        Long result = redisTools.add("ysbsc_accountId", templateId + "-is-purchase-" + accountId);
+        if (result > 0) {
+            log.info("抢券成功！");
+            List<AccountCoupon> accountCouponList = accountCouponService.getAccountCouponFromRedisHash(accountId);
+            List<AccountCoupon> accountCoupons;
+            if(ObjectUtils.isEmpty(accountCouponList)){
+                accountCoupons = accountCouponRepository.findByAccountIdAndTemplateId(accountId, templateId);
+            }else{
+                accountCoupons = accountCouponList.stream().filter(s -> templateId.equals(s.getTemplateId())).collect(Collectors.toList());
+            }
+            if (!ObjectUtils.isEmpty(accountCoupons)) {
+                log.info("该用户已经领过杨博士说车优惠券，不能再领取了：accountId is {} and templateId is {}", accountId, templateId);
+                return Result.fail("activity_coupon_receive", "您已经领过券了，不能重复领取！");
+            }
+            SendCouponDomain domain = new SendCouponDomain(templateId, accountId, AccountCoupon.TYPE_YJX, "1", null, null);
+            accountCouponService.sendCoupon(domain, redisTools);
+            return Result.success(new HashMap<>());
+        }
+        log.info("已经抢过一次了，把占用的名额恢复到待抢列表中！");
+        redisTools.rightPush(listKey, 1);
+        return Result.fail("activity_coupon_receive", "您已经抢过了！");
     }
 
     /**
