@@ -53,20 +53,41 @@ public class ReceiveCouponCenterController {
     @Autowired
     CommunalActivityService activityService;
 
+    private String ybsStockSwitch = "ybssc_stock_switch";
+
+    private String ybsTemplateSet = "ysbsc_stock_set";
+
+    private String ybsListKey = "ybssc_list_key";
+
     @RequestMapping(value = "/setNumber", method = RequestMethod.GET)
-    public void setNumber(String listKey, String switchStr, Integer number) {
-        redisTools.set(listKey + "_switch", switchStr);
+    public void setNumber(String listKey, Integer number) {
+        redisTools.remove(listKey);
+        List<Object> list = new ArrayList<>();
+        for (int i = 0; i < number; i++) {
+            list.add("1");
+        }
+        redisTools.rightPushAll(listKey, list);
+        log.info(listKey + "的集合长度：" + redisTools.size(listKey));
+    }
+
+    @RequestMapping(value = "/setYbsNumber", method = RequestMethod.GET)
+    public void setYbsNumber(String templateIds, String switchStr, Integer number){
+        if(!StringUtils.isEmpty(switchStr)){
+            redisTools.set(ybsStockSwitch, switchStr);
+        }
         if(number <= 0){
-            redisTools.remove(listKey);
-            log.info(listKey + "已删除！");
+            redisTools.remove(ybsListKey);
+            redisTools.remove(ybsTemplateSet);
         }else{
-            redisTools.remove(listKey);
+            redisTools.remove(ybsListKey);
+            redisTools.remove(ybsTemplateSet);
             List<Object> list = new ArrayList<>();
             for (int i = 0; i < number; i++) {
                 list.add("1");
             }
-            redisTools.rightPushAll(listKey, list);
-            log.info(listKey + "的集合长度：" + redisTools.size(listKey));
+            redisTools.rightPushAll(ybsListKey, list);
+            redisTools.add(ybsTemplateSet, templateIds.split(","));
+            log.info(ybsListKey + "的集合长度：" + redisTools.size(ybsListKey));
         }
     }
 
@@ -74,12 +95,12 @@ public class ReceiveCouponCenterController {
      * 判断限时抢购的库存
      */
     @RequestMapping(value = "/haveStock", method = RequestMethod.GET)
-    public Result getStock(String templateId){
-        String switchStr = (String) redisTools.get("ysbsc_stock_" + templateId + "_switch");
+    public Result getStock(){
+        String switchStr = (String) redisTools.get(ybsStockSwitch);
         if(StringUtils.isEmpty(switchStr) || "off".equals(switchStr)){
             return Result.success(false);
         }
-        Long size = redisTools.size("ysbsc_stock_" + templateId);
+        Long size = redisTools.size(ybsListKey);
         if("on".equals(switchStr) && size > 0){
             return Result.success(true);
         }
@@ -97,43 +118,42 @@ public class ReceiveCouponCenterController {
             log.info("openId不能为空！");
             return Result.fail("missing_param_openId", "openId不能为空！");
         }
-        String templateId = MapUtils.getString(map, "templateId");
-        if(ObjectUtils.isEmpty(templateId)){
-            log.info("templateId不能为空！");
-            return Result.fail("missing_param_templateId", "templateId不能为空！");
-        }
         String accountId = accountService.findAccountIdByOpenid(openId);
         if (!redisTools.setIfAbsent("ybssc_" + accountId, 1)) {
             log.info("1秒之内禁止重复抢购！");
             return Result.fail("click_fast", "请勿频繁点击！");
         }
-        String listKey = "ysbsc_stock_" + templateId;
-        Object popValue = redisTools.leftPop(listKey);
+        Object popValue = redisTools.leftPop(ybsListKey);
         if (ObjectUtils.isEmpty(popValue)) {
             log.info("券已经被抢完了，没有了，下次再来吧！");
-            redisTools.remove(listKey);
+            redisTools.remove(ybsListKey);
             return Result.fail("coupon_over", "券已经被抢完了，没有了，下次再来吧！");
         }
-        Long result = redisTools.add("ysbsc_accountId", templateId + "-is-purchase-" + accountId);
+        Long result = redisTools.add("ysbsc_accountId", "ybssc-is-purchase-" + accountId);
         if (result > 0) {
             log.info("抢券成功！");
             List<AccountCoupon> accountCouponList = accountCouponService.getAccountCouponFromRedisHash(accountId);
             List<AccountCoupon> accountCoupons;
-            if(ObjectUtils.isEmpty(accountCouponList)){
-                accountCoupons = accountCouponRepository.findByAccountIdAndTemplateId(accountId, templateId);
-            }else{
-                accountCoupons = accountCouponList.stream().filter(s -> templateId.equals(s.getTemplateId())).collect(Collectors.toList());
+            Set<Object> tIds = redisTools.setMembers(ybsTemplateSet);
+            for (Object tId : tIds) {
+                if (redisTools.setIfAbsent("getting_coupon_" + tId + "_" + accountId, 10)) {
+                    if(ObjectUtils.isEmpty(accountCouponList)){
+                        accountCoupons = accountCouponRepository.findByAccountIdAndTemplateId(accountId, tId.toString());
+                    }else{
+                        accountCoupons = accountCouponList.stream().filter(s -> tId.toString().equals(s.getTemplateId())).collect(Collectors.toList());
+                    }
+                    if (!ObjectUtils.isEmpty(accountCoupons)) {
+                        log.info("该用户已经领过杨博士说车优惠券，不能再领取了：accountId is {} and templateId is {}", accountId, tId);
+                        return Result.fail("activity_coupon_receive", "您已经领过券了，不能重复领取！");
+                    }
+                    SendCouponDomain domain = new SendCouponDomain(tId.toString(), accountId, AccountCoupon.TYPE_YJX, "1", null, null);
+                    accountCouponService.sendCoupon(domain, redisTools);
+                    return Result.success(new HashMap<>());
+                }
             }
-            if (!ObjectUtils.isEmpty(accountCoupons)) {
-                log.info("该用户已经领过杨博士说车优惠券，不能再领取了：accountId is {} and templateId is {}", accountId, templateId);
-                return Result.fail("activity_coupon_receive", "您已经领过券了，不能重复领取！");
-            }
-            SendCouponDomain domain = new SendCouponDomain(templateId, accountId, AccountCoupon.TYPE_YJX, "1", null, null);
-            accountCouponService.sendCoupon(domain, redisTools);
-            return Result.success(new HashMap<>());
         }
         log.info("已经抢过一次了，把占用的名额恢复到待抢列表中！");
-        redisTools.rightPush(listKey, 1);
+        redisTools.rightPush(ybsListKey, 1);
         return Result.fail("activity_coupon_receive", "您已经抢过了！");
     }
 
