@@ -238,6 +238,16 @@ public class KDTree {
                 right.add(d);
             }
         }
+        if (left.size() == 0 && right.size() > 1) {
+            double[] d = right.get(0);
+            left.add(d);
+            right.remove(d);
+        }
+        if (right.size() == 0 && left.size() > 1) {
+            double[] d = left.get(0);
+            right.add(d);
+            left.remove(d);
+        }
         Node leftNode = new Node();
         Node rightNode = new Node();
         node.left = leftNode;
