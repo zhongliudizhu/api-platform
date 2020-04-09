@@ -37,4 +37,6 @@ public interface AccountCouponRepository extends JpaRepository<AccountCoupon, St
 
     List<AccountCoupon> findByAccountIdAndTemplateId(String accountId, String templateId);
 
+    List<AccountCoupon> findByAccountIdAndTemplateIdAndActivityId(String accountId, String templateId, String activityId);
+
 }
