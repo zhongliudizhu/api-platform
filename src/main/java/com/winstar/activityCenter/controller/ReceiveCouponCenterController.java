@@ -104,6 +104,11 @@ public class ReceiveCouponCenterController {
             log.info("1秒之内禁止重复抢购！");
             return Result.fail("click_fast", "请勿频繁点击！");
         }
+        String switchStr = (String) redisTools.get(activityNumber + stockSwitch);
+        if("off".equals(switchStr)){
+            log.info(activityNumber + "活动已关闭！");
+            return Result.fail("activity_closed", "活动已关闭！");
+        }
         Object popValue = redisTools.leftPop(activityNumber + listKey);
         if (ObjectUtils.isEmpty(popValue)) {
             log.info("券已经被抢完了，没有了，下次再来吧！");
@@ -118,17 +123,17 @@ public class ReceiveCouponCenterController {
                 List<AccountCoupon> accountCoupons;
                 Set<Object> tIds = redisTools.setMembers(activityNumber + templateSet);
                 for (Object tId : tIds) {
-                    if (redisTools.setIfAbsent(activityNumber + "_getting_coupon_" + tId + "_" + accountId, 10)) {
+                    if (redisTools.setIfAbsent(activityNumber + "_getting_coupon_" + tId.toString().trim() + "_" + accountId, 10)) {
                         if(ObjectUtils.isEmpty(accountCouponList)){
-                            accountCoupons = accountCouponRepository.findByAccountIdAndTemplateIdAndActivityId(accountId, tId.toString(), activityNumber);
+                            accountCoupons = accountCouponRepository.findByAccountIdAndTemplateIdAndActivityId(accountId, tId.toString().trim(), activityNumber);
                         }else{
-                            accountCoupons = accountCouponList.stream().filter(s -> tId.toString().equals(s.getTemplateId()) && activityNumber.equals(s.getActivityId())).collect(Collectors.toList());
+                            accountCoupons = accountCouponList.stream().filter(s -> tId.toString().trim().equals(s.getTemplateId()) && activityNumber.equals(s.getActivityId())).collect(Collectors.toList());
                         }
                         if (!ObjectUtils.isEmpty(accountCoupons)) {
-                            log.info("该用户已经领过杨博士说车优惠券，不能再领取了：accountId is {} and templateId is {}", accountId, tId);
+                            log.info("该用户已经领过杨博士说车优惠券，不能再领取了：accountId is {} and templateId is {}", accountId, tId.toString().trim());
                             continue;
                         }
-                        SendCouponDomain domain = new SendCouponDomain(tId.toString(), accountId, AccountCoupon.TYPE_YJX, "1", activityNumber, null);
+                        SendCouponDomain domain = new SendCouponDomain(tId.toString().trim(), accountId, AccountCoupon.TYPE_YJX, "1", activityNumber, null);
                         accountCouponService.sendCoupon(domain, redisTools);
                     }
                 }
