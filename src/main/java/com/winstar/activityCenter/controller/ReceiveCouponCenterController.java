@@ -134,7 +134,7 @@ public class ReceiveCouponCenterController {
                 }
                 return Result.success(new HashMap<>());
             } catch (Exception e){
-                redisTools.remove(activityNumber + "_accountId", activityNumber + "-is-purchase-" + accountId);
+                redisTools.removeSet(activityNumber + "_accountId", activityNumber + "-is-purchase-" + accountId);
                 redisTools.rightPush(activityNumber + listKey, 1);
                 log.info("发放优惠券异常！", e);
             }
