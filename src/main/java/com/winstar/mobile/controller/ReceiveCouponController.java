@@ -51,8 +51,8 @@ public class ReceiveCouponController {
             return Result.fail("user_not_subscribe", "用户未关注！");
         }
         Account account = accountService.getAccountOrCreateByOpenId(receiveDomain.getOpenId(), null, null);
-        String validateKey = receiveDomain.getPhone();
-        Object data = redisTools.get("122" + validateKey);
+        String validateKey = "122_" + receiveDomain.getPhone();
+        Object data = redisTools.get(validateKey);
         log.info("redis中的 data is {}", data);
         if (ObjectUtils.isEmpty(data) || !("YES").equalsIgnoreCase(data.toString())) {
             log.info("验证资格失败");
