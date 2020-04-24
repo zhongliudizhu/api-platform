@@ -52,7 +52,7 @@ public class ReceiveCouponController {
         }
         Account account = accountService.getAccountOrCreateByOpenId(receiveDomain.getOpenId(), null, null);
         String validateKey = receiveDomain.getPhone();
-        Object data = redisTools.get("122" + validateKey);
+        Object data = redisTools.get("122_" + validateKey);
         log.info("redis中的 data is {}", data);
         if (ObjectUtils.isEmpty(data) || !("YES").equalsIgnoreCase(data.toString())) {
             log.info("验证资格失败");

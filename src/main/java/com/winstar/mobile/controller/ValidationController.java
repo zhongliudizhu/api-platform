@@ -84,7 +84,7 @@ public class ValidationController {
         domain.setProductId("69900043");
         CmResult cmResult = cmService.verify(domain);
         if (cmResult.getMessage().indexOf("同一个营销活动不能重复办理：您已经有一个有效的营销活动")!= -1) {
-            redisTools.set("122"+mobile,"YES");
+            redisTools.set("122_" + mobile, "YES");
             return Result.success("1005",null);
         } else {
             return Result.fail("user_no_transaction", "您的手机号暂无可领取权益，可先去办理权益哦");
