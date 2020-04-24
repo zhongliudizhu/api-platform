@@ -60,7 +60,7 @@ public class ReceiveCouponController {
         }
         String[] templates = receiveDomain.getTemplateId().split(",");
         for (String s : templates) {
-            SendCouponDomain domain = new SendCouponDomain(s, account.getId(), "mobile_12.2", "1", null, null);
+            SendCouponDomain domain = new SendCouponDomain(s, account.getId(), AccountCoupon.TYPE_YJX, "1", null, null);
             log.info("发放优惠券 。。 templateId is{}", s);
             List<AccountCoupon> couponList = accountCouponService.sendCoupon(domain, null);
             if (CollectionUtils.isEmpty(couponList)) {
