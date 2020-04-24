@@ -25,7 +25,7 @@ public class TestController {
     @RequestMapping(value = "/verify", method = RequestMethod.GET)
     public CmResult getToken(String mobile){
         VerifyRequestDomain domain = new VerifyRequestDomain();
-        domain.setPackageId("96044072");
+        domain.setPackageId("96041141");
         domain.setProductId("69900043");
         domain.setSerialNumber(mobile);
         log.info("参数：" + JSON.toJSONString(domain));
@@ -44,7 +44,7 @@ public class TestController {
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public CmResult create(String mobile, String smsCode){
         VerifyRequestDomain domain = new VerifyRequestDomain();
-        domain.setPackageId("96044072");
+        domain.setPackageId("96041141");
         domain.setProductId("69900043");
         domain.setSerialNumber(mobile);
         domain.setSmsCode(smsCode);

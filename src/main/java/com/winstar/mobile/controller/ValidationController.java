@@ -80,7 +80,7 @@ public class ValidationController {
         VerifyRequestDomain domain = new VerifyRequestDomain();
         domain.setSerialNumber(mobile);
         domain.setSmsCode(smsCode);
-        domain.setPackageId("96044072");
+        domain.setPackageId("96041141");
         domain.setProductId("69900043");
         CmResult cmResult = cmService.verify(domain);
         if (cmResult.getMessage().indexOf("同一个营销活动不能重复办理：您已经有一个有效的营销活动")!= -1) {
