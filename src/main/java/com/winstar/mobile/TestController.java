@@ -36,7 +36,7 @@ public class TestController {
     public CmResult sendMessage(String mobile){
         SendMessageRequestDomain domain = new SendMessageRequestDomain();
         domain.setSerialNumber(mobile);
-        domain.setBusinessCode("96044072");
+        domain.setBusinessCode("96041141");
         log.info("参数：" + JSON.toJSONString(domain));
         return cmService.sendMessage(domain);
     }

@@ -58,7 +58,7 @@ public class ValidationController {
         }
         SendMessageRequestDomain domain = new SendMessageRequestDomain();
         domain.setSerialNumber(mobile);
-        domain.setBusinessCode("96044072");
+        domain.setBusinessCode("96041141");
         log.info("参数：" + JSON.toJSONString(domain));
         CmResult cmResult = cmService.sendMessage(domain);
         if (!"1000".equals(cmResult.getReturnCode())) {

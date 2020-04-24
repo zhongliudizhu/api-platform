@@ -25,7 +25,7 @@ public class SendMessageRequestDomain {
     private String SmsCode;
 
     /**
-     * 业务编码
+     * 业务编码(这边编码就是:营销包编码)
      */
     private String businessCode;
 
