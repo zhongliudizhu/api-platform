@@ -52,15 +52,15 @@ public class ReceiveCouponController {
         }
         Account account = accountService.getAccountOrCreateByOpenId(receiveDomain.getOpenId(), null, null);
         String validateKey = receiveDomain.getPhone();
-        Object data = redisTools.get(validateKey);
+        Object data = redisTools.get("122" + validateKey);
         log.info("redis中的 data is {}", data);
         if (ObjectUtils.isEmpty(data) || !("YES").equalsIgnoreCase(data.toString())) {
             log.info("验证资格失败");
-            return Result.fail("validate_failed", "当前手机号未办理套餐");
+            return Result.fail("validate_failed", "验证资格失败");
         }
         String[] templates = receiveDomain.getTemplateId().split(",");
         for (String s : templates) {
-            SendCouponDomain domain = new SendCouponDomain(s, account.getId(), AccountCoupon.TYPE_YJX, "1", null, null);
+            SendCouponDomain domain = new SendCouponDomain(s, account.getId(), "mobile_122", "1", null, null);
             log.info("发放优惠券 。。 templateId is{}", s);
             List<AccountCoupon> couponList = accountCouponService.sendCoupon(domain, null);
             if (CollectionUtils.isEmpty(couponList)) {
