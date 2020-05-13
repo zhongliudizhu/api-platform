@@ -93,9 +93,9 @@ public class AccountCouponController {
                 accountCoupon.setState(AccountCouponService.EXPIRED);
                 accountCouponRepository.save(accountCoupon);
             });
-            //清理过期十五天优惠券
+            //清理过期十五天优惠券(yjx)
             Date today = new Date();
-            List<AccountCoupon> toDelCoupons = accountCoupons.stream().filter(e -> DateUtil.getIntervalDays(today, e.getEndTime()) > 15).collect(Collectors.toList());
+            List<AccountCoupon> toDelCoupons = accountCoupons.stream().filter(e -> DateUtil.getIntervalDays(today, e.getEndTime()) > 15 && AccountCoupon.TYPE_YJX.equals(e.getType())).collect(Collectors.toList());
             logger.info("{} 过期十五天优惠券数量 ：{}", accountId, toDelCoupons.size());
             if (!ObjectUtils.isEmpty(toDelCoupons)) {
                 logger.info("正在删除过期十五天优惠券！！");
