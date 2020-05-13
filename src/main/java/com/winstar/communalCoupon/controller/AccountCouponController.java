@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
@@ -85,7 +84,7 @@ public class AccountCouponController {
             Week week = DateUtil.getWeek(new Date());
             int hour = DateUtil.getHour(new Date());
             //不在周四权益时高峰时段时再检测是否有赠送超时未领取的优惠券
-            if (!week.equals(Week.THURSDAY) || (week.equals(Week.THURSDAY) && hour > 14)) {
+            if (!week.equals(Week.THURSDAY) || hour > 14) {
                 logger.info("检查超时未领取的优惠券状态");
                 accountCouponService.backSendingTimeOutCoupon(accountCoupons);
             }
@@ -94,11 +93,21 @@ public class AccountCouponController {
                 accountCoupon.setState(AccountCouponService.EXPIRED);
                 accountCouponRepository.save(accountCoupon);
             });
+            //清理过期十五天优惠券
+            Date today = new Date();
+            List<AccountCoupon> toDelCoupons = accountCoupons.stream().filter(e -> DateUtil.getIntervalDays(today, e.getEndTime()) > 15).collect(Collectors.toList());
+            logger.info("{} 过期十五天优惠券数量 ：{}", accountId, toDelCoupons.size());
+            if (!ObjectUtils.isEmpty(toDelCoupons)) {
+                logger.info("正在删除过期十五天优惠券！！");
+                accountCouponRepository.delete(toDelCoupons);
+                accountCoupons.removeIf(toDelCoupons::contains);
+                //删除缓存中过期优惠券
+                couponRedisTools.hmRemoveAll(AccountCouponService.COUPON_LIST_PREFIX + accountId, toDelCoupons.stream().map(AccountCoupon::getCouponId).toArray());
+            }
             //把处理过后的优惠券重新放入缓存中，否则返回的优惠券和数据库中的不一致
             couponRedisTools.hmPutAll(AccountCouponService.COUPON_LIST_PREFIX + accountId, accountCoupons.stream().collect(Collectors.toMap(AccountCoupon::getCouponId, Function.identity())));
         }
-        List<AccountCoupon> accountCouponList = accountCouponService.getAccountCouponFromRedisHash(accountId).stream().filter(s -> s.getState().equals(state)).collect(Collectors.toList());
-        Collections.sort(accountCouponList, (p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()));
+        List<AccountCoupon> accountCouponList = accountCouponService.getAccountCouponFromRedisHash(accountId).stream().filter(s -> s.getState().equals(state)).sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt())).collect(Collectors.toList());
         Page<AccountCoupon> accountCouponPage = new MyPage<>(nextPage, pageSize, accountCouponList, ObjectUtils.isEmpty(accountCouponList) ? 0 : accountCouponList.size());
         return Result.success(accountCouponPage);
     }

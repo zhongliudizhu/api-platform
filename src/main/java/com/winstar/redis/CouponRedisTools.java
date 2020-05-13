@@ -83,6 +83,17 @@ public class CouponRedisTools {
         return hash.delete(key, hashKey);
     }
 
+
+    /**
+     * 哈希删除数据
+     */
+    public void hmRemoveAll(String key, Object[] hashKeys) {
+        HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
+        for (Object hashKey : hashKeys) {
+            hash.delete(key, hashKey);
+        }
+    }
+
     /**
      * 哈希存数据（单个）
      */

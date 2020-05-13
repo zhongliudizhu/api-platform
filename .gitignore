@@ -20,7 +20,7 @@ winstar-cbc-platform-api.iml
 # .idea/sqlDataSources.xml
 # .idea/dynamic.xml
 # .idea/uiDesigner.xml
-
+rebel.xml
 # Gradle:
 # .idea/gradle.xml
 # .idea/libraries
